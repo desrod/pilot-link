@@ -1721,117 +1721,6 @@ static PyObject *_wrap_dlp_ReadRecordIDList (PyObject *self, PyObject *args) {
 }
 
 
-/*
- * Python syntax: pi_file_install(sd, cardno, filename, callback)
- */
-static PyObject *_wrap_pi_file_install (PyObject *self, PyObject *args)
-{
-	PyObject *obj1 = NULL;
-	PyObject *obj2 = NULL;
-	PyObject *obj3 = NULL;
-	PyObject *cback = NULL;
-	int sd, cardno, result;
-	char *path = NULL;
-	pi_file_t *pf = NULL;
-
-	if (!PyArg_ParseTuple(args,(char *)"OOOO",&obj1, &obj2, &obj3, &cback))
-		return NULL;
-
-	sd = (int)(SWIG_As_int(obj1));
-	cardno = (int)(SWIG_As_int(obj2));
-	if (!SWIG_AsCharPtr(obj3, (char**)&path)) {
-		SWIG_arg_fail(3);
-		return NULL;
-	}
-
-	pf = pi_file_open(path);
-	if (pf == NULL) {
-		PyErr_SetObject(PIError, Py_BuildValue("(is)", PI_ERR_FILE_INVALID, "invalid file"));
-		return NULL;
-	}
-
-	{
-		PyThreadState *save = PyEval_SaveThread();
-		result = pi_file_install(pf, sd, cardno, NULL);
-		PyEval_RestoreThread(save);
-	}
-
-	pi_file_close(pf);
-
-	if (result < 0) {
-		pythonWrapper_handlePiErr(sd, result);
-		return NULL;
-	}
-
-	Py_INCREF(Py_None);
-	return Py_None;
-}
-
-/*
- * Python syntax: pi_file_retrieve(sd, cardno, dbname, storagepath, callback)
- */
-static PyObject *_wrap_pi_file_retrieve (PyObject *self, PyObject *args)
-{
-	PyObject *obj1 = NULL;
-	PyObject *obj2 = NULL;
-	PyObject *obj3 = NULL;
-	PyObject *obj4 = NULL;
-	PyObject *cback = NULL;
-	int sd, cardno, result;
-	char *dbname = NULL;
-	char *path = NULL;
-	struct DBInfo dbi;
-	pi_file_t *pf = NULL;
-
-	if (!PyArg_ParseTuple(args, (char *)"OOOOO",&obj1,&obj2,&obj3,&obj4,&cback))
-		return NULL;
-	sd = (int)(SWIG_As_int(obj1));
-	cardno = (int)(SWIG_As_int(obj2));
-	if (!SWIG_AsCharPtr(obj3, (char**)&dbname)) {
-		SWIG_arg_fail(3);
-		return NULL;
-	}
-	if (!SWIG_AsCharPtr(obj4, (char **)&path)) {
-		SWIG_arg_fail(4);
-		return NULL;
-	}
-
-	memset(&dbi, 0, sizeof(dbi));
-	result = dlp_FindDBByName(sd, cardno, dbname, NULL, NULL, &dbi, NULL);
-	if (result < 0) {
-		pythonWrapper_handlePiErr(sd, result);
-		return NULL;
-	}
-
-	pf = pi_file_create(path, &dbi);
-	if (pf == NULL) {
-		PyErr_SetObject(PIError, Py_BuildValue("(is)", PI_ERR_FILE_INVALID, "invalid file"));
-		return NULL;
-	}
-
-	{
-		PyThreadState *save = PyEval_SaveThread();
-		result = pi_file_retrieve(pf, sd, cardno, NULL);
-		PyEval_RestoreThread(save);
-	}
-
-	if (result < 0) {
-		pythonWrapper_handlePiErr(sd, result);
-		return NULL;
-	}
-
-	result = pi_file_close(pf);
-	if (result < 0) {
-		pythonWrapper_handlePiErr(sd, result);
-		return NULL;
-	}
-
-	Py_INCREF(Py_None);
-	return Py_None;
-}
-
-
-
   /*@/opt/local/share/swig/1.3.24/python/pymacros.swg,66,SWIG_define@*/
 #define SWIG_From_int PyInt_FromLong
 /*@@*/
@@ -2423,6 +2312,117 @@ PI_ERR dlp_VFSFileSize(int,FileRef,int *);
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/*
+ * Python syntax: pi_file_install(sd, cardno, filename, callback)
+ */
+static PyObject *_wrap_pi_file_install (PyObject *self, PyObject *args)
+{
+	PyObject *obj1 = NULL;
+	PyObject *obj2 = NULL;
+	PyObject *obj3 = NULL;
+	PyObject *cback = NULL;
+	int sd, cardno, result;
+	char *path = NULL;
+	pi_file_t *pf = NULL;
+
+	if (!PyArg_ParseTuple(args,(char *)"OOOO",&obj1, &obj2, &obj3, &cback))
+		return NULL;
+
+	sd = (int)(SWIG_As_int(obj1));
+	cardno = (int)(SWIG_As_int(obj2));
+	if (!SWIG_AsCharPtr(obj3, (char**)&path)) {
+		SWIG_arg_fail(3);
+		return NULL;
+	}
+
+	pf = pi_file_open(path);
+	if (pf == NULL) {
+		PyErr_SetObject(PIError, Py_BuildValue("(is)", PI_ERR_FILE_INVALID, "invalid file"));
+		return NULL;
+	}
+
+	{
+		PyThreadState *save = PyEval_SaveThread();
+		result = pi_file_install(pf, sd, cardno, NULL);
+		PyEval_RestoreThread(save);
+	}
+
+	pi_file_close(pf);
+
+	if (result < 0) {
+		pythonWrapper_handlePiErr(sd, result);
+		return NULL;
+	}
+
+	Py_INCREF(Py_None);
+	return Py_None;
+}
+
+/*
+ * Python syntax: pi_file_retrieve(sd, cardno, dbname, storagepath, callback)
+ */
+static PyObject *_wrap_pi_file_retrieve (PyObject *self, PyObject *args)
+{
+	PyObject *obj1 = NULL;
+	PyObject *obj2 = NULL;
+	PyObject *obj3 = NULL;
+	PyObject *obj4 = NULL;
+	PyObject *cback = NULL;
+	int sd, cardno, result;
+	char *dbname = NULL;
+	char *path = NULL;
+	struct DBInfo dbi;
+	pi_file_t *pf = NULL;
+
+	if (!PyArg_ParseTuple(args, (char *)"OOOOO",&obj1,&obj2,&obj3,&obj4,&cback))
+		return NULL;
+	sd = (int)(SWIG_As_int(obj1));
+	cardno = (int)(SWIG_As_int(obj2));
+	if (!SWIG_AsCharPtr(obj3, (char**)&dbname)) {
+		SWIG_arg_fail(3);
+		return NULL;
+	}
+	if (!SWIG_AsCharPtr(obj4, (char **)&path)) {
+		SWIG_arg_fail(4);
+		return NULL;
+	}
+
+	memset(&dbi, 0, sizeof(dbi));
+	result = dlp_FindDBByName(sd, cardno, dbname, NULL, NULL, &dbi, NULL);
+	if (result < 0) {
+		pythonWrapper_handlePiErr(sd, result);
+		return NULL;
+	}
+
+	pf = pi_file_create(path, &dbi);
+	if (pf == NULL) {
+		PyErr_SetObject(PIError, Py_BuildValue("(is)", PI_ERR_FILE_INVALID, "invalid file"));
+		return NULL;
+	}
+
+	{
+		PyThreadState *save = PyEval_SaveThread();
+		result = pi_file_retrieve(pf, sd, cardno, NULL);
+		PyEval_RestoreThread(save);
+	}
+
+	if (result < 0) {
+		pythonWrapper_handlePiErr(sd, result);
+		return NULL;
+	}
+
+	result = pi_file_close(pf);
+	if (result < 0) {
+		pythonWrapper_handlePiErr(sd, result);
+		return NULL;
+	}
+
+	Py_INCREF(Py_None);
+	return Py_None;
+}
+
+
 static PyObject *_wrap_pi_socket_t_sd_set(PyObject *self, PyObject *args) {
     PyObject *resultobj;
     pi_socket_t *arg1 = (pi_socket_t *) 0 ;
@@ -10759,19 +10759,20 @@ static PyObject *_wrap_dlp_ExpSlotEnumerate(PyObject *self, PyObject *args) {
     int *arg2 = (int *) 0 ;
     int *arg3 = (int *) 0 ;
     PI_ERR result;
+    int numSlots2 ;
+    int slotRefs2[16] ;
     PyObject * obj0 = 0 ;
-    PyObject * obj1 = 0 ;
-    PyObject * obj2 = 0 ;
     
-    if(!PyArg_ParseTuple(args,(char *)"OOO:dlp_ExpSlotEnumerate",&obj0,&obj1,&obj2)) goto fail;
+    
+    numSlots2 = sizeof(slotRefs2) / sizeof(slotRefs2[0]);
+    arg2 = &numSlots2;
+    arg3 = &slotRefs2[0];
+    
+    if(!PyArg_ParseTuple(args,(char *)"O:dlp_ExpSlotEnumerate",&obj0)) goto fail;
     {
         arg1 = (int)(SWIG_As_int(obj0)); 
         if (SWIG_arg_fail(1)) SWIG_fail;
     }
-    SWIG_Python_ConvertPtr(obj1, (void **)&arg2, SWIGTYPE_p_int, SWIG_POINTER_EXCEPTION | 0);
-    if (SWIG_arg_fail(2)) SWIG_fail;
-    SWIG_Python_ConvertPtr(obj2, (void **)&arg3, SWIGTYPE_p_int, SWIG_POINTER_EXCEPTION | 0);
-    if (SWIG_arg_fail(3)) SWIG_fail;
     {
         PyThreadState *__save = PyEval_SaveThread();
         result = (PI_ERR)dlp_ExpSlotEnumerate(arg1,arg2,arg3);
@@ -10783,6 +10784,13 @@ static PyObject *_wrap_dlp_ExpSlotEnumerate(PyObject *self, PyObject *args) {
     SWIG_fail;
     resultobj = Py_None;
     Py_INCREF(Py_None);
+    
+    
+    if (arg2 && arg3) {
+        int slotIndex;
+        for (slotIndex=0; slotIndex < *arg2; slotIndex++)
+        t_output_helper(resultobj, PyInt_FromLong(arg3[slotIndex]));
+    }
     
     return resultobj;
     fail:

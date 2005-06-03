@@ -22,7 +22,6 @@
  */
 
 // TODO: convert PI_CONST char *dbname parameters using the ConvertToEncoding() function
-// TODO: map output parameters for dlp_ExpSlotEnumerate()
 // TODO: map output parameters for dlp_ExpCardInfo()
 // TODO: map output parameters for dlp_ExpSlotMediaType()
 // TODO: map output parameters for VFS functions
@@ -196,6 +195,24 @@
 			Py_INCREF(o);
 			PyList_SET_ITEM($result, j, o);
 		}
+	}
+%}
+
+// -----------------------------------------
+// Mapping for dlp_ExpSlotEnumerate
+// -----------------------------------------
+%typemap (python,in,numinputs=0) (int *numslots, int *slotrefs)
+		(int numSlots, int slotRefs[16]) %{
+	numSlots = sizeof(slotRefs) / sizeof(slotRefs[0]);
+	$1 = &numSlots;
+	$2 = &slotRefs[0];
+%}
+
+%typemap (python,argout) (int *numslots, int *slotrefs) %{
+	if ($1 && $2) {
+		int slotIndex;
+		for (slotIndex=0; slotIndex < *$1; slotIndex++)
+			t_output_helper($result, PyInt_FromLong($2[slotIndex]));
 	}
 %}
 

@@ -27,7 +27,7 @@
 %native(pi_file_install) PyObject *_wrap_pi_file_install(PyObject *, PyObject *);
 %native(pi_file_retrieve) PyObject *_wrap_pi_file_retrieve(PyObject *, PyObject *);
 
-%{
+%wrapper %{
 /*
  * Python syntax: pi_file_install(sd, cardno, filename, callback)
  */

@@ -61,8 +61,6 @@ from pisockextras import *
 static PyObject *PIError = NULL;
 %}
 
-%include helperfuncs.i
-
 %init %{
 	PIError = PyErr_NewException("pisock.error", NULL, NULL);
 	Py_INCREF(PIError);
@@ -77,6 +75,7 @@ error = _pisock.error
 
 #define PI_DEPRECATED
 
+%include helperfuncs.i
 %include pi-error.i
 %include general-maps.i
 %include pi-socket-maps.i
