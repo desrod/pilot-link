@@ -19,7 +19,7 @@ python-build: Python/setup.py
 	cd $(srcdir)/Python && $(PYTHON) setup.py build
 
 python-install: python-build
-	cd $(srcdir)/Python && $(PYTHON) setup.py install --prefix=$(prefix) --root=$(DESTDIR)
+	cd $(srcdir)/Python && $(PYTHON) setup.py install --prefix=$(prefix)
 
 python-clean: Python/setup.py
 	-cd $(srcdir)/Python && $(PYTHON) setup.py clean 
