@@ -1,3 +1,356 @@
+2005-06-03 06:57  fpillet
+
+	* libpisock/libusb.c: Fix for bug #1483: the mutex wasn't being
+	  released on premature function return
+
+2005-06-03 06:46  fpillet
+
+	* bindings/Python/src/: pi-dlp-maps.i, pi-file-maps.i, pisock.i,
+	  pisock_wrap.c: Added mapping for dlp_ExpSlotEnumerate. Fixed
+	  pi-file-maps.i so that the C code is inserted with the rest of
+	  the wrapper code, fixing compilation issues with GCC 4 (and some
+	  GCC 3 warnings).
+
+2005-06-03 04:15  fpillet
+
+	* bindings/Makefile.am: Fix for bug #1478: the --root option passed
+	  to setup.py was confusing the installer. Removing it fixes the
+	  problem.
+
+2005-06-02 12:23  fpillet
+
+	* bindings/Python/src/pisock_wrap.c: updated pisock_wrap
+
+2005-06-02 12:21  fpillet
+
+	* bindings/Python/src/: pi-error.i, pi-file-maps.i, pisock.py,
+	  pisock_wrap.c: Fixed incorrect code that would crash the Python
+	  interpreter on error
+
+2005-06-01 20:17  desrod
+
+	* doc/TODO: Minor updates to bring TODO to "mostly current", still
+	  more to go..
+
+2005-06-01 05:09  fpillet
+
+	* src/pilot-xfer.c: Added PACE cache files to the list of files to
+	  exclude from backup (creator=='a68k')Ã
+
+2005-05-31 09:20  fpillet
+
+	* libpisock/pi-buffer.c: If trying to create a 0 byte buffer,
+	  allocate a small amount (16 bytes) as you are not supposed to
+	  malloc(0)
+
+2005-05-28 12:46  warp
+
+	* libpisock/pi-file.c: Unlink instead of overwriting.  For the case
+	  of something along the lines of: cp -lav backup_2005_05_27
+	  backup_2005_05_28 Then updating the new copy.
+
+2005-05-24 08:49  fpillet
+
+	* libpisock/darwinusb.c: Added a comment to make clear why we're
+	  setting opened to 0 in u_close
+
+2005-05-24 08:47  fpillet
+
+	* libpisock/usb.c: Don't decrement timeout by one second after
+	  sending a wakeup packet to the device. Incidentally, this fixes a
+	  bug where a timeout of 1 second would put the thread in forever
+	  wait mode if the wakeup packet was without effect
+
+2005-05-24 08:44  fpillet
+
+	* libpisock/darwinusb.c: Fixed a lockup bug in darwinusb where a
+	  new client thread could acquire a closing connection, therefore
+	  locking it into waiting forever on a deleted pthread_cond. Use
+	  relative timeouts in waiting threads (more explicit code),
+	  defined a new macros to avoid all the #ifdef DEBUG_USB in the
+	  code.
+
+2005-05-18 18:17  warp
+
+	* libpisock/usb.c: Oops.  Minor fix I forgot to commit.
+
+2005-05-16 05:35  fpillet
+
+	* libpisock/: inet.c, serial.c, socket.c, usb.c: Devices don't do
+	  the pi_close() anymore on failure, it's socket.c's responsibility
+	  to do it (doesn't change the APIs behavior, just a transfer of
+	  responsibility)
+
+2005-05-16 05:10  fpillet
+
+	* libpisock/socket.c: removed comments obsoleted by the doxygen
+	  documentation in pi-socket.h
+
+2005-05-16 05:06  fpillet
+
+	* include/pi-socket.h: completed doxygen docs for pi-socket.h
+
+2005-05-16 03:25  fpillet
+
+	* libpisock/darwinusb.c: Fixed indentation
+
+2005-05-16 02:48  fpillet
+
+	* configure.ac: added setup-standalone.py to the templatized files
+
+2005-05-15 13:53  fpillet
+
+	* bindings/Python/src/: pi-dlp-maps.i, pisock.i, pisock.py: cleanup
+
+2005-05-14 17:07  adridg
+
+	* configure.ac: Apply patch from #1480; assume Florent will
+	  complain when this turns out to no-worky with MacOSX auto*
+
+2005-05-13 18:25  fpillet
+
+	* libpisock/socket.c: close the sd if the actual implementation
+	  didn't do it
+
+2005-05-13 18:23  fpillet
+
+	* libpisock/darwinusb.c: Make darwinusb properly close the socket
+	  descriptor
+
+2005-05-13 18:23  fpillet
+
+	* bindings/Python/src/: pi-dlp-maps.i, pisock_wrap.c: Fixed a
+	  problem with passing types/creators that was improperly returning
+	  an exception
+
+2005-05-13 14:37  fpillet
+
+	* bindings/Python/src/: pi-error.i, pisock.py, pisock_wrap.c,
+	  pisockextras.py: Fixed error management (there were memory leaks
+	  because of the early return). dlpErrNotFound now raises an
+	  exception
+
+2005-05-13 11:29  fpillet
+
+	* libpisock/dlp.c: Coherent trace names, more info displayed
+
+2005-05-13 11:25  fpillet
+
+	* libpisock/darwinusb.c: compute read times (microsecond
+	  resolution)
+
+2005-05-13 10:08  fpillet
+
+	* libpisock/net.c: bump timeout to 30s. Experience showed installs
+	  that can stall the device up to 16s (with a T5), so we need a
+	  longer timeout value to cope with that and legitimate long wait
+	  cases
+
+2005-05-13 05:09  fpillet
+
+	* libpisock/dlp.c: more extensive logging
+
+2005-05-13 05:02  fpillet
+
+	* libpisock/darwinusb.c: tweaks to fix a race condition issue. More
+	  logging.
+
+2005-05-12 16:07  fpillet
+
+	* bindings/Python/: README, setup-standalone.py.in, setup.py.in,
+	  src/Makefile, src/general-maps.i, src/helperfuncs.i,
+	  src/nonblocking_multithread.pl, src/pi-dlp-maps.i,
+	  src/pi-error.i, src/pi-file-maps.i, src/pi-socket-maps.i,
+	  src/pisock.py, src/pisock_wrap.c, src/pisockextras.py: Marked all
+	  files with LGPL license. Cleanup in some files. Removed the
+	  useless custom pi_bind() implementation
+
+2005-05-11 16:27  fpillet
+
+	* configure.ac: use AC_HELP_STRING instead of AS_HELP_STRING, which
+	  doesn't work with the version of autoconf shipping with Mac OS X
+
+2005-05-11 10:20  fpillet
+
+	* bindings/Python/src/pi-dlp-maps.i: one more TODO in the list
+
+2005-05-11 10:19  fpillet
+
+	* libpisock/darwinusb.c: refinements in u_close, removed
+	  superfluous LOG
+
+2005-05-11 06:21  fpillet
+
+	* bindings/Python/: README, setup-standalone.py.in,
+	  src/helperfuncs.i, src/pi-dlp-maps.i, src/pisock_wrap.c: Proper
+	  encoding conversion when reading/writing user info and reading
+	  database info
+
+2005-05-10 10:29  warp
+
+	* libpisock/: freebsdusb.c, libusb.c, linuxusb.c: u_poll returns >
+	  0 on success, or <= 0 on timeout or error for the usb drivers.
+	  Fix comments to reflect this.
+
+	  Remove the usb_reset call in the libusb code, doesn't help
+	  anything.
+
+2005-05-10 10:23  warp
+
+	* libpisock/usb.c: Move stuff around to be a little cleaner.
+
+	  Fix failure in the linux case.
+
+	  Handle timeouts better.
+
+2005-05-10 10:19  fpillet
+
+	* libpisock/darwinusb.c: u_poll didn't return PI_ERR_SOCK_TIMEOUT
+	  if the connection was acquired but no data showed up (thanks,
+	  Mercury)
+
+2005-05-10 09:37  fpillet
+
+	* libpisock/socket.c: removed fprintfs
+
+2005-05-10 05:18  fpillet
+
+	* bindings/Python/: README, setup-standalone.py.in, setup.py.in:
+	  Added new standalone build script, updated readme
+
+2005-05-10 05:07  fpillet
+
+	* libpisock/darwinusb.c: oops, most people don't need #define
+	  DEBUG_USB 1 ;-)
+
+2005-05-10 04:54  fpillet
+
+	* libpisock/socket.c: added warning for bluetooth: case
+
+2005-05-10 04:51  fpillet
+
+	* libpisock/socket.c: Made pi_socket_setsd() code even more clear.
+
+2005-05-10 04:51  adridg
+
+	* libpisock/usb.c: Accidental whitespace and some additional
+	  logging
+
+2005-05-10 04:48  adridg
+
+	* libpisock/socket.c: Better check for error returns from dup2(),
+	  fcntl() and dup() as well
+
+2005-05-10 04:34  fpillet
+
+	* libpisock/socket.c: Fixed a major bug in pi_socket_setsd: the
+	  ps->sd was never updated with the duplicated pi_sd's value. If
+	  the duplicate didn't take the same value than the previous
+	  ps->sd, the connection was lost forever. Also fixed a strncmp and
+	  reindented some code
+
+2005-05-10 04:11  fpillet
+
+	* libpisock/debug.c: minor type. Flushing out the local mods I have
+
+2005-05-10 04:10  fpillet
+
+	* libpisock/usb.c: Mercury's evil kludge not needed on OSX. Rewrote
+	  it for clarity as well
+
+2005-05-10 04:08  fpillet
+
+	* libpisock/darwinusb.c: fixed bugs in refcount management. When
+	  closing the connection, set the socket state to PI_SOCK_CLOSE.
+	  This avoid subsequent calls to pi_close (i.e. from the onexit()
+	  handler) trying to access a closed connection.
+
+2005-05-09 16:51  adridg
+
+	* libpisock/freebsdusb.c: recv() -> back to read(), since recv()
+	  doesn't work on ugen devices
+
+2005-05-09 13:09  fpillet
+
+	* libpisock/darwinusb.c: another big change: added refcounting to
+	  the usb_connection_t struct. stop_listening() is called only when
+	  refcount reaches 0. This avoids issues where concurrent threads
+	  could clash on what to do, like the connection being closed while
+	  another thread was trying to write
+
+2005-05-09 10:50  fpillet
+
+	* include/pi-syspkt.h, libpisock/syspkt.c: Got rid of the
+	  sys_RPCerror variable. Now use pi_error(sd) in ALL cases to get
+	  the latest error.
+
+2005-05-08 16:53  adridg
+
+	* configure.ac: Use AS_HELP for help, and handle --disable-libusb
+	  as well
+
+2005-05-08 16:30  adridg
+
+	* README: Add extra notes for enabling libusb
+
+2005-05-08 16:27  warp
+
+	* configure.ac: Look for usb_open instead of main in libusb.
+
+2005-05-08 10:53  warp
+
+	* libpisock/usb.c: Send something that is hopefully even less
+	  likely to do evil things to the device.
+
+2005-05-06 21:59  warp
+
+	* libpisock/usb.c: Evil kluge.	If we don't get any data the device
+	  may still be there.  We try to wake it up by sending a 'garbage'
+	  packet or 5.	(USB only.)
+
+2005-05-06 18:13  warp
+
+	* libpisock/: libusb.c, usb.c: Quietly fix (or at least alter) the
+	  vi settings for libusb.c and usb.c.
+
+2005-05-05 14:36  fpillet
+
+	* bindings/Python/src/: pi-dlp-maps.i, pisock_wrap.c: Added missing
+	  mappins for proper dlp_CallApplication() binding
+
+2005-05-04 08:06  fpillet
+
+	* bindings/Python/: pisockextras.py, src/pisockextras.py,
+	  test/pisocktests.py: Moved pisockextras.py to the src/ directory.
+	  Tweaked setup.py to go find Python files to include in the src
+	  directory.
+
+2005-05-02 19:08  warp
+
+	* libpisock/: inet.c, serial.c, usb.c: Make sure that we actually
+	  close the sd on errors in pi_foo_accept.
+
+2005-05-02 17:45  adridg
+
+	* src/dlpsh.c: Fix for 1456: don't let popt mess with fixed-size
+	  buffers in structs; simplify code a little; put braces around
+	  python-style wishful indentation; remove AUTOHELP since it exits
+	  dlpsh; simplify help calls.
+
+2005-05-02 16:32  adridg
+
+	* src/ietf2datebook.PL: For #770
+
+2005-05-02 16:19  adridg
+
+	* src/read-ical.c: Patch from BR 1475, though I don't really see
+	  how it can help
+
+2005-04-27 13:38  desrod
+
+	* ChangeLog, configure.ac: Tagged -pre3, rolling to -pre4 for
+	  development, updated ChangeLog
+
 2005-04-26 13:50  warp
 
 	* configure.ac: Better handle libusb and thread safe stuff in
