@@ -151,20 +151,8 @@ static int dlp_version_minor = PI_DLP_VERSION_MINOR;
         #define TraceX(name,format,...) \
             LOG((PI_DBG_DLP, PI_DBG_LVL_INFO, "DLP sd=%d %s\n", sd, #name));
     #endif
-	#define Expect(count)    \
-		if (result < count) {  \
-			if (result < 0) {    \
-			  LOG((PI_DBG_DLP, PI_DBG_LVL_ERR, "DLP Error  %s (%d)\n", dlp_errorlist[-result], result)); \
-			} else {             \
-			  LOG((PI_DBG_DLP, PI_DBG_LVL_ERR, "DLP Read %d bytes, expected at least %d\n", result, count)); \
-			  result = -128;     \
-			}                    \
-			return result;       \
-		} else                 \
-		  LOG((PI_DBG_DLP, PI_DBG_LVL_INFO, "DLP RX %d bytes\n", result));
 #else
 	#define Trace(name)
-	#define Expect(count)
 #endif
 
 #ifdef PI_DEBUG
