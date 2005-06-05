@@ -313,7 +313,7 @@ if test "$have_libusb" = yes; then
 	msg_usb="yes, libusb"
 	case "$host" in
 		*darwin*)
-			usb_libs="-lusb -Wl,-framework,IOKit"
+			usb_libs="-lusb -Wl,-framework,IOKit,-framework,CoreFoundation"
 		;;
 		*)
 			if test "$msg_threads" = "no"; then
@@ -339,7 +339,7 @@ else
 		    AC_DEFINE(HAVE_USB, 1, [Define if we have USB support])
 		    usb_type=darwin
 		    msg_usb="yes, Darwin"
-		    usb_libs="-Wl,-framework,IOKit"
+		    usb_libs="-Wl,-framework,IOKit,-framework,CoreFoundation"
 	    ;;
 	esac
 fi
