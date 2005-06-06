@@ -2,12 +2,6 @@ SUBDIRS=prc pix
 
 if ENABLE_CONDUITS
 
-if WITH_CXX
-CXX_DIR = libpisock++
-else
-CXX_DIR =
-endif
-
 INCLUDES = 			\
 	-I/usr/include		\
 	-I$(top_srcdir)/include \
@@ -21,13 +15,6 @@ INCLUDES = 			\
 #	-Wcast-qual -Wnested-externs 			\
 #	-Wpointer-arith -Wundef -Wbad-function-cast 	\
 #	-Winline -pedantic -O0
-
-# Commented out for now, will fix later
-#if WITH_CXX
-#CCEXECS = ccexample
-#else
-CCEXECS =
-#endif
 
 noinst_LTLIBRARIES = libpiuserland.la
 

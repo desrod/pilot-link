@@ -53,26 +53,12 @@ AC_SUBST(PISYNC_CURRENT)
 AC_SUBST(PISYNC_REVISION)
 AC_SUBST(PISYNC_AGE)
 
-
-dnl ******************************
-dnl Pilot Link C++ Library Version
-dnl libpisock++
-dnl ******************************
-PISOCKPP_CURRENT=0
-PISOCKPP_REVISION=0
-PISOCKPP_AGE=0
-
-AC_SUBST(PISOCKPP_CURRENT)
-AC_SUBST(PISOCKPP_REVISION)
-AC_SUBST(PISOCKPP_AGE)
-
 dnl Eat -Werror so configure will run properly, if the user provided it
 enable_werror=no
 save_CFLAGS="$CFLAGS"
-save_CXXFLAGS="$CXXFLAGS"
 CFLAGS=`echo $save_CFLAGS | sed -e s/-Werror//g`
 CXXFLAGS=`echo $save_CXXFLAGS | sed -e s/-Werror//g`
-if test "x$CFLAGS$CXXFLAGS" != "x$save_CFLAGS$save_CXXFLAGS"; then
+if test "x$CFLAGS" != "x$save_CFLAGS"; then
 	dnl -Werror was set; treat it as implicit --enable-werror below
 	enable_werror="yes"
 fi
@@ -101,7 +87,6 @@ dnl Defaults for GCC
 dnl ******************************
 if test "x$GCC" = "xyes"; then
 	CFLAGS=${CFLAGS:-"-g2 -Wall"}
-	CXXFLAGS=${CXXFLAGS:-"-g2 -Wall"}
 fi
 
 
@@ -471,36 +456,6 @@ fi
 AC_SUBST(ICONV_CFLAGS)
 AC_SUBST(ICONV_LIBS)
 
-
-dnl ******************************
-dnl C++
-dnl ******************************
-msg_cxx=no
-
-AC_ARG_WITH(cxx,
-		[  --with-cxx=compiler     Build with C++ support      [[default=no]]])
-
-if test "x$with_cxx" != "xno"; then
-	if test "x$with_cxx" = "xyes"; then
-		AC_PROG_CXX
-		AC_MSG_CHECKING([whether $CXX works])
-		AC_LANG_PUSH(C++)
-		AC_TRY_COMPILE([
-	#include <iostream>
-	using namespace std;
-	],,msg_cxx="yes",msg_cxx="no")
-		AC_LANG_POP(C++)
-		AC_MSG_RESULT([$msg_cxx])
-	else
-		AC_PROG_CXX([$with_cxx])
-	fi
-	dnl AC_PROG_CXX sets CXX even if it doesn't work/exist...
-	if test "x$GXX" = "xyes"; then
-		CXXFLAGS="$CXXFLAGS -Wno-deprecated"
-	fi
-fi
-AM_CONDITIONAL(WITH_CXX, test "x$msg_cxx" = "xyes")
-
 dnl ******************************
 dnl readline checking
 dnl ******************************
@@ -698,7 +653,6 @@ AC_ARG_ENABLE(debug,
 if test "${enable_debug+set}" = set; then
 	if test "$enable_debug" = yes; then
 		CFLAGS="-g $CFLAGS"
-		CXXFLAGS="-g $CXXFLAGS"
 		set_debug=yes
 	fi
 fi
@@ -708,7 +662,6 @@ if test "$set_debug" = "yes"; then
 else
 	echo "Disabling runtime debugging"
 	CFLAGS=`echo "$CFLAGS" | sed -e "s/-g //"`
-	CXXFLAGS=`echo "$CXXFLAGS" | sed -e "s/-g //"`
 fi
 
 
@@ -759,7 +712,6 @@ AC_ARG_ENABLE(compile-werror,
 	      enable_werror=yes)
 if test "x$GCC" = "xyes" -a "x$enable_werror" = "xyes"; then
 	CFLAGS="$CFLAGS -Werror"
-	CXXFLAGS="$CXXFLAGS -Werror"
 fi
 
 AC_OUTPUT([
@@ -769,7 +721,6 @@ AC_OUTPUT([
 	pilot-link-pp.pc
 	libpisock/Makefile
 	libpisync/Makefile
-	libpisock++/Makefile
 	include/Makefile
 	include/pi-version.h
 	popt/Makefile
@@ -839,7 +790,6 @@ AC_MSG_RESULT([
   ElectricFence checks.... : $msg_efence
   CPPFLAGS................ : $CPPFLAGS
   CFLAGS.................. : $CFLAGS
-  CXXFLAGS................ : $CXXFLAGS
 
   Userland Tools
   -------------------------.
@@ -850,7 +800,6 @@ AC_MSG_RESULT([
 
   Internal Language Support
   -------------------------.
-  C++ support............. : $msg_cxx
   Iconv support........... : $msg_iconv
 
   External Language Support

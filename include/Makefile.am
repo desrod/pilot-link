@@ -55,11 +55,6 @@ cxx_headers = 			\
 	pi-memo.hxx		\
 	pi-todo.hxx
 
-if WITH_CXX
-cxx_header_DATA = $(cxx_headers)
-cxx_headerdir=$(includedir)
-endif
-
 EXTRA_DIST = 			\
 	$(c_headers)		\
 	$(c_privheaders)	\

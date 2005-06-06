@@ -3,7 +3,6 @@ AUTOMAKE_OPTIONS = 1.6
 SUBDIRS=popt 		\
 	libpisock 	\
 	libpisync 	\
-	libpisock++ 	\
 	include 	\
 	src 		\
 	bindings 	\
@@ -16,11 +15,6 @@ m4_DATA = pilot-link.m4
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = pilot-link.pc 
-
-if WITH_CXX
-pppkgconfigdir = $(libdir)/pkgconfig
-pppkgconfig_DATA = pilot-link-pp.pc
-endif
 
 ACLOCAL_AMFLAGS = -I m4
 
