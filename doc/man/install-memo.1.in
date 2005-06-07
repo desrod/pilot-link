@@ -12,7 +12,8 @@ pilot-link: Conduits
 [\fB\-c\fR|\fB\-\-category\fR \fBname\fR]
 [\fB\-r\fR|\fB\-\-replace\fR]
 [\fB\-t\fR|\fB\-\-title\fR]
-[\fB\-f\fR|\fB\-\-file\fR \fBSTRING\fR]
+[\fB\-f\fR|\fB\-\-file\fR \fBSTRING\fR] ...
+[\fBSTRING\fR] ...
 .SH DESCRIPTION
 \fIinstall-memo\fR allows the user to write one or more
 files as a new memo or memos, respectively, onto the Palm handheld.

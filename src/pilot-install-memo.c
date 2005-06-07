@@ -39,81 +39,82 @@ poptContext po;
 #endif
 
 
-int main(int argc, char *argv[])
+
+typedef struct {
+	char **filenames;
+	unsigned int filenames_allocated;
+	unsigned int filenames_used;
+} filename_array;
+
+filename_array memos = { NULL, 0, 0 } ;
+
+unsigned int check_filenames(filename_array *m)
 {
-	int 	sd		= -1,
-		po_err  	= -1,
-		add_title	= 0,
-		category	= -1,
-		replace		= 0,
-		db,
-		ReadAppBlock,
-		memo_size,
-		preamble;
-
-	char
-		*memo_buf	= NULL,
-		*category_name	= NULL,
-		*filename	= NULL,
-		*tmp		= NULL;
-
-        struct 	PilotUser User;
-        struct 	MemoAppInfo mai;
+	int i;
+	int count = 0;
 	struct  stat sbuf;
 
-	pi_buffer_t *appblock;
+	if (!m || !m->filenames) return 0;
 
-	FILE *f;
+	for (i = 0; i<m->filenames_used; i++) {
+		if (!(m->filenames[i])) continue;
+		if (stat(m->filenames[i], &sbuf) <0) {
+			fprintf(stderr,"   ERROR: cannot determine size of file '%s'\n",m->filenames[i]);
+			m->filenames[i] = NULL;
+		} else {
+			count++;
+		}
+	}
+	return count;
+}
 
-        const struct poptOption options[] = {
-		USERLAND_RESERVED_OPTIONS
-                { "category", 'c', POPT_ARG_STRING, &category_name, 0, "Place the memo entry in this category (category must already exist)", "name"},
-                { "replace",  'r', POPT_ARG_NONE,   &replace, 0, "Replace all memos in specified category"},
-                { "title",    't', POPT_ARG_NONE,   &add_title, 0, "Use the filename as the title of the Memo entry"},
-		{ "file",     'f', POPT_ARG_STRING, &filename, 0, "File containing the target memo entry"},
-                POPT_TABLEEND
-        };
-
-        po = poptGetContext("install-memo", argc, (const char **) argv, options, 0);
-	poptSetOtherOptionHelp(po,"\n\n"
-		"    Adds a single memo from a file to the memo database.\n\n");
-
-	if (argc < 2) {
-		poptPrintUsage(po,stderr,0);
-		return 1;
+void append_filename(filename_array *m, const char *filename)
+{
+	if (!m || !m->filenames) return;
+	if (!filename) return;
+	if (m->filenames_used >= (m->filenames_allocated-1)) {
+		fprintf(stderr,"  ERROR: More filenames listed than were expected.\n");
+		fprintf(stderr,"         File `%s' is ignored.\n");
+		return;
 	}
 
-        while ((po_err = poptGetNextOpt(po)) >= 0) {
-	}
-	if (po_err < -1)
-	    plu_badoption(po,po_err);
+	m->filenames[m->filenames_used] = strdup(filename);
+	m->filenames_used++;
+}
 
-	if (replace && !category_name) {
-		fprintf(stderr,"   ERROR: memo category required when specifying replace\n");
-		return 1;
-	}
-	if (!filename) {
-		fprintf(stderr,"   ERROR: must specify a file with -f filename\n");
-		return 1;
-	}
+void append_filenames(filename_array *m, const char **names)
+{
+	if (!m || !m->filenames) return;
+	if (!names) return;
 
+	while (*names) {
+		append_filename(m,*names);
+		names++;
+	}
+}
+
+int install_memo(int sd, int db, int category, int add_title, char *filename)
+{
+	struct  stat sbuf;
+	FILE *f = NULL;
+	char *tmp = NULL;
+	char *memo_buf = NULL;
+	int memo_size, preamble;
+
+	if (!filename) return 1;
+
+	/* Check the file still exists and its size. */
 	if (stat(filename, &sbuf) <0) {
-		fprintf(stderr,"   ERROR: cannot determine size of file '%s'\n",filename);
-		return 1;
-	}
-
-	f = fopen(filename, "rb");
-	if (f == NULL) {
 		fprintf(stderr,"   ERROR: Unable to open %s (%s)\n\n",
 			filename, strerror(errno));
 		return 1;
 	}
 
-
 	/* When adding the title, we only want the filename, not the full path. */
 	tmp = strrchr (filename, '/');
-	if (tmp)
+	if (tmp) {
 		filename = tmp + 1;
+	}
 
 	memo_size = sbuf.st_size;
 	preamble = add_title ? strlen(filename) + 1 : 0;
@@ -124,20 +125,113 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
+	if (memo_size + preamble > 65490) {
+		fprintf(stderr, "   WARNING: `%s'\n",filename);
+		fprintf(stderr, "   File is larger than the allowed size for Palm memo size. Please\n");
+		fprintf(stderr, "   decrease the file size to less than 65,490 bytes and try again.\n\n");
+		return 1;
+	}
+
 	if (preamble)
 		sprintf(memo_buf, "%s\n", filename);
+
+	f = fopen(filename, "rb");
+	if (f == NULL) {
+		fprintf(stderr,"   ERROR: Unable to open %s (%s)\n\n",
+			filename, strerror(errno));
+		return 1;
+	}
 	fread(memo_buf + preamble, memo_size, 1, f);
 	fclose(f);
 
-	memo_size += preamble;
+	dlp_WriteRecord(sd, db, 0, 0, category, memo_buf, -1, 0);
+	free(memo_buf);
 
-	if (memo_size > 65490) {
-		fprintf(stderr, "   ERROR:\n");
-		fprintf(stderr, "   File is larger than the allowed size for Palm memo size. Please\n");
-		fprintf(stderr, "   decrease the file size to less than 65,490 bytes and try again.\n\n");
-		fprintf(stderr, "   Files larger than 4,096 bytes and less than 65,490 bytes may be\n");
-		fprintf(stderr, "   syncronized, but will not be editable on the Palm device itself\n");
-		fprintf(stderr, "   due to Palm limitationis.\n\n");
+
+	if ((memo_size < 65490) && (memo_size > 4096)) {
+		fprintf(stderr, "   WARNING: `%s'\n", filename);
+		fprintf(stderr, "   This file was synchonized successfully, but will remain uneditable,\n");
+		fprintf(stderr, "   because it is larger than the Palm limitation of 4,096 bytes in\n");
+		fprintf(stderr, "   size.\n\n");
+
+	} else if (memo_size < 4096) {
+		fprintf(stderr, "   File '%s' was synchronized to your Palm device\n\n", filename);
+	}
+
+	return 0;
+}
+
+
+int main(int argc, char *argv[])
+{
+	int 	sd		= -1,
+		po_err  	= -1,
+		add_title	= 0,
+		category	= -1,
+		replace		= 0,
+		db,
+		ReadAppBlock;
+	unsigned int i;
+	unsigned int count = 0;
+
+	char
+		*category_name	= NULL,
+		*filename	= NULL,
+		*tmp		= NULL;
+	char messagebuffer[256];
+
+        struct 	PilotUser User;
+        struct 	MemoAppInfo mai;
+
+	pi_buffer_t *appblock;
+
+        const struct poptOption options[] = {
+		USERLAND_RESERVED_OPTIONS
+                { "category", 'c', POPT_ARG_STRING, &category_name, 0, "Place the memo entry in this category (category must already exist)", "name"},
+                { "replace",  'r', POPT_ARG_NONE,   &replace, 0, "Replace all memos in specified category"},
+                { "title",    't', POPT_ARG_NONE,   &add_title, 0, "Use the filename as the title of the Memo entry"},
+		{ "file",     'f', POPT_ARG_STRING, &filename, 'f', "File containing the target memo entry"},
+                POPT_TABLEEND
+        };
+
+        po = poptGetContext("install-memo", argc, (const char **) argv, options, 0);
+	poptSetOtherOptionHelp(po,"[file ...]\n\n"
+		"    Adds a single memo from a file to the memo database.\n\n");
+
+	if (argc < 2) {
+		poptPrintUsage(po,stderr,0);
+		return 1;
+	}
+
+	/* How many files _might_ we have as arguments? Clearly, argc
+	** is the maximum that is on the command-line, so use that as
+	** a good guess.
+	*/
+	memos.filenames = (char **)calloc(argc, sizeof(char *));
+	memos.filenames_allocated = argc;
+	memos.filenames_used = 0;
+
+        while ((po_err = poptGetNextOpt(po)) >= 0) {
+		switch (po_err) {
+		case 'f' :
+			append_filename(&memos,filename);
+			break;
+		default :
+			fprintf(stderr,"   ERROR: Unhandled option %d.\n",po_err);
+			return 1;
+		}
+	}
+	if (po_err < -1)
+		plu_badoption(po,po_err);
+
+	append_filenames(&memos, poptGetArgs(po));
+
+	if (replace && !category_name) {
+		fprintf(stderr,"   ERROR: memo category required when specifying replace\n");
+		return 1;
+	}
+	if (!check_filenames(&memos)) {
+		fprintf(stderr,"   ERROR: must specify a file with -f filename\n");
 		return 1;
 	}
 
@@ -181,19 +275,10 @@ int main(int argc, char *argv[])
 		category = 0;	/* Unfiled */
 	}
 
-
-	dlp_WriteRecord(sd, db, 0, 0, category, memo_buf, -1, 0);
-	free(memo_buf);
-
-
-	if ((memo_size < 65490) && (memo_size > 4096)) {
-		fprintf(stderr, "   This file was synconized successfully, but will remain uneditable,\n");
-		fprintf(stderr, "   because it is larger than the Palm limitation of 4,096 bytes in\n");
-		fprintf(stderr, "   size.\n\n");
-
-	} else if (memo_size < 4096) {
-		fprintf(stderr, "   File '%s' was synchronized to your Palm device\n\n", filename);
+	for (i=0; i<memos.filenames_used; i++) {
+		if (!install_memo(sd, db, category, add_title, memos.filenames[i])) count++;
 	}
+
 
 	/* Close the database */
 	dlp_CloseDB(sd, db);
@@ -204,8 +289,21 @@ int main(int argc, char *argv[])
 	User.lastSyncDate = User.successfulSyncDate;
 	dlp_WriteUserInfo(sd, &User);
 
-	dlp_AddSyncLogEntry(sd, "Successfully wrote a memo to Palm.\n"
-				"Thank you for using pilot-link.\n");
+	if (count == 0) {
+		snprintf(messagebuffer, sizeof(messagebuffer),
+			"No memos were installed to Palm.\n"
+			"Thank you for using pilot-link.\n");
+	} else if (count == 1) {
+		snprintf(messagebuffer, sizeof(messagebuffer),
+			"Successfully wrote a memo to Palm.\n"
+			"Thank you for using pilot-link.\n");
+	} else {
+		snprintf(messagebuffer, sizeof(messagebuffer),
+			"Successfully wrote %d memos to Palm.\n"
+			"Thank you for using pilot-link.\n",count);
+	}
+	messagebuffer[sizeof(messagebuffer)-1] = 0;
+	dlp_AddSyncLogEntry(sd,messagebuffer);
 
 	dlp_EndOfSync(sd, 0);
 	pi_close(sd);
