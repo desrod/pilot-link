@@ -35,12 +35,23 @@ class todo_t : public baseApp_t
      
      void *internalPack(unsigned char *);
      
+     void blank() 
+          { 
+               _due=0;
+               _priority=0;
+               _complete=0;
+               _description=0;
+               _note=0;
+               _next=0;
+          }
+
    public:
-     todo_t(void) : baseApp_t() { memset(this, '\0', sizeof(todo_t)); }
-     todo_t(void *buf) : baseApp_t() { unpack(buf); }
+     todo_t(void) : baseApp_t() { blank(); }
+     todo_t(void *buf) : baseApp_t() { blank(); unpack(buf); }
      todo_t(void *buf, int attr, recordid_t id, int category)
 	  : baseApp_t(attr, id, category)
 	  {
+	       blank();
 	       unpack(buf);
 	  }
      todo_t(const todo_t &);
