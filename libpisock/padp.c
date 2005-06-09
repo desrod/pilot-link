@@ -882,24 +882,26 @@ padp_dump_header(const unsigned char *data, int rxtx)
 
 	type = get_byte (&data[PI_PADP_OFFSET_TYPE]);
 	switch (type) {
-	case padData:
-		stype = "DATA";
-		break;
-	case padAck:
-		stype = "ACK";
-		break;
-	case padTickle:
-		stype = "TICKLE";
-		break;
-	case padWake:
-		stype = "WAKE";
-		break;
-	case padAbort:
-		stype = "ABORT";
-		break;
-	default:
-		stype = "UNK";
-		break;
+		case padData:
+			stype = "DATA";
+			break;
+		case padAck:
+			stype = "ACK";
+			break;
+		case padTickle:
+			stype = "TICKLE";
+			break;
+#if 0		/* fpillet: padWake=0x101, it's strange to test this value on an unsigned char... */
+		case padWake:
+			stype = "WAKE";
+			break;
+#endif
+		case padAbort:
+			stype = "ABORT";
+			break;
+		default:
+			stype = "UNK";
+			break;
 	}
 
 	flags = get_byte(&data[PI_PADP_OFFSET_FLGS]);
