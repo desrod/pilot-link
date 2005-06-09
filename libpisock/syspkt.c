@@ -40,9 +40,6 @@
 
 /* Declare prototypes */
 static int sys_PackRegisters(void *data, struct Pilot_registers *r);
-static int RPC_MemCardInfo(int sd, int cardno, char * cardname, char * manufname,
-                    int * version, long * date, long * romsize, long * ramsize,
-                    long * freeram);
 
 
 /***********************************************************************
@@ -1022,27 +1019,6 @@ RPC_Ptr_Void(int sd, int trap)
 	return RPC(sd, 1, trap, 1, RPC_End);
 }
 
-
-/***********************************************************************
- *
- * Function:    RPC_MemCardInfo
- *
- * Summary:     Untested complex RPC example
- *
- * Parameters:  None
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
-static int
-RPC_MemCardInfo(int sd, int cardno, char * cardname, char * manufname,
-                    int * version, long * date, long * romsize, long * ramsize,
-                    long * freeram) {
-  return RPC(sd, 1, 0xA004, 0, RPC_Short(cardno), RPC_Ptr(cardname, 32),
-                               RPC_Ptr(manufname, 32), RPC_ShortPtr(version),
-                               RPC_LongPtr(date), RPC_LongPtr(romsize),
-                               RPC_LongPtr(ramsize), RPC_LongPtr(freeram));
-}
 
 /* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */
 /* Local Variables: */
