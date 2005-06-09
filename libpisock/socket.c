@@ -455,20 +455,20 @@ protocol_queue_build (pi_socket_t *ps, int autodetect)
 			int found = 0;
 			while (!found) {
 				LOG((PI_DBG_SOCK, PI_DBG_LVL_INFO,
-				    "SOCK Peeked and found 0x%.2x, ", byte));
+				    "SOCK Peeked and found 0x%.2x\n", byte));
 
 				switch (byte) {
 				case PI_SLP_SIG_BYTE1:
 					protocol = PI_PF_PADP;
 					LOG((PI_DBG_SOCK, PI_DBG_LVL_INFO,
-						"PADP/SLP\n"));
+						"using PADP/SLP protocol\n"));
 					found = 1;
 					break;
 				case PI_NET_SIG_BYTE1:
 				case 0x01:
 					protocol = PI_PF_NET;
 					LOG((PI_DBG_SOCK, PI_DBG_LVL_INFO,
-						"NET\n"));
+						"using NET protocol\n"));
 					found = 1;
 					break;
 				default:
@@ -484,7 +484,7 @@ protocol_queue_build (pi_socket_t *ps, int autodetect)
 						{
 							protocol = PI_PF_PADP;
 							LOG((PI_DBG_SOCK, PI_DBG_LVL_INFO,
-								"Default\n"));
+								"using Default protocol (PADP)\n"));
 							found = 1;
 						}
 					}
@@ -492,7 +492,7 @@ protocol_queue_build (pi_socket_t *ps, int autodetect)
 					{
 						protocol = PI_PF_PADP;
 						LOG((PI_DBG_SOCK, PI_DBG_LVL_INFO,
-							"Default\n"));
+							"using Default protocol (PADP)\n"));
 						found = 1;
 					}
 					break;
