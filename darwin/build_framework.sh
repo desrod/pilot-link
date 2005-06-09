@@ -28,7 +28,7 @@ then
 	linkflags="$linkflags -seg1addr $1";
 fi
 
-libtool -dynamic \
+/usr/bin/libtool -dynamic -arch_only ppc \
 	-o $what.framework/Versions/A/$what \
 	-install_name @executable_path/../Frameworks/$what.framework/Versions/A/$what \
 	$libs $linkflags
