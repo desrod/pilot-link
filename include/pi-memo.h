@@ -4,9 +4,6 @@
 #include "pi-appinfo.h"
 #include "pi-buffer.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 	typedef enum {
 		memo_v1,
 	} memoType;
@@ -37,8 +34,4 @@ extern "C" {
 	    PI_ARGS((struct MemoAppInfo *, unsigned char *AppInfo,
 		     size_t len));
 
-#ifdef __cplusplus
-}
-#include "pi-memo.hxx"
-#endif				/*__cplusplus*/
 #endif				/* _PILOT_MEMO_H_ */

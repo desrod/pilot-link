@@ -5,9 +5,6 @@
 #include "pi-appinfo.h"
 #include "pi-buffer.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 	typedef enum {
 		todo_v1,
 	} todoType;
@@ -38,8 +35,4 @@ extern "C" {
 	extern int pack_ToDoAppInfo
 	    PI_ARGS((ToDoAppInfo_t *, unsigned char *record, size_t len));
 
-#ifdef __cplusplus
-}
-#include "pi-todo.hxx"
-#endif				/*__cplusplus*/
 #endif				/* _PILOT_TODO_H_ */

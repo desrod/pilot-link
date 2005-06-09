@@ -47,15 +47,7 @@ c_privheaders = 		\
 c_header_DATA = $(c_headers)
 c_headerdir=$(includedir)
 
-cxx_headers = 			\
-	pi-address.hxx		\
-	pi-appinfo.hxx		\
-	pi-datebook.hxx		\
-	pi-dlp.hxx		\
-	pi-memo.hxx		\
-	pi-todo.hxx
-
 EXTRA_DIST = 			\
 	$(c_headers)		\
-	$(c_privheaders)	\
-	$(cxx_headers)
+	$(c_privheaders)
+

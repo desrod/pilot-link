@@ -4,10 +4,6 @@
 #include "pi-appinfo.h"
 #include "pi-buffer.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 	typedef enum {
 		address_v1,
 	} addressType;
@@ -62,8 +58,4 @@ extern "C" {
 	extern int pack_AddressAppInfo
 	  PI_ARGS((AddressAppInfo_t *, unsigned char *AppInfo, size_t len));
 
-#ifdef __cplusplus
-}
-#include "pi-address.hxx"
-#endif				/* __cplusplus */
 #endif				/* _PILOT_ADDRESS_H_ */
