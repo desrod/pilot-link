@@ -19,7 +19,6 @@ INCLUDES = 			\
 noinst_LTLIBRARIES = libpiuserland.la
 
 bin_PROGRAMS = 		\
-	$(CCEXECS)	\
 	debugsh		\
 	dlpsh		\
 	hinotes		\
