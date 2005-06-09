@@ -859,7 +859,7 @@ sub doafterplan {
 						print "Log: Conflicting Plan record unsyncable.\n";
 					} else {
 						$record->{id} = 0;
-						my ;($id) = WritePilotRecord($db, $control, $record);
+						my ($id) = WritePilotRecord($db, $control, $record);
 						
 						#$db->setRecord($record);
 						#
@@ -1094,7 +1094,7 @@ sub doafterplan {
 				# Palm record.
 				
 				#print "Trying to install Plan record: ",Dumper($record),"\n";
-				my ;($newrecord) = RecordPlanToPilot($record, $pilotID{$pid});
+				my ($newrecord) = RecordPlanToPilot($record, $pilotID{$pid});
 				if (not defined $newrecord) {
 					# The record is not translatable to a Plan record. 
 					
