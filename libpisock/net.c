@@ -518,10 +518,19 @@ net_rx(pi_socket_t *ps, pi_buffer_t *msg, size_t len, int flags)
 		}
 	}
 
-	/* read the actual packet data */
 	total_bytes = 0;
 	packet_len = get_long(&header->data[PI_NET_OFFSET_SIZE]);
 
+	/* shield against absurd packet lengths */
+	if (packet_len < 0 || packet_len > 0x100000L) {
+		/* we see an invalid packet */
+		next->flush(ps, PI_FLUSH_INPUT);
+		LOG ((PI_DBG_NET, PI_DBG_LVL_ERR, "NET RX (%i): Invalid packet length (%ld)\n", ps->sd, packet_len));
+		pi_buffer_free(header);
+		return pi_set_error(ps->sd, PI_ERR_PROT_BADPACKET);
+	}
+
+	/* read the actual packet data */
 	while (total_bytes < packet_len) {
 		bytes = next->read(ps, msg,
 			(size_t)(packet_len - total_bytes), flags);
