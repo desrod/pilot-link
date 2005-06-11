@@ -431,12 +431,6 @@ protocol_queue_build (pi_socket_t *ps, int autodetect)
 	pi_protocol_t	*prot,
 			*dev_prot,
 			*dev_cmd_prot;
-	unsigned char byte;
-	pi_buffer_t byte_buf = { 0 };
-
-	byte_buf.data = &byte;
-	byte_buf.allocated = 1;
-	byte_buf.used = 0;
 
 	LOG((PI_DBG_SOCK,PI_DBG_LVL_DEBUG,
 		"SOCK fd=%d auto=%d\n",ps->sd,autodetect));
@@ -451,54 +445,70 @@ protocol_queue_build (pi_socket_t *ps, int autodetect)
 		"SOCK proto=%d (DLP=%d)\n",protocol, PI_PF_DLP));
 
 	if (protocol == PI_PF_DLP && autodetect) {
-		if (dev_prot->read (ps, &byte_buf, 1, PI_MSG_PEEK) > 0) {
-			int found = 0;
-			while (!found) {
-				LOG((PI_DBG_SOCK, PI_DBG_LVL_INFO,
-				    "SOCK Peeked and found 0x%.2x\n", byte));
+		int	result,
+			skipped_bytes = 0;
+		pi_buffer_t
+			*detect_buf = pi_buffer_new(64);
 
-				switch (byte) {
-				case PI_SLP_SIG_BYTE1:
+		for (;;) {
+			/* peek one byte from the input sent by the device */
+			result = dev_prot->read (ps, detect_buf, 1, PI_MSG_PEEK);
+			if (result < 0)
+				break;
+
+			LOG((PI_DBG_SOCK, PI_DBG_LVL_INFO,
+				"SOCK Peeked and found 0x%.2x (bytes skipped so far: %d)\r",
+				detect_buf->data[0], skipped_bytes++));
+
+			/* detect PADP protocol */
+			if (detect_buf->data[0] == PI_SLP_SIG_BYTE1) {
+				pi_buffer_clear(detect_buf);
+				if (dev_prot->read(ps, detect_buf, 3, PI_MSG_PEEK) == 3 &&
+				    detect_buf->data[1] == PI_SLP_SIG_BYTE2 &&
+				    detect_buf->data[2] == PI_SLP_SIG_BYTE3)
+				{
 					protocol = PI_PF_PADP;
 					LOG((PI_DBG_SOCK, PI_DBG_LVL_INFO,
-						"using PADP/SLP protocol\n"));
-					found = 1;
-					break;
-				case PI_NET_SIG_BYTE1:
-				case 0x01:
-					protocol = PI_PF_NET;
-					LOG((PI_DBG_SOCK, PI_DBG_LVL_INFO,
-						"using NET protocol\n"));
-					found = 1;
-					break;
-				default:
-					/* here's the trick: the byte we read wasn't the one
-					   we were looking for, so we eliminate it with a
-					   normal read then do a PEEK again to catch the
-					   next one */
-					byte_buf.used = 0;
-					if (dev_prot->read (ps, &byte_buf, 1, 0) >= 0)
-					{
-						byte_buf.used = 0;
-						if (dev_prot->read (ps, &byte_buf, 1, PI_MSG_PEEK) < 0)
-						{
-							protocol = PI_PF_PADP;
-							LOG((PI_DBG_SOCK, PI_DBG_LVL_INFO,
-								"using Default protocol (PADP)\n"));
-							found = 1;
-						}
-					}
-					else
-					{
-						protocol = PI_PF_PADP;
-						LOG((PI_DBG_SOCK, PI_DBG_LVL_INFO,
-							"using Default protocol (PADP)\n"));
-						found = 1;
-					}
+						"\nusing PADP/SLP protocol\n"));
 					break;
 				}
 			}
+
+			/* detect NET protocol */
+			if (detect_buf->data[0] == 0x01) {
+				pi_buffer_clear(detect_buf);
+				if (dev_prot->read(ps, detect_buf, 7, PI_MSG_PEEK) == 7 &&
+				    detect_buf->data[1] == 0xff &&	/* txid */
+				    detect_buf->data[2] == 0x00 &&	/* length byte 0 */
+				    detect_buf->data[3] == 0x00 &&	/* length byte 1 */
+				    detect_buf->data[4] == 0x00 &&	/* length byte 2 */
+				    detect_buf->data[5] == 0x16 &&	/* length byte 3 */
+				    detect_buf->data[6] == 0x90)	/* PI_NET_SIG_BYTE1 */
+				{
+					protocol = PI_PF_NET;
+					LOG((PI_DBG_SOCK, PI_DBG_LVL_INFO,
+						"\nusing NET protocol\n"));
+					break;
+				}
+			}
+
+			/* eliminate the byte we just read */
+			result = dev_prot->read (ps, detect_buf, 1, 0);
+			if (result < 0)
+				break;
+			pi_buffer_clear(detect_buf);
 		}
+
+		pi_buffer_free(detect_buf);
+
+		if (result < 0) {
+			/* if there was an error (i.e. disconnect), temporarily fallback
+			 * on PADP protocol. In further releases, we should really make
+			 * this function return an error if there was a problem. -- fpillet
+			 */
+			protocol = PI_PF_PADP;
+		}
+
 	} else if (protocol == PI_PF_DLP) {
 		protocol = PI_PF_PADP;
 	} else {
