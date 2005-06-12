@@ -465,8 +465,14 @@ protocol_queue_build (pi_socket_t *ps, int autodetect)
 			/* detect PADP protocol */
 			if (detect_buf->data[0] == PI_SLP_SIG_BYTE1) {
 				pi_buffer_clear(detect_buf);
-				if (dev_prot->read(ps, detect_buf, 3, PI_MSG_PEEK) == 3 &&
-				    detect_buf->data[1] == PI_SLP_SIG_BYTE2 &&
+
+				result = dev_prot->read(ps, detect_buf, 3, PI_MSG_PEEK);
+				if (result < 0)
+					break;
+				if (result < 3)
+					continue;			/* wait for the whole header to be there */
+
+				if (detect_buf->data[1] == PI_SLP_SIG_BYTE2 &&
 				    detect_buf->data[2] == PI_SLP_SIG_BYTE3)
 				{
 					protocol = PI_PF_PADP;
@@ -479,8 +485,13 @@ protocol_queue_build (pi_socket_t *ps, int autodetect)
 			/* detect NET protocol */
 			if (detect_buf->data[0] == 0x01) {
 				pi_buffer_clear(detect_buf);
-				if (dev_prot->read(ps, detect_buf, 7, PI_MSG_PEEK) == 7 &&
-				    detect_buf->data[1] == 0xff &&	/* txid */
+
+				result = dev_prot->read(ps, detect_buf, 7, PI_MSG_PEEK);
+				if (result < 0)
+					break;
+				if (result < 7)
+					continue;		/* wait for the whole header to be there */
+				if (detect_buf->data[1] == 0xff &&	/* txid */
 				    detect_buf->data[2] == 0x00 &&	/* length byte 0 */
 				    detect_buf->data[3] == 0x00 &&	/* length byte 1 */
 				    detect_buf->data[4] == 0x00 &&	/* length byte 2 */
