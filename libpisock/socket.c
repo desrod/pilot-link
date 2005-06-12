@@ -492,7 +492,7 @@ protocol_queue_build (pi_socket_t *ps, int autodetect)
 			}
 
 			/* detect NET protocol */
-			if (detect_buf->data[0] == 0x01) {
+			else if (detect_buf->data[0] == 0x01) {
 				pi_buffer_clear(detect_buf);
 
 				result = dev_prot->read(ps, detect_buf, 7, PI_MSG_PEEK);

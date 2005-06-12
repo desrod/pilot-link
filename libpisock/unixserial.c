@@ -404,7 +404,6 @@ s_read_buf (pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags)
 	return rbuf;
 }
 
-
 /***********************************************************************
  *
  * Function:    s_read
@@ -427,7 +426,7 @@ s_read(pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags)
 	fd_set 	ready;
 
 	/* check whether we have at least partial data in store */
-	if (data->buf_size >= len) {
+	if (data->buf_size) {
 		rbuf = s_read_buf(ps, buf, len, flags);
 		if (rbuf < 0)
 			return rbuf;
