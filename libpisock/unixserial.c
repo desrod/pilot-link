@@ -423,7 +423,7 @@ s_read(pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags)
 	struct 	timeval t;
 	fd_set 	ready;
 
-	if (data->buf_size > 0 && flags != PI_MSG_PEEK)
+	if (data->buf_size >= len)
 		return s_read_buf(ps, buf, len);
 
 	/* If timeout == 0, wait forever for packet, otherwise wait till
@@ -446,11 +446,16 @@ s_read(pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags)
 			errno = ENOMEM;
 			return pi_set_error(ps->sd, PI_ERR_GENERIC_MEMORY);
 		}
+		if (data->buf_size) {
+			pi_buffer_append(buf, data->buf, data->buf_size);
+			len -= data->buf_size;
+			data->buf_size = 0;
+		}
 		rbuf = read(ps->sd, &buf->data[buf->used], len);
 		if (rbuf > 0) {
 			if (flags == PI_MSG_PEEK) {
-				memcpy(data->buf, buf->data + buf->used, rbuf);
-				data->buf_size = rbuf;
+				memcpy(data->buf + data->buf_size, buf->data + buf->used, rbuf);
+				data->buf_size += rbuf;
 			}
 			buf->used += rbuf;
 		}
