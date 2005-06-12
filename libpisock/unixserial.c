@@ -378,7 +378,7 @@ s_write(pi_socket_t *ps, const unsigned char *buf, size_t len,
  *
  ***********************************************************************/
 static size_t
-s_read_buf (pi_socket_t *ps, pi_buffer_t *buf, size_t len) 
+s_read_buf (pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags) 
 {
 	struct 	pi_serial_data *data =
 		(struct pi_serial_data *)ps->device->data;
@@ -392,10 +392,12 @@ s_read_buf (pi_socket_t *ps, pi_buffer_t *buf, size_t len)
 		return pi_set_error(ps->sd, PI_ERR_GENERIC_MEMORY);
 	}
 
-	data->buf_size -= rbuf;
-	if (data->buf_size > 0)
-		memmove(data->buf, &data->buf[rbuf], data->buf_size);
-	
+	if (flags != PI_MSG_PEEK) {
+		data->buf_size -= rbuf;
+		if (data->buf_size > 0)
+			memmove(data->buf, &data->buf[rbuf], data->buf_size);
+	}
+
 	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG,
 		"DEV RX Unix Serial Buffer Read %d bytes\n", rbuf));
 	
@@ -424,8 +426,13 @@ s_read(pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags)
 	struct 	timeval t;
 	fd_set 	ready;
 
-	if (data->buf_size >= len)
-		return s_read_buf(ps, buf, len);
+	/* check whether we have at least partial data in store */
+	if (data->buf_size >= len) {
+		rbuf = s_read_buf(ps, buf, len, flags);
+		len -= rbuf;
+		if (len == 0)
+			return rbuf;
+	}
 
 	/* If timeout == 0, wait forever for packet, otherwise wait till
 	   timeout milliseconds */
@@ -439,6 +446,7 @@ s_read(pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags)
 		if (select(ps->sd + 1, &ready, 0, 0, &t) == 0)
 			return pi_set_error(ps->sd, PI_ERR_SOCK_TIMEOUT);
 	}
+
 	/* If data is available in time, read it */
 	if (FD_ISSET(ps->sd, &ready)) {
 		if (flags == PI_MSG_PEEK && len > 256)
@@ -447,12 +455,6 @@ s_read(pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags)
 			errno = ENOMEM;
 			return pi_set_error(ps->sd, PI_ERR_GENERIC_MEMORY);
 		}
-		if (data->buf_size) {
-			pi_buffer_append(buf, data->buf, data->buf_size);
-			len -= data->buf_size;
-			rbuf = data->buf_size;
-			data->buf_size = 0;
-		}
 		bytes = read(ps->sd, &buf->data[buf->used], len);
 		if (bytes > 0) {
 			if (flags == PI_MSG_PEEK) {
@@ -460,6 +462,7 @@ s_read(pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags)
 				data->buf_size += bytes;
 			}
 			buf->used += bytes;
+			data->rx_bytes += bytes;
 			rbuf += bytes;
 		}
 	} else {
@@ -469,7 +472,6 @@ s_read(pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags)
 		errno = ETIMEDOUT;
 		return pi_set_error(ps->sd, PI_ERR_SOCK_TIMEOUT);
 	}
-	data->rx_bytes += rbuf;
 
 	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG,
 		"DEV RX Unix Serial Bytes: %d\n", rbuf));

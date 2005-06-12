@@ -477,6 +477,10 @@ protocol_queue_build (pi_socket_t *ps, int autodetect)
 					continue;	/* wait for the whole header to be there */
 				}
 
+				LOG((PI_DBG_SOCK, PI_DBG_LVL_DEBUG,
+					"\ntesting PADP bytes: 0x%02x 0x%02x 0x%02x\n",
+					detect_buf->data[0],detect_buf->data[1],detect_buf->data[2]));
+
 				if (detect_buf->data[1] == PI_SLP_SIG_BYTE2 &&
 				    detect_buf->data[2] == PI_SLP_SIG_BYTE3)
 				{
@@ -498,6 +502,11 @@ protocol_queue_build (pi_socket_t *ps, int autodetect)
 					new_byte = 0;
 					continue;	/* wait for the whole header to be there */
 				}
+
+				LOG((PI_DBG_SOCK, PI_DBG_LVL_DEBUG,
+					"\ntesting NET bytes: 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x\n",
+					detect_buf->data[0],detect_buf->data[1],detect_buf->data[2],detect_buf->data[3],
+					detect_buf->data[4],detect_buf->data[5],detect_buf->data[6]));
 
 				if (detect_buf->data[1] == 0xff &&	/* txid */
 				    detect_buf->data[2] == 0x00 &&	/* length byte 0 */
