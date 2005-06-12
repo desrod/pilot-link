@@ -65,6 +65,10 @@ void pi_usb_impl_init (struct pi_usb_impl *impl)
 	impl->read 		= u_read;
 	impl->flush		= u_flush;
 	impl->poll 		= u_poll;
+	impl->changebaud	= NULL;		/* we don't need this one on linuxusb
+						 * as USB serial adapters redirect to serial ports
+						 */
+	impl->control_request	= NULL;
 }
 
 
@@ -242,7 +246,7 @@ u_write(pi_socket_t *ps, unsigned char *buf, size_t len, int flags)
  *
  ***********************************************************************/
 static int
-u_read_buf (pi_socket_t *ps, pi_buffer_t *buf, size_t len) 
+u_read_buf (pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags) 
 {
 	struct 	pi_usb_data *data = (struct pi_usb_data *)ps->device->data;
 	size_t rbuf = data->buf_size;
@@ -254,11 +258,11 @@ u_read_buf (pi_socket_t *ps, pi_buffer_t *buf, size_t len)
 		errno = ENOMEM;
 		return pi_set_error(ps->sd, PI_ERR_GENERIC_MEMORY);
 	}
-	data->buf_size -= rbuf;
-
-	if (data->buf_size > 0)
-		memmove(data->buf, &data->buf[rbuf], data->buf_size);
-	
+	if (flags != PI_MSG_PEEK) {
+		data->buf_size -= rbuf;
+		if (data->buf_size > 0)
+			memmove(data->buf, &data->buf[rbuf], data->buf_size);
+	}
 	LOG((PI_DBG_DEV, PI_DBG_LVL_INFO,
 		"DEV RX USB Linux Buffer Read %d bytes\n", rbuf));
 	
@@ -286,8 +290,8 @@ u_read(pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags)
 	fd_set 	ready;
 
 	if (data->buf_size > 0)
-		return u_read_buf(ps, buf, len);
-	
+		return u_read_buf(ps, buf, len, flags);
+
 	if (pi_buffer_expect (buf, len) == NULL) {
 		errno = ENOMEM;
 		return pi_set_error(ps->sd, PI_ERR_GENERIC_MEMORY);
