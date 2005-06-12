@@ -478,7 +478,6 @@ protocol_queue_build (pi_socket_t *ps, int autodetect)
 			if (detect_buf->data[0] == 0x01) {
 				pi_buffer_clear(detect_buf);
 				if (dev_prot->read(ps, detect_buf, 7, PI_MSG_PEEK) == 7 &&
-				    detect_buf->data[1] == 0xff &&	/* txid */
 				    detect_buf->data[2] == 0x00 &&	/* length byte 0 */
 				    detect_buf->data[3] == 0x00 &&	/* length byte 1 */
 				    detect_buf->data[4] == 0x00 &&	/* length byte 2 */
@@ -1101,34 +1100,40 @@ pi_getsockopt(int pi_sd, int level, int option_name,
 		return PI_ERR_SOCK_INVALID;
 	}
 
+	/* handle getsockopt at socket level */
 	if (level == PI_LEVEL_SOCK) {
-		if (option_name == PI_SOCK_STATE) {
-			if (*option_len != sizeof (ps->state)) {
-				errno = EINVAL;
-				return PI_ERR_GENERIC_ARGUMENT;
-			}
-			memcpy (option_value, &ps->state, sizeof (ps->state));
-			*option_len = sizeof (ps->state);
-		} else if (option_name == PI_SOCK_HONOR_RX_TIMEOUT) {
-			if (*option_len != sizeof (ps->honor_rx_to)) {
-				errno = EINVAL;
-				return PI_ERR_GENERIC_ARGUMENT;
-			}
-			memcpy (option_value, &ps->honor_rx_to, sizeof (ps->honor_rx_to));
-			*option_len = sizeof (ps->honor_rx_to);
+		switch (option_name) {
+			case PI_SOCK_STATE:
+				if (*option_len != sizeof (ps->state))
+					goto argerr;
+				memcpy (option_value, &ps->state, sizeof (ps->state));
+				break;
+
+			case PI_SOCK_HONOR_RX_TIMEOUT:
+				if (*option_len != sizeof (ps->honor_rx_to))
+					goto argerr;
+				memcpy (option_value, &ps->honor_rx_to, sizeof (ps->honor_rx_to));
+				break;
+			
+			default:
+				goto argerr;
 		}
 		return 0;
 	}
 
+	/* find the protocol at the requested level and forward it the getsockopt request */
 	prot = protocol_queue_find (ps, level);
 
 	if (prot == NULL || prot->level != level) {
 		errno = EINVAL;
-		return PI_ERR_SOCK_INVALID;
+		return pi_set_error(pi_sd, PI_ERR_SOCK_INVALID);
 	}
 
-	return prot->getsockopt (ps, level, option_name,
-		option_value, option_len);
+	return prot->getsockopt (ps, level, option_name, option_value, option_len);
+
+argerr:
+	errno = EINVAL;
+	return pi_set_error(pi_sd, PI_ERR_GENERIC_ARGUMENT);
 }
 
 int
@@ -1143,23 +1148,28 @@ pi_setsockopt(int pi_sd, int level, int option_name,
 		return PI_ERR_SOCK_INVALID;
 	}
 
+	/* handle setsockopt at socket level */
 	if (level == PI_LEVEL_SOCK) {
-		if (option_name == PI_SOCK_STATE) {
-			if (*option_len != sizeof (ps->state)) {
-				errno = EINVAL;
-				return PI_ERR_GENERIC_ARGUMENT;
-			}
-			memcpy (&ps->state, option_value, sizeof (ps->state));
-		} else if (option_name == PI_SOCK_HONOR_RX_TIMEOUT) {
-			if (*option_len != sizeof (ps->honor_rx_to)) {
-				errno = EINVAL;
-				return PI_ERR_GENERIC_ARGUMENT;
-			}
-			memcpy (&ps->honor_rx_to, option_value, sizeof (ps->honor_rx_to));
+		switch (option_name) {
+			case PI_SOCK_STATE:
+				if (*option_len != sizeof (ps->state))
+					goto argerr;
+				memcpy (&ps->state, option_value, sizeof (ps->state));
+				break;
+
+			case PI_SOCK_HONOR_RX_TIMEOUT:
+				if (*option_len != sizeof (ps->honor_rx_to))
+					goto argerr;
+				memcpy (&ps->honor_rx_to, option_value, sizeof (ps->honor_rx_to));
+				break;
+
+			default:
+				goto argerr;
 		}
 		return 0;
 	}
 
+	/* find the protocol at the requested level and forward it the setsockopt request */
 	prot = protocol_queue_find (ps, level);
 
 	if (prot == NULL || prot->level != level) {
@@ -1167,8 +1177,11 @@ pi_setsockopt(int pi_sd, int level, int option_name,
 		return PI_ERR_SOCK_INVALID;
 	}
 
-	return prot->setsockopt (ps, level, option_name,
-		option_value, option_len);
+	return prot->setsockopt (ps, level, option_name, option_value, option_len);
+
+argerr:
+	errno = EINVAL;
+	return pi_set_error(pi_sd, PI_ERR_GENERIC_ARGUMENT);
 }
 
 /***********************************************************************
