@@ -8017,7 +8017,6 @@ static PyObject *_wrap_dlp_GetSysDateTime_(PyObject *self, PyObject *args) {
     time_t *arg2 = (time_t *) 0 ;
     PI_ERR result;
     time_t time2 ;
-    time_t time20 ;
     PyObject * obj0 = 0 ;
     
     {
@@ -13062,7 +13061,7 @@ SWIGEXPORT(void) SWIG_init(void) {
         PyDict_SetItemString(d,"DLP_BUF_SIZE", SWIG_From_int((int)(0xffff))); 
     }
     {
-        PyDict_SetItemString(d,"sysFileTSlotDriver", SWIG_From_char((char)('libs'))); 
+        PyDict_SetItemString(d,"sysFileTSlotDriver", SWIG_From_char((char)("libs"))); 
     }
     {
         PyDict_SetItemString(d,"PI_DLP_OFFSET_CMD", SWIG_From_int((int)(0))); 
