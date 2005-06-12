@@ -132,7 +132,7 @@ static int s_poll(pi_socket_t *ps, int timeout);
 static speed_t calcrate(speed_t baudrate);
 void pi_serial_impl_init (struct pi_serial_impl *impl);
 static size_t s_read_buf (pi_socket_t *ps, pi_buffer_t *buf,
-	size_t len);
+	size_t len, int flags);
 static int s_flush(pi_socket_t *ps, int flags);
 
 #ifdef sleeping_beauty
