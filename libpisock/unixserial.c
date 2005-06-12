@@ -131,8 +131,6 @@ static int s_poll(pi_socket_t *ps, int timeout);
 
 static speed_t calcrate(speed_t baudrate);
 void pi_serial_impl_init (struct pi_serial_impl *impl);
-static size_t s_read_buf (pi_socket_t *ps, pi_buffer_t *buf,
-	size_t len, int flags);
 static int s_flush(pi_socket_t *ps, int flags);
 
 #ifdef sleeping_beauty
@@ -380,7 +378,7 @@ s_write(pi_socket_t *ps, const unsigned char *buf, size_t len,
  *
  ***********************************************************************/
 static size_t
-s_read_buf (pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags) 
+s_read_buf (pi_socket_t *ps, pi_buffer_t *buf, size_t len) 
 {
 	struct 	pi_serial_data *data =
 		(struct pi_serial_data *)ps->device->data;
@@ -394,13 +392,11 @@ s_read_buf (pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags)
 		return pi_set_error(ps->sd, PI_ERR_GENERIC_MEMORY);
 	}
 
-	if (flags != PI_MSG_PEEK) {
-		data->buf_size -= rbuf;
-		if (data->buf_size > 0)
-			memmove(data->buf, &data->buf[rbuf], data->buf_size);
-	}
+	data->buf_size -= rbuf;
+	if (data->buf_size > 0)
+		memmove(data->buf, &data->buf[rbuf], data->buf_size);
 	
-	LOG((PI_DBG_DEV, PI_DBG_LVL_INFO,
+	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG,
 		"DEV RX Unix Serial Buffer Read %d bytes\n", rbuf));
 	
 	return rbuf;
@@ -427,9 +423,9 @@ s_read(pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags)
 	struct 	timeval t;
 	fd_set 	ready;
 
-	if (data->buf_size > 0)
-		return s_read_buf(ps, buf, len, flags);
-	
+	if (data->buf_size > 0 && flags != PI_MSG_PEEK)
+		return s_read_buf(ps, buf, len);
+
 	/* If timeout == 0, wait forever for packet, otherwise wait till
 	   timeout milliseconds */
 	FD_ZERO(&ready);
@@ -467,7 +463,7 @@ s_read(pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags)
 	}
 	data->rx_bytes += rbuf;
 
-	LOG((PI_DBG_DEV, PI_DBG_LVL_INFO,
+	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG,
 		"DEV RX Unix Serial Bytes: %d\n", rbuf));
 
 	return rbuf;
