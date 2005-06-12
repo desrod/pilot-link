@@ -744,7 +744,7 @@ env_dbgcheck (void)
 	}
 
 	/* log file name */
-	if (getenv("PILOT_LOG")) {
+	if (getenv("PILOT_LOG") && atoi(getenv("PILOT_LOG"))) {
 		const char *logfile;
 
 		logfile = getenv("PILOT_LOGFILE");
