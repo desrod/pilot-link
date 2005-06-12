@@ -74,26 +74,28 @@ extern "C" {
 #define PI_DLP_VERSION_MAJOR 1			/**< Major DLP protocol version we report to the device. */
 #define PI_DLP_VERSION_MINOR 4			/**< Minor DLP protocol version we report to the device. */
 
-#define DLP_BUF_SIZE 0xffff			/**< Kept for compatibility, applications should avoid using this value. */
-
-#define sysFileTSlotDriver	'libs'		/**< file type for slot driver libraries */
+#ifndef SWIG
+	#define DLP_BUF_SIZE 0xffff		/**< Kept for compatibility, applications should avoid using this value. */
+#endif /* !SWIG */
 
 /** @name Internal definitions used to assemble DLP calls */
 /*@{*/
-#define PI_DLP_OFFSET_CMD  0
-#define PI_DLP_OFFSET_ARGC 1
-#define PI_DLP_OFFSET_ARGV 2
+#ifndef SWIG
+	#define PI_DLP_OFFSET_CMD  0
+	#define PI_DLP_OFFSET_ARGC 1
+	#define PI_DLP_OFFSET_ARGV 2
 
-#define PI_DLP_ARG_TINY_LEN  0x000000FFL
-#define PI_DLP_ARG_SHORT_LEN 0x0000FFFFL
-#define PI_DLP_ARG_LONG_LEN  0xFFFFFFFFL
+	#define PI_DLP_ARG_TINY_LEN  0x000000FFL
+	#define PI_DLP_ARG_SHORT_LEN 0x0000FFFFL
+	#define PI_DLP_ARG_LONG_LEN  0xFFFFFFFFL
 
-#define PI_DLP_ARG_FLAG_TINY  0x00
-#define PI_DLP_ARG_FLAG_SHORT 0x80
-#define PI_DLP_ARG_FLAG_LONG  0x40
-#define PI_DLP_ARG_FLAG_MASK  0xC0
+	#define PI_DLP_ARG_FLAG_TINY  0x00
+	#define PI_DLP_ARG_FLAG_SHORT 0x80
+	#define PI_DLP_ARG_FLAG_LONG  0x40
+	#define PI_DLP_ARG_FLAG_MASK  0xC0
 
-#define PI_DLP_ARG_FIRST_ID 0x20
+	#define PI_DLP_ARG_FIRST_ID 0x20
+#endif /* !SWIG */
 /*@}*/
 
 /** @name VFS definitions */
@@ -523,7 +525,7 @@ enum dlpEndStatus {
 	/** @brief VFS file iterator constants */
 	enum dlpVFSFileIteratorConstants {
 		vfsIteratorStart	= 0,		/** < Indicates that iterator is beginning */
-		vfsIteratorStop		= ((unsigned long)0xffffffffL) /**< Indicate that iterator has gone through all items */
+		vfsIteratorStop		= -1		/**< Indicate that iterator has gone through all items */
 	};
 /*@}*/
 
