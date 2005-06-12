@@ -399,7 +399,7 @@ s_read_buf (pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags)
 	}
 
 	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG,
-		"DEV RX Unix Serial Buffer Read %d bytes\n", rbuf));
+		"DEV RX Unix serial buffer read %d bytes\n", rbuf));
 	
 	return rbuf;
 }
@@ -429,6 +429,8 @@ s_read(pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags)
 	/* check whether we have at least partial data in store */
 	if (data->buf_size >= len) {
 		rbuf = s_read_buf(ps, buf, len, flags);
+		if (rbuf < 0)
+			return rbuf;
 		len -= rbuf;
 		if (len == 0)
 			return rbuf;
@@ -464,6 +466,9 @@ s_read(pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags)
 			buf->used += bytes;
 			data->rx_bytes += bytes;
 			rbuf += bytes;
+
+			LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG,
+				"DEV RX Unix serial read %d bytes\n", bytes));
 		}
 	} else {
 		LOG((PI_DBG_DEV, PI_DBG_LVL_WARN,
@@ -472,9 +477,6 @@ s_read(pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags)
 		errno = ETIMEDOUT;
 		return pi_set_error(ps->sd, PI_ERR_SOCK_TIMEOUT);
 	}
-
-	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG,
-		"DEV RX Unix Serial Bytes: %d\n", rbuf));
 
 	return rbuf;
 }
