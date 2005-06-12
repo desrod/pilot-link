@@ -455,6 +455,8 @@ protocol_queue_build (pi_socket_t *ps, int autodetect)
 			result = dev_prot->read (ps, detect_buf, 1, PI_MSG_PEEK);
 			if (result < 0)
 				break;
+			if (result == 0)
+				continue;
 
 			LOG((PI_DBG_SOCK, PI_DBG_LVL_INFO,
 				"SOCK Peeked and found 0x%.2x (bytes skipped so far: %d)\r",
@@ -478,6 +480,7 @@ protocol_queue_build (pi_socket_t *ps, int autodetect)
 			if (detect_buf->data[0] == 0x01) {
 				pi_buffer_clear(detect_buf);
 				if (dev_prot->read(ps, detect_buf, 7, PI_MSG_PEEK) == 7 &&
+				    detect_buf->data[1] == 0xff &&	/* txid */
 				    detect_buf->data[2] == 0x00 &&	/* length byte 0 */
 				    detect_buf->data[3] == 0x00 &&	/* length byte 1 */
 				    detect_buf->data[4] == 0x00 &&	/* length byte 2 */
