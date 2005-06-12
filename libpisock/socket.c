@@ -446,7 +446,8 @@ protocol_queue_build (pi_socket_t *ps, int autodetect)
 
 	if (protocol == PI_PF_DLP && autodetect) {
 		int	result,
-			skipped_bytes = 0;
+			skipped_bytes = 0,
+			new_byte = 1;
 		pi_buffer_t
 			*detect_buf = pi_buffer_new(64);
 
@@ -458,9 +459,11 @@ protocol_queue_build (pi_socket_t *ps, int autodetect)
 			if (result == 0)
 				continue;
 
-			LOG((PI_DBG_SOCK, PI_DBG_LVL_INFO,
-				"SOCK Peeked and found 0x%.2x (bytes skipped so far: %d)\r",
-				detect_buf->data[0], skipped_bytes++));
+			if (new_byte) {
+				LOG((PI_DBG_SOCK, PI_DBG_LVL_INFO,
+					"SOCK Peeked and found 0x%.2x (bytes skipped so far: %d)\r",
+					detect_buf->data[0], skipped_bytes++));
+			}
 
 			/* detect PADP protocol */
 			if (detect_buf->data[0] == PI_SLP_SIG_BYTE1) {
@@ -469,8 +472,10 @@ protocol_queue_build (pi_socket_t *ps, int autodetect)
 				result = dev_prot->read(ps, detect_buf, 3, PI_MSG_PEEK);
 				if (result < 0)
 					break;
-				if (result < 3)
-					continue;			/* wait for the whole header to be there */
+				if (result < 3) {
+					new_byte = 0;
+					continue;	/* wait for the whole header to be there */
+				}
 
 				if (detect_buf->data[1] == PI_SLP_SIG_BYTE2 &&
 				    detect_buf->data[2] == PI_SLP_SIG_BYTE3)
@@ -489,8 +494,11 @@ protocol_queue_build (pi_socket_t *ps, int autodetect)
 				result = dev_prot->read(ps, detect_buf, 7, PI_MSG_PEEK);
 				if (result < 0)
 					break;
-				if (result < 7)
-					continue;		/* wait for the whole header to be there */
+				if (result < 7) {
+					new_byte = 0;
+					continue;	/* wait for the whole header to be there */
+				}
+
 				if (detect_buf->data[1] == 0xff &&	/* txid */
 				    detect_buf->data[2] == 0x00 &&	/* length byte 0 */
 				    detect_buf->data[3] == 0x00 &&	/* length byte 1 */
@@ -505,11 +513,12 @@ protocol_queue_build (pi_socket_t *ps, int autodetect)
 				}
 			}
 
-			/* eliminate the byte we just read */
+			/* eliminate one byte from the input, trying to frame a proper header */
 			result = dev_prot->read (ps, detect_buf, 1, 0);
 			if (result < 0)
 				break;
 			pi_buffer_clear(detect_buf);
+			new_byte = 1;
 		}
 
 		pi_buffer_free(detect_buf);
