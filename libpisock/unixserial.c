@@ -417,7 +417,8 @@ s_read_buf (pi_socket_t *ps, pi_buffer_t *buf, size_t len)
 static ssize_t
 s_read(pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags)
 {
-	ssize_t rbuf;
+	ssize_t rbuf = 0,
+		bytes;
 	struct 	pi_serial_data *data =
 		(struct pi_serial_data *)ps->device->data;
 	struct 	timeval t;
@@ -449,15 +450,17 @@ s_read(pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags)
 		if (data->buf_size) {
 			pi_buffer_append(buf, data->buf, data->buf_size);
 			len -= data->buf_size;
+			rbuf = data->buf_size;
 			data->buf_size = 0;
 		}
-		rbuf = read(ps->sd, &buf->data[buf->used], len);
-		if (rbuf > 0) {
+		bytes = read(ps->sd, &buf->data[buf->used], len);
+		if (bytes > 0) {
 			if (flags == PI_MSG_PEEK) {
-				memcpy(data->buf + data->buf_size, buf->data + buf->used, rbuf);
-				data->buf_size += rbuf;
+				memcpy(data->buf + data->buf_size, buf->data + buf->used, bytes);
+				data->buf_size += bytes;
 			}
-			buf->used += rbuf;
+			buf->used += bytes;
+			rbuf += bytes;
 		}
 	} else {
 		LOG((PI_DBG_DEV, PI_DBG_LVL_WARN,
