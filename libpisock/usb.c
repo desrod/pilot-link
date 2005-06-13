@@ -217,7 +217,11 @@ pi_usb_device (int type)
 			dev->close 		= pi_usb_close;
 
 			memset(data, 0, sizeof(struct pi_usb_data));
+			data->rate 		= (speed_t)-1;
+			data->establishrate 	= (speed_t)-1;
+			data->establishhighrate = -1;
 			pi_usb_impl_init (&data->impl);
+
 			dev->data 		= data;
 		}
 	}
@@ -241,11 +245,41 @@ pi_usb_connect(pi_socket_t *ps, struct sockaddr *addr, size_t addrlen)
 {
 	struct 	pi_usb_data *data = (pi_usb_data_t *)ps->device->data;
 	struct 	pi_sockaddr *pa = (struct pi_sockaddr *) addr;
-	int result;
+	int	result;
+	size_t	size;
+
+	if (ps->type == PI_SOCK_STREAM) {
+		if (ps->protocol == PI_PF_SYS) {
+			data->establishrate = data->rate = 57600;
+		} else {
+			if (data->establishrate == (speed_t) -1) {
+				/* Default PADP connection rate */
+				char *rate_env = getenv("PILOTRATE");
+				if (rate_env) {
+					/* Establish high rate */
+					if (rate_env[0] == 'H') {
+						data->establishrate =
+							atoi(rate_env + 1);
+						data->establishhighrate = -1;
+					} else {
+						data->establishrate =
+							atoi(rate_env);
+						data->establishhighrate = 0;
+					}
+				} else {
+					data->establishrate = 9600;
+				}
+			}
+			/* Mandatory CMP connection rate */
+			data->rate = 9600;
+		}
+	} else if (ps->type == PI_SOCK_RAW) {
+		data->establishrate = data->rate = 57600;
+	}
 
 	result = data->impl.open(ps, pa, addrlen);
 	if (result < 0)
-		return result;
+		goto fail;
 
 	ps->raddr 	= malloc(addrlen);
 	memcpy(ps->raddr, addr, addrlen);
@@ -257,18 +291,26 @@ pi_usb_connect(pi_socket_t *ps, struct sockaddr *addr, size_t addrlen)
 	if (ps->type == PI_SOCK_STREAM) {
 		switch (ps->cmd) {
 			case PI_CMD_CMP:
+				if ((result = cmp_tx_handshake(ps)) < 0)
+					goto fail;
+				size = sizeof(data->rate);
+				pi_getsockopt(ps->sd, PI_LEVEL_CMP, PI_CMP_BAUD,
+							  &data->rate, &size);
+				if ((result = data->impl.changebaud(ps)) < 0)
+					goto fail;
 				break;
 
 			case PI_CMD_NET:
 				if ((result = net_tx_handshake(ps)) < 0)
-					return result;
+					goto fail;
 				break;
 		}
 	}
 	ps->state = PI_SOCK_CONIN;
 	ps->command = 0;
 
-	return 0;
+fail:
+	return (result < 0) ? result : 0;
 }
 
 /***********************************************************************
@@ -288,6 +330,34 @@ pi_usb_bind(pi_socket_t *ps, struct sockaddr *addr, size_t addrlen)
 	struct 	pi_usb_data *data = (pi_usb_data_t *)ps->device->data;
 	struct 	pi_sockaddr *pa = (struct pi_sockaddr *) addr;
 	int result;
+
+	/* this rate stuff is only useful on platforms where USB-serial adapters
+	 * connect through the USB layer, not through a serial tty
+	 */
+	if (ps->type == PI_SOCK_STREAM) {
+		if (data->establishrate == (speed_t) -1) {
+			/* Default PADP connection rate */
+			char *rate_env = getenv("PILOTRATE");
+			if (rate_env) {
+				/* Establish high rate */
+				if (rate_env[0] == 'H') {
+					data->establishrate =
+						atoi(rate_env + 1);
+					data->establishhighrate = -1;
+				} else {
+					data->establishrate =
+						atoi(rate_env);
+					data->establishhighrate = 0;
+				}
+			} else {
+				data->establishrate = 9600;
+			}
+		}
+		data->rate = 9600;	/* Mandatory CMP connection rate */
+	} else if (ps->type == PI_SOCK_RAW) {
+		/* Mandatory SysPkt connection rate */
+		data->establishrate = data->rate = 57600;
+	}
 
 	result = data->impl.open(ps, pa, addrlen);
 	if (result < 0)
@@ -336,8 +406,9 @@ static int
 pi_usb_accept(pi_socket_t *ps, struct sockaddr *addr, size_t *addrlen)
 {
 	struct 	pi_usb_data *data = (pi_usb_data_t *)ps->device->data;
-	int result;
-	int timeout;
+	int	result,
+		timeout;
+	size_t	size;
 
 	data->timeout = timeout = ps->accept_to * 1000;
 
@@ -359,25 +430,46 @@ pi_usb_accept(pi_socket_t *ps, struct sockaddr *addr, size_t *addrlen)
 
 	result = data->impl.poll(ps, timeout);
 	if (result <= 0)
-		goto fail;
+		return result;
 
 	pi_socket_init(ps);
 
 	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s: %d, prot: 0x%x, type: 0x%x, cmd: 0x%x.\n", __FILE__, __LINE__, ps->protocol, ps->type, ps->cmd));
 	if (ps->type == PI_SOCK_STREAM) {
+		struct timeval tv;
+
 		switch (ps->cmd) {
 			case PI_CMD_CMP:
 				LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s: %d, cmp rx.\n", __FILE__, __LINE__));
-				if ((result = cmp_rx_handshake(ps, 57600, 1)) < 0)
-					goto fail;
+				if ((result = cmp_rx_handshake(ps, data->establishrate, data->establishhighrate)) < 0)
+					return result;
+
+				size = sizeof(data->rate);
+				pi_getsockopt(ps->sd, PI_LEVEL_CMP, PI_CMP_BAUD,
+							  &data->rate, &size);
+
+				if (data->rate != data->establishrate &&
+				    data->impl.changebaud != NULL) {
+				    	/* reconfigure the port to match the negotiated speed */
+					if ((result = data->impl.changebaud(ps)) < 0)
+						return result;
+
+					/* handheld needs some time to reconfigure its port */
+					tv.tv_sec 	= 0;
+					tv.tv_usec 	= 50000;
+					select(0, 0, 0, 0, &tv);
+				}
 				break;
+
 			case PI_CMD_NET:
 				LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s: %d, net rx.\n", __FILE__, __LINE__));
 				if ((result = net_rx_handshake(ps)) < 0)
-					goto fail;
+					return result;
 				break;
+
 			default:
 				LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "%s: %d, unknown rx %x.\n", __FILE__, __LINE__,ps->cmd));
+				break;
 		}
 		ps->dlprecord = 0;
 	}
@@ -385,11 +477,7 @@ pi_usb_accept(pi_socket_t *ps, struct sockaddr *addr, size_t *addrlen)
 	data->timeout = 0;
 	ps->command = 0;
 	ps->state = PI_SOCK_CONAC;
-
 	return ps->sd;
-
-fail:
-	return result;
 }
 
 /***********************************************************************
@@ -410,20 +498,40 @@ pi_usb_getsockopt(pi_socket_t *ps, int level, int option_name,
 	pi_usb_data_t *data = (pi_usb_data_t *)ps->device->data;
 
 	switch (option_name) {
+		case PI_DEV_RATE:
+			if (*option_len != sizeof (data->rate))
+				goto fail;
+			memcpy (option_value, &data->rate, sizeof (data->rate));
+			break;
+
+		case PI_DEV_ESTRATE:
+			if (*option_len != sizeof (data->establishrate))
+				goto fail;
+			memcpy (option_value, &data->establishrate, 
+					sizeof (data->establishrate));
+			break;
+
+		case PI_DEV_HIGHRATE:
+			if (*option_len != sizeof (data->establishhighrate))
+				goto fail;
+			memcpy (option_value, &data->establishhighrate,
+					sizeof (data->establishhighrate));
+			break;
+
 		case PI_DEV_TIMEOUT:
-			if (*option_len != sizeof (data->timeout)) {
-				errno = EINVAL;
-				return pi_set_error(ps->sd, PI_ERR_GENERIC_ARGUMENT);
-			}
+			if (*option_len != sizeof (data->timeout))
+				goto fail;
 			memcpy (option_value, &data->timeout,
 				sizeof (data->timeout));
-			*option_len = sizeof (data->timeout);
 			break;
 	}
 
 	return 0;
-}
 
+fail:
+	errno = EINVAL;
+	return pi_set_error(ps->sd, PI_ERR_GENERIC_ARGUMENT);
+}
 
 /***********************************************************************
  *
@@ -443,17 +551,33 @@ pi_usb_setsockopt(pi_socket_t *ps, int level, int option_name,
 	pi_usb_data_t *data = (pi_usb_data_t *)ps->device->data;
 
 	switch (option_name) {
+		case PI_DEV_ESTRATE:
+			if (*option_len != sizeof (data->establishrate))
+				goto fail;
+			memcpy (&data->establishrate, option_value,
+					sizeof (data->establishrate));
+			break;
+
+		case PI_DEV_HIGHRATE:
+			if (*option_len != sizeof (data->establishhighrate))
+				goto fail;
+			memcpy (&data->establishhighrate, option_value,
+					sizeof (data->establishhighrate));
+			break;
+
 		case PI_DEV_TIMEOUT:
-			if (*option_len != sizeof (data->timeout)) {
-				errno = EINVAL;
-				return pi_set_error(ps->sd, PI_ERR_GENERIC_ARGUMENT);
-			}
+			if (*option_len != sizeof (data->timeout))
+			 	goto fail;
 			memcpy (&data->timeout, option_value,
 				sizeof (data->timeout));
 			break;
 	}
 
 	return 0;
+
+fail:
+	errno = EINVAL;
+	return pi_set_error(ps->sd, PI_ERR_GENERIC_ARGUMENT);
 }
 
 
