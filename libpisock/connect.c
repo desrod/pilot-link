@@ -84,8 +84,7 @@ pilot_connect(const char *port)
 	}
 
 	if (isatty(fileno(stdout))) {
-		printf("\n   Listening to port: %s\n\n"
-			"   Listening for incoming connection... ",
+		printf("\n   Listening for incoming connection on %s... ",
 			port);
 		fflush(stdout);
 	}
