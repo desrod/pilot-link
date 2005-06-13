@@ -93,7 +93,7 @@
 #ifdef PI_DEBUG
     #define DEBUG_USB 1
 #endif
-/*#undef DEBUG_USB*/        /* comment out to leave debug enabled */
+#undef DEBUG_USB        /* comment out to leave debug enabled */
 
 /* Macro to log more information when debugging USB. Note that this is for
  * my own use, mostly, as the info logged is primarily being used to
@@ -142,8 +142,11 @@ typedef struct usb_connection_t
 	int ref_count;
 
 	IOUSBInterfaceInterface182 **interface;
-	IOUSBDeviceInterface **device;		/* kept for CLOSE_NOTIFICATION */
+	IOUSBDeviceInterface **device;
 	io_object_t device_notification;	/* for device removal */
+
+	unsigned short vendorID;		/* connected USB device vendor ID */
+	unsigned short productID;		/* connected USB device product ID */
 
 	int opened;				/* set to != 0 if the connection is opened */
 	int read_pending;			/* set to 1 when a prime_read() has been issued and the read_completion() has not been called yet */
@@ -212,8 +215,70 @@ typedef struct
 	} connections[8];
 } palm_ext_connection_info;
 
+/* PalmConnect USB specific information
+ * Extracted from Linux kl5kusb105 Copyright (C) 2001 Utz-Uwe Haus <haus@uuhaus.de>
+ * Using documentation Utz-Uwe provided
+ */
+enum {
+	/* Values for KLSI_GET/SET_COMM_DESCRIPTOR */
+	KLSI_BAUD_115200 = 0,
+	KLSI_BAUD_57600  = 1,
+ 	KLSI_BAUD_38400  = 2,
+	KLSI_BAUD_28800  = 3,
+	KLSI_BAUD_19200  = 4,
+	KLSI_BAUD_14400  = 5,
+	KLSI_BAUD_9600   = 6,
+	KLSI_BAUD_7200   = 7,
+	KLSI_BAUD_4800   = 8,
+	KLSI_BAUD_2400   = 9,
+	KLSI_BAUD_1200   = 10,
+	KLSI_BAUD_600    = 11,
+	KLSI_BAUD_230400 = 12,
+	
+	KLSI_PARITY_NONE = 0,
+	KLSI_PARITY_ODD  = 1,
+	KLSI_PARITY_EVEN = 2,
+	KLSI_PARITY_MARK = 3,
+	
+	KLSI_STOPBITS_0 = 0,
+	KLSI_STOPBITS_1 = 1,
+	KLSI_STOPBITS_2 = 2,
+	
+	/* Handshake values for KLSI_GET_HANDSHAKE_LINES */
+	KLSI_GETHS_DCD = 0x80,		/* Data Carrier Detect */
+	KLSI_GETHS_RI  = 0x40,		/* Ring Indicator */
+	KLSI_GETHS_DSR = 0x20,		/* Data Set Ready */
+	KLSI_GETHS_CTS = 0x10,		/* Clear To Send */
+	
+	/* Handshake values for KLST_SET_HANDSHAKE_LINES */
+	KLSI_SETHS_RTS = 0x02,		/* Ready To Send */
+	KLSI_SETHS_DTR = 0x01,		/* Data Terminal Ready */
+	
+	/* Flow control values */
+	KLSI_FLOW_USE_RTS = 0x01,	/* use RTS/CTS */
+	KLSI_FLOW_USE_DSR = 0x02,	/* use DSR/CD */
+	KLSI_FLOW_USE_XON = 0x04	/* use XON/XOFF */
+};
+
+#define KLSI_GET_COMM_DESCRIPTOR		0
+#define KLSI_SET_COMM_DESCRIPTOR		1
+#define KLSI_GET_HANDSHAKE_LINES		2
+#define KLSI_SET_HANDSHAKE_LINES		3
+#define KLSI_GET_FLOWCONTROL			4
+#define	KLSI_SET_FLOWCONTROL			5
+
+typedef struct
+{
+	unsigned char	DCBLength	__attribute__((packed));
+	unsigned char	BaudRateIndex	__attribute__((packed));
+	unsigned char	DataBits	__attribute__((packed));
+	unsigned char	Parity		__attribute__((packed));
+	unsigned char	StopBits	__attribute__((packed));
+} klsi_port_settings;
+
 /* Some vendor and product codes we use */
 #define	VENDOR_SONY			0x054c
+#define	VENDOR_KEYSPAN			0x06cd
 #define	VENDOR_HANDSPRING		0x082d
 #define	VENDOR_PALMONE			0x0830
 #define	VENDOR_TAPWAVE			0x12ef
@@ -242,6 +307,10 @@ acceptedDevices[] = {
 	{0x054c, 0x0144},	/* Sony UX */
 	{0x054c, 0x0169},	/* Sony TJ */
 
+	/* Keyspan serial-to-USB PDA adapter */
+	{0x06cd, 0x0103},	/* ID sent by an adapter which firmware has not been uploaded yet */
+	{0x06cd, 0x0104},	/* ID sent by an adapter with proper firmware uploaded */
+
 	/* AlphaSmart */
 	{0x081e, 0xdf00},   /* Dana */
 
@@ -265,12 +334,12 @@ acceptedDevices[] = {
 	{0x0830, 0x0052},
 	{0x0830, 0x0053},
 	{0x0830, 0x0060},	/* Tungsten series, Zire 71 */
-	{0x0830, 0x0061},	/* Zire 31, 72, T5 */
+	{0x0830, 0x0061},	/* Zire 31, 72, T5, LifeDrive */
 	{0x0830, 0x0062},
 	{0x0830, 0x0063},
 	{0x0830, 0x0070},	/* Zire */
 	{0x0830, 0x0071},
-	{0x0830, 0x0080},	/* serial adapter */
+	{0x0830, 0x0080},	/* palmOne serial adapter (actually, a Keyspan adapter) */
 	{0x0830, 0x0099},
 	{0x0830, 0x0100},
 
@@ -295,7 +364,7 @@ acceptedDevices[] = {
 /* local prototypes */
 static int change_refcount(usb_connection_t *c, int increment);
 static void stop_listening(usb_connection_t *c);
-static IOReturn control_request (IOUSBDeviceInterface **dev, UInt8 requestType, UInt8 request, void *pData, UInt16 maxReplyLength);
+static IOReturn control_request (IOUSBDeviceInterface **dev, UInt8 requestType, UInt8 request, UInt16 value, UInt16 index, void *pData, UInt16 maxReplyLength);
 static void device_added (void *refCon, io_iterator_t iterator);
 static void device_notification (usb_connection_t *connexion, io_service_t service, natural_t messageType, void *messageArgument);
 static void read_completion (usb_connection_t *connexion, IOReturn result, void *arg0);
@@ -306,6 +375,7 @@ static int prime_read (usb_connection_t *connexion);
 static IOReturn	read_visor_connection_information (IOUSBDeviceInterface **dev, int *port_number, int *input_pipe, int *output_pipe);
 static IOReturn	decode_generic_connection_information(palm_ext_connection_info *ci, int *port_number, int *input_pipe, int *output_pipe);
 static IOReturn	read_generic_connection_information (IOUSBDeviceInterface **dev, int *port_number, int *input_pipe_number, int *output_pipe_number);
+static IOReturn klsi_set_portspeed(IOUSBDeviceInterface **dev, int speed);
 
 
 /***************************************************************************/
@@ -519,7 +589,7 @@ stop_listening(usb_connection_t *c)
 	}
 
 	if (was_open && c->device)
-		control_request (c->device, 0xc2, GENERIC_CLOSE_NOTIFICATION, NULL, 0x12);
+		control_request (c->device, 0xc2, GENERIC_CLOSE_NOTIFICATION, 0, 0, NULL, 0x12);
 
 	if (c->interface)
 	{
@@ -717,11 +787,14 @@ device_added (void *refCon, io_iterator_t iterator)
 			IOObjectRelease (ioDevice);
 			break;
 		}
+
 		memset(c, 0, sizeof(usb_connection_t));
 		c->auto_read_size = AUTO_READ_SIZE;
 		c->device = dev;
 		c->ref_count = 1;
 		c->opened = 1;
+		c->vendorID = vendor;
+		c->productID = product;
 
 		/* try to locate the pipes we need to talk to the device */
 		kr = find_interfaces(c, dev, vendor, product, port_number, input_pipe_number, output_pipe_number, pipe_info_retrieved);
@@ -826,7 +899,10 @@ configure_device(IOUSBDeviceInterface **di,
 
 			kr = (*di)->SetConfiguration(di, confDesc->bConfigurationValue);
 			if (kr == kIOReturnSuccess)
+			{
+				LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: successfully set configuration %d\n",(int)confDesc->bConfigurationValue));
 				break;
+			}
 
 			LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "darwinusb: unable to set configuration to value %d (err=%08x numConf=%d)\n",
 				(int)confDesc->bConfigurationValue, kr, (int)numConf));
@@ -837,11 +913,13 @@ configure_device(IOUSBDeviceInterface **di,
 
 	if (vendor == VENDOR_PALMONE && product == PRODUCT_PALMCONNECT_USB)
 	{
-		/* PalmConnect USB is a serial <-> USB adapter. Even though it shows up
-		 * as a USB device, it really requires talking using a serial protocol
-		 */
-		*pipe_info_retrieved = 0;
-		return kIOReturnSuccess;
+		kr = klsi_set_portspeed(di, 9600);
+		if (kr == kIOReturnSuccess)
+			kr = control_request(di, 0x40, KLSI_SET_HANDSHAKE_LINES, KLSI_SETHS_RTS | KLSI_SETHS_DTR, 0, NULL, 0);
+		*input_pipe_number = 0x01;
+		*output_pipe_number = 0x02;
+		*pipe_info_retrieved = 1;
+		return kr;
 	}
 
 	/* Try reading pipe information. Most handhelds support a control request that returns info about the ports and
@@ -862,7 +940,7 @@ configure_device(IOUSBDeviceInterface **di,
 	if (vendor != VENDOR_TAPWAVE)
 	{
 		unsigned char ba[2];
-		kr = control_request (di, 0xc2, GENERIC_REQUEST_BYTES_AVAILABLE, &ba[0] , 2);
+		kr = control_request (di, 0xc2, GENERIC_REQUEST_BYTES_AVAILABLE, 0, 0, &ba[0] , 2);
 		if (kr != kIOReturnSuccess)
 			LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "darwinusb: GENERIC_REQUEST_BYTES_AVAILABLE failed (err=%08x)\n", kr));
 		LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "GENERIC_REQUEST_BYTES_AVAILABLE returns 0x%02x%02x\n", ba[0], ba[1]));
@@ -892,6 +970,7 @@ find_interfaces(usb_connection_t *c,
 	IOCFPlugInInterface **plugInInterface = NULL;
 	UInt8 direction, number, transferType, interval;
 	UInt16 maxPacketSize;
+	int pair_index;
 
 	request.bInterfaceClass = kIOUSBFindInterfaceDontCare;
 	request.bInterfaceSubClass = kIOUSBFindInterfaceDontCare;
@@ -958,7 +1037,7 @@ find_interfaces(usb_connection_t *c,
 			int preambleFound = 0;
 			for (reqTimeout = 100; reqTimeout <= 300 && !preambleFound; reqTimeout += 100)
 			{
-				LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: checking for pipe_info sent by device with timeout %dms\n"));
+				LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: checking for pipe_info sent by device with timeout %dms\n",reqTimeout));
 				for (pipeRef = 1; pipeRef <= intfNumEndpoints; pipeRef++)
 				{
 					kr = (*c->interface)->GetPipeProperties (c->interface, pipeRef, &direction, &number,
@@ -997,7 +1076,9 @@ find_interfaces(usb_connection_t *c,
 		/* Locate the pipes we're going to use for reading and writing.
 		 * We have four chances to find the right pipes:
 		 * 1. If we got a hint from the device with input/output pipes, we try this one first.
-		 * 2. If we didn't get both pipes, try using the port number hint
+		 * 2. If we didn't get both pipes, try using the port number hint. There is at least one recent
+		 *    device (LifeDrive) on which the port_number hint is actually an endpoint pair index.
+		 *    The code below tries to cope with that.
 		 * 3. If we're still missing one or two pipes, give a second try looking for pipes with a
 		 *    64 bytes transfer size
 		 * 4. Finally of this failed, forget about the transfer size and take the first ones that
@@ -1007,9 +1088,12 @@ find_interfaces(usb_connection_t *c,
 		{
 			LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: pass %d looking for pipes, port_number=0x%02x, input_pipe_number=0x%02x, output_pipe_number=0x%02x\n",
 				pass, port_number, input_pipe_number, output_pipe_number));
+			c->in_pipe_ref = 0;
+			c->out_pipe_ref = 0;
 
 			for (pipeRef = 1; pipeRef <= intfNumEndpoints; pipeRef++)
 			{
+				UInt8 prev_dir = direction;
 				kr = (*c->interface)->GetPipeProperties (c->interface, pipeRef, &direction, &number,
 									  &transferType, &maxPacketSize, &interval);
 				if (kr != kIOReturnSuccess)
@@ -1018,17 +1102,17 @@ find_interfaces(usb_connection_t *c,
 				}
 				else
 				{
-					LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: pipe %d: direction=0x%02x, number=0x%02x, transferType=0x%02x, maxPacketSize=%d, interval=0x%02x\n",
-						pipeRef,(int)direction,(int)number,(int)transferType,(int)maxPacketSize,(int)interval));
-
+					pair_index = (pipeRef > 1 && direction == prev_dir) ? (pair_index + 1) : 1;
+					LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: pipe %d: direction=0x%02x, number=0x%02x, transferType=0x%02x, maxPacketSize=%d, interval=0x%02x, pair_index=%d\n",
+						pipeRef,(int)direction,(int)number,(int)transferType,(int)maxPacketSize,(int)interval,pair_index));
 					if (c->in_pipe_ref == 0 &&
 					    direction == kUSBIn &&
 					    transferType == kUSBBulk)
 					{
 						if ((pass == 1 && input_pipe_number != 0xff && number == input_pipe_number) ||
-							(pass == 2 && port_number != 0xff && number == port_number) ||
-							(pass == 3 && maxPacketSize == 64) ||
-							 pass == 4)
+						    (pass == 2 && port_number != 0xff && number == port_number) ||
+						    (pass == 3 && ((port_number != 0xff && pair_index == port_number) || (port_number == 0xff && maxPacketSize == 64))) ||
+						     pass == 4)
 							c->in_pipe_ref = pipeRef;
 					}
 					else if (c->out_pipe_ref == 0 &&
@@ -1036,9 +1120,9 @@ find_interfaces(usb_connection_t *c,
 							 transferType == kUSBBulk)
 					{
 						if ((pass == 1 && output_pipe_number != 0xff && number == output_pipe_number) ||
-							(pass == 2 && port_number != 0xff && number == port_number) ||
-							(pass == 3 && maxPacketSize == 64) ||
-							 pass == 4)
+						    (pass == 2 && port_number != 0xff && number == port_number) ||
+						    (pass == 3 && ((port_number != 0xff && pair_index == port_number) || (port_number == 0xff && maxPacketSize == 64))) ||
+						     pass == 4)
 							c->out_pipe_ref = pipeRef;
 					}
 				}
@@ -1049,8 +1133,6 @@ find_interfaces(usb_connection_t *c,
 			return kIOReturnSuccess;
 
 		LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: couldn't find any suitable pipes pair on this interface\n"));
-
-		/* if we didn't find two suitable pipes, close the interface */
 		(*c->interface)->USBInterfaceClose (c->interface);
 		(*c->interface)->Release (c->interface);
 		c->interface = NULL;
@@ -1062,7 +1144,7 @@ find_interfaces(usb_connection_t *c,
 }
 
 static IOReturn
-control_request(IOUSBDeviceInterface **dev, UInt8 requestType, UInt8 request, void *pData, UInt16 maxReplyLength)
+control_request(IOUSBDeviceInterface **dev, UInt8 requestType, UInt8 request, UInt16 value, UInt16 index, void *pData, UInt16 maxReplyLength)
 {
 	IOReturn kr;
 	IOUSBDevRequest req;
@@ -1073,15 +1155,15 @@ control_request(IOUSBDeviceInterface **dev, UInt8 requestType, UInt8 request, vo
 
 	req.bmRequestType = requestType;			// 0xc2=kUSBIn, kUSBVendor, kUSBEndpoint
 	req.bRequest = request;
-	req.wValue = 0;
-	req.wIndex = 0;
+	req.wValue = value;
+	req.wIndex = index;
 	req.wLength = maxReplyLength;
 	req.pData = pReply;
 	req.wLenDone = 0;
 
 	kr = (*dev)->DeviceRequest (dev, &req);
 
-	ULOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: control_request(0x%02x) wLenDone=%d kr=0x%08lx\n", (int)request, req.wLenDone, kr));
+	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: control_request(0x%02x) wLenDone=%d kr=0x%08lx\n", (int)request, req.wLenDone, kr));
 
 	if (pReply && !pData)
 		free (pReply);
@@ -1097,7 +1179,7 @@ read_visor_connection_information (IOUSBDeviceInterface **dev, int *port_number,
 	visor_connection_info ci;
 
 	memset(&ci, 0, sizeof(ci));
-	kr = control_request (dev, 0xc2, VISOR_GET_CONNECTION_INFORMATION, &ci, sizeof(ci));
+	kr = control_request (dev, 0xc2, VISOR_GET_CONNECTION_INFORMATION, 0, 0, &ci, sizeof(ci));
 	if (kr != kIOReturnSuccess)
 	{
 		LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "darwinusb: VISOR_GET_CONNECTION_INFORMATION failed (err=%08x)\n", kr));
@@ -1109,6 +1191,7 @@ read_visor_connection_information (IOUSBDeviceInterface **dev, int *port_number,
 		if (ci.num_ports > 8)
 			ci.num_ports = 8;
 		LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: VISOR_GET_CONNECTION_INFORMATION, num_ports=%d\n", ci.num_ports));
+		kr = kIOReturnNotReady;
 		for (i=0; i < ci.num_ports; i++)
 		{
 			char *function_str;
@@ -1124,6 +1207,7 @@ read_visor_connection_information (IOUSBDeviceInterface **dev, int *port_number,
 					function_str="HOTSYNC";
 					if (port_number)
 						*port_number = ci.connections[i].port;
+					kr = kIOReturnSuccess;
 					break;
 				case VISOR_FUNCTION_CONSOLE:
 					function_str="CONSOLE";
@@ -1195,13 +1279,38 @@ read_generic_connection_information (IOUSBDeviceInterface **dev, int *port_numbe
 	palm_ext_connection_info ci;
 
 	memset(&ci, 0, sizeof(ci));
-	kr = control_request (dev, 0xc2, PALM_GET_EXT_CONNECTION_INFORMATION, &ci, sizeof(ci));
+	kr = control_request (dev, 0xc2, PALM_GET_EXT_CONNECTION_INFORMATION, 0, 0, &ci, sizeof(ci));
 	if (kr != kIOReturnSuccess)
 	{
 		LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "darwinusb: PALM_GET_EXT_CONNECTION_INFORMATION failed (err=%08x)\n", kr));
 		return kr;
 	}
 	return decode_generic_connection_information(&ci, port_number, input_pipe, output_pipe);
+}
+
+static IOReturn
+klsi_set_portspeed(IOUSBDeviceInterface **dev, int speed)
+{
+	/* set the comms speed for a KLSI serial adapter (PalmConnect USB) */
+	klsi_port_settings settings = {5, KLSI_BAUD_9600, 8, KLSI_PARITY_NONE, KLSI_STOPBITS_1};
+	switch (speed)
+	{
+		case 230400:	settings.BaudRateIndex = KLSI_BAUD_230400;	break;
+		case 115200:	settings.BaudRateIndex = KLSI_BAUD_115200;	break;
+		case 57600:	settings.BaudRateIndex = KLSI_BAUD_57600;	break;
+		case 38400:	settings.BaudRateIndex = KLSI_BAUD_38400;	break;
+		case 28800:	settings.BaudRateIndex = KLSI_BAUD_28800;	break;
+		case 19200:	settings.BaudRateIndex = KLSI_BAUD_19200;	break;
+		case 14400:	settings.BaudRateIndex = KLSI_BAUD_14400;	break;
+		case 9600:	settings.BaudRateIndex = KLSI_BAUD_9600;	break;
+		case 7200:	settings.BaudRateIndex = KLSI_BAUD_7200;	break;
+		case 4800:	settings.BaudRateIndex = KLSI_BAUD_4800;	break;
+		case 2400:	settings.BaudRateIndex = KLSI_BAUD_2400;	break;
+		case 1200:	settings.BaudRateIndex = KLSI_BAUD_1200;	break;
+		case 600:	settings.BaudRateIndex = KLSI_BAUD_600;		break;
+		default:							break;
+	}
+	return control_request(dev, 0x40, KLSI_SET_COMM_DESCRIPTOR, 0, 0, &settings, 5);
 }
 
 static void
@@ -1448,6 +1557,15 @@ u_poll(struct pi_socket *ps, int timeout)
 		if (c == NULL)
 			return PI_ERR_SOCK_DISCONNECTED;
 	}
+	
+	if (c->vendorID == VENDOR_PALMONE && c->productID == PRODUCT_PALMCONNECT_USB)
+	{
+		/* when working with a PalmConnect USB, make sure we use the right speed 
+		 * then let the adapter send us data
+		 */
+		if (klsi_set_portspeed(c->device, ((pi_usb_data_t *)ps->device->data)->rate) == kIOReturnSuccess)
+			control_request(c->device, 0x40, KLSI_SET_FLOWCONTROL, 0, 0, NULL, 0);
+	}
 
 	pthread_mutex_lock(&c->read_queue_mutex);
 	int available = c->read_queue_used;
@@ -1581,6 +1699,8 @@ u_read(struct pi_socket *ps, pi_buffer_t *buf, size_t len, int flags)
 
 		if (len)
 		{
+			//if (flags != PI_MSG_PEEK)
+			//	dumpdata(c->read_queue, len);
 			pi_buffer_append (buf, c->read_queue, len);
 
 			if (flags != PI_MSG_PEEK)
@@ -1615,16 +1735,37 @@ u_read(struct pi_socket *ps, pi_buffer_t *buf, size_t len, int flags)
 	return len;
 }
 
+static int
+u_changebaud(pi_socket_t *ps)
+{
+	/* Change the baud rate. This is only useful for serial-to-USB adapters,
+	 * as these adapters need to know which rate we use to talk to the device.
+	 * We currently only support the PalmConnect USB adapter.
+	 */
+	pi_usb_data_t *data = (pi_usb_data_t *)ps->device->data;
+	usb_connection_t *c = data->ref;
+	if (c == NULL)
+		return PI_ERR_SOCK_DISCONNECTED;
+
+	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: u_changebaud(ps=%p, c=%p, rate=%d)\n", ps, c, data->rate));
+
+	if (c->vendorID == VENDOR_PALMONE && c->productID == PRODUCT_PALMCONNECT_USB)
+		return klsi_set_portspeed(c->device, data->rate);
+
+	return 0;
+}
+
 void
 pi_usb_impl_init (struct pi_usb_impl *impl)
 {
-	impl->open  = u_open;
-	impl->close = u_close;
-	impl->write = u_write;
-	impl->read  = u_read;
-	impl->flush = u_flush;
-	impl->poll  = u_poll;
-	impl->control_request = NULL;   /* that is, until we factor out common code */
+	impl->open		= u_open;
+	impl->close		= u_close;
+	impl->write		= u_write;
+	impl->read		= u_read;
+	impl->flush		= u_flush;
+	impl->poll		= u_poll;
+	impl->changebaud	= u_changebaud;
+	impl->control_request	= NULL;   /* that is, until we factor out common code */
 }
 
 /* vi: set ts=4 sw=4 sts=4 noexpandtab: cin */
