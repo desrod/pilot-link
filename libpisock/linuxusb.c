@@ -129,7 +129,7 @@ static int
 u_close(pi_socket_t *ps)
 {
 	LOG((PI_DBG_DEV, PI_DBG_LVL_INFO,
-		"DEV CLOSE USB Linux fd: %d\n", ps->sd));
+		"DEV CLOSE linuxusb fd: %d\n", ps->sd));
 
 	return close(ps->sd);
 }
@@ -168,12 +168,13 @@ u_poll(pi_socket_t *ps, int timeout)
 	if (!FD_ISSET(ps->sd, &ready)) {
 		/* otherwise throw out any current packet and return */
 		LOG((PI_DBG_DEV, PI_DBG_LVL_WARN,
-			 "DEV POLL USB Linux timeout\n"));
+			 "DEV POLL linuxusb timeout\n"));
 		errno = ETIMEDOUT;
 		return pi_set_error(ps->sd, PI_ERR_SOCK_TIMEOUT);
 	}
-	LOG((PI_DBG_DEV, PI_DBG_LVL_INFO,
-		"DEV POLL USB Linux Found data on fd: %d\n", ps->sd));
+
+	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG,
+		"DEV POLL linuxusb found data on fd: %d\n", ps->sd));
 
 	return 1;
 }
@@ -227,8 +228,8 @@ u_write(pi_socket_t *ps, unsigned char *buf, size_t len, int flags)
 		total -= nwrote;
 	}
 
-	LOG((PI_DBG_DEV, PI_DBG_LVL_INFO,
-		"DEV TX USB Linux Bytes: %d\n", len));
+	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG,
+		"DEV TX linuxusb wrote %d bytes\n", len));
 
 	return len;
 }
@@ -258,13 +259,15 @@ u_read_buf (pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags)
 		errno = ENOMEM;
 		return pi_set_error(ps->sd, PI_ERR_GENERIC_MEMORY);
 	}
+
 	if (flags != PI_MSG_PEEK) {
 		data->buf_size -= rbuf;
 		if (data->buf_size > 0)
 			memmove(data->buf, &data->buf[rbuf], data->buf_size);
 	}
-	LOG((PI_DBG_DEV, PI_DBG_LVL_INFO,
-		"DEV RX USB Linux Buffer Read %d bytes\n", rbuf));
+
+	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG,
+		"DEV RX linuxusb read %d bytes from read-ahead buffer\n", rbuf));
 	
 	return rbuf;
 }
@@ -284,17 +287,20 @@ u_read_buf (pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags)
 static int
 u_read(pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags)
 {
-	size_t rbuf;
+	ssize_t rbuf = 0,
+		bytes;
 	struct 	pi_usb_data *data = (struct pi_usb_data *)ps->device->data;
 	struct 	timeval t;
 	fd_set 	ready;
 
-	if (data->buf_size > 0)
-		return u_read_buf(ps, buf, len, flags);
-
-	if (pi_buffer_expect (buf, len) == NULL) {
-		errno = ENOMEM;
-		return pi_set_error(ps->sd, PI_ERR_GENERIC_MEMORY);
+	/* check whether we have at least partial data in store */
+	if (data->buf_size) {
+		rbuf = u_read_buf(ps, buf, len, flags);
+		if (rbuf < 0)
+			return rbuf;
+		len -= rbuf;
+		if (len == 0)
+			return rbuf;
 	}
 
 	/* If timeout == 0, wait forever for packet, otherwise wait till
@@ -308,32 +314,42 @@ u_read(pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags)
 		t.tv_usec 	= (data->timeout % 1000) * 1000;
 		if (select(ps->sd + 1, &ready, 0, 0, &t) == 0) {
 			LOG((PI_DBG_DEV, PI_DBG_LVL_WARN,
-				"DEV RX USB Linux timeout\n"));
+				"DEV RX linuxusb timeout\n"));
 			errno = ETIMEDOUT;
 			return pi_set_error(ps->sd, PI_ERR_SOCK_TIMEOUT);
 		}
 	}
+
 	/* If data is available in time, read it */
 	if (FD_ISSET(ps->sd, &ready)) {
 		if (flags == PI_MSG_PEEK && len > 256)
 			len = 256;
-		rbuf = read(ps->sd, buf->data + buf->used, len);
-		if (rbuf > 0) {
-			buf->used += len;
+
+		if (pi_buffer_expect (buf, len) == NULL) {
+			errno = ENOMEM;
+			return pi_set_error(ps->sd, PI_ERR_GENERIC_MEMORY);
+		}
+
+		bytes = read(ps->sd, buf->data + buf->used, len);
+
+		if (bytes > 0) {
 			if (flags == PI_MSG_PEEK) {
-				memcpy(data->buf, buf, rbuf);
-				data->buf_size = rbuf;
+				memcpy(data->buf + data->buf_size, buf->data + buf->used, bytes);
+				data->buf_size += bytes;
 			}
+			buf->used += bytes;
+			data->rx_bytes += bytes;
+			rbuf += bytes;
+
+			LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG,
+				"DEV RX linuxusb read %d bytes\n", bytes));
 		}
 	} else {
 		LOG((PI_DBG_DEV, PI_DBG_LVL_WARN,
-			"DEV RX USB Linux timeout\n"));
+			"DEV RX linuxusb timeout\n"));
 		errno = ETIMEDOUT;
 		return pi_set_error(ps->sd, PI_ERR_SOCK_TIMEOUT);
 	}
-
-	LOG((PI_DBG_DEV, PI_DBG_LVL_INFO,
-		"DEV RX USB Linux Bytes: %d\n", rbuf));
 
 	return rbuf;
 }
@@ -373,6 +389,9 @@ u_flush(pi_socket_t *ps, int flags)
 				;
 			fcntl(ps->sd, F_SETFL, 0);
 		}
+
+		LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG,
+			"DEV FLUSH linuxusb flushed input buffer\n"));
 	}
 	return 0;
 }
