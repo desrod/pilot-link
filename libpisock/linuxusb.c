@@ -338,7 +338,6 @@ u_read(pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags)
 				data->buf_size += bytes;
 			}
 			buf->used += bytes;
-			data->rx_bytes += bytes;
 			rbuf += bytes;
 
 			LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG,
