@@ -39,7 +39,7 @@ extern "C" {
 			 pi_buffer_t *buf, size_t expect, int flags));
 		int (*flush) PI_ARGS((pi_socket_t *ps, int flags));
 		int (*poll) PI_ARGS((pi_socket_t *ps, int timeout));
-
+		int (*changebaud) PI_ARGS((pi_socket_t *ps));
 		int (*control_request) PI_ARGS((struct pi_usb_data *usb_data,
 			int request_type, int request, int value, int reqindex,
 			void *data, int size, int timeout));
@@ -57,14 +57,19 @@ extern "C" {
 	} pi_usb_dev_t;
 
 	typedef struct pi_usb_data {
-		struct pi_usb_impl impl;
-		struct pi_usb_dev dev;
+		struct pi_usb_impl impl;	/**< structure containing ptr to the actual implementations for the current platform */
+		struct pi_usb_dev dev;		/**< device structure */
 
-		unsigned char buf[256];		/* temp. buffer to hold incoming data when peeking at init time*/
+		unsigned char buf[256];		/**< temp. buffer to hold incoming data when peeking at init time*/
 		size_t buf_size;
-		
+
 		/* I/O options */
-		void *ref;
+		void *ref;			/**< Used by the platform implementation to keep a ptr to additional private data */
+
+		/* Baud rate info (for USB serial adapters on platforms where they connect through the USB layer, like Darwin) */
+		int rate;			/**< Current port baud rate */
+		int establishrate;		/**< Baud rate to use after link is established */
+		int establishhighrate;		/**< Boolean: try to establish rate higher than the device publishes*/
 
 		int timeout;
 	} pi_usb_data_t;
