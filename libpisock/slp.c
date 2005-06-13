@@ -283,8 +283,7 @@ slp_rx(pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags)
 		state,
 		expect 		= 0,
 		packet_len,
-		bytes,
-		total_bytes;
+		bytes;
 	pi_protocol_t	*prot,
 			*next;
 	pi_buffer_t *slp_buf;
@@ -306,8 +305,7 @@ slp_rx(pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags)
 	}
 
 	state 		= 0;
-	packet_len 	= 0;
-	total_bytes 	= 0;
+	packet_len	= 0;
 
 	for (;;) {
 		switch (state) {		
@@ -320,22 +318,18 @@ slp_rx(pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags)
 			b1 = (0xff & (int)slp_buf->data[PI_SLP_OFFSET_SIG1]);
 			b2 = (0xff & (int)slp_buf->data[PI_SLP_OFFSET_SIG2]);
 			b3 = (0xff & (int)slp_buf->data[PI_SLP_OFFSET_SIG3]);
-			if (b1 == PI_SLP_SIG_BYTE1
-			    && b2 == PI_SLP_SIG_BYTE2
-			    && b3 == PI_SLP_SIG_BYTE3) {
+			if (b1 == PI_SLP_SIG_BYTE1 && b2 == PI_SLP_SIG_BYTE2 && b3 == PI_SLP_SIG_BYTE3) {
 				state++;
 				expect = PI_SLP_HEADER_LEN - 3;
 			} else {
-				slp_buf->data[PI_SLP_OFFSET_SIG1] =
-					slp_buf->data[PI_SLP_OFFSET_SIG2];
-				slp_buf->data[PI_SLP_OFFSET_SIG2] =
-					slp_buf->data[PI_SLP_OFFSET_SIG3];
+				slp_buf->data[PI_SLP_OFFSET_SIG1] = slp_buf->data[PI_SLP_OFFSET_SIG2];
+				slp_buf->data[PI_SLP_OFFSET_SIG2] = slp_buf->data[PI_SLP_OFFSET_SIG3];
 				expect = 1;
-				slp_buf->used--;
+				slp_buf->used = 2;
 				LOG((PI_DBG_SLP, PI_DBG_LVL_WARN,
 					"SLP RX Unexpected signature"
 					" 0x%.2x 0x%.2x 0x%.2x\n",
-				    b1, b2, b3));
+					b1, b2, b3));
 			}
 			break;
 
@@ -370,12 +364,9 @@ slp_rx(pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags)
 
 		case 4:
 			/* that should be the whole packet. */
-			checksum = crc16(slp_buf->data,
-			 PI_SLP_HEADER_LEN + packet_len);
-			checksum_packet =
-			 get_short(&slp_buf->data[PI_SLP_HEADER_LEN + packet_len]);
-			if (get_byte(&slp_buf->data[PI_SLP_OFFSET_TYPE]) ==
-					PI_SLP_TYPE_LOOP) {
+			checksum = crc16(slp_buf->data, PI_SLP_HEADER_LEN + packet_len);
+			checksum_packet = get_short(&slp_buf->data[PI_SLP_HEADER_LEN + packet_len]);
+			if (get_byte(&slp_buf->data[PI_SLP_OFFSET_TYPE]) == PI_SLP_TYPE_LOOP) {
 				/* Adjust because every tenth loopback
 				   packet has a bogus check sum */
 				if (checksum != checksum_packet)
@@ -391,19 +382,13 @@ slp_rx(pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags)
 			}
 			
 			/* Track the info so getsockopt will work */
-			data->last_dest =
-			 get_byte(&slp_buf->data[PI_SLP_OFFSET_DEST]);
-			data->last_src 	=
-			 get_byte(&slp_buf->data[PI_SLP_OFFSET_SRC]);
-			data->last_type =
-			 get_byte(&slp_buf->data[PI_SLP_OFFSET_TYPE]);
-			data->last_txid =
-			 get_byte(&slp_buf->data[PI_SLP_OFFSET_TXID]);
+			data->last_dest = get_byte(&slp_buf->data[PI_SLP_OFFSET_DEST]);
+			data->last_src 	= get_byte(&slp_buf->data[PI_SLP_OFFSET_SRC]);
+			data->last_type = get_byte(&slp_buf->data[PI_SLP_OFFSET_TYPE]);
+			data->last_txid = get_byte(&slp_buf->data[PI_SLP_OFFSET_TXID]);
 
-			CHECK(PI_DBG_SLP, PI_DBG_LVL_INFO,
-				slp_dump_header(slp_buf->data, 0));
-			CHECK(PI_DBG_SLP, PI_DBG_LVL_DEBUG,
-				slp_dump(slp_buf->data));
+			CHECK(PI_DBG_SLP, PI_DBG_LVL_INFO, slp_dump_header(slp_buf->data, 0));
+			CHECK(PI_DBG_SLP, PI_DBG_LVL_DEBUG, slp_dump(slp_buf->data));
 
 			if (pi_buffer_append (buf, &slp_buf->data[PI_SLP_HEADER_LEN], packet_len) == NULL) {
 				errno = ENOMEM;
@@ -424,7 +409,6 @@ slp_rx(pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags)
 				pi_buffer_free (slp_buf);
 				return bytes;
 			}
-			total_bytes += bytes;
 			expect -= bytes;
 		} while (expect > 0);
 	}
