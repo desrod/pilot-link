@@ -687,7 +687,7 @@ if test "$GCC" = "yes" -a "$set_compile_warnings" != "no"; then
 	CFLAGS="$CFLAGS \
 		-std=gnu99 -g -Wshadow -Wall -W -Waggregate-return -Wcast-align 	\
 		-Wcast-qual -Wnested-externs -Wpointer-arith -Wundef -Winline	\
-		-Wbad-function-cast -pedantic -O0 -fmudflap"
+		-Wbad-function-cast -pedantic -O0"
 
 fi
 
@@ -735,7 +735,6 @@ AC_OUTPUT([
 	bindings/Tcl/Makefile
 	doc/Makefile
 	doc/man/Makefile
-	doc/man/addresses.1
 	doc/man/debugsh.1
 	doc/man/dlpsh.1
 	doc/man/hinotes.1
@@ -749,7 +748,6 @@ AC_OUTPUT([
 	doc/man/install-todos.1
 	doc/man/install-user.1
 	doc/man/memos.1
-	doc/man/money2qif.1
 	doc/man/pi-csd.1
 	doc/man/pi-getram.1
 	doc/man/pi-getrom.1

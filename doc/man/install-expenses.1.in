@@ -1,11 +1,10 @@
-.\" -*- coding: us-ascii -*-
-.TH install-expenses 1 "@VERSION@"  
+.TH install\-expenses "1"  "Copyright 1996\-2005 FSF" "pilot\-link @VERSION@" 
 .SH NAME
-install-expenses \- Install an expense record from various parameters and arguments passed at connection time. 
+install\-expenses \- Install an expense record from various parameters and arguments passed at connection time. 
 .SH SECTION
-pilot-link: Conduits
+pilot\-link: Userland Conduits
 .SH SYNOPSIS
-\fIinstall-expenses\fR
+\fIinstall\-expenses\fR
 [\fB\-p\fR|\fB\-\-port\fR <\fBport\fR>]
 [\fB\-\-version\fR] [\fB\-q\fR|\fB\-\-quiet\fR]
 [\fB\-?\fR|\fB\-\-help\fR] [\fB\-\-usage\fR]
@@ -19,15 +18,15 @@ pilot-link: Conduits
 [\fB\-c\fR|\fB\-\-category\fR \fBSTRING\fR]
 [\fB\-\-replace\fR]
 .SH DESCRIPTION
-\fIinstall-expenses\fR allows a Palm handheld with the
+\fIinstall\-expenses\fR allows a Palm handheld with the
 Expense application to have expense records synchronized to it from
 the commandline. You can pass any of the fields (except categories,
 currently)
-to \fIinstall-expenses\fR and create new expense
+to \fIinstall\-expenses\fR and create new expense
 records on
 your Palm handheld.
 .SH OPTIONS
-.SS "INSTALL-EXPENSES OPTIONS"
+.SS "INSTALL\-EXPENSES OPTIONS"
 \fB\-t\fR,
 \fB\-\-ptype\fR \fBSTRING\fR
 .RS 
@@ -64,7 +63,7 @@ Palm device for full details on amount types.
 \fB\-V\fR,
 \fB\-\-vendor\fR \fBSTRING\fR
 .RS 
-Add entries to the "Vendor" field. These are free-form
+Add entries to the "Vendor" field. These are free\-form
 values, and
 can be the name of a restaurant, an airline, or any other text
 value you
@@ -85,7 +84,7 @@ additional people, you would put five (5) here, a numeric value.
 .RS 
 Add entries to the "City" field in the expense record. These
 are
-free-form values, and can be the name of the location, city, or
+free\-form values, and can be the name of the location, city, or
 town
 that the expense record occured in.
 .RE
@@ -93,7 +92,7 @@ that the expense record occured in.
 \fB\-n\fR,
 \fB\-\-note\fR \fBSTRING\fR
 .RS 
-Add a "Note" entry to the expense record. These are free-form
+Add a "Note" entry to the expense record. These are free\-form
 values, and can be some notes related to the expense entry.
 .RE
 .PP
@@ -120,10 +119,10 @@ since
 .RS 
 Use device file <\fBport\fR> to communicate
 with the Palm handheld. If this is not specified,
-\fIinstall-expenses\fR will look for the
+\fIinstall\-expenses\fR will look for the
 \fB$PILOTPORT\fR environment variable. If neither
 are
-found or supplied, \fIinstall-expenses\fR will
+found or supplied, \fIinstall\-expenses\fR will
 print the usage information.
 .RE
 .PP
@@ -134,14 +133,14 @@ Suppress 'Hit HotSync button' message
 .PP
 \fB\-\-version\fR
 .RS 
-Display version information for \fIinstall-expenses\fR
+Display version information for \fIinstall\-expenses\fR
 and exit without connecting. 
 .RE
 .SS "HELP OPTIONS"
 \fB\-h\fR, \fB\-\-help\fR
 .RS 
 Display the help synopsis for
-\fIinstall-expenses\fR and exit without
+\fIinstall\-expenses\fR and exit without
 connecting.
 .RE
 .PP
@@ -152,30 +151,30 @@ Display a brief usage message and exit without connecting.
 .SH USAGE
 The program will connect to the Palm handheld, and install entries
 into the Expense application based on values passed to
-\fIinstall-expenses\fR arguments.
+\fIinstall\-expenses\fR arguments.
 .SH EXAMPLE
-\fIinstall-expenses\fR
-\fI-p\fR \fB/dev/pilot\fR
-\fI-c\fR Unfiled
-\fI-t\fR Cash \fI-e\fR Meals
-\fI-a\fR 10.00 \fI-V\fR McDonalds
-\fI-g\fR 21 \fI-l\fR "San Francisco"
-\fI-N\fR "This is a note"
+\fIinstall\-expenses\fR
+\fI\-p\fR \fB/dev/pilot\fR
+\fI\-c\fR Unfiled
+\fI\-t\fR Cash \fI\-e\fR Meals
+\fI\-a\fR 10.00 \fI\-V\fR McDonalds
+\fI\-g\fR 21 \fI\-l\fR "San Francisco"
+\fI\-N\fR "This is a note"
 .PP
 Installs a new expense; you are recording having 21 guests at
 McDonalds
 in the city of San Francisco for a meal which cost 10.00 units of your
 default currency and you added a simple note. The expense will take
-the default date - today.
+the default date \- today.
 .SH AUTHOR
-\fIinstall-expenses\fR was written by community
+\fIinstall\-expenses\fR was written by community
 authors, the original author is unknown.
 .PP
 This manual page was written by Neil Williams
-<linux@codehelp.co.uk>
+linux@codehelp.co.uk
 .SH "REPORTING BUGS"
 Report bugs at:
-\fIhttp://bugs.pilot-link.org\fR
+\fIhttp://bugs.pilot\-link.org\fR
 .SH COPYRIGHT
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License as
@@ -189,8 +188,8 @@ General Public License for more details.
 .PP
 You should have received a copy of the GNU General Public
 License along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 
+Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111\-1307 
 USA
 .SH "SEE ALSO"
-\fIread-expenses\fR (1),
-\fIpilot-link\fR (7).
+\fIread\-expenses\fR (1),
+\fIpilot\-link\fR(7).

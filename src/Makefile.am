@@ -31,7 +31,6 @@ bin_PROGRAMS = 		\
 	install-todo	\
 	install-user	\
 	memos		\
-	money2qif	\
 	pi-csd		\
 	pi-getram	\
 	pi-getrom	\
@@ -164,13 +163,6 @@ install_user_LDADD = 		\
 memos_SOURCES = 		\
 	memos.c
 memos_LDADD = 			\
-	libpiuserland.la	\
-	$(POPT_LIBS)		\
-	$(top_builddir)/libpisock/libpisock.la
-
-money2qif_SOURCES = 		\
-	money2qif.c
-money2qif_LDADD = 		\
 	libpiuserland.la	\
 	$(POPT_LIBS)		\
 	$(top_builddir)/libpisock/libpisock.la
@@ -366,7 +358,6 @@ EXTRA_DIST = 			\
 	install-user.c		\
 	kittykiller.c		\
 	memos.c			\
-	money2qif.c		\
 	parsedate.y		\
 	pd-tty.c		\
 	pi-csd.c		\

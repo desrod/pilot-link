@@ -1,31 +1,30 @@
-.\" -*- coding: us-ascii -*-
-.TH install-hinote 1 "@VERSION@"  
+.TH install\-hinote "1"  "Copyright 1996\-2005 FSF" "pilot\-link @VERSION@" 
 .SH NAME
-install-hinote \- Install local files into your Hi-Note database on your Palm handheld. 
+install\-hinote \- Install local files into your Hi\-Note database on your Palm handheld. 
 .SH SECTION
-pilot-link: Conduits
+pilot\-link: Userland Conduits
 .SH SYNOPSIS
-\fIinstall-hinote\fR
+\fIinstall\-hinote\fR
 [\fB\-p\fR|\fB\-\-port\fR <\fBport\fR>]
 [\fB\-\-version\fR] [\fB\-q\fR|\fB\-\-quiet\fR]
 [\fB\-?\fR|\fB\-\-help\fR] [\fB\-\-usage\fR]
 [\fB\-c\fR \fB\-\-category\fR \fBcategory\fR]
 [\fBfilename\fR ...]
 .SH DESCRIPTION
-\fIinstall-hinote\fR allows the user to write one or
-more files as a new \fBHi\-Note\fR or into the Hi-Notes
+\fIinstall\-hinote\fR allows the user to write one or
+more files as a new \fBHi\-Note\fR or into the Hi\-Notes
 Palm application itself, on the Palm handheld.
 .PP
 Please see \fBhttp://www.cyclos.com/\fR for more
-information on Hi-Note.
+information on Hi\-Note.
 .SH OPTIONS
-.SS "INSTALL-HINOTE OPTION"
+.SS "INSTALL\-HINOTE OPTION"
 \fB\-c\fR,
 \fB\-\-category\fR
 <\fBcategory\fR>
 .RS 
 Write files to <\fBcategory\fR> in the
-Hi-Note application itself.
+Hi\-Note application itself.
 .RE
 .SS "CONDUIT OPTIONS"
 \fB\-p\fR, \fB\-\-port\fR
@@ -33,10 +32,10 @@ Hi-Note application itself.
 .RS 
 Use device file <\fBport\fR> to communicate
 with the Palm handheld. If this is not specified,
-\fIinstall-hinote\fR will look for the
+\fIinstall\-hinote\fR will look for the
 \fB$PILOTPORT\fR environment variable. If neither
 are
-found or supplied, \fIinstall-hinote\fR will
+found or supplied, \fIinstall\-hinote\fR will
 print the usage information.
 .RE
 .PP
@@ -47,13 +46,13 @@ Suppress 'Hit HotSync button' message
 .PP
 \fB\-v\fR, \fB\-\-version\fR
 .RS 
-Display version of \fIinstall-hinote\fR and exit
+Display version of \fIinstall\-hinote\fR and exit
 without connecting.
 .RE
 .SS "HELP OPTIONS"
 \fB\-h\fR, \fB\-\-help\fR
 .RS 
-Display the help synopsis for \fIinstall-hinote\fR
+Display the help synopsis for \fIinstall\-hinote\fR
 and exit without connecting.
 .RE
 .PP
@@ -64,16 +63,16 @@ Display a brief usage message and exit without connecting.
 .SH USAGE
 The program will connect to a target Palm handheld, and write the
 file
-or files given on the commandline into the Hi-Note application.
+or files given on the commandline into the Hi\-Note application.
 .SH AUTHOR
-\fIinstall-hinote\fR was written by Bill Goodman
-<bgoodman@cyclos.com>.
+\fIinstall\-hinote\fR was written by Bill Goodman
+bgoodman@cyclos.com.
 .PP
 This manual page was written by Neil Williams
-<linux@codehelp.co.uk>
+linux@codehelp.co.uk
 .SH "REPORTING BUGS"
 Report bugs at:
-\fIhttp://bugs.pilot-link.org\fR
+\fIhttp://bugs.pilot\-link.org\fR
 .SH COPYRIGHT
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License as
@@ -87,8 +86,8 @@ General Public License for more details.
 .PP
 You should have received a copy of the GNU General Public
 License along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 
+Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111\-1307 
 USA
 .SH "SEE ALSO"
 \fIhinotes\fR(1),
-\fIpilot-link\fR (7).
+\fIpilot\-link\fR(7).

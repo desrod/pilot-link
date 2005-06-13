@@ -2,12 +2,12 @@
    <refmeta>
       <refentrytitle>debugsh</refentrytitle>
       <manvolnum>1</manvolnum>
-      <refmiscinfo>Copyright 1996-2004 FSF</refmiscinfo>
+      <refmiscinfo>Copyright 1996-2005 FSF - pilot-link @VERSION@</refmiscinfo>
    </refmeta>
    <refnamediv>
       <refname>debugsh</refname>
       <refpurpose>Simple debugging console for a Palm Handheld
-         device (deprecated).
+         device [deprecated].
       </refpurpose>
    </refnamediv>
    <refsect1>
@@ -24,11 +24,12 @@
    <refsect1>
       <title>Description</title>
       <para>
-         (deprecated)<emphasis>debugsh</emphasis> is a Command-line interface
-         to the Palm debug monitor. Use device file
-         <filename>/dev/tty&lt;0..n&gt;</filename> to communicate with the Palm
-         handheld. If this is not specified, <emphasis>debugsh</emphasis> will
-         output a simple usage help message.
+         <emphasis>debugsh</emphasis> is a commandline interface to the Palm
+         debug monitor. Use device file
+         <filename>/dev/tty&lt;0..n&gt;</filename> to communicate with the
+         Palm handheld. If this is not specified,
+         <emphasis>debugsh</emphasis> will output a simple usage help
+         message.
       </para>
    </refsect1>
    <refsect1>
@@ -66,17 +67,19 @@
    </refsect1>
    <refsect1>
       <title>Usage</title>
-      <para>The program will connect to your Palm handheld and give the user an
+      <para>
+         The program will connect to your Palm handheld and give the user an
          interactive prompt (a "shell") for executing debugging commands.
       </para>
    </refsect1>
    <refsect1>
       <title>Author</title>
-      <para>This  manual  page  was  written by Ludovic Rousseau
-         <email>rousseau@debian.org</email> for the Debian GNU/Linux
-         system.
+      <para>
+         This manual page was written by Ludovic Rousseau
+         <email>rousseau@debian.org</email> for the Debian GNU/Linux system.
       </para>
-      <para>Updated for pilot-link 0.12 by Neil Williams
+      <para>
+         Updated for pilot-link 0.12 by Neil Williams
          <email>linux@codehelp.co.uk</email>
       </para>
    </refsect1>
@@ -88,26 +91,29 @@
    </refsect1>
    <refsect1>
       <title>Copyright</title>
-      <para>This  program  is  free  software; you can redistribute it and/or
+      <para>
+         This program is free software; you can redistribute it and/or
          modify it under the terms of the GNU General Public License as
-         published by the Free Software Foundation; either version 2 of  the 
-         License,  or  (at  your option) any later version.
+         published by the Free Software Foundation; either version 2 of the
+         License, or (at your option) any later version.
       </para>
-      <para>This  program  is  distributed  in the hope that it will be useful,
-         but WITHOUT ANY WARRANTY; without even the implied warranty of
+      <para>
+         This program is distributed in the hope that it will be useful, but
+         WITHOUT ANY WARRANTY; without even the implied warranty of
          MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-         General  Public  License for more details.
+         General Public License for more details.
       </para>
-      <para>You  should  have  received a copy of the GNU General Public
-         License along with this program; if not, write to the Free Software
-         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 
+      <para>
+         You should have received a copy of the GNU General Public License
+         along with this program; if not, write to the Free Software
+         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
          USA
       </para>
    </refsect1>
    <refsect1>
       <title>See Also</title>
       <para>
-         <emphasis>pilot-link</emphasis> (7)
+         <emphasis>pilot-link</emphasis>(7)
       </para>
    </refsect1>
 </refentry>

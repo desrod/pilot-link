@@ -1,17 +1,16 @@
-.\" -*- coding: us-ascii -*-
-.TH read-screenshot 1 "@VERSION@"  
+.TH read\-screenshot "1"  "Copyright 1996\-2005 FSF" "pilot\-link @VERSION@"
 .SH NAME
-read-screenshot \- Read screenshots from Palm (ScreenShotDB).
+read\-screenshot \- Read screenshots from Palm (ScreenShotDB).
 .SH SECTION
-pilot-link: Conduits
+pilot\-link: Userland Conduits
 .SH SYNOPSIS
-\fIread-screenshot\fR
+\fIread\-screenshot\fR
 [\fB\-p\fR|\fB\-\-port\fR <\fBport\fR>]
 [\fB\-\-version\fR] [\fB\-q\fR|\fB\-\-quiet\fR]
 [\fB\-?\fR|\fB\-\-help\fR] [\fB\-\-usage\fR]
 [\fB\-t\fR|\fB\-\-type\fR [\fBppm|png\fR]]
 .SH DESCRIPTION
-ScreenShot is a Palm-compatible application for OS4 and OS5.
+ScreenShot is a Palm\-compatible application for OS4 and OS5.
 .PP
 ScreenShot captures the current screen of any application. All
 color and
@@ -21,7 +20,7 @@ areas are supported. Also exports as JPG/GIF/BMP to card.
 For more information on ScreenShot, go to
 http://linkesoft.com/screenshot/
 .SH OPTIONS
-.SS "READ-SCREENSHOT OPTION"
+.SS "READ\-SCREENSHOT OPTION"
 \fB\-t\fR,
 \fB\-\-type\fR [\fBppm\fR|\fB
 png
@@ -35,10 +34,10 @@ Specify picture output type (ppm or png)
 Use device file \fBport\fR to communicate with
 the
 Palm handheld. If this is not specified,
-\fIread-screenshot\fR will look for the
+\fIread\-screenshot\fR will look for the
 \fB$PILOTPORT\fR environment variable. If
 neither are
-found or supplied, \fIread-screenshot\fR will
+found or supplied, \fIread\-screenshot\fR will
 print the usage information.
 .RE
 .PP
@@ -49,13 +48,13 @@ Suppress 'Hit HotSync button' message
 .PP
 \fB\-v\fR, \fB\-\-version\fR
 .RS 
-Display version of \fIread-screenshot \fR
+Display version of \fIread\-screenshot \fR
 and exit without connecting.
 .RE
 .SS "HELP OPTIONS"
 \fB\-h\fR, \fB\-\-help\fR
 .RS 
-Display the help synopsis for \fIread-screenshot\fR
+Display the help synopsis for \fIread\-screenshot\fR
 and exit without connecting.
 .RE
 .PP
@@ -64,14 +63,14 @@ and exit without connecting.
 Display a brief usage message and exit without connecting.
 .RE
 .SH AUTHOR
-\fIread-screenshot\fR was written by
-Angus Ainslie <angusa at deltatee.com>
+\fIread\-screenshot\fR was written by
+Angus Ainslie angusa at deltatee.com
 .PP
 This manual page was written by Neil Williams
-<linux@codehelp.co.uk>
+linux@codehelp.co.uk
 .SH "REPORTING BUGS"
 Report bugs at:
-\fIhttp://bugs.pilot-link.org\fR
+\fIhttp://bugs.pilot\-link.org\fR
 .SH COPYRIGHT
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License as
@@ -85,7 +84,7 @@ General Public License for more details.
 .PP
 You should have received a copy of the GNU General Public
 License along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 
+Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111\-1307 
 USA
 .SH "SEE ALSO"
-\fIpilot-link\fR (7)
+\fIpilot\-link\fR(7)

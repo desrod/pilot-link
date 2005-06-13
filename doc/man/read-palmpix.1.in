@@ -1,11 +1,10 @@
-.\" -*- coding: us-ascii -*-
-.TH read-palmpix 1 "@VERSION@"  
+.TH read\-palmpix "1"  "Copyright 1996\-2005 FSF" "pilot\-link @VERSION@" 
 .SH NAME
-read-palmpix \- Convert all pictures in the files given or found on a Palm handheld. 
+read\-palmpix \- Convert all pictures in the files given or found on a Palm handheld. 
 .SH SECTION
-pilot-link: Conduits
+pilot\-link: Userland Conduits
 .SH SYNOPSIS
-\fIread-palmpix\fR
+\fIread\-palmpix\fR
 [\fB\-p\fR|\fB\-\-port\fR <\fBport\fR>]
 [\fB\-\-version\fR] [\fB\-q\fR|\fB\-\-quiet\fR]
 [\fB\-?\fR|\fB\-\-help\fR] [\fB\-\-usage\fR]
@@ -17,15 +16,15 @@ pilot-link: Conduits
 [\fB\-n\fR|\fB\-\-name\fR \fBname\fR]
 [\fBfile\fR] ...
 .PP
-\fIread-palmpix\fR Image1.pdb Image2.pdb
+\fIread\-palmpix\fR Image1.pdb Image2.pdb
 Image3.pdb
 .SH DESCRIPTION
-\fIread-palmpix\fR allows a Kodak PalmPix camera user
+\fIread\-palmpix\fR allows a Kodak PalmPix camera user
 to extract the images from their Palm handheld and convert them to
 Portable Network Graphic (.png) or Portable Pixmap (.ppm) files on
 their system. The default output type is Portable Pixmap (.ppm).
 .SH OPTIONS
-.SS "READ-PALMPIX OPTIONS"
+.SS "READ\-PALMPIX OPTIONS"
 \fB\-b\fR,
 \fB\-\-bias\fR \fBbias\fR
 .RS 
@@ -75,10 +74,10 @@ Specify the output picture type. Can be either "png" or
 .RS 
 Use device file <\fBport\fR> to communicate
 with the Palm handheld. If this is not specified,
-\fIread-palmpix\fR will look for the
+\fIread\-palmpix\fR will look for the
 \fB$PILOTPORT\fR environment variable. If neither
 are
-found or supplied, \fIread-palmpix\fR will
+found or supplied, \fIread\-palmpix\fR will
 print the usage information.
 .RE
 .PP
@@ -89,13 +88,13 @@ Suppress 'Hit HotSync button' message
 .PP
 \fB\-v\fR, \fB\-\-version\fR
 .RS 
-Display version of \fIread-palmpix\fR
+Display version of \fIread\-palmpix\fR
 and exit without connecting.
 .RE
 .SS "HELP OPTIONS"
 \fB\-h\fR, \fB\-\-help\fR
 .RS 
-Display the help synopsis for \fIread-palmpix\fR
+Display the help synopsis for \fIread\-palmpix\fR
 and exit without connecting.
 .RE
 .PP
@@ -119,20 +118,20 @@ If no options are specified, all of the images on the device will
 be converted to ppm files by default.
 .PP
 If a filelist is given, convert all listed files previously fetched
-via pilot-xfer. See \fIBUGS\fR - a single file argument
+via pilot\-xfer. See \fIBUGS\fR \- a single file argument
 is
 ignored, a list will work.
 .SH AUTHOR
-\fIread-palmpix \fRwas originally written by
-Angus Ainslie <angusa at deltatee.com>, and updated by
-John Marshall <jmarshall@acm.org> to include core
-pilot-link functionality.
+\fIread\-palmpix \fRwas originally written by
+Angus Ainslie angusa at deltatee.com, and updated by
+John Marshall jmarshall@acm.org to include core
+pilot\-link functionality.
 .PP
 This manual page was written by Neil Williams
-<linux@codehelp.co.uk>
+linux@codehelp.co.uk
 .SH BUGS
 .SS "KNOWN BUGS"
-\fIread-palmpix\fR's colour correction is nearly as
+\fIread\-palmpix\fR's colour correction is nearly as
 good as Kodak's own, but Kodak has deprecated the PalmPix device,
 so it
 is not likely that there will be any updates to their software in
@@ -143,13 +142,13 @@ the look of colours is to do a histogram equalization in your
 favourite
 image editor.
 .PP
-\fIread-palmpix\fR command DOES read from a file,
+\fIread\-palmpix\fR command DOES read from a file,
 but only if you specify a LIST of files. If only one file is
 given, the
 command tries reading from \fB$PILOTPORT\fR.
 .SS "REPORTING BUGS"
 Report bugs at
-\fIhttp://bugs.pilot-link.org/\fR
+\fIhttp://bugs.pilot\-link.org/\fR
 .SH COPYRIGHT
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License as
@@ -163,7 +162,7 @@ General Public License for more details.
 .PP
 You should have received a copy of the GNU General Public
 License along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 
+Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111\-1307 
 USA
 .SH "SEE ALSO"
-\fIpilot-link\fR (7)
+\fIpilot\-link\fR(7)

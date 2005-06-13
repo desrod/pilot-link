@@ -1,9 +1,8 @@
-.\" -*- coding: us-ascii -*-
-.TH memos 1 "@VERSION@"  
+.TH memos "1"  "Copyright 1996\-2005 FSF" "pilot\-link @VERSION@" 
 .SH NAME
 memos \- Manipulate Memo entries from a file or your Palm device. 
 .SH SECTION
-pilot-link: Conduits
+pilot\-link: Userland Conduits
 .SH SYNOPSIS
 \fImemos\fR
 [\fB\-p\fR|\fB\-\-port\fR <\fBport\fR>]
@@ -20,12 +19,12 @@ dir
 .SH DESCRIPTION
 By default, the contents of your Palm's memo database will be
 written
-to standard output as a standard UNIX mailbox (mbox-format) file, with
+to standard output as a standard UNIX mailbox (mbox\-format) file, with
 each
 memo as a separate message. The subject of each message will be the
 category.
 .PP
-If '-s' is specified, than instead of being written to standard
+If '\-s' is specified, than instead of being written to standard
 output,
 will be saved in subdirectories of \fBdir\fR. Each
 subdirectory
@@ -36,19 +35,19 @@ category. Each memo's filename will be the first line (up to the first
 characters) of the memo. Control chcters, slashes, and equal signs
 that would otherwise appear in filenames are converted after the
 fashion of
-MIME's quoted-printable encoding. Note that if you have two memos in
+MIME's quoted\-printable encoding. Note that if you have two memos in
 the
 same category whose first lines are identical, one of them will be
 overwritten.
 .PP
-If '-f' is specified, the specified file will be treated as a memo
+If '\-f' is specified, the specified file will be treated as a memo
 database from which to read memos, rather than HotSyncing from the
 Palm.
 .SH OPTIONS
 .SS "MEMOS OPTIONS"
 \fB\-V\fR, \fB\-\-verbose\fR
 .RS 
-Verbose, with -d, print each filename when written to disk.
+Verbose, with \-d, print each filename when written to disk.
 .RE
 .PP
 \fB\-d\fR,
@@ -120,10 +119,10 @@ Display a brief usage message and exit without connecting.
 \fImemos\fR was written by Kenneth Albanowski.
 .PP
 This manual page was written by Neil Williams
-<linux@codehelp.co.uk>
+linux@codehelp.co.uk
 .SH "REPORTING BUGS"
 Report bugs at:
-\fIhttp://bugs.pilot-link.org\fR
+\fIhttp://bugs.pilot\-link.org\fR
 .SH COPYRIGHT
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License as
@@ -137,8 +136,8 @@ General Public License for more details.
 .PP
 You should have received a copy of the GNU General Public
 License along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 
+Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111\-1307 
 USA
 .SH "SEE ALSO"
-\fIinstall-memo\fR (1),
-\fIpilot-link\fR (7).
+\fIinstall\-memo\fR (1),
+\fIpilot\-link\fR(7).

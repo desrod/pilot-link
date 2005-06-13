@@ -1,20 +1,19 @@
-.\" -*- coding: us-ascii -*-
-.TH pilot-clip 1 "@VERSION@"  
+.TH pilot\-clip "1"  "Copyright 1996\-2005 FSF" "pilot\-link @VERSION@" 
 .SH NAME
-pilot-clip \- Get or Set the Palm Clipboard contents from STDOUT/STDIN. 
+pilot\-clip \- Get or Set the Palm Clipboard contents from STDOUT/STDIN. 
 .SH SECTION
-pilot-link: Conduits
+pilot\-link: Userland Conduits
 .SH SYNOPSIS
-\fIpilot-clip\fR
+\fIpilot\-clip\fR
 [\fB\-p\fR|\fB\-\-port\fR <\fBport\fR>]
 [\fB\-\-version\fR] [\fB\-q\fR|\fB\-\-quiet\fR]
 [\fB\-?\fR|\fB\-\-help\fR] [\fB\-\-usage\fR]
 [\fB\-g\fR|\fB\-\-get\fR]
 [\fB\-s\fR|\fB\-\-set\fR]
 .SH DESCRIPTION
-\fIpilot-clip\fR is used to
+\fIpilot\-clip\fR is used to
 get or set the Palm Clipboard contents from STDOUT/STDIN.
-You must provide one of -g or -s.
+You must provide one of \-g or \-s.
 .SH COMMANDS
 You must provide one of \fB\-g\fR or
 \fB\-s\fR.
@@ -36,10 +35,10 @@ Set the clipboard to STDIN.
 .RS 
 Use device file <\fBport\fR> to communicate
 with the Palm handheld. If this is not specified,
-\fIpilot-clip\fR will look for the
+\fIpilot\-clip\fR will look for the
 \fB$PILOTPORT\fR environment variable. If neither
 are
-found or supplied, \fIpilot-clip\fR will
+found or supplied, \fIpilot\-clip\fR will
 print the usage information.
 .RE
 .PP
@@ -50,13 +49,13 @@ Suppress 'Hit HotSync button' message
 .PP
 \fB\-v\fR, \fB\-\-version\fR
 .RS 
-Display version of \fIpilot-clip\fR
+Display version of \fIpilot\-clip\fR
 and exit without connecting.
 .RE
 .SS "HELP OPTIONS"
 \fB\-h\fR, \fB\-\-help\fR
 .RS 
-Display the help synopsis for \fIpilot-clip\fR
+Display the help synopsis for \fIpilot\-clip\fR
 and exit without connecting.
 .RE
 .PP
@@ -66,10 +65,10 @@ Display a brief usage message and exit without connecting.
 .RE
 .SH AUTHOR
 This manual page was written by Neil Williams
-<linux@codehelp.co.uk>
+linux@codehelp.co.uk
 .SH "REPORTING BUGS"
 Report bugs at:
-\fIhttp://bugs.pilot-link.org\fR
+\fIhttp://bugs.pilot\-link.org\fR
 .SH COPYRIGHT
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License as
@@ -83,7 +82,7 @@ General Public License for more details.
 .PP
 You should have received a copy of the GNU General Public
 License along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 
+Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111\-1307 
 USA
 .SH "SEE ALSO"
-\fIpilot-link\fR (7).
+\fIpilot\-link\fR(7).

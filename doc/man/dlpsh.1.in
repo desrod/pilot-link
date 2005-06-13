@@ -1,9 +1,8 @@
-.\" -*- coding: us-ascii -*-
-.TH dlpsh 1 "@VERSION@"  
+.TH dlpsh "1"  "Copyright 1996\-2005 FSF" "pilot\-link @VERSION@" 
 .SH NAME
 dlpsh \- An interactive Desktop Link Protocol (DLP) Shell for your Palm device. 
 .SH SECTION
-pilot-link: Tools
+pilot\-link: Tools
 .SH SYNOPSIS
 \fIdlpsh\fR
 [\fB\-p\fR|\fB\-\-port\fR <\fBport\fR>]
@@ -66,15 +65,15 @@ device, such as username, memory capacity, set the time, as well as
 other useful functions.
 .PP
 Once connected, the user may execute most of the
-built-in \fIDLP\fR commands. (See \fIBUILT-IN
+built\-in \fIDLP\fR commands. (See \fIBUILT\-IN
 COMMANDS
 \fRbelow for more detail on currently supported
 options).
 .PP
 The connection to the Pilot is kept alive by sending a
 \fBPadTickle\fR packet to the Pilot after a small
-period of non-activity. (7 seconds by default)
-.SH "BUILT-IN COMMANDS"
+period of non\-activity. (7 seconds by default)
+.SH "BUILT\-IN COMMANDS"
 There are many options available while connected to your Palm
 handheld
 via \fBdlpsh\fR, including the following.
@@ -83,7 +82,7 @@ via \fBdlpsh\fR, including the following.
 .RS 
 Print the currently set User information, including Username,
 UserID, PCid, and ViewerID. You may also set these values from this
-command as well. Use 'user --help' while connected to see details
+command as well. Use 'user \-\-help' while connected to see details
 on how to set or change these values.
 .RE
 .PP
@@ -108,7 +107,7 @@ arguments at this time.
 .PP
 \fBtime\fR
 .RS 
-Set the time on the Palm from the currently-set desktop time.
+Set the time on the Palm from the currently\-set desktop time.
 This
 does not work on OS version 3.3, due to a bug in PalmOS at that
 time.
@@ -137,14 +136,14 @@ interactive prompt (a "shell") for executing commands across the DLP
 \fIHotSync\fR protocol.
 .SH AUTHOR
 \fBdlpsh\fR was originally written by Chris Stevens
-<stevens@rpi.edu> and Damien Neil
-<neild@rpi.edu>
+stevens@rpi.edu and Damien Neil
+neild@rpi.edu
 .PP
 This manual page was written by Neil Williams
-<linux@codehelp.co.uk>
+linux@codehelp.co.uk
 .SH "REPORTING BUGS"
 Report bugs at:
-\fIhttp://bugs.pilot-link.org\fR
+\fIhttp://bugs.pilot\-link.org\fR
 .SH COPYRIGHT
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License as
@@ -158,7 +157,7 @@ General Public License for more details.
 .PP
 You should have received a copy of the GNU General Public
 License along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 
+Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111\-1307 
 USA
 .SH "SEE ALSO"
-\fIpilot-link\fR (7)
+\fIpilot\-link\fR(7)

@@ -1,11 +1,10 @@
-.\" -*- coding: us-ascii -*-
-.TH install-user 1 "@VERSION@"  
+.TH install\-user "1"  "Copyright 1996\-2005 FSF" "pilot\-link @VERSION@" 
 .SH NAME
-install-user \- Reads or sets a Palm User and UserID on a Palm Device. 
+install\-user \- Reads or sets a Palm User and UserID on a Palm Device. 
 .SH SECTION
-pilot-link: Conduits
+pilot\-link: Userland Conduits
 .SH SYNOPSIS
-\fIinstall-user\fR
+\fIinstall\-user\fR
 [\fB\-p\fR|\fB\-\-port\fR <\fBport\fR>]
 [\fB\-\-version\fR] [\fB\-q\fR|\fB\-\-quiet\fR]
 [\fB\-?\fR|\fB\-\-help\fR] [\fB\-\-usage\fR]
@@ -13,10 +12,10 @@ pilot-link: Conduits
 [\fB\-i\fR|\fB\-\-id\fR \fBuserid\fR]
 [\fB\-l\fR|\fB\-\-list\fR]
 .SH DESCRIPTION
-\fIinstall-user\fR allows the user to read or change
+\fIinstall\-user\fR allows the user to read or change
 the User and UserID information on the Palm handheld.
 .SH OPTIONS
-.SS "INSTALL-USER OPTIONS"
+.SS "INSTALL\-USER OPTIONS"
 \fB\-u\fR,
 \fB\-\-user\fR \fBusername\fR
 .RS 
@@ -27,7 +26,7 @@ in "John Q. Public".
 \fB\-i\fR,
 \fB\-\-id\fR \fBuserid\fR
 .RS 
-Set the 5-digit numeric UserID on the device (used for many
+Set the 5\-digit numeric UserID on the device (used for many
 Palm
 application registration methods).
 .RE
@@ -42,10 +41,10 @@ List the current username and ID (default)
 .RS 
 Use device file <\fBport\fR> to communicate
 with the Palm handheld. If this is not specified,
-\fIinstall-user\fR will look for the
+\fIinstall\-user\fR will look for the
 \fB$PILOTPORT\fR environment variable. If neither
 are
-found or supplied, \fIinstall-user\fR will
+found or supplied, \fIinstall\-user\fR will
 print the usage information.
 .RE
 .PP
@@ -56,13 +55,13 @@ Suppress 'Hit HotSync button' message
 .PP
 \fB\-v\fR, \fB\-\-version\fR
 .RS 
-Display version of \fIinstall-user\fR and exit
+Display version of \fIinstall\-user\fR and exit
 without connecting.
 .RE
 .SS "HELP OPTIONS"
 \fB\-h\fR, \fB\-\-help\fR
 .RS 
-Display the help synopsis for \fIinstall-user\fR
+Display the help synopsis for \fIinstall\-user\fR
 and
 exit without connecting.
 .RE
@@ -76,14 +75,14 @@ The program will connect to a target Palm handheld, and read or set
 the Palm UserName specified or display the Palm username and UserID if
 none is specified.
 .SH AUTHOR
-\fIinstall-user\fR was originally written by
-D. Jeff Dionne <jeff@RyeHam.ee.ryerson.ca>.
+\fIinstall\-user\fR was originally written by
+D. Jeff Dionne jeff@RyeHam.ee.ryerson.ca.
 .PP
 This manual page was written by Neil Williams
-<linux@codehelp.co.uk>
+linux@codehelp.co.uk
 .SH "REPORTING BUGS"
 Report bugs at:
-\fIhttp://bugs.pilot-link.org\fR
+\fIhttp://bugs.pilot\-link.org\fR
 .SH COPYRIGHT
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License as
@@ -97,9 +96,9 @@ General Public License for more details.
 .PP
 You should have received a copy of the GNU General Public
 License along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 
+Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111\-1307 
 USA
 .SH "SEE ALSO"
-\fIinstall-netsync\fR (1),
+\fIinstall\-netsync\fR (1),
 \fIdlpsh\fR (1),
-\fIpilot-link\fR (7).
+\fIpilot\-link\fR(7).

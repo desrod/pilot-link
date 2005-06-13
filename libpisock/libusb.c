@@ -66,7 +66,7 @@ void pi_usb_impl_init (struct pi_usb_impl *impl)
 	impl->read 	= u_read;
 	impl->flush	= u_flush;
 	impl->poll 	= u_poll;
-	impl->changebaud= NULL;		/* we don't need this one for libusb (yet)
+	impl->changebaud= NULL;		/* we don't need this one for libusb (yet) */
 	impl->control_request	= u_control_request;
 }
 

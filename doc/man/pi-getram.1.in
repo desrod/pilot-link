@@ -1,11 +1,10 @@
-.\" -*- coding: us-ascii -*-
-.TH pi-getram 1 "@VERSION@"  
+.TH pi\-getram "1"  "Copyright 1996\-2005 FSF" "pilot\-link @VERSION@" 
 .SH NAME
-pi-getram \- Retrieves the RAM image from your Palm device for use in debugging. 
+pi\-getram \- Retrieves the RAM image from your Palm device for use in debugging. 
 .SH SECTION
-pilot-link: Tools
+pilot\-link: Tools
 .SH SYNOPSIS
-\fIpi-getram\fR
+\fIpi\-getram\fR
 [\fB\-p\fR|\fB\-\-port\fR <\fBport\fR>]
 [\fB\-\-version\fR] [\fB\-q\fR|\fB\-\-quiet\fR]
 [\fB\-?\fR|\fB\-\-help\fR] [\fB\-\-usage\fR]
@@ -13,17 +12,17 @@ pilot-link: Tools
 [\fB\-s\fR|\fB\-\-sysinfo\fR] [\fB\-\-ram\fR]
 [\fB\-\-rom\fR] [\fBfilename\fR]
 .SH DESCRIPTION
-\fIpi-getram\fR is used to fetch the current RAM image
+\fIpi\-getram\fR is used to fetch the current RAM image
 from your Palm handheld for use in debugging.
 .PP
-\fIpi-getromtoken\fR, \fIpi-getrom\fR
-and \fIpi-getram\fR are inter-related. All relevant
-code is implemented in \fIpi-getrom\fR, and you can do
-\fIpi-getromtoken\fR\fB\-\-ram\fR\fB
+\fIpi\-getromtoken\fR, \fIpi\-getrom\fR
+and \fIpi\-getram\fR are inter\-related. All relevant
+code is implemented in \fIpi\-getrom\fR, and you can do
+\fIpi\-getromtoken\fR\fB\-\-ram\fR\fB
 filename
 \fRto get the RAM dump if you like.
 .PP
-Note, because \fIpi-getrom\fR uses the low-level RPC
+Note, because \fIpi\-getrom\fR uses the low\-level RPC
 protocol to fetch the ROM image, and the new OS5 devices do not use
 this
 protocol, you currently cannot fetch an OS5 ROM image using this
@@ -32,7 +31,7 @@ This will be updated in a future release to handle fetching OS5 ROM
 images,
 using the debugger protocol.
 .SH OPTIONS
-.SS "PI-GETRAM OPTIONS"
+.SS "PI\-GETRAM OPTIONS"
 \fB\-t\fR,
 \fB\-\-token\fR \fBtoken\fR
 .RS 
@@ -69,10 +68,10 @@ would be written as the filename of
 .RS 
 Use device file <\fBport\fR> to communicate
 with the Palm handheld. If this is not specified,
-\fIpi-getram\fR will look for the
+\fIpi\-getram\fR will look for the
 \fB$PILOTPORT\fR environment variable. If neither
 are
-found or supplied, \fIpi-getram\fR will
+found or supplied, \fIpi\-getram\fR will
 print the usage information.
 .RE
 .PP
@@ -83,13 +82,13 @@ Suppress 'Hit HotSync button' message
 .PP
 \fB\-v\fR, \fB\-\-version\fR
 .RS 
-Display version of \fIpi-getram\fR and exit
+Display version of \fIpi\-getram\fR and exit
 without connecting.
 .RE
 .SS "HELP OPTIONS"
 \fB\-h\fR, \fB\-\-help\fR
 .RS 
-Display the help synopsis for \fIpi-getram\fR and
+Display the help synopsis for \fIpi\-getram\fR and
 exit without connecting.
 .RE
 .PP
@@ -101,14 +100,14 @@ Display a brief usage message and exit without connecting.
 Connect to a target Palm handheld and fetch the RAM from the
 device.
 .SH AUTHOR
-\fIpi-getram\fR was originally written by
+\fIpi\-getram\fR was originally written by
 Kenneth Albanowski.
 .PP
 This manual page was written by Neil Williams
-<linux@codehelp.co.uk>
+linux@codehelp.co.uk
 .SH "REPORTING BUGS"
 Report bugs at:
-\fIhttp://bugs.pilot-link.org\fR
+\fIhttp://bugs.pilot\-link.org\fR
 .SH COPYRIGHT
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License as
@@ -122,8 +121,8 @@ General Public License for more details.
 .PP
 You should have received a copy of the GNU General Public
 License along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 
+Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111\-1307 
 USA
 .SH "SEE ALSO"
-\fIpi-getrom\fR (1),
-\fIpilot-link\fR (7).
+\fIpi\-getrom\fR (1),
+\fIpilot\-link\fR(7).

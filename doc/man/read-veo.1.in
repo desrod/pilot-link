@@ -1,12 +1,11 @@
-.\" -*- coding: us-ascii -*-
-.TH read-veo 1 "@VERSION@"  
+.TH read\-veo "1"  "Copyright 1996\-2005 FSF" "pilot\-link @VERSION@"
 .SH NAME
-read-veo
+read\-veo
 \- Synchronize your Veo Traveler databases 
 .SH SECTION
-pilot-link: Conduits
+pilot\-link: Userland Conduits
 .SH SYNOPSIS
-\fIread-veo\fR
+\fIread\-veo\fR
 [\fB\-p\fR|\fB\-\-port\fR <\fBport\fR>]
 [\fB\-\-version\fR] [\fB\-q\fR|\fB\-\-quiet\fR]
 [\fB\-?\fR|\fB\-\-help\fR] [\fB\-\-usage\fR]
@@ -19,7 +18,7 @@ pilot-link: Conduits
 Synchronize your Veo Traveler databases with your desktop machine.
 Output defaults to ppm.
 .SH OPTIONS
-.SS "READ-VEO OPTIONS"
+.SS "READ\-VEO OPTIONS"
 \fB\-n\fR, \fB\-\-name\fR \fBname\fR
 .RS 
 Specify output picture by name
@@ -50,10 +49,10 @@ Specify picture output type (ppm or png)
 .RS 
 Use device file \fBport\fR to communicate with
 the Palm handheld. If this is not specified,
-\fIread-veo \fRwill look for the
+\fIread\-veo \fRwill look for the
 \fB$PILOTPORT\fR environment variable. If neither
 are
-found or supplied, \fIread-veo \fRwill
+found or supplied, \fIread\-veo \fRwill
 print the usage information.
 .RE
 .PP
@@ -64,13 +63,13 @@ Suppress 'Hit HotSync button' message
 .PP
 \fB\-v\fR, \fB\-\-version\fR
 .RS 
-Display version of \fIread-veo\fR
+Display version of \fIread\-veo\fR
 and exit without connecting.
 .RE
 .SS "HELP OPTIONS"
 \fB\-h\fR, \fB\-\-help\fR
 .RS 
-Display the help synopsis for \fIread-veo\fR
+Display the help synopsis for \fIread\-veo\fR
 and exit without connecting.
 .RE
 .PP
@@ -80,14 +79,14 @@ Display a brief usage message and exit without connecting.
 .RE
 .SH EXAMPLES
 .SH AUTHOR
-\fIread-veo \fRwas written by
-Angus Ainslie <angusa at deltatee.com>
+\fIread\-veo \fRwas written by
+Angus Ainslie angusa at deltatee.com
 .PP
 This manual page was written by Neil Williams
-<linux@codehelp.co.uk>
+linux@codehelp.co.uk
 .SH "REPORTING BUGS"
 Report bugs at:
-\fIhttp://bugs.pilot-link.org\fR
+\fIhttp://bugs.pilot\-link.org\fR
 .SH COPYRIGHT
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License as
@@ -101,7 +100,7 @@ General Public License for more details.
 .PP
 You should have received a copy of the GNU General Public
 License along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 
+Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111\-1307 
 USA
 .SH "SEE ALSO"
-\fIpilot-link\fR (7)
+\fIpilot\-link\fR(7)

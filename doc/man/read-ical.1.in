@@ -1,11 +1,10 @@
-.\" -*- coding: us-ascii -*-
-.TH read-ical 1 "@VERSION@"  
+.TH read\-ical "1"  "Copyright 1996\-2005 FSF" "pilot\-link @VERSION@" 
 .SH NAME
-read-ical \- Exports the DatebookDB and/or ToDo applications to ical format. 
+read\-ical \- Exports the DatebookDB and/or ToDo applications to ical format. 
 .SH SECTION
-pilot-link: Conduits
+pilot\-link: Userland Conduits
 .SH SYNOPSIS
-\fIread-ical\fR
+\fIread\-ical\fR
 [\fB\-p\fR|\fB\-\-port\fR <\fBport\fR>]
 [\fB\-\-version\fR] [\fB\-q\fR|\fB\-\-quiet\fR]
 [\fB\-?\fR|\fB\-\-help\fR] [\fB\-\-usage\fR]
@@ -16,7 +15,7 @@ pilot-link: Conduits
 .SH DESCRIPTION
 Note, this is not the same as the iCal calendar format.
 .PP
-\fIread-ical\fR allows the user to retrieve the
+\fIread\-ical\fR allows the user to retrieve the
 contents of the ToDo and Datebook databases on a Palm handheld, and
 convert
 their contents to an Ical calendar.
@@ -26,10 +25,10 @@ will be deleted, so do not use your main calendar. Instead, use a
 separate
 one for this purpose, and include it in your main calendar.
 .PP
-As \fIread-ical\fR works by passing a script to ical,
+As \fIread\-ical\fR works by passing a script to ical,
 the ical application must be in your $PATH.
 .SH OPTIONS
-.SS "READ-ICAL OPTIONS"
+.SS "READ\-ICAL OPTIONS"
 \fB\-d\fR, \fB\-\-datebook\fR
 .RS 
 Datebook only, no ToDos
@@ -45,7 +44,7 @@ Replace text of items not started with a bullet with
 \fB\-f\fR,
 \fB\-\-file\fR \fBfile\fR
 .RS 
-This is the file in which the ical-formatted data should be
+This is the file in which the ical\-formatted data should be
 saved.
 Note that this will be deleted, so do not use your primary
 calendar
@@ -57,10 +56,10 @@ file. See \fIDESCRIPTION\fR for details.
 .RS 
 Use device file <\fBport\fR> to communicate
 with the Palm handheld. If this is not specified,
-\fIread-ical\fR will look for the
+\fIread\-ical\fR will look for the
 \fB$PILOTPORT\fR environment variable. If neither
 are
-found, \fIread-ical\fR will
+found, \fIread\-ical\fR will
 print the usage information.
 .RE
 .PP
@@ -71,13 +70,13 @@ Suppress 'Hit HotSync button' message
 .PP
 \fB\-v\fR, \fB\-\-version\fR
 .RS 
-Display version of \fIread-ical\fR
+Display version of \fIread\-ical\fR
 and exit without connecting.
 .RE
 .SS "HELP OPTIONS"
 \fB\-h\fR, \fB\-\-help\fR.
 .RS 
-Display the help synopsis for \fIread-ical\fR
+Display the help synopsis for \fIread\-ical\fR
 and exit without connecting.
 .RE
 .PP
@@ -91,14 +90,14 @@ Datebook databases (ToDoDB.pdb and DatebookDB.pdb respectively), then
 instruct \fBical\fR to write a calendar file based on
 the retrieved information.
 .SH AUTHOR
-\fIread-ical\fR was originally written by
+\fIread\-ical\fR was originally written by
 Kenneth Albanowski.
 .PP
 This manual page was written by Neil Williams
-<linux@codehelp.co.uk>
+linux@codehelp.co.uk
 .SH "REPORTING BUGS"
 Report bugs at:
-\fIhttp://bugs.pilot-link.org\fR
+\fIhttp://bugs.pilot\-link.org\fR
 .SH COPYRIGHT
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License as
@@ -112,7 +111,7 @@ General Public License for more details.
 .PP
 You should have received a copy of the GNU General Public
 License along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 
+Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111\-1307 
 USA
 .SH "SEE ALSO"
-\fIpilot-link\fR (7)
+\fIpilot\-link\fR(7)

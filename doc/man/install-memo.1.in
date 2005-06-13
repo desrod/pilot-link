@@ -1,30 +1,28 @@
-.\" -*- coding: us-ascii -*-
-.TH install-memo 1 "@VERSION@"  
+.TH install\-memo "1"  "Copyright 1996\-2005 FSF" "pilot\-link @VERSION@" 
 .SH NAME
-install-memo \- Installs a new Memo Pad entry onto your Palm handheld. 
+install\-memo \- Installs a new Memo Pad entry onto your Palm handheld. 
 .SH SECTION
-pilot-link: Conduits
+pilot\-link: Userland Conduits
 .SH SYNOPSIS
-\fIinstall-memo\fR
+\fIinstall\-memo\fR
 [\fB\-p\fR|\fB\-\-port\fR <\fBport\fR>]
 [\fB\-\-version\fR] [\fB\-q\fR|\fB\-\-quiet\fR]
 [\fB\-?\fR|\fB\-\-help\fR] [\fB\-\-usage\fR]
 [\fB\-c\fR|\fB\-\-category\fR \fBname\fR]
 [\fB\-r\fR|\fB\-\-replace\fR]
 [\fB\-t\fR|\fB\-\-title\fR]
-[\fB\-f\fR|\fB\-\-file\fR \fBSTRING\fR] ...
-[\fBSTRING\fR] ...
+[\fB\-f\fR|\fB\-\-file\fR \fBSTRING\fR]
 .SH DESCRIPTION
-\fIinstall-memo\fR allows the user to write one or more
+\fIinstall\-memo\fR allows the user to write one or more
 files as a new memo or memos, respectively, onto the Palm handheld.
 .SH OPTIONS
-.SS "INSTALL-MEMO OPTIONS"
-\fI-c\fR,
+.SS "INSTALL\-MEMO OPTIONS"
+\fI\-c\fR,
 \fB\-\-category\fR \fBcategory\fR
 .RS 
 Install memo(s) to category defined by
 \fBcategory\fR
-by default. Normally \fIinstall-memo\fR uses the
+by default. Normally \fIinstall\-memo\fR uses the
 \fBUnfiled\fR category as the default category
 if no
 category is chosen.
@@ -56,22 +54,22 @@ the
 Use device file <\fBport\fR> to
 communicate
 with the Palm handheld. If this is not specified,
-\fIinstall-memo\fR will look for the
+\fIinstall\-memo\fR will look for the
 \fB$PILOTPORT\fR environment variable. If neither
 are
-found or supplied, \fIinstall-memo\fR will
+found or supplied, \fIinstall\-memo\fR will
 print the usage information.
 .RE
 .PP
 \fB\-v\fR, \fB\-\-version\fR
 .RS 
-Display version of \fIinstall-memo\fR and exit
+Display version of \fIinstall\-memo\fR and exit
 without connecting.
 .RE
 .SS "HELP OPTIONS"
 \fB\-h\fR, \fB\-\-help\fR
 .RS 
-Display the help synopsis for \fIinstall-memo\fR
+Display the help synopsis for \fIinstall\-memo\fR
 and
 exit without connecting.
 .RE
@@ -87,11 +85,11 @@ for each file(s) given on the commandline into the Memo Pad
 application on
 the Palm.
 .SH AUTHOR
-\fIinstall-memo\fR was originally written by
-Damien P. Neil <neild@rpi.edu>.
+\fIinstall\-memo\fR was originally written by
+Damien P. Neil neild@rpi.edu.
 .PP
 This manual page was written by Neil Williams
-<linux@codehelp.co.uk>
+linux@codehelp.co.uk
 .SH BUGS
 .SS "KNOWN BUGS"
 The Palm Device has a maximum length of 4,096 bytes (4k) on
@@ -105,13 +103,13 @@ device
 itself. Any memo larger than 4,096 bytes and less than 65,490 bytes
 will
 not be editable on the Palm itself. Consider these memo entries
-"read-only".
+"read\-only".
 .PP
 This is not specifically a "bug", but a limitation in the PalmOS
 design itself.
 .SS "REPORTING BUGS"
 Report bugs at
-\fIhttp://bugs.pilot-link.org/\fR
+\fIhttp://bugs.pilot\-link.org/\fR
 .SH COPYRIGHT
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License as
@@ -125,8 +123,8 @@ General Public License for more details.
 .PP
 You should have received a copy of the GNU General Public
 License along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 
+Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111\-1307 
 USA
 .SH "SEE ALSO"
 \fImemos\fR(1),
-\fIpilot-link\fR (7).
+\fIpilot\-link\fR(7).

@@ -1,3 +1,205 @@
+2005-06-13 05:34  fpillet
+
+	* libpisock/darwinusb.c: preliminary KLSI adapter support. Not
+	  fully working yet (needs more testing)
+
+2005-06-13 05:33  fpillet
+
+	* libpisock/libusb.c: init changebaud to NULL for now
+
+2005-06-13 05:32  fpillet
+
+	* libpisock/usb.c: support for port speed ioctls if the platform
+	  driver supports it
+
+2005-06-13 05:31  fpillet
+
+	* include/pi-usb.h: added changebaud handler for usb dev, required
+	  to support serial adaptors on platforms where it's not going
+	  through a kernel-emulated tty
+
+2005-06-13 05:30  fpillet
+
+	* libpisock/slp.c: more readable code, removed unused variable
+
+2005-06-13 05:29  fpillet
+
+	* libpisock/linuxusb.c: proper implementation for PI_MSG_PEEK,
+	  modeled after unixserial. Log messages harmonization
+
+2005-06-13 05:28  fpillet
+
+	* libpisock/unixserial.c: harmonized log messages so it's easier to
+	  see what's going on
+
+2005-06-12 15:35  fpillet
+
+	* libpisock/socket.c: handle case where PILOT_LOG=0
+
+2005-06-12 15:24  fpillet
+
+	* libpisock/: socket.c, unixserial.c: two tiny ones
+
+2005-06-12 15:05  fpillet
+
+	* libpisock/unixserial.c: more log tweaks
+
+2005-06-12 15:02  fpillet
+
+	* libpisock/: socket.c, unixserial.c: tweaks & more logging
+
+2005-06-12 14:25  fpillet
+
+	* libpisock/unixserial.c: an endless stream of bug fixes might lead
+	  to eternal happiness
+
+2005-06-12 14:14  fpillet
+
+	* libpisock/unixserial.c: one more step towards a working
+	  implementation
+
+2005-06-12 13:59  fpillet
+
+	* libpisock/unixserial.c: Another fix for the PI_MSG_PEEK tricky
+	  issue
+
+2005-06-12 13:55  fpillet
+
+	* libpisock/socket.c: One more tiny fix for setuid
+
+2005-06-12 13:38  fpillet
+
+	* libpisock/socket.c: account for incomplete headers (on slow
+	  connection this makes a difference)
+
+2005-06-12 13:18  fpillet
+
+	* include/pi-dlp.h: removed unused sysFileTSlotDriver define (which
+	  has nothing to do here) and excluded more definitions from SWIG
+	  interfaces as they are for internal use only
+
+2005-06-12 13:06  fpillet
+
+	* libpisock/unixserial.c: oops forgot prototype
+
+2005-06-12 13:05  fpillet
+
+	* libpisock/unixserial.c: unixserial didn't properly honor
+	  PI_MSG_PEEK when reading from the readahead buffer
+
+2005-06-12 13:03  fpillet
+
+	* libpisock/linuxusb.c: Linuxusb didn't properly honor PI_MSG_PEEK
+	  when reading from the readahead buffer
+
+2005-06-12 13:03  fpillet
+
+	* libpisock/socket.c: Check the txid byte after all
+
+2005-06-12 12:43  fpillet
+
+	* libpisock/socket.c: More error checking and better readability
+	  for get/setsockopt. Less aggressive protocol detection (do not
+	  check the txid)
+
+2005-06-12 09:29  desrod
+
+	* bindings/Python/src/pisock_wrap.c: Small cleanup to eliminate a
+	  couple of warnings.
+
+2005-06-11 05:48  fpillet
+
+	* libpisock/socket.c: shiny new protocol detection code that checks
+	  more than one byte to make sure we don't fallback on the wrong
+	  protocol because of garbage. This also simplifies the protocol
+	  detection loop
+
+2005-06-09 13:08  fpillet
+
+	* libpisock/syspkt.c: removed unused static RPC_MemCardInfo
+
+2005-06-09 12:59  desrod
+
+	* src/sync-plan.PL: Update sync-plan.PL to merge with Aaron's
+	  changes in bug #1455 and align the API with the changes in 0.12.x
+
+2005-06-09 12:59  fpillet
+
+	* libpisock/padp.c: commented out a test that could never work
+
+2005-06-09 12:44  desrod
+
+	* src/Makefile.am: Oops, forgot one...
+
+2005-06-09 12:39  fpillet
+
+	* libpisock/socket.c: Tweaked the logs displayed while trying to
+	  identify the connection
+
+2005-06-09 12:38  fpillet
+
+	* libpisock/net.c: Patch to counter buffer overflows when the
+	  connection is sending garbage (i.e. serial)
+
+2005-06-09 12:37  desrod
+
+	* src/sync-plan.PL: Minor typo fixed
+
+2005-06-09 10:33  desrod
+
+	* src/pilot-foto.c: This is going to be a big diff, I re-indented
+	  the whole source file a bit, and added a small buffer overflow
+	  patch from Than Ngo at Red Hat. This closes bug #1497
+
+2005-06-09 09:42  desrod
+
+	* include/: Makefile.am, pi-address.h, pi-address.hxx,
+	  pi-appinfo.h, pi-appinfo.hxx, pi-datebook.h, pi-datebook.hxx,
+	  pi-dlp.hxx, pi-memo.h, pi-memo.hxx, pi-todo.h, pi-todo.hxx:
+	  Purged the final bits of libpisock++ from the tree
+
+2005-06-09 05:57  fpillet
+
+	* darwin/build_framework.sh: Build for PPC only for now, until I
+	  figure out all the issues with building a FAT framework
+
+2005-06-07 08:34  adridg
+
+	* doc/man/install-memo.1.in, src/install-memo.c: Deal with recent
+	  report by making install-memo able to install more than one memo;
+	  this hasn't been tested yet.
+
+2005-06-07 08:32  adridg
+
+	* include/pi-todo.hxx: Remove use of memset so we don't need an
+	  extra header
+
+2005-06-06 12:10  desrod
+
+	* Makefile.am, configure.ac, include/Makefile.am, src/Makefile.am:
+	  Updated to cleanly purge CXX* and libpisock++ from the tree
+
+2005-06-05 09:14  fpillet
+
+	* configure.ac: Include CoreFoundation framework when compiling on
+	  Darwin. Fixes link issues on some layouts of the development
+	  system
+
+2005-06-05 09:13  fpillet
+
+	* libpisock/dlp.c: removed unused Expect macro
+
+2005-06-03 14:42  desrod
+
+	* configure.ac, m4/tcl.m4, m4/vl_lib_readline.m4: Disable C++ by
+	  default, auto-detect if enalbed with --with-cxx. Also clean up
+	  some formatting of the --help output, need more consistency in
+	  the macros as these get moved into separate .m4 files under ./m4/
+
+2005-06-03 10:14  desrod
+
+	* ChangeLog: Updated ChangeLog to current..
+
 2005-06-03 06:57  fpillet
 
 	* libpisock/libusb.c: Fix for bug #1483: the mutex wasn't being
@@ -1673,10 +1875,9 @@
 
 2004-12-20 17:27  adridg
 
-	* configure.ac, libpisock/Makefile.am, libpisock++/Makefile.am: Fix
-	  for following:      /usr/bin/ld: .libs/unixserial.o: relocation
-	  R_X86_64_32 can not be used when making a shared object;
-	  recompile with -fPIC
+	* configure.ac, libpisock/Makefile.am: Fix for following:
+	  /usr/bin/ld: .libs/unixserial.o: relocation R_X86_64_32 can not
+	  be used when making a shared object; recompile with -fPIC
 
 2004-12-20 17:15  desrod
 
@@ -2034,15 +2235,15 @@
 	  include/pi-slp.h, include/pi-usb.h, libpisock/dlp.c,
 	  libpisock/net.c, libpisock/padp.c, libpisock/pi-file.c,
 	  libpisock/serial.c, libpisock/slp.c, libpisock/usb.c,
-	  libpisock++/address.cc, libpisock++/appInfo.cc, libpisync/sync.c,
-	  src/debugsh.c, src/memos.c, src/pi-port.c, src/pilot-debug.c,
-	  src/pilot-dedupe.c, src/pilot-file.c, src/pilot-foto.c,
-	  src/pilot-mail.c, src/pilot-wav.c, src/pilot-xfer.c,
-	  src/read-ical.c, tests/dlp-test.c: Changes from MarkSpace that
-	  are useful.  Need to talk to Scott Gruby or someone from
-	  MarkSpace about the rest.  People using 0.12 will find compile
-	  errors with this in their own code (*pilot) around the id -> id_
-	  changes, but they're minor (and important for Objective-C).
+	  libpisync/sync.c, src/debugsh.c, src/memos.c, src/pi-port.c,
+	  src/pilot-debug.c, src/pilot-dedupe.c, src/pilot-file.c,
+	  src/pilot-foto.c, src/pilot-mail.c, src/pilot-wav.c,
+	  src/pilot-xfer.c, src/read-ical.c, tests/dlp-test.c: Changes from
+	  MarkSpace that are useful.  Need to talk to Scott Gruby or
+	  someone from MarkSpace about the rest.  People using 0.12 will
+	  find compile errors with this in their own code (*pilot) around
+	  the id -> id_ changes, but they're minor (and important for
+	  Objective-C).
 
 2004-12-09 18:47  adridg
 
@@ -3342,10 +3543,10 @@
 
 	* include/pi-socket.h, libpisock/connect.c, libpisock/freebsdusb.c,
 	  libpisock/inet.c, libpisock/linuxusb.c, libpisock/socket.c,
-	  libpisock++/dlp.cc, src/debugsh.c, src/pi-nredir.c: Here's the
-	  prefix patch from -future.  Small API change to pi_bind and
-	  pi_connect, but it's minor.  pilot-link's userland has been
-	  updated to work with the changes.
+	  src/debugsh.c, src/pi-nredir.c: Here's the prefix patch from
+	  -future.  Small API change to pi_bind and pi_connect, but it's
+	  minor.  pilot-link's userland has been updated to work with the
+	  changes.
 
 2004-08-27 12:27  knghtbrd
 
@@ -3599,10 +3800,10 @@
 2004-08-05 11:32  fpillet
 
 	* bindings/Perl/Pilot.xs, bindings/Python/src/pisock.i,
-	  bindings/Python/src/pisock_wrap.c, libpisock++/dlp.cc,
-	  src/memos.c, src/pilot-file.c, src/pilot-prc.c,
-	  src/read-palmpix.c, src/read-todos.c, tests/versamail-test.c:
-	  updated code to take modifications in pi-file into account
+	  bindings/Python/src/pisock_wrap.c, src/memos.c, src/pilot-file.c,
+	  src/pilot-prc.c, src/read-palmpix.c, src/read-todos.c,
+	  tests/versamail-test.c: updated code to take modifications in
+	  pi-file into account
 
 2004-08-05 11:30  fpillet
 
@@ -3936,24 +4137,23 @@
 
 2004-05-27 21:41  knghtbrd
 
-	* Makefile.am, configure.in, libpisock++/Makefile.am: Renamed
-	  --with-cpp to --with-cxx to avoid confusion with the preprocessor
-	  and made it actually use the compiler argument.  Removed LIBCXX
-	  and the check for libstdc++ since the latter isn't portable
-	  anyway.  In theory, this should work for everyone.  In practice,
-	  the C++ check will probably need to be altered to check a whole
-	  bunch of things like the readline check does once people start
-	  reporting what breaks.  *sigh*
+	* Makefile.am, configure.in: Renamed --with-cpp to --with-cxx to
+	  avoid confusion with the preprocessor and made it actually use
+	  the compiler argument.  Removed LIBCXX and the check for
+	  libstdc++ since the latter isn't portable anyway.  In theory,
+	  this should work for everyone.  In practice, the C++ check will
+	  probably need to be altered to check a whole bunch of things like
+	  the readline check does once people start reporting what breaks.
+	  *sigh*
 
 2004-05-27 18:46  knghtbrd
 
 	* Makefile.am, configure.in, tcl.m4, darwin/.cvsignore,
-	  darwin/Makefile.am, libpisock++/Makefile.am, m4/tcl.m4,
-	  popt/Makefile.am: More autoconf/automake fixes: make dist works
-	  properly again, modern versions of automake no longer complain
-	  about unquoted function names in macro declarations, tcl.m4 is no
-	  longer installed to the system, and both included and system popt
-	  now work.
+	  darwin/Makefile.am, m4/tcl.m4, popt/Makefile.am: More
+	  autoconf/automake fixes: make dist works properly again, modern
+	  versions of automake no longer complain about unquoted function
+	  names in macro declarations, tcl.m4 is no longer installed to the
+	  system, and both included and system popt now work.
 
 2004-05-26 15:38  knghtbrd
 
@@ -4661,8 +4861,7 @@
 
 2003-12-21 15:10  desrod
 
-	* ChangeLog, libpisock++/appInfo.cc: Fix a check for >255 id,
-	  closes bug 829
+	* ChangeLog: Fix a check for >255 id, closes bug 829
 
 2003-12-21 15:05  desrod
 
@@ -4782,8 +4981,8 @@
 
 2003-08-18 17:42  desrod
 
-	* ChangeLog, configure.in, libpisock++/Makefile.am: Fixes for
-	  libstdc++, closes bug #768 (needs testing and validation)
+	* ChangeLog, configure.in: Fixes for libstdc++, closes bug #768
+	  (needs testing and validation)
 
 2003-08-18 15:59  desrod
 
@@ -5889,9 +6088,8 @@
 
 2002-09-28 14:07  desrod
 
-	* ChangeLog, include/pi-datebook.hxx, libpisock++/dlp.cc: Remove
-	  use of antiquated <iostream.h> header for libpisock++ builds on
-	  {c|g}++ 3.x systems
+	* ChangeLog, include/pi-datebook.hxx: Remove use of antiquated
+	  <iostream.h> header for libpisock++ builds on {c|g}++ 3.x systems
 
 2002-09-27 09:08  desrod
 
@@ -6934,8 +7132,7 @@
 	  include/pi-iambicExpense.h, include/pi-iambicExpense.hxx,
 	  include/pi-inetserial.h, include/pi-mail.h, include/pi-md5.h,
 	  include/pi-memo.h, include/pi-money.h, include/pi-sync.h,
-	  include/pi-syspkt.h, include/pi-todo.h, libpisock++/Makefile.am,
-	  libpisock++/iambicExpense.cc: 2002-06-28  JP Rosevear
+	  include/pi-syspkt.h, include/pi-todo.h: 2002-06-28  JP Rosevear
 	  <jpr@ximian.com>
 
 		  * libpisock++/Makefile.am: don't build iambicExpense.cc
@@ -7097,9 +7294,9 @@
 2002-05-05 23:20  desrod
 
 	* ChangeLog, doc/README.usb, include/pi-datebook.hxx,
-	  libpisock++/dlp.cc, src/ccexample.cc, src/iambicexample.cc: Fixed
-	  a namespace typing problem with gcc 3.x.x builds (Sergei
-	  Pachkov), began a draft for the pilot-link USB howto
+	  src/ccexample.cc, src/iambicexample.cc: Fixed a namespace typing
+	  problem with gcc 3.x.x builds (Sergei Pachkov), began a draft for
+	  the pilot-link USB howto
 
 2002-04-29 14:17  jpr
 
@@ -7692,8 +7889,7 @@
 	* .cvsignore, ChangeLog, Makefile.am, configure.in,
 	  bindings/Makefile.am, bindings/Java/Jni.c,
 	  bindings/Java/Makefile.am, doc/.cvsignore, doc/Makefile.am,
-	  libpisock/Makefile.am, libpisock++/.cvsignore,
-	  libpisock++/Makefile.am, src/.cvsignore, src/Makefile.am,
+	  libpisock/Makefile.am, src/.cvsignore, src/Makefile.am,
 	  src/pix/.cvsignore, src/pix/Makefile.am, src/prc/.cvsignore,
 	  src/prc/Makefile.am, tests/Makefile.am: 2002-03-15  JP Rosevear
 	  <jpr@ximian.com>
@@ -7833,8 +8029,8 @@
 
 	* ChangeLog, Makefile.am, bindings/Makefile.am,
 	  bindings/Java/Makefile.am, libpisock/Makefile.am,
-	  libpisock++/Makefile.am, tests/Makefile.am: Minor pokes to allow
-	  pilot-link to build outside $SRCDIR (John Marshall)
+	  tests/Makefile.am: Minor pokes to allow pilot-link to build
+	  outside $SRCDIR (John Marshall)
 
 2002-02-27 00:19  desrod
 
@@ -8399,17 +8595,15 @@
 	  libpisock/dlp.c, libpisock/inet.c, libpisock/net.c,
 	  libpisock/padp.c, libpisock/serial.c, libpisock/slp.c,
 	  libpisock/socket.c, libpisock/syspkt.c, libpisock/unixserial.c,
-	  libpisock/util.c, libpisock/utils.c, libpisock++/address.cc,
-	  libpisock++/appInfo.cc, libpisock++/dlp.cc,
-	  libpisock++/iambicExpense.cc, libpisock++/memo.cc, src/debugsh.c,
-	  src/dlpsh.c, src/getrom.c, src/iambicexample.cc,
-	  src/install-datebook.c, src/install-expenses.c,
-	  src/install-hinote.c, src/install-memo.c, src/install-netsync.c,
-	  src/install-user.c, src/pi-csd.c, src/pi-getram.c,
-	  src/pi-getrom.c, src/pi-nredir.c, src/pilot-addresses.c,
-	  src/pilot-clip.c, src/pilot-debug.c, src/pilot-dedupe.c,
-	  src/pilot-mail.c, src/pilot-schlep.c, src/pilot-xfer.c,
-	  src/read-ical.c: 2002-01-22  JP Rosevear  <jpr@ximian.com>
+	  libpisock/util.c, libpisock/utils.c, src/debugsh.c, src/dlpsh.c,
+	  src/getrom.c, src/iambicexample.cc, src/install-datebook.c,
+	  src/install-expenses.c, src/install-hinote.c, src/install-memo.c,
+	  src/install-netsync.c, src/install-user.c, src/pi-csd.c,
+	  src/pi-getram.c, src/pi-getrom.c, src/pi-nredir.c,
+	  src/pilot-addresses.c, src/pilot-clip.c, src/pilot-debug.c,
+	  src/pilot-dedupe.c, src/pilot-mail.c, src/pilot-schlep.c,
+	  src/pilot-xfer.c, src/read-ical.c: 2002-01-22  JP Rosevear
+	  <jpr@ximian.com>
 
 		  * include/pi-config.h: remove unused file
 
@@ -8835,11 +9029,10 @@
 	  libpisock/net.c, libpisock/padp.c, libpisock/pi-file.c,
 	  libpisock/serial.c, libpisock/slp.c, libpisock/socket.c,
 	  libpisock/syspkt.c, libpisock/unixserial.c, libpisock/utils.c,
-	  libpisock++/dlp.cc, src/debugsh.c, src/install-expenses.c,
-	  src/install-memo.c, src/pi-csd.c, src/pi-getram.c,
-	  src/pi-getrom.c, src/pi-nredir.c, src/pilot-clip.c,
-	  src/pilot-debug.c, src/pilot-dedupe.c, src/pilot-xfer.c: Merging
-	  from protocol-rewrite-branch
+	  src/debugsh.c, src/install-expenses.c, src/install-memo.c,
+	  src/pi-csd.c, src/pi-getram.c, src/pi-getrom.c, src/pi-nredir.c,
+	  src/pilot-clip.c, src/pilot-debug.c, src/pilot-dedupe.c,
+	  src/pilot-xfer.c: Merging from protocol-rewrite-branch
 
 2002-01-11 13:26  jpr
 
@@ -9123,7 +9316,6 @@
 	  bindings/Python/setup.py, include/pi-config.h,
 	  include/pi-config.h.in, include/pi-version.h,
 	  include/pi-version.h.in, libpisock/Makefile.am,
-	  libpisock++/datebook.cc, libpisock++/iambicExpense.cc,
 	  src/install-expenses.c, bindings/Python/src/pisock.i,
 	  bindings/Python/src/pisock_wrap.c: 2002-01-05  JP Rosevear
 	  <jpr@ximian.com>
@@ -9243,8 +9435,7 @@
 	  include/pi-mail.h, include/pi-md5.h, include/pi-money.h,
 	  include/pi-slp.h, include/pi-sockaddr-win32.h,
 	  include/pi-sockaddr.h, include/pi-socket.h, include/pi-sync.h,
-	  include/pi-syspkt.h, include/pi-todo.h, include/pi-util.h,
-	  libpisock++/datebook.cc, libpisock++/iambicExpense.cc: More
+	  include/pi-syspkt.h, include/pi-todo.h, include/pi-util.h: More
 	  whitespace/formatting changes. Fixed inconsistant commenting in
 	  libcc/* and added the new Python libpisock bindings to
 	  tools/Python (thanks Rob!)
@@ -9284,17 +9475,17 @@
 	  pi-getrom.c, pi-nredir.c, pi-port.c, pilot-addresses.c,
 	  pilot-clip.c, pilot-debug.c, pilot-dedupe.c, pilot-mail.c,
 	  pilot-schlep.c, read-expenses.c, read-ical.c, read-todos.c,
-	  reminders.c, libpisock++/dlp.cc, src/addresses.c, src/debugsh.c,
-	  src/hinotes.c, src/install-datebook.c, src/install-hinote.c,
-	  src/install-memo.c, src/install-todos.c, src/memos.c,
-	  src/money2qif.c, src/pi-csd.c, src/pi-getram.c, src/pi-getrom.c,
-	  src/pi-nredir.c, src/pi-port.c, src/pilot-addresses.c,
-	  src/pilot-clip.c, src/pilot-debug.c, src/pilot-dedupe.c,
-	  src/pilot-mail.c, src/pilot-schlep.c, src/read-expenses.c,
-	  src/read-ical.c, src/read-todos.c, src/reminders.c: Updated the
-	  conduits so they will at least build. Most of this is getting
-	  tossed anyway when we merge with HEAD. Commented out dumpdata()
-	  calls for now, they aren't working.
+	  reminders.c, src/addresses.c, src/debugsh.c, src/hinotes.c,
+	  src/install-datebook.c, src/install-hinote.c, src/install-memo.c,
+	  src/install-todos.c, src/memos.c, src/money2qif.c, src/pi-csd.c,
+	  src/pi-getram.c, src/pi-getrom.c, src/pi-nredir.c, src/pi-port.c,
+	  src/pilot-addresses.c, src/pilot-clip.c, src/pilot-debug.c,
+	  src/pilot-dedupe.c, src/pilot-mail.c, src/pilot-schlep.c,
+	  src/read-expenses.c, src/read-ical.c, src/read-todos.c,
+	  src/reminders.c: Updated the conduits so they will at least
+	  build. Most of this is getting tossed anyway when we merge with
+	  HEAD. Commented out dumpdata() calls for now, they aren't
+	  working.
 
 2001-12-30 15:25  desrod
 
@@ -9791,7 +9982,6 @@
 	  bindings/.cvsignore, bindings/Makefile.am, doc/man/.cvsignore,
 	  doc/man/Makefile.am, include/.cvsignore, include/Makefile.am,
 	  libpisock/.cvsignore, libpisock/Makefile.am, libpisock/sync.c,
-	  libpisock++/.cvsignore, libpisock++/Makefile.am,
 	  libpisync/sync.c, tests/.cvsignore, tests/Makefile.am,
 	  tests/Makefile.in: 2001-11-17  JP Rosevear  <jpr@ximian.com>
 
@@ -10669,8 +10859,7 @@
 
 2000-10-28 16:33  jpr
 
-	* .cvsignore, ChangeLog, libpisock++/.cvsignore: 2000-10-28
-	  <jpr@helixcode.com>
+	* .cvsignore, ChangeLog: 2000-10-28    <jpr@helixcode.com>
 
 		  * tests/.cvsignore: shush
 
@@ -11187,8 +11376,7 @@
 	  include/pi-sockaddr-win32.h, include/pi-sockaddr.h.in,
 	  include/pi-socket.h, include/pi-source.h, include/pi-sync.h,
 	  include/pi-syspkt.h, include/pi-todo.h, include/pi-todo.hxx,
-	  include/pi-version.h, libpisock++/.cvsignore,
-	  libpisock++/Makefile.am, libpisock/.cvsignore,
+	  include/pi-version.h, libpisock/.cvsignore,
 	  libpisock/Makefile.am, libpisock/dlp.c, libpisock/sync.c,
 	  libpisync/sync.c, doc/man/.cvsignore, doc/man/Makefile.am,
 	  bindings/.cvsignore, bindings/Makefile.am, tests/.cvsignore,
@@ -11266,8 +11454,7 @@
 	  include/pi-sockaddr-win32.h, include/pi-sockaddr.h.in,
 	  include/pi-socket.h, include/pi-source.h, include/pi-sync.h,
 	  include/pi-syspkt.h, include/pi-todo.h, include/pi-todo.hxx,
-	  include/pi-version.h, libpisock++/.cvsignore,
-	  libpisock++/Makefile.am, libpisock/.cvsignore,
+	  include/pi-version.h, libpisock/.cvsignore,
 	  libpisock/Makefile.am, doc/man/Makefile.am, bindings/.cvsignore,
 	  tests/Makefile.in: 2000-10-03  JP Rosevear  <jpr@helixcode.com>
 
@@ -11719,10 +11906,7 @@
 	* COPYING.LIB, ChangeLog, Makefile.in, Makefile.os2, README,
 	  ietf2datebook.PL, pi-getram.c, pi-getrom.c, read-todos.c,
 	  src/ietf2datebook.PL, src/pi-getram.c, src/pi-getrom.c,
-	  src/read-todos.c, include/pi-version.h, libpisock++/address.cc,
-	  libpisock++/appInfo.cc, libpisock++/datebook.cc,
-	  libpisock++/dlp.cc, libpisock++/iambicExpense.cc,
-	  libpisock++/memo.cc, libpisock++/todo.cc, libpisock/address.c,
+	  src/read-todos.c, include/pi-version.h, libpisock/address.c,
 	  libpisock/appinfo.c, libpisock/cmp.c, libpisock/datebook.c,
 	  libpisock/dlp.c, libpisock/expense.c, libpisock/inet.c,
 	  libpisock/mail.c, libpisock/memo.c, libpisock/os2serial.c,
@@ -11782,13 +11966,9 @@
 	  include/pi-config.h, include/pi-datebook.hxx, include/pi-dlp.hxx,
 	  include/pi-iambicExpense.hxx, include/pi-memo.hxx,
 	  include/pi-money.h, include/pi-sockaddr.h, include/pi-todo.hxx,
-	  include/pi-version.h, libpisock++/Makefile.os2,
-	  libpisock++/address.cc, libpisock++/datebook.cc,
-	  libpisock++/dlp.cc, libpisock++/iambicExpense.cc,
-	  libpisock++/memo.cc, libpisock++/todo.cc, libpisock/pi-file.c,
-	  libpisock/socket.c, doc/man/README, doc/man/pilot-link.7,
-	  doc/man/pilot-xfer.1, tests/Makefile: May 11,  1998	Kenneth
-	  Albanowski 0.8.13
+	  include/pi-version.h, libpisock/pi-file.c, libpisock/socket.c,
+	  doc/man/README, doc/man/pilot-link.7, doc/man/pilot-xfer.1,
+	  tests/Makefile: May 11,  1998   Kenneth Albanowski 0.8.13
 
 		  This version is an unchanged re-release of 0.8.12, which
 	  was not
@@ -11904,31 +12084,30 @@
 	  src/ietf2datebook.PL, src/install-memo.c, src/pi-nredir.c,
 	  src/pilot-debug.c, include/pi-config.h.in,
 	  include/pi-sockaddr.h.in, include/pi-socket.h,
-	  include/pi-version.h, libpisock++/Makefile.os2, libpisock/padp.c,
-	  libpisock/utils.c: Dec  7,  1997   Kenneth Albanowski 0.8.8
-	  Configuration changes:	     - add sa_len member to
-	  pi_sockaddr, to match OS	     - include compatability code
-	  for putenv	     Library changes:		- Modified PADP
-	  code to better cope with the timeout response of
-	  PalmOS 2.0. (The result is _not_ faster response, but less
-	  confusion.)	   Utility changes:	      - pilot-debug
-	  has minimal feature support		- install-memo has several
-	  new options, provided by Paul Traina
-	  <pst@Shockwave.COM>.
+	  include/pi-version.h, libpisock/padp.c, libpisock/utils.c: Dec
+	  7,  1997   Kenneth Albanowski 0.8.8	      Configuration
+	  changes:	     - add sa_len member to pi_sockaddr, to match
+	  OS	       - include compatability code for putenv
+	  Library changes:	     - Modified PADP code to better cope
+	  with the timeout response of		   PalmOS 2.0. (The result
+	  is _not_ faster response, but less		 confusion.)
+	  Utility changes:	      - pilot-debug has minimal feature
+	  support	    - install-memo has several new options,
+	  provided by Paul Traina	      <pst@Shockwave.COM>.
 
 2000-07-30 20:04  desrod
 
 	* ChangeLog, Makefile.in, Makefile.os2, aclocal.m4, configure,
 	  configure.in, ietf2datebook.PL, pi-nredir.c,
 	  src/ietf2datebook.PL, src/pi-nredir.c, include/pi-config.h.in,
-	  include/pi-socket.h, libpisock++/Makefile.os2, tests/Makefile.in,
-	  tests/Makefile.os2: Oct  7,  1997   Kenneth Albanowski 0.8.7
-	  Configuration changes:	      - install .hxx headers
-	  - use $(MAKE) instead of make	     - added latest
-	  libtool-1.0c	       Utility changes: 	  - pi-nredir deals
-	  with missing putenv or setenv 	Perl 5 binding changes:
-		- quote "index".	    - change usages of errno as a
-	  member to errnop	      - fix some leaking newRV()'s.
+	  include/pi-socket.h, tests/Makefile.in, tests/Makefile.os2: Oct
+	  7,  1997   Kenneth Albanowski 0.8.7	      Configuration
+	  changes:	     - install .hxx headers	      - use $(MAKE)
+	  instead of make	    - added latest libtool-1.0c
+	  Utility changes:	     - pi-nredir deals with missing putenv
+	  or setenv	    Perl 5 binding changes:	      - quote
+	  "index".	      - change usages of errno as a member to
+	  errnop	    - fix some leaking newRV()'s.
 
 2000-07-30 20:03  desrod
 
@@ -12064,12 +12243,11 @@
 	  include/pi-datebook.h, include/pi-dlp.h, include/pi-expense.h,
 	  include/pi-iambicExpense.h, include/pi-mail.h, include/pi-memo.h,
 	  include/pi-socket.h, include/pi-source.h, include/pi-todo.h,
-	  libpisock++/Makefile.os2, libpisock/address.c,
-	  libpisock/appinfo.c, libpisock/datebook.c, libpisock/dlp.c,
-	  libpisock/expense.c, libpisock/mail.c, libpisock/memo.c,
-	  libpisock/pi-file.c, libpisock/todo.c, libpisock/utils.c,
-	  tests/Makefile.in, tests/Makefile.os2, tests/packers.c: Aug 4,
-	  1997	   Kenneth Albanowski 0.8.0
+	  libpisock/address.c, libpisock/appinfo.c, libpisock/datebook.c,
+	  libpisock/dlp.c, libpisock/expense.c, libpisock/mail.c,
+	  libpisock/memo.c, libpisock/pi-file.c, libpisock/todo.c,
+	  libpisock/utils.c, tests/Makefile.in, tests/Makefile.os2,
+	  tests/packers.c: Aug 4, 1997	   Kenneth Albanowski 0.8.0
 
 		  Configuration changes:
 		    - Added dependancy checking to utilties.
@@ -12206,8 +12384,8 @@
 	  pilot-mail.c, pilot-undelete.pl, pilot-xfer.c, read-ical.c,
 	  src/pilot-mail.c, src/pilot-xfer.c, src/read-ical.c,
 	  include/pi-config.h.in, include/pi-mail.h, include/pi-socket.h,
-	  libpisock++/Makefile.os2, libpisock/dlp.c, libpisock/mail.c: Jul
-	  22, 1997    Kenneth Albanowski 0.7.5
+	  libpisock/dlp.c, libpisock/mail.c: Jul 22, 1997    Kenneth
+	  Albanowski 0.7.5
 
 		  Configuration changes:
 		    - Uninstalled binaries should better cope with symlinks
@@ -12258,9 +12436,8 @@
 	  src/pd-tty.c, src/pilot-mail.c, include/pi-inet.h,
 	  include/pi-inetserial.h, include/pi-macros.h, include/pi-mail.h,
 	  include/pi-serial.h, include/pi-socket.h, include/pi-source.h,
-	  libpisock++/Makefile.os2, libpisock/os2serial.c,
-	  libpisock/serial.c, libpisock/socket.c, libpisock/utils.c: Jul
-	  13, 1997    Kenneth Albanowski 0.7.4
+	  libpisock/os2serial.c, libpisock/serial.c, libpisock/socket.c,
+	  libpisock/utils.c: Jul 13, 1997    Kenneth Albanowski 0.7.4
 
 		  Configuration changes:
 		    - Integrated libtool 1.0 (thanks, Gord!)
@@ -12324,8 +12501,8 @@
 	* ChangeLog, Makefile.in, Makefile.os2, README, configure,
 	  configure.in, pilot-debug.c, pilot-undelete, pilot-undelete.pl,
 	  src/pilot-debug.c, include/pi-socket.h, include/pi-source.h,
-	  libpisock++/Makefile.os2, libpisock/dlp.c, libpisock/syspkt.c:
-	  Jul 6, 1997	  Kenneth Albanowski 0.7.3
+	  libpisock/dlp.c, libpisock/syspkt.c: Jul 6, 1997     Kenneth
+	  Albanowski 0.7.3
 
 		  Heavily modifed Python binding to use OO approach to
 	  record manipulation
@@ -12360,9 +12537,8 @@
 	* ChangeLog, Makefile.in, Makefile.os2, aclocal.m4, configure,
 	  configure.in, parsedate.c, parsedate.y, src/parsedate.c,
 	  src/parsedate.y, pilot-mail.c, sync-memodir.c, src/pilot-mail.c,
-	  include/pi-socket.h, libpisock++/Makefile.os2,
-	  libpisock/serial.c, libpisock/unixserial.c: Jun 29, 1997
-	  Kenneth Albanowski 0.7.2
+	  include/pi-socket.h, libpisock/serial.c, libpisock/unixserial.c:
+	  Jun 29, 1997	  Kenneth Albanowski 0.7.2
 
 		  Complete reimplemenation of library production, using
 	  version 0.9h of
@@ -12609,8 +12785,7 @@
 	* ChangeLog, Makefile.in, Makefile.os2, dlpsh.c, parsedate.c,
 	  parsedate.y, pilot-mail.c, src/dlpsh.c, src/parsedate.c,
 	  src/parsedate.y, src/pilot-mail.c, include/pi-macros.h,
-	  include/pi-socket.h, include/pi-source.h,
-	  libpisock++/iambicExpense.cc, libpisock/dlp.c,
+	  include/pi-socket.h, include/pi-source.h, libpisock/dlp.c,
 	  libpisock/serial.c, libpisock/slp.c, libpisock/socket.c,
 	  libpisock/utils.c: May 25, 1997    Kenneth Albanowski 0.6.4
 
@@ -12631,7 +12806,6 @@
 	* ChangeLog, parsedate.c, parsedate.y, validate.cc,
 	  src/parsedate.c, src/parsedate.y, src/validate.cc,
 	  include/pi-datebook.hxx, include/pi-iambicExpense.hxx,
-	  libpisock++/iambicExpense.cc, libpisock++/memo.cc,
 	  libpisock/dlp.c, libpisock/serial.c: May 18, 1997    Kenneth
 	  Albanowski 0.6.3
 
@@ -12668,11 +12842,8 @@
 	  include/pi-memo.hxx, include/pi-padp.h, include/pi-serial.h,
 	  include/pi-slp.h, include/pi-socket.h, include/pi-source.h,
 	  include/pi-syspkt.h, include/pi-todo.h, include/pi-todo.hxx,
-	  libpisock++/Makefile.os2, libpisock++/address.cc,
-	  libpisock++/appInfo.cc, libpisock++/datebook.cc,
-	  libpisock++/iambicExpense.cc, libpisock++/memo.cc,
-	  libpisock++/todo.cc, libpisock/socket.c, libpisock/utils.c: May
-	  11, 1997    Kenneth Albanowski 0.6.2
+	  libpisock/socket.c, libpisock/utils.c: May 11, 1997	 Kenneth
+	  Albanowski 0.6.2
 
 	      Added pilot-undelete utility to un-archive records. Needs
 	  Perl 5.
@@ -12711,13 +12882,10 @@
 	  include/pi-config.h.in, include/pi-datebook.h, include/pi-dlp.h,
 	  include/pi-file.h, include/pi-macros.h, include/pi-memo.h,
 	  include/pi-socket.h, include/pi-source.h, include/pi-todo.h,
-	  libpisock++/Makefile.os2, libpisock++/address.cc,
-	  libpisock++/appInfo.cc, libpisock++/datebook.cc,
-	  libpisock++/memo.cc, libpisock++/todo.cc, libpisock/address.c,
-	  libpisock/datebook.c, libpisock/dlp.c, libpisock/memo.c,
-	  libpisock/pi-file.c, libpisock/serial.c, libpisock/slp.c,
-	  libpisock/socket.c, libpisock/syspkt.c, libpisock/utils.c: Mar 4,
-	  1997	   Kenneth Albanowski 0.6.1
+	  libpisock/address.c, libpisock/datebook.c, libpisock/dlp.c,
+	  libpisock/memo.c, libpisock/pi-file.c, libpisock/serial.c,
+	  libpisock/slp.c, libpisock/socket.c, libpisock/syspkt.c,
+	  libpisock/utils.c: Mar 4, 1997     Kenneth Albanowski 0.6.1
 
 		  Perl5 support nearly complete. Documentation less so.
 		  Python support nearly complete. Documentation less so.
@@ -12749,16 +12917,13 @@
 	  include/pi-address.h, include/pi-appinfo.h,
 	  include/pi-config.h.in, include/pi-datebook.h,
 	  include/pi-expense.h, include/pi-macros.h, include/pi-memo.h,
-	  include/pi-todo.h, libpisock++/Makefile.os2,
-	  libpisock++/address.cc, libpisock++/appInfo.cc,
-	  libpisock++/datebook.cc, libpisock++/todo.cc,
-	  libpisock/address.c, libpisock/cmp.c, libpisock/datebook.c,
-	  libpisock/dlp.c, libpisock/expense.c, libpisock/mail.c,
-	  libpisock/memo.c, libpisock/padp.c, libpisock/pi-file.c,
-	  libpisock/serial.c, libpisock/slp.c, libpisock/socket.c,
-	  libpisock/sync.c, libpisock/syspkt.c, libpisock/todo.c,
-	  libpisock/utils.c, libpisync/sync.c: Apr 28, 1997    Kenneth
-	  Albanowski 0.6.0
+	  include/pi-todo.h, libpisock/address.c, libpisock/cmp.c,
+	  libpisock/datebook.c, libpisock/dlp.c, libpisock/expense.c,
+	  libpisock/mail.c, libpisock/memo.c, libpisock/padp.c,
+	  libpisock/pi-file.c, libpisock/serial.c, libpisock/slp.c,
+	  libpisock/socket.c, libpisock/sync.c, libpisock/syspkt.c,
+	  libpisock/todo.c, libpisock/utils.c, libpisync/sync.c: Apr 28,
+	  1997	  Kenneth Albanowski 0.6.0
 
 		  Primary feature: optional C++ support. If you have a C++
 	  compiler, you'll

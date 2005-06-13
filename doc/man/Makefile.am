@@ -1,5 +1,4 @@
 man_MANS =			\
-	addresses.1		\
 	debugsh.1		\
 	dlpsh.1			\
 	hinotes.1		\
@@ -13,7 +12,6 @@ man_MANS =			\
 	install-todos.1		\
 	install-user.1		\
 	memos.1			\
-	money2qif.1		\
 	pi-csd.1		\
 	pi-getram.1		\
 	pi-getrom.1		\

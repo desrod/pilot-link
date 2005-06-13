@@ -1,11 +1,10 @@
-.\" -*- coding: us-ascii -*-
-.TH pi-getrom 1 "@VERSION@"  
+.TH pi\-getrom "1"  "Copyright 1996\-2005 FSF" "pilot\-link @VERSION@" 
 .SH NAME
-pi-getrom \- Retrieves the ROM image from your Palm device for use in debugging. 
+pi\-getrom \- Retrieves the ROM image from your Palm device for use in debugging. 
 .SH SECTION
-pilot-link: Tools
+pilot\-link: Tools
 .SH SYNOPSIS
-\fIpi-getrom\fR
+\fIpi\-getrom\fR
 [\fB\-p\fR|\fB\-\-port\fR <\fBport\fR>]
 [\fB\-\-version\fR] [\fB\-q\fR|\fB\-\-quiet\fR]
 [\fB\-?\fR|\fB\-\-help\fR] [\fB\-\-usage\fR]
@@ -13,12 +12,12 @@ pilot-link: Tools
 [\fB\-s\fR|\fB\-\-sysinfo\fR] [\fB\-\-ram\fR]
 [\fB\-\-rom\fR] [\fBfilename\fR]
 .SH DESCRIPTION
-\fIpi-getrom\fR is used to fetch the ROM from your Palm
+\fIpi\-getrom\fR is used to fetch the ROM from your Palm
 handheld for use in debugging Palm applications through the use of
 POSE, the
 \fBPalm OS Emulator application\fR.
 .PP
-Note, because \fIpi-getrom\fR uses the low-level RPC
+Note, because \fIpi\-getrom\fR uses the low\-level RPC
 protocol to fetch the ROM image, and the new OS5 devices do not use
 this
 protocol, you currently cannot fetch an OS5 ROM image using this
@@ -27,7 +26,7 @@ This will be updated in a future release to handle fetching OS5 ROM
 images,
 using the debugger protocol.
 .SH OPTIONS
-.SS "PI-GETROM OPTIONS"
+.SS "PI\-GETROM OPTIONS"
 \fB\-t\fR,
 \fB\-\-token\fR \fBtoken\fR
 .RS 
@@ -66,10 +65,10 @@ written as the filename of
 .RS 
 Use device file <\fBport\fR> to communicate
 with the Palm handheld. If this is not specified,
-\fIpi-getrom\fR will look for the
+\fIpi\-getrom\fR will look for the
 \fB$PILOTPORT\fR environment variable. If neither
 are
-found or supplied, \fIpi-getrom\fR will
+found or supplied, \fIpi\-getrom\fR will
 print the usage information.
 .RE
 .PP
@@ -78,16 +77,16 @@ print the usage information.
 Suppress 'Hit HotSync button' message
 .RE
 .PP
-\fI-v\fR, \fI--version\fR
+\fI\-v\fR, \fI\-\-version\fR
 .RS 
-Display version of \fIpi-getrom\fR and exit
+Display version of \fIpi\-getrom\fR and exit
 without
 connecting.
 .RE
 .SS "HELP OPTIONS"
 \fB\-h\fR, \fB\-\-help\fR
 .RS 
-Display the help synopsis for \fIpi-getrom\fR and
+Display the help synopsis for \fIpi\-getrom\fR and
 exit without connecting.
 .RE
 .PP
@@ -104,7 +103,7 @@ application (deprecated).
 .SH LICENSING
 \fIWarning\fR: Please completely back up your Palm
 before using this program! The developers of
-\fIpilot-link\fR are not responsible for any
+\fIpilot\-link\fR are not responsible for any
 data loss that may occur from the use of this application.
 .PP
 Use of this program MAY place you in violation of your license
@@ -113,21 +112,21 @@ your Palm documentation (specifically the "Software License
 Agreement") before
 running this program.
 .SH AUTHOR
-\fIpi-getrom\fR was originally written by Kenneth
+\fIpi\-getrom\fR was originally written by Kenneth
 Albanowski.
 .PP
 This manual page was written by Neil Williams
-<linux@codehelp.co.uk>
+linux@codehelp.co.uk
 .SH BUGS
 .SS "KNOWN BUGS"
-\fIpi-getrom\fR does not work with OS5 devices as
+\fIpi\-getrom\fR does not work with OS5 devices as
 yet, due to changes in the architecture and design of the Palm
 HotSync
 protocol and file type changes from m68k to ARM. Other than that,
-\fIpi-getrom\fR has no known bugs at this time.
+\fIpi\-getrom\fR has no known bugs at this time.
 .SS "REPORTING BUGS"
 Report bugs at
-\fIhttp://bugs.pilot-link.org/\fR.
+\fIhttp://bugs.pilot\-link.org/\fR.
 .SH COPYRIGHT
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License as
@@ -141,8 +140,8 @@ General Public License for more details.
 .PP
 You should have received a copy of the GNU General Public
 License along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 
+Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111\-1307 
 USA
 .SH "SEE ALSO"
-\fIpi-getram\fR (1),
-\fIpilot-link\fR (7).
+\fIpi\-getram\fR (1),
+\fIpilot\-link\fR(7).

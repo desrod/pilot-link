@@ -1,11 +1,10 @@
-.\" -*- coding: us-ascii -*-
-.TH pilot-schlep 1 "@VERSION@"  
+.TH pilot\-schlep "1"  "Copyright 1996\-2005 FSF" "pilot\-link @VERSION@"
 .SH NAME
-pilot-schlep \- Package up any arbitrary file and sync it to your Palm device. 
+pilot\-schlep \- Package up any arbitrary file and sync it to your Palm device. 
 .SH SECTION
-pilot-link: Conduits
+pilot\-link: Userland Conduits
 .SH SYNOPSIS
-\fIpilot-schlep\fR
+\fIpilot\-schlep\fR
 [\fB\-p\fR|\fB\-\-port\fR <\fBport\fR>]
 [\fB\-\-version\fR] [\fB\-q\fR|\fB\-\-quiet\fR]
 [\fB\-?\fR|\fB\-\-help\fR] [\fB\-\-usage\fR]
@@ -21,7 +20,7 @@ installing and fetching. This will be updated in a later release to
 handle this type of
 capability, as well as handle multiple 'Schlep' files.
 .SH OPTIONS
-.SS "PILOT-SCHLEP OPTIONS"
+.SS "PILOT\-SCHLEP OPTIONS"
 \fB\-i\fR, \fB\-\-install\fR \fBfile\fR
 .RS 
 Pack and install \fBfile\fR to your Palm
@@ -41,10 +40,10 @@ Delete the packaged file from your Palm device
 .RS 
 Use device file \fBport\fR to communicate with
 the Palm handheld. If this is not specified,
-\fIpilot-schlep\fR will look for the
+\fIpilot\-schlep\fR will look for the
 \fB$PILOTPORT\fR environment variable. If neither
 are
-found or supplied, \fIpilot-schlep\fR will
+found or supplied, \fIpilot\-schlep\fR will
 print the usage information.
 .RE
 .PP
@@ -55,13 +54,13 @@ Suppress 'Hit HotSync button' message
 .PP
 \fB\-v\fR, \fB\-\-version\fR
 .RS 
-Display version of \fIpilot-schlep\fR.
+Display version of \fIpilot\-schlep\fR.
 .RE
 .SS "HELP OPTIONS"
 \fB\-h\fR, \fB\-\-help\fR
 .RS 
 Display the help synopsis for
-\fIpilot-schlep\fR.
+\fIpilot\-schlep\fR.
 .RE
 .PP
 \fB\-\-usage\fR 
@@ -77,7 +76,7 @@ To package up and store a file for later retrieval on your Palm:
       
 .fi
 .PP
-To unpack a file that has been stored on your Palm with pilot-schlep:
+To unpack a file that has been stored on your Palm with pilot\-schlep:
 .PP
 .nf
 
@@ -86,7 +85,7 @@ To unpack a file that has been stored on your Palm with pilot-schlep:
 .fi
 .PP
 Please notice that you must use redirection to Install or Fetch files
-using pilot-schlep.
+using pilot\-schlep.
 .PP
 Currently the stored name and file type is not queried so you can
 potentially Install a PDF file, and retrieve it as a ZIP file.
@@ -96,10 +95,10 @@ fetching. This will be updated in a later release to handle this type
 of capability, as well as handle multiple 'Schlep' files.
 .SH AUTHOR
 This manual page was written by Neil Williams
-<linux@codehelp.co.uk>
+linux@codehelp.co.uk
 .SH "REPORTING BUGS"
 Report bugs at:
-\fIhttp://bugs.pilot-link.org\fR
+\fIhttp://bugs.pilot\-link.org\fR
 .SH COPYRIGHT
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License as
@@ -113,7 +112,7 @@ General Public License for more details.
 .PP
 You should have received a copy of the GNU General Public
 License along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 
+Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111\-1307 
 USA
 .SH "SEE ALSO"
-\fIpilot-link\fR (7)
+\fIpilot\-link\fR(7)

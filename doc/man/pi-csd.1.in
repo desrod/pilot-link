@@ -1,13 +1,12 @@
-.\" -*- coding: us-ascii -*-
-.TH pi-csd 1 "@VERSION@"  
+.TH pi\-csd "1"  "Copyright 1996\-2005 FSF" "pilot\-link @VERSION@" 
 .SH NAME
-pi-csd \- Connection Service Daemon for Palm Devices
+pi\-csd \- Connection Service Daemon for Palm Devices
 .SH SECTION
-pilot-link: Tools
+pilot\-link: Tools
 .SH SYNOPSIS
 Required for accepting logons via NetSync(tm)
 .PP
-\fIpi-csd\fR
+\fIpi\-csd\fR
 \fB\-H\fR
 \fB"localhost"\fR
 \fB\-a\fR
@@ -15,10 +14,10 @@ Required for accepting logons via NetSync(tm)
 \fB\-n\fR
 \fB255.255.255.0\fR
 .SH OPTIONS
-.SS "PI-CSD OPTIONS"
+.SS "PI\-CSD OPTIONS"
 \fB\-\-version\fR
 .RS 
-Display version of \fIpi-csd\fR and exit.
+Display version of \fIpi\-csd\fR and exit.
 .RE
 .PP
 \fB\-q\fR, \fB\-\-quiet\fR
@@ -43,7 +42,7 @@ The subnet mask of the address.
 .SS "HELP OPTIONS"
 \fB\-h\fR, \fB\-\-help\fR
 .RS 
-Display the help synopsis for \fIpi-csd\fR and
+Display the help synopsis for \fIpi\-csd\fR and
 exit.
 .RE
 .PP
@@ -52,12 +51,12 @@ exit.
 Display a brief usage message and exit.
 .RE
 .SH AUTHOR
-\fIpi-csd\fR was written by Kenneth Albanowski.
+\fIpi\-csd\fR was written by Kenneth Albanowski.
 .PP
-This manual page was written by Neil Williams <linux@codehelp.co.uk>
+This manual page was written by Neil Williams linux@codehelp.co.uk
 .SH "REPORTING BUGS"
 Report bugs at:
-\fIhttp://bugs.pilot-link.org\fR
+\fIhttp://bugs.pilot\-link.org\fR
 .SH COPYRIGHT
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License as
@@ -71,7 +70,7 @@ General Public License for more details.
 .PP
 You should have received a copy of the GNU General Public
 License along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 
+Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111\-1307 
 USA
 .SH "SEE ALSO"
-\fIpilot-link\fR (7).
+\fIpilot\-link\fR(7).

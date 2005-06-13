@@ -3,7 +3,7 @@
 .SH NAME
 addresses \- Dumps the Palm Address Book entries to STDOUT in a generic text output format. 
 .SH SECTION
-pilot-link: Conduits
+pilot-link: Userland Conduits
 .SH SYNOPSIS
 Output to STDOUT (the screen):
 .PP

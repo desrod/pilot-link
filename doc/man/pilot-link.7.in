@@ -1,353 +1,191 @@
-.\" -*- coding: us-ascii -*-
-.TH pilot-link 7 "@VERSION@"
+.TH pilot\-link "7"  "Copyright 1996\-2005 FSF" "pilot\-link @VERSION@"
 .SH NAME
-pilot-link \- A suite of tools for communicating with Palm handhelds, such as those made by Palm, Handspring, Handera, TRGPro, Sony or other Palm Compatible Handheld PDA device. 
+pilot\-link \- A suite of tools for communicating with Palm handhelds, such as those made by Palm, Handspring, Handera, TRGPro, Sony or other Palm Compatible Handheld PDA device. 
 .SH SECTION
-pilot-link: Overview
+Pilot\-link: Overview
 .SH DESCRIPTION
-The pilot-link suite of tools contains a series of conduits,
-libraries,
-and language bindings for moving information to and from your Palm
-device and
-your desktop or server/workstation system, as well as across the
-network.
+The pilot\-link suite of tools contains a series of conduits, libraries,
+and language bindings for moving information to and from your Palm device and
+your desktop or server/workstation system, as well as across the network.
 .SH "TARGET DEVICE"
 The /dev/pilot fallback has been removed in v0.12.
 The environment variable \fB$PILOTPORT\fR
-can be set in your shell, to save specifying the port each time. A
-serial
-device specified on the command-line will be used regardless of any
+can be set in your shell, to save specifying the port each time. A serial
+device specified on the command\-line will be used regardless of any
 \fB$PILOTPORT\fR setting. If \fB$PILOTPORT\fR
 is not set, and \fB\-p\fR is not supplied, all conduits in
-\fIpilot-link\fR will print the usage information.
-The default connection rate is 9600 baud. You are welcome to try
-higher
+\fIpilot\-link\fR will print the usage information.
+The default connection rate is 9600 baud. You are welcome to try higher
 baud rates (19200, 38400, 57600 or higher) by setting the
-\fB$PILOTRATE\fR environment variable, but various
-machines
-have various limitations. (Be careful about values higher than
-115200 on
-older Linux boxes if you've been using setserial to change the
-multiplier).
+\fB$PILOTRATE\fR environment variable, but various machines
+have various limitations. (Be careful about values higher than 115200 on
+older Linux boxes if you've been using setserial to change the multiplier).
 .SH CONDUITS
 A complete list of conduits available from within the
-\fIpilot-link\fR package as of the date of this
-manpage. If you invoke any of the conduits from \fIpilot-link\fR with no
-command-line arguments at all, the usage summary will be printed.
+\fIpilot\-link\fR package as of the date of this manpage.
+If you invoke any of the conduits from \fIpilot\-link\fR with no
+command\-line arguments at all, the usage summary will be printed.
 .PP
-Note that there are widespread changes in this release - some
-conduits
-have been merged, a lot have had new options added and some options
-have been
+Note that there are widespread changes in this release \- some conduits
+have been merged, a lot have had new options added and some options have been
 renamed or removed.
-.SS 
-addresses
-.PP
-DEPRECATED: Use pilot-addresses --write|--human-readable
-instead.
-.SS 
-hinotes
-.PP
-Syncronize your Hi-Notes database with your desktop machine.
-.SS 
-install-datebook
-.PP
+.SS ADDRESSES
+DEPRECATED: Use pilot\-addresses \-\-write|\-\-human\-readable instead.
+.SS HINOTES
+Syncronize your Hi\-Notes database with your desktop machine.
+.SS INSTALL\-DATEBOOK
 installs a new datebook entry onto your Palm handheld.
-.SS 
-install-expenses
-.PP
-Install an expense record from various parameters and arguments
-passed at connection time.
-.SS 
-install-hinote
-.PP
-Install local files into your Hi-Note database on your Palm
-handheld. 
-.SS 
-install-memo
-.PP
+.SS INSTALL\-EXPENSES
+Install an expense record from various parameters and arguments passed at connection time.
+.SS INSTALL\-HINOTE
+Install local files into your Hi\-Note database on your Palm handheld. 
+.SS INSTALL\-MEMO
 Installs a new Memo Pad entry onto your Palm handheld.
-.SS 
-install-netsync
-.PP
-reads or sets the Network Preferences information on a Palm
-Device. Modifies the "Network Preference" settings and reports
-additional information about the Palm, such as the IP, hostname,
-and other information as they are set on the Palm.
-.SS 
-install-todo
-.PP
+.SS INSTALL\-NETSYNC
+reads or sets the Network Preferences information on a Palm Device. Modifies the "Network Preference" settings and reports additional intormation about the Palm, such as the IP, hostname, and other information as they are set on the Palm.
+.SS INSTALL\-TODO
 Updates the Palm ToDo list with one new entry.
-.SS 
-install-todos
-.PP
+.SS INSTALL\-TODOS
 Updates the Palm ToDo list with entries from a local file.
-.SS 
-install-user
-.PP
-Reads or sets a Palm User and UserID on a Palm Device. Modifies
-the "User Preference" settings and reports additional information
-about the Palm, such as the Username and UserID as they are set on
-the Palm
-.SS 
-memos
-.PP
+.SS INSTALL\-USER
+Reads or sets a Palm User and UserID on a Palm Device. Modifies the "User Preference" settings and reports additional intormation about the Palm, such as the Username and UserID as they are set on the Palm
+.SS MEMOS
 Manipulate Memo entries from a file or your Palm device.
-.SS 
-money2qif
+.SS MONEY2QIF
+Convert and sync your MicroMoney account data Quicken QIF format.
+.SS PILOT\-ADDRESSES
+Read and write address book databases to and from a Palm handheld. 
 .PP
-Convert and sync your MicroMoney account data Quicken QIF
-format.
-.SS 
-pilot-addresses
-.PP
-Read and write address book databases to and from a Palm
-handheld. 
-.PP
-Changes in 0.12: Incorporates functionality from the now
-deprecated \fBaddresses\fR conduit.
-.SS 
-pilot-archive
-.PP
-DEPRECATED: Use read-todos -w --archived instead. 
-.SS 
-pilot-clip
-.PP
+Changes in 0.12: Incorporates functionality from the now deprecated \fBaddresses\fR conduit.
+.SS PILOT\-ARCHIVE
+DEPRECATED: Use read\-todos \-w \-\-archived instead. 
+.SS PILOT\-CLIP
 Get or Set the Palm Clipboard contents from STDOUT/STDIN.
-.SS 
-pilot-dedupe
-.PP
+.SS PILOT\-DEDUPE
 Removes duplicate records from any Palm database.
-.SS 
-pilot-file
-.PP
-Dump application and header information from your local PRC/PDB
-files. 
-.SS 
-pilot-foto
-.PP
+.SS PILOT\-FILE
+Dump application and header information from your local PRC/PDB files. 
+.SS PILOT\-FOTO
 Palm 'Foto' Image Installer/Remover/Fetcher/Converter
-.SS 
-pilot-schlep
-.PP
+.SS PILOT\-SCHLEP
 Package up any arbitrary file and sync it to your Palm device.
-.SS 
-pilot-treofoto
-.PP
-Copies Treo foto databases to current directory and extracts
-\&.jpg files from them.
-.SS 
-pilot-wav
-.PP
+.SS PILOT\-TREOFOTO
+Copies Treo foto databases to current directory and extracts .jpg files from them.
+.SS PILOT\-WAV
 Decodes Palm Voice Memo files to wav files you can read 
-.SS 
-pilot-xfer
-.PP
+.SS PILOT\-XFER
 Backup, sync, and restore databases from a Palm handheld device.
-.SS 
-read-expenses
-.PP
+.SS READ\-EXPENSES
 Export Palm Expense application data in a text format.
-.SS 
-read-ical
-.PP
-Exports the DatebookDB and/or ToDo applications (DatebookDB.pdb
-and ToDoDB.pdb respectively) to Ical format. (The ical application
-must be installed and working on your system first. This is NOT the
-same thing as the iCal Calendar format, however).
-.SS 
-read-notepad
-.PP
-List the record information found in the Palm Notepad (Palm OS4
-and later) application.
-.SS 
-read-palmpix
-.PP
-Convert all pictures in the files given or found on a Palm
-handheld.
-.SS 
-read-screenshot
-.PP
+.SS READ\-ICAL
+Exports the DatebookDB and/or ToDo applications (DatebookDB.pdb and ToDoDB.pdb respectively) to Ical format. (The ical application must be installed and working on your system first. This is NOT the same thing as the iCal Calendar format, however).
+.SS READ\-NOTEPAD
+List the record information found in the Palm Notepad (Palm OS4 and later) application.
+.SS READ\-PALMPIX
+Convert all pictures in the files given or found on a Palm handheld.
+.SS READ\-SCREENSHOT
 Read screenshots from Palm (ScreenShotDB).
-.SS 
-read-todos
-.PP
-Syncronize your Palm ToDo application's database with your
-desktop machine.
-.SS 
-read-veo
-.PP
+.SS READ\-TODOS
+Syncronize your Palm ToDo application's database with your desktop machine.
+.SS READ\-VEO
 Synchronize your Veo Traveler databases 
-.SS 
-reminders
-.PP
-Exports your Palm Datebook database into a 'remind' data file
-format. 
+.SS REMINDERS
+Exports your Palm Datebook database into a 'remind' data file format. 
 .SH TOOLS
-.SS 
-debugsh
-.PP
-Simple debugging console for a Palm Handheld device
-(deprecated).
-.SS 
-dlpsh
-.PP
-An interactive Desktop Link Protocol (DLP) Shell for your Palm device. This is very
-useful for debugging potential problems with your Palm's connection. You can also Query
-the RAM/ROM, list databases, change your UserID or Username, set the time, and many
-other useful functions. The DLP Shell is the "Swiss Army Knife" of any of pilot-link's
-tools.
-.SS 
-pi-csd
-.PP
+.SS DEBUGSH
+Simple debugging console for a Palm Handheld device (deprecated).
+.SS DLPSH
+An interactive Desktop Link Protocol (DLP) Shell for your Palm device. This is very useful for debugging potential problems with your serial port. Query the RAM/ROM, list databases, change your UserID or Username, and many other useful functions. This is the "Swiss Army Knife" of any of pilot\-link's tools.
+.SS PI\-CSD
 Connection Service Daemon for Palm Devices
-.SS 
-pi-getram
-.PP
-Retrieves the RAM image from your Palm device for use in
-debugging.
-.SS 
-pi-getrom
-.PP
-Retrieves the ROM image from your Palm device for use in
-debugging. 
-.SS 
-pi-getromtoken
-.PP
+.SS PI\-GETRAM
+Retrieves the RAM image from your Palm device for use in debugging.
+.SS PI\-GETROM
+Retrieves the ROM image from your Palm device for use in debugging. 
+.SS PI\-GETROMTOKEN
 Reads a ROM token from a Palm Handheld device. 
-.SS 
-pi-nredir
-.PP
+.SS PI\-NREDIR
 Accept connection and redirect via Network Hotsync Protocol. 
 .SH "PERL SCRIPTS"
-(Available from the source code, not always installed from
-packages).
-.SS 
-ietf2datebook.PL
-.PP
-Converts IETF agenda format to install-datebook format 
-.SS 
-pilot-undelete.PL
-.PP
-Turn previously archived records into normal (non-archived)
-records by resetting the "dirty" bit.
-.SS 
-sync-plan.PL
-.PP
-completely synchronize the Palm datebook with the "plan"
-calendar via
+(Available from the source code, not always installed from packages).
+.SS IETF2DATEBOOK.PL
+Converts IETF agenda format to install\-datebook format 
+.SS PILOT\-UNDELETE.PL
+Turn previously archived records into normal (non\-archived) records by resetting the "dirty" bit.
+.SS SYNC\-PLAN.PL
+completely synchronize the Palm datebook with the "plan" calendar via
 netplan, including authenticating
 to the netplan server itself.
 .SH "ADVANCED PROGRAMS"
-Some of these programs are not intended for general end-users. More
-detailed documentation on their usage can be obtained by reading the
-source of
+Some of these programs are not intended for general end\-users. More
+detailed documentation on their usage can be obtained by reading the source of
 the application itself.
-.SS 
-ccexample
-.PP
+.SS CCEXAMPLE
 test program demonstrating C++ interface.
-.SS 
-iambicexample
-.PP
+.SS IAMBICEXAMPLE
 test program demonstrating C++ interface.
-.SS 
-validate
-.PP
+.SS VALIDATE
 experimental program to test C++ features.
 .SH OBTAINING
-The most current version of the pilot-link suite of tools can be
-found
+The most current version of the pilot\-link suite of tools can be found
 at the pilot link homepage:
-http://www.pilot-link.org/
+http://www.pilot\-link.org/
 .SH "MAILING LIST"
-The original pilot-unix mailing list has been taken offline, and
-is now
+The original pilot\-unix mailing list has been taken offline, and is now
 being hosted and maintained by David A. Desrosiers
-<desrod@gnu\-designs.com>. The original pilot-unix mailing
-list was
+desrod@gnu\-designs.com. The original pilot\-unix mailing list was
 maintained by Matthew Cravit. Its mandate was:
 .RS 
-The pilot-unix mailing list is for discussion and
-"idea-sharing" for
-those interested in using your Palm handheld with UNIX systems.
-This includes
-people who are interested in helping to develop tools to allow the
-Palm to
-operate with UNIX and other POSIX systems, and possibly to develop
-an SDK
-(Software Develop- ment Kit) for the Palm for Unix.
+The pilot\-unix mailing list is for discussion and "idea\-sharing" for
+those interested in using your Palm handheld with UNIX systems. This includes
+people who are interested in helping to develop tools to allow the Palm to
+operate with UNIX and other POSIX systems, and possibly to develop an SDK
+(Software Develop\- ment Kit) for the Palm for Unix.
 .RE
 .PP
-For more information, including how to subscribe to the pilot-link
-mailing
-lists, please visit the pilot-link mailing list subscription page:
+For more information, including how to subscribe to the pilot\-link mailing
+lists, please visit the pilot\-link mailing list subscription page:
 .PP
-http://lists.pilot-link.org/
+http://lists.pilot\-link.org/
 .PP
-pilot-link specific mailing lists are also available for
-Development,
+pilot\-link specific mailing lists are also available for Development,
 General, and Announce topics, at the following:
 .PP
-http://lists.pilot-link.org/mailman/listinfo/pilot-link-devel
+http://lists.pilot\-link.org/mailman/listinfo/pilot\-link\-devel
 .PP
-http://lists.pilot-link.org/mailman/listinfo/pilot-link-general
+http://lists.pilot\-link.org/mailman/listinfo/pilot\-link\-general
 .PP
-http://lists.pilot-link.org/mailman/listinfo/pilot-link-announce
+http://lists.pilot\-link.org/mailman/listinfo/pilot\-link\-announce
 .SH AUTHOR
-Most of the pilot-link tools were written by Kenneth Albanowski.
-This
-manual page was written by David H. Silber <pilot@orbits.com>, and
-updated for version 0.12 of pilot-link by Neil Williams
-<linux@codehelp.co.uk>.
+Most of the pilot\-link tools were written by Kenneth Albanowski. This
+manual page was written by David H. Silber pilot@orbits.com, and
+updated for version 0.12 of pilot\-link by Neil Williams
+linux@codehelp.co.uk.
 .PP
-Current maintainer of pilot-link as of the authoring of this
-manpage is
-David A. Desrosiers <desrod@gnu\-designs.com>.
+Current maintainer of pilot\-link as of the authoring of this manpage is
+David A. Desrosiers desrod@gnu\-designs.com.
 .PP
-Any questions or problems with \fIpilot-link\fR should
-be
-directed at the various \fIpilot-link\fR mailing lists
-or to the
-irc channel dedicated to supporting \fIpilot-link\fR at
-\fBirc.pilot\-link.org\fR in your irc application (not
-a web
+Any questions or problems with \fIpilot\-link\fR should be
+directed at the various \fIpilot\-link\fR mailing lists or to the
+irc channel dedicated to supporting \fIpilot\-link\fR at
+\fBirc.pilot\-link.org\fR in your irc application (not a web
 browser).
 .SH PATCHES
 All patches you wish to submit should be sent to
-<patches@pilot\-link.org> directly, with a brief
-explanation of what
-the patch adds or fixes. Please make sure to send your patched in
-unified diff
-format (diff -u).
-.SH COPYRIGHT
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License as
-published by the Free Software Foundation; either version 2 of the 
-License, or (at your option) any later version.
-.PP
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-General Public License for more details.
-.PP
-You should have received a copy of the GNU General Public
-License along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 
-USA
+patches@pilot\-link.org directly, with a brief explanation of what
+the patch adds or fixes. Please make sure to send your patched in unified diff
+format (diff \-u).
 .SH "SEE ALSO"
-\fIaddresses\fR(1), \fIdlpsh\fR(1),
-\fIhinotes\fR(1),
-\fIietf2datebook\fR(1),\fIinstall-datebook\fR(1),
-\fIinstall-expenses\fR(1),
-\fIinstall-hinote\fR(1), \fIinstall-memo\fR(1),
-\fIinstall-netsync\fR(1), \fIinstall-user\fR(1),
-\fIpi-getrom\fR(1), \fIpi-getram\fR(1),
-\fIpilot-addresses\fR(1), \fIpilot-xfer\fR(1),
-\fIread-ical\fR(1),
-\fIread-notepad\fR(1),
-\fIread-palmpix\fR(1)
+\fBaddresses\fR(1), \fBdlpsh\fR(1),
+\fBhinotes\fR(1), \fBietf2datebook\fR(1),
+\fBinstall\-datebook\fR(1),
+\fBinstall\-expenses\fR(1),
+\fBinstall\-hinote\fR(1), \fBinstall\-memo\fR(1),
+\fBinstall\-netsync\fR(1), \fBinstall\-user\fR(1),
+\fBpi\-getrom\fR(1), \fBpi\-getram\fR(1),
+\fBpilot\-addresses\fR(1), \fBpilot\-xfer\fR(1),
+\fBread\-ical\fR(1), \fBread\-notepad\fR(1),
+\fBread\-palmpix\fR(1)
 .PP
-David Silber <pilot@orbits.com> has written a Pilot
-HOWTO,which you can find at
-http://www.sgmltools.org/HOWTO/Pilot-HOWTO/t1.html
+David Silber pilot@orbits.com has written a Pilot HOWTO,
+which you can find at http://www.sgmltools.org/HOWTO/Pilot\-HOWTO/t1.html

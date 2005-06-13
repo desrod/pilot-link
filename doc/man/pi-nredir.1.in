@@ -1,11 +1,10 @@
-.\" -*- coding: us-ascii -*-
-.TH pi-nredir 1 "@VERSION@"  
+.TH pi\-nredir "1"  "Copyright 1996\-2005 FSF" "pilot\-link @VERSION@"
 .SH NAME
-pi-nredir \- Accept connection and redirect via Network Hotsync Protocol. 
+pi\-nredir \- Accept connection and redirect via Network Hotsync Protocol. 
 .SH SECTION
-pilot-link: Tools
+pilot\-link: Tools
 .SH SYNOPSIS
-\fIpi-nredir\fR
+\fIpi\-nredir\fR
 [\fB\-p\fR|\fB\-\-port\fR <\fBport\fR>]
 [\fB\-\-version\fR] [\fB\-q\fR|\fB\-\-quiet\fR]
 [\fB\-?\fR|\fB\-\-help\fR] [\fB\-\-usage\fR]
@@ -14,8 +13,8 @@ This will bind your locally connected device to a network
 port, and redirect them through the network device to a listening
 server as
 specified in the LANSync Preferences panel on your Palm.
-.SH "PI-NREDIR COMMAND"
--n, --net
+.SH "PI\-NREDIR COMMAND"
+\-n, \-\-net
 .RS 
 Redirect to the network port set in the LANSync
 Preferences panel on the Palm.
@@ -26,10 +25,10 @@ Preferences panel on the Palm.
 .RS 
 Use device file \fBport\fR to communicate with
 the Palm handheld. If this is not specified,
-\fIpi-nredir \fRwill look for the
+\fIpi\-nredir \fRwill look for the
 \fB$PILOTPORT\fR environment variable. If neither
 are
-found or supplied, \fIpi-nredir \fRwill
+found or supplied, \fIpi\-nredir \fRwill
 print the usage information.
 .RE
 .PP
@@ -40,13 +39,13 @@ Suppress 'Hit HotSync button' message
 .PP
 \fB\-v\fR, \fB\-\-version\fR
 .RS 
-Display version of \fIpi-nredir\fR
+Display version of \fIpi\-nredir\fR
 and exit without connecting.
 .RE
 .SS "HELP OPTIONS"
 \fB\-h\fR, \fB\-\-help\fR
 .RS 
-Display the help synopsis for \fIpi-nredir \fR
+Display the help synopsis for \fIpi\-nredir \fR
 and exit without connecting.
 .RE
 .PP
@@ -57,13 +56,13 @@ Display a brief usage message and exit without connecting.
 .SH EXAMPLES
 .SH AUTHOR
 This manual page was written by Neil Williams
-<linux@codehelp.co.uk>
+linux@codehelp.co.uk
 .SH "REPORTING BUGS"
 Report bugs at:
-\fIhttp://bugs.pilot-link.org\fR
+\fIhttp://bugs.pilot\-link.org\fR
 .SH SUPPORT
-pilot-link Development List
-<pilot\-link\-devel@pilot\-link.org>
+pilot\-link Development List
+pilot\-link\-devel@pilot\-link.org
 .SH COPYRIGHT
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License as
@@ -77,7 +76,7 @@ General Public License for more details.
 .PP
 You should have received a copy of the GNU General Public
 License along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 
+Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111\-1307 
 USA
 .SH "SEE ALSO"
-\fIpilot-link\fR (7)
+\fIpilot\-link\fR(7)

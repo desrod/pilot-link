@@ -55,12 +55,13 @@ int main(int argc, const char *argv[])
 	};
 
 	pc = poptGetContext("reminders", argc, argv, options, 0);
+
 	poptSetOtherOptionHelp(pc,"\n\n"
 		"   Exports your Palm Datebook database into a 'remind' data file format.\n"
 		"   Your Datebook database will be written to STDOUT as it is converted\n"
 		"   unless redirected to a file.\n\n"
 		"   Please see http://www.roaringpenguin.com/remind.html for more\n"
-		"   information on the Remind Calendar Program.\n\n");
+		"   information on the Remind Calendar Program.\n");
 
 	if ((argc < 2)) {
 		poptPrintUsage(pc,stderr,0);

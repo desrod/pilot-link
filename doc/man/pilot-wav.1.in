@@ -1,11 +1,10 @@
-.\" -*- coding: us-ascii -*-
-.TH pilot-wav 1 "@VERSION@"  
+.TH pilot\-wav "1"  "Copyright 1996\-2005 FSF" "pilot\-link @VERSION@"
 .SH NAME
-pilot-wav \- Decodes Palm Voice Memo files to wav files you can read 
+pilot\-wav \- Decodes Palm Voice Memo files to wav files you can read 
 .SH SECTION
-pilot-link: Conduits
+pilot\-link: Userland Conduits
 .SH SYNOPSIS
-\fIpilot-wav\fR
+\fIpilot\-wav\fR
 [\fB\-p\fR|\fB\-\-port\fR <\fBport\fR>]
 [\fB\-\-version\fR] [\fB\-q\fR|\fB\-\-quiet\fR]
 [\fB\-?\fR|\fB\-\-help\fR] [\fB\-\-usage\fR]
@@ -13,7 +12,7 @@ pilot-link: Conduits
 [\fBfile\fR|\fBall\fR]]
 [\fB\-c\fR|\fB\-\-convert\fR \fBfile\fR]
 .SH OPTIONS
-.SS "PILOT-WAV OPTIONS"
+.SS "PILOT\-WAV OPTIONS"
 \fB\-f\fR,
 \fB\-\-fetch\fR=[\fBfile\fR|\fBall\fR]
 .RS 
@@ -30,10 +29,10 @@ Convert \fBfile.wav.pdb\fR file to wav
 .RS 
 Use device file \fBport\fR to communicate with
 the Palm handheld. If this is not specified,
-\fIpilot-wav\fR will look for the
+\fIpilot\-wav\fR will look for the
 \fB$PILOTPORT\fR environment variable. If neither
 are
-found or supplied, \fIpilot-wav\fR will
+found or supplied, \fIpilot\-wav\fR will
 print the usage information.
 .RE
 .PP
@@ -44,12 +43,12 @@ Suppress 'Hit HotSync button' message
 .PP
 \fB\-v\fR, \fB\-\-version\fR
 .RS 
-Display version of \fIpilot-wav\fR.
+Display version of \fIpilot\-wav\fR.
 .RE
 .SS "HELP OPTIONS"
 \fB\-h\fR, \fB\-\-help\fR
 .RS 
-Display the help synopsis for \fIpilot-wav\fR.
+Display the help synopsis for \fIpilot\-wav\fR.
 .RE
 .PP
 \fB\-\-usage\fR 
@@ -68,10 +67,10 @@ Display a brief usage message and exit without connecting.
 \fBMyVoiceMemo.wav.pdb\fR
 .SH AUTHOR
 This manual page was written by Neil Williams
-<linux@codehelp.co.uk>
+linux@codehelp.co.uk
 .SH "REPORTING BUGS"
 Report bugs at:
-\fIhttp://bugs.pilot-link.org\fR
+\fIhttp://bugs.pilot\-link.org\fR
 .SH COPYRIGHT
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License as
@@ -85,7 +84,7 @@ General Public License for more details.
 .PP
 You should have received a copy of the GNU General Public
 License along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 
+Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111\-1307 
 USA
 .SH "SEE ALSO"
-\fIpilot-link\fR (7)
+\fIpilot\-link\fR(7)

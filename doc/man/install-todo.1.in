@@ -1,11 +1,10 @@
-.\" -*- coding: us-ascii -*-
-.TH install-todo 1 "@VERSION@"  
+.TH install\-todo "1"  "Copyright 1996\-2005 FSF" "pilot\-link @VERSION@" 
 .SH NAME
-install-todo \- Updates the Palm ToDo list with one new entry.
+install\-todo \- Updates the Palm ToDo list with one new entry.
 .SH SECTION
-pilot-link: Conduits
+pilot\-link: Userland Conduits
 .SH SYNOPSIS
-\fIinstall-todo\fR
+\fIinstall\-todo\fR
 [\fB\-p\fR|\fB\-\-port\fR <\fBport\fR>]
 [\fB\-\-version\fR] [\fB\-q\fR|\fB\-\-quiet\fR]
 [\fB\-?\fR|\fB\-\-help\fR] [\fB\-\-usage\fR]
@@ -17,13 +16,13 @@ pilot-link: Conduits
 [\fB\-n\fR|\fB\-\-note\fR \fBnote\fR]
 [\fB\-f\fR|\fB\-\-file\fR \fBfilename\fR]
 .SH DESCRIPTION
-\fIinstall-todo\fR allows the user to install one new
+\fIinstall\-todo\fR allows the user to install one new
 ToDo list entry with specified paramters passed to
-\fIinstall-todo\fR and add a Note entry using text
+\fIinstall\-todo\fR and add a Note entry using text
 found in a filename <\fBfilename\fR> passed to
-\fIinstall-todo\fR.
+\fIinstall\-todo\fR.
 .SH OPTIONS
-.SS "INSTALL-TODO OPTIONS"
+.SS "INSTALL\-TODO OPTIONS"
 \fB\-P\fR,
 \fB\-\-priority\fR=\fBpriority\fR
 .RS 
@@ -74,10 +73,10 @@ A local filename containing the Note text.
 .RS 
 Use device file <\fBport\fR> to communicate
 with the Palm handheld. If this is not specified,
-\fIinstall-todo\fR will look for the
+\fIinstall\-todo\fR will look for the
 \fB$PILOTPORT\fR environment variable. If neither
 are
-found or supplied, \fIinstall-todo\fR will
+found or supplied, \fIinstall\-todo\fR will
 print the usage information.
 .RE
 .PP
@@ -88,13 +87,13 @@ Suppress 'Hit HotSync button' message
 .PP
 \fB\-v\fR, \fB\-\-version\fR
 .RS 
-Display version of \fIinstall-todo\fR and exit
+Display version of \fIinstall\-todo\fR and exit
 without connecting.
 .RE
 .SS "HELP OPTIONS"
 \fB\-h\fR, \fB\-\-help\fR
 .RS 
-Display the help synopsis for \fIinstall-todo\fR
+Display the help synopsis for \fIinstall\-todo\fR
 and exit without connecting.
 .RE
 .PP
@@ -108,7 +107,7 @@ ToDo entry to the Palm ToDo application, using the specified
 parameters and input from the supplied file passed as arguments on
 the commandline.
 .SH EXAMPLE
-\fIinstall-todo\fR
+\fIinstall\-todo\fR
 \fB\-p\fR
 \fB/dev/pilot\fR
 \fB\-n\fR
@@ -116,15 +115,15 @@ the commandline.
 \fB\-D\fR
 \fB\&'Go shopping, see note for items'\fR
 .SH AUTHOR
-\fIinstall-todo\fR was originally written by
-Martin Fick, based on code in \fIinstall-todos\fR by
+\fIinstall\-todo\fR was originally written by
+Martin Fick, based on code in \fIinstall\-todos\fR by
 Robert A. Kaplan.
 .PP
 This manual page was written by Neil Williams
-<linux@codehelp.co.uk>
+linux@codehelp.co.uk
 .SH "REPORTING BUGS"
 Report bugs at:
-\fIhttp://bugs.pilot-link.org\fR
+\fIhttp://bugs.pilot\-link.org\fR
 .SH COPYRIGHT
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License as
@@ -138,7 +137,7 @@ General Public License for more details.
 .PP
 You should have received a copy of the GNU General Public
 License along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 
+Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111\-1307 
 USA
 .SH "SEE ALSO"
-\fIpilot-link\fR (7).
+\fIpilot\-link\fR(7).

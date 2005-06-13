@@ -1,24 +1,23 @@
-.\" -*- coding: us-ascii -*-
-.TH read-expenses 1 "@VERSION@"  
+.TH read\-expenses "1"  "Copyright 1996\-2005 FSF" "pilot\-link @VERSION@"
 .SH NAME
-read-expenses \- Export Palm Expense application data in a text format. 
+read\-expenses \- Export Palm Expense application data in a text format. 
 .SH SECTION
-pilot-link: Conduits
+pilot\-link: Userland Conduits
 .SH SYNOPSIS
-\fIread-expenses\fR
+\fIread\-expenses\fR
 [\fB\-p\fR|\fB\-\-port\fR <\fBport\fR>]
 [\fB\-\-version\fR] [\fB\-q\fR|\fB\-\-quiet\fR]
 [\fB\-?\fR|\fB\-\-help\fR] [\fB\-\-usage\fR]
 [\fB\-w\fR|\fB\-\-write\fR]
 .SH DESCRIPTION
-\fIread-expenses\fR is used to output the Expense data
+\fIread\-expenses\fR is used to output the Expense data
 in a simple text format, which can be used to import into any other
 application you wish, such as Excel or other application.
 .PP
 If you have expense entries saved on your Palm in the ExpenseDB.pdb
 file, you can export them to a simple text format, and redirect that
 to a
-file/pipe, or STDOUT (the default) using \fIread-expenses\fR.
+file/pipe, or STDOUT (the default) using \fIread\-expenses\fR.
 .PP
 The output data will resemble something like the following:
 .PP
@@ -33,11 +32,11 @@ The output data will resemble something like the following:
          City: Westerly
          Attendees: Joe, Mary, Bob
          Note: Some simple note text
-         Date: Fri May  9 00:00:00 2004
+         Date: Fri May 9 00:00:00 2004
       
 .fi
 .SH OPTIONS
-.SS "READ-EXPENSES OPTION"
+.SS "READ\-EXPENSES OPTION"
 \fB\-w\fR, \fB\-\-write\fR
 .RS 
 Write out the expense data
@@ -48,10 +47,10 @@ Write out the expense data
 .RS 
 Use device file <\fBport\fR> to communicate
 with the Palm handheld. If this is not specified,
-\fIread-expenses\fR will look for the
+\fIread\-expenses\fR will look for the
 \fB$PILOTPORT\fR environment variable. If neither
 are
-found or supplied, \fIread-expenses\fR will
+found or supplied, \fIread\-expenses\fR will
 print the usage information.
 .RE
 .PP
@@ -62,13 +61,13 @@ Suppress 'Hit HotSync button' message
 .PP
 \fB\-v\fR, \fB\-\-version\fR
 .RS 
-Display version of \fIread-expenses\fR
+Display version of \fIread\-expenses\fR
 and exit without connecting.
 .RE
 .SS "HELP OPTIONS"
 \fB\-h\fR, \fB\-\-help\fR
 .RS 
-Display the help synopsis for \fIread-expenses\fR
+Display the help synopsis for \fIread\-expenses\fR
 and exit without connecting.
 .RE
 .PP
@@ -77,16 +76,16 @@ and exit without connecting.
 Display a brief usage message and exit without connecting.
 .RE
 .SH AUTHOR
-\fIread-expenses\fR was originally written by
+\fIread\-expenses\fR was originally written by
 Kenneth Albanowski.
 .PP
 This manual page was written by Neil Williams
-<linux@codehelp.co.uk>
+linux@codehelp.co.uk
 .SH "REPORTING BUGS"
 Report bugs at:
-\fIhttp://bugs.pilot-link.org\fR
+\fIhttp://bugs.pilot\-link.org\fR
 .SH "SEE ALSO"
-\fIpilot-link\fR (7)
+\fIpilot\-link\fR(7)
 .SH COPYRIGHT
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License as
@@ -100,8 +99,8 @@ General Public License for more details.
 .PP
 You should have received a copy of the GNU General Public
 License along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 
+Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111\-1307 
 USA
 .SH "SEE ALSO"
-\fIinstall-expenses\fR (1),
-\fIpilot-link\fR (7).
+\fIinstall\-expenses\fR (1),
+\fIpilot\-link\fR(7).

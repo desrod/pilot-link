@@ -1,431 +1,324 @@
 <refentry id="overview">
-   <refmeta>
-      <refentrytitle>pilot-link</refentrytitle>
-      <manvolnum>7</manvolnum>
-      <refmiscinfo>Copyright FSF 1996-2005</refmiscinfo>
-   </refmeta>
-   <refnamediv>
-      <refname>pilot-link</refname>
-      <refpurpose>
-         A suite of tools for communicating with Palm handhelds, such as those
-         made
-         by Palm, Handspring, Handera, TRGPro, Sony or other Palm Compatible
-         Handheld PDA device.
-      </refpurpose>
-   </refnamediv>
-   <refsect1>
-      <title>Section</title>
-      <para>pilot-link: Overview</para>
-   </refsect1>
-   <refsect1>
-      <title>description</title>
-      <para>The pilot-link suite of tools contains a series of conduits,
-         libraries,
-         and language bindings for moving  information to and from your Palm
-         device and
-         your desktop or server/workstation system, as well as across the
-         network.
-      </para>
-   </refsect1>
-   <refsect1>
-      <title>target device</title>
-      <para>The /dev/pilot fallback has been removed in v0.12.
-         The environment variable <userinput>$PILOTPORT</userinput>
-         can be set in your shell, to save specifying the port each time. A
-         serial
-         device specified on the command-line will be used regardless of any
-         <userinput>$PILOTPORT</userinput> setting. If <userinput>$PILOTPORT</userinput>
-         is not set, and <option>-p</option> is not supplied, all conduits in
-         <emphasis>pilot-link</emphasis> will print the usage information.
-         The  default  connection  rate  is  9600  baud. You are welcome to try
-         higher
-         baud rates (19200, 38400, 57600 or higher) by setting the
-         <userinput>$PILOTRATE</userinput> environment variable, but various
-         machines
-         have various limitations. (Be careful  about  values  higher  than
-         115200 on
-         older Linux boxes if you've been using setserial to change the
-         multiplier).
-      </para>
-   </refsect1>
-   <refsect1>
-      <title>Conduits</title>
-      <para>A complete list of conduits available from within the
-         <emphasis>pilot-link</emphasis> package as of the date of this
-         manpage.	If you invoke any of the conduits from <emphasis>pilot-link</emphasis> with no
-         command-line arguments at all, the usage summary will be printed.
-      </para>
-      <para>Note that there are widespread changes in this release - some
-         conduits
-         have been merged, a lot have had new options added and some options
-         have been
-         renamed or removed.
-      </para>
-      <refsect2>
-         <para>addresses</para>
-         <para>DEPRECATED: Use pilot-addresses --write|--human-readable
-            instead.
-         </para>
-      </refsect2>
-      <refsect2>
-         <para>hinotes</para>
-         <para>Syncronize your Hi-Notes database with your desktop machine.</para>
-      </refsect2>
-      <refsect2>
-         <para>install-datebook</para>
-         <para>installs a new datebook entry onto your Palm handheld.</para>
-      </refsect2>
-      <refsect2>
-         <para>install-expenses</para>
-         <para>Install an expense record from various parameters and arguments
-            passed at connection time.
-         </para>
-      </refsect2>
-      <refsect2>
-         <para>install-hinote</para>
-         <para>Install local files into your Hi-Note database on your Palm
-            handheld. 
-         </para>
-      </refsect2>
-      <refsect2>
-         <para>install-memo</para>
-         <para>Installs a new Memo Pad entry onto your Palm handheld.</para>
-      </refsect2>
-      <refsect2>
-         <para>install-netsync</para>
-         <para>reads or sets the Network Preferences information on a Palm
-            Device. Modifies the "Network Preference" settings and reports
-            additional information about the Palm, such as the IP, hostname,
-            and other information as they are set on the Palm.
-         </para>
-      </refsect2>
-      <refsect2>
-         <para>install-todo</para>
-         <para>Updates the Palm ToDo list with one new entry.</para>
-      </refsect2>
-      <refsect2>
-         <para>install-todos</para>
-         <para>Updates the Palm ToDo list with entries from a local file.</para>
-      </refsect2>
-      <refsect2>
-         <para>install-user</para>
-         <para>Reads or sets a Palm User and UserID on a Palm Device. Modifies
-            the "User Preference" settings and reports additional information
-            about the Palm, such as the Username and UserID as they are set on
-            the Palm
-         </para>
-      </refsect2>
-      <refsect2>
-         <para>memos</para>
-         <para>Manipulate Memo entries from a file or your Palm device.</para>
-      </refsect2>
-      <refsect2>
-         <para>money2qif</para>
-         <para>Convert and sync your MicroMoney account data Quicken QIF
-            format.
-         </para>
-      </refsect2>
-      <refsect2>
-         <para>pilot-addresses</para>
-         <para>Read and write address book databases to and from a Palm
-            handheld. 
-         </para>
-         <para>Changes in 0.12: Incorporates functionality from the now
-            deprecated <filename>addresses</filename> conduit.
-         </para>
-      </refsect2>
-      <refsect2>
-         <para>pilot-archive</para>
-         <para>DEPRECATED: Use read-todos -w --archived instead. </para>
-      </refsect2>
-      <refsect2>
-         <para>pilot-clip</para>
-         <para>Get or Set the Palm Clipboard contents from STDOUT/STDIN.</para>
-      </refsect2>
-      <refsect2>
-         <para>pilot-dedupe</para>
-         <para>Removes duplicate records from any Palm database.</para>
-      </refsect2>
-      <refsect2>
-         <para>pilot-file</para>
-         <para>Dump application and header information from your local PRC/PDB
-            files. 
-         </para>
-      </refsect2>
-      <refsect2>
-         <para>pilot-foto</para>
-         <para>Palm 'Foto' Image Installer/Remover/Fetcher/Converter</para>
-      </refsect2>
-      <refsect2>
-         <para>pilot-schlep</para>
-         <para>Package up any arbitrary file and sync it to your Palm device.</para>
-      </refsect2>
-      <refsect2>
-         <para>pilot-treofoto</para>
-         <para>Copies Treo foto databases to current directory and extracts
-            .jpg files from them.
-         </para>
-      </refsect2>
-      <refsect2>
-         <para>pilot-wav</para>
-         <para>Decodes Palm Voice Memo files to wav files you can read </para>
-      </refsect2>
-      <refsect2>
-         <para>pilot-xfer</para>
-         <para>Backup, sync, and restore databases from a Palm handheld device.</para>
-      </refsect2>
-      <refsect2>
-         <para>read-expenses</para>
-         <para>Export Palm Expense application data in a text format.</para>
-      </refsect2>
-      <refsect2>
-         <para>read-ical</para>
-         <para>Exports the DatebookDB and/or ToDo applications (DatebookDB.pdb
-            and ToDoDB.pdb respectively) to Ical format. (The ical application
-            must be installed and working on your system first. This is NOT the
-            same thing as the iCal Calendar format, however).
-         </para>
-      </refsect2>
-      <refsect2>
-         <para>read-notepad</para>
-         <para>List the record information found in the Palm Notepad (Palm OS4
-            and later) application.
-         </para>
-      </refsect2>
-      <refsect2>
-         <para>read-palmpix</para>
-         <para>Convert all pictures in the files given or found on a Palm
-            handheld.
-         </para>
-      </refsect2>
-      <refsect2>
-         <para>read-screenshot</para>
-         <para>Read screenshots from Palm (ScreenShotDB).</para>
-      </refsect2>
-      <refsect2>
-         <para>read-todos</para>
-         <para>Syncronize your Palm ToDo application's database with your
-            desktop machine.
-         </para>
-      </refsect2>
-      <refsect2>
-         <para>read-veo</para>
-         <para>Synchronize your Veo Traveler databases </para>
-      </refsect2>
-      <refsect2>
-         <para>reminders</para>
-         <para>Exports your Palm Datebook database into a 'remind' data file
-            format. 
-         </para>
-      </refsect2>
-   </refsect1>
-   <refsect1>
-      <title>Tools</title>
-      <refsect2>
-         <para>debugsh</para>
-         <para>Simple debugging console for a Palm Handheld device
-            (deprecated).
-         </para>
-      </refsect2>
-      <refsect2>
-         <para>dlpsh</para>
-         <para>An interactive Desktop Link Protocol (DLP) Shell for your Palm device.  This is very
-            useful for debugging potential problems with your Palm's connection. You can also Query
-            the RAM/ROM, list databases, change your UserID or Username, set the time, and many
-            other useful functions. The DLP Shell is the "Swiss Army Knife" of any of pilot-link's
-            tools.
-         </para>
-      </refsect2>
-      <refsect2>
-         <para>pi-csd</para>
-         <para>Connection Service Daemon for Palm Devices</para>
-      </refsect2>
-      <refsect2>
-         <para>pi-getram</para>
-         <para>Retrieves the RAM image from your Palm device for use in
-            debugging.
-         </para>
-      </refsect2>
-      <refsect2>
-         <para>pi-getrom</para>
-         <para>Retrieves the ROM image from your Palm device for use in
-            debugging. 
-         </para>
-      </refsect2>
-      <refsect2>
-         <para>pi-getromtoken</para>
-         <para>Reads a ROM token from a Palm Handheld device. </para>
-      </refsect2>
-      <refsect2>
-         <para>pi-nredir</para>
-         <para>Accept connection and redirect via Network Hotsync Protocol. </para>
-      </refsect2>
-   </refsect1>
-   <refsect1>
-      <title>Perl Scripts</title>
-      <para>(Available from the source code, not always installed from
-         packages).
-      </para>
-      <refsect2>
-         <para>ietf2datebook.PL</para>
-         <para>Converts IETF agenda format to install-datebook format </para>
-      </refsect2>
-      <refsect2>
-         <para>pilot-undelete.PL</para>
-         <para>Turn previously archived records into normal (non-archived)
-            records by resetting the "dirty" bit.
-         </para>
-      </refsect2>
-      <refsect2>
-         <para>sync-plan.PL</para>
-         <para>completely  synchronize the Palm datebook with the "plan"
-            calendar via
-            netplan, including authenticating
-            to the netplan server itself.
-         </para>
-      </refsect2>
-   </refsect1>
-   <refsect1>
-      <title>advanced programs</title>
-      <para>Some of these programs are not intended for general end-users. More
-         detailed documentation on their usage can be obtained by reading the
-         source of
-         the application itself.
-      </para>
-      <refsect2>
-         <para>ccexample</para>
-         <para>test program demonstrating C++ interface.</para>
-      </refsect2>
-      <refsect2>
-         <para>iambicexample</para>
-         <para>test program demonstrating C++ interface.</para>
-      </refsect2>
-      <refsect2>
-         <para>validate</para>
-         <para>experimental program to test C++ features.</para>
-      </refsect2>
-   </refsect1>
-   <refsect1>
-      <title>obtaining</title>
-      <para>The  most  current  version of the pilot-link suite of tools can be
-         found
-         at the pilot link homepage:
-         http://www.pilot-link.org/
-      </para>
-   </refsect1>
-   <refsect1>
-      <title>mailing list</title>
-      <para>The  original pilot-unix mailing list has been taken offline, and
-         is now
-         being hosted and maintained by David A. Desrosiers
-         <email>desrod@gnu-designs.com</email>. The original pilot-unix mailing
-         list was
-         maintained by Matthew Cravit. Its mandate was:
-      </para>
-      <blockquote>
-         <para>The  pilot-unix mailing list is for discussion and
-            "idea-sharing" for
-            those interested in using your Palm handheld with UNIX systems.
-            This includes
-            people who are interested in helping to develop tools to  allow the
-            Palm to
-            operate with UNIX and other POSIX systems, and possibly to develop
-            an SDK
-            (Software Develop- ment Kit) for the Palm for Unix.
-         </para>
-      </blockquote>
-      <para>For more information, including how to subscribe to the pilot-link
-         mailing
-         lists, please visit the pilot-link mailing list subscription page:
-      </para>
-      <para>
-         http://lists.pilot-link.org/
-      </para>
-      <para>pilot-link specific mailing lists are also available for
-         Development,
-         General, and Announce topics, at the following:
-      </para>
-      <para>
-         http://lists.pilot-link.org/mailman/listinfo/pilot-link-devel
-      </para>
-      <para>
-         http://lists.pilot-link.org/mailman/listinfo/pilot-link-general
-      </para>
-      <para>
-         http://lists.pilot-link.org/mailman/listinfo/pilot-link-announce
-      </para>
-   </refsect1>
-   <refsect1>
-      <title>Author</title>
-      <para>Most of the pilot-link tools were written by Kenneth Albanowski.
-         This
-         manual page was written by David H. Silber <email>pilot@orbits.com</email>,  and
-         updated for version 0.12 of pilot-link by Neil Williams
-         <email>linux@codehelp.co.uk</email>.
-      </para>
-      <para>Current maintainer of pilot-link as of the authoring of this
-         manpage is
-         David A. Desrosiers <email>desrod@gnu-designs.com</email>.
-      </para>
-      <para>
-         Any questions or problems with <emphasis>pilot-link</emphasis> should
-         be
-         directed at the various <emphasis>pilot-link</emphasis> mailing lists
-         or to the
-         irc channel dedicated to supporting <emphasis>pilot-link</emphasis> at
-         <filename>irc.pilot-link.org</filename> in your irc  application (not
-         a web
-         browser).
-      </para>
-   </refsect1>
-   <refsect1>
-      <title>patches</title>
-      <para>All patches you wish to submit should be sent to
-         <email>patches@pilot-link.org</email> directly, with a brief
-         explanation of what
-         the patch adds or fixes. Please make sure to send your patched in
-         unified diff
-         format (diff -u).
-      </para>
-   </refsect1>
-   
-   <refsect1>
-      <title>Copyright</title>
-      <para>This  program  is  free  software; you can redistribute it and/or
-         modify it under the terms of the GNU General Public License as
-         published by the Free Software Foundation; either version 2 of  the 
-         License,  or  (at  your option) any later version.
-      </para>
-      <para>This  program  is  distributed  in the hope that it will be useful,
-         but WITHOUT ANY WARRANTY; without even the implied warranty of
-         MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-         General  Public  License for more details.
-      </para>
-      <para>You  should  have  received a copy of the GNU General Public
-         License along with this program; if not, write to the Free Software
-         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 
-         USA
-      </para>
-   </refsect1>
-   <refsect1>
-      <title>See Also</title>
-      <para>
-         <emphasis>addresses</emphasis>(1), <emphasis>dlpsh</emphasis>(1),
-         <emphasis>hinotes</emphasis>(1),
-         <emphasis>ietf2datebook</emphasis>(1),<emphasis>install-datebook</emphasis>(1),
-         <emphasis>install-expenses</emphasis>(1),
-         <emphasis>install-hinote</emphasis>(1), <emphasis>install-memo</emphasis>(1),
-         <emphasis>install-netsync</emphasis>(1), <emphasis>install-user</emphasis>(1),
-         <emphasis>pi-getrom</emphasis>(1), <emphasis>pi-getram</emphasis>(1),
-         <emphasis>pilot-addresses</emphasis>(1), <emphasis>pilot-xfer</emphasis>(1),
-         <emphasis>read-ical</emphasis>(1),
-         <emphasis>read-notepad</emphasis>(1),
-         <emphasis>read-palmpix</emphasis>(1)
-      </para>
-      <para>
-         David Silber <email>pilot@orbits.com</email> has written a Pilot
-         HOWTO,which you can find at
-         http://www.sgmltools.org/HOWTO/Pilot-HOWTO/t1.html
-      </para>
-   </refsect1>
+  <refmeta>
+    <refentrytitle>pilot-link</refentrytitle>
+    <manvolnum>7</manvolnum>
+    <refmiscinfo>Copyright FSF 1996-2005</refmiscinfo>
+  </refmeta>
+  <refnamediv>
+    <refname>pilot-link</refname>
+    <refpurpose>
+	A suite of tools for communicating with Palm handhelds, such as those made
+	by Palm, Handspring, Handera, TRGPro, Sony or other Palm Compatible
+	Handheld PDA device.
+	</refpurpose>
+  </refnamediv>
+  <refsect1>
+    <title>Section</title>
+    <para>Pilot-link: Overview</para>
+  </refsect1>
+  <refsect1>
+    <title>description</title>
+    <para>The pilot-link suite of tools contains a series of conduits, libraries,
+and language bindings for moving information to and from your Palm device and
+your desktop or server/workstation system, as well as across the network.
+</para>
+  </refsect1>
+  <refsect1>
+    <title>target device</title>
+    <para>The /dev/pilot fallback has been removed in v0.12.
+	The environment variable <userinput>$PILOTPORT</userinput>
+	can be set in your shell, to save specifying the port each time. A serial
+	device specified on the command-line will be used regardless of any
+	<userinput>$PILOTPORT</userinput> setting. If <userinput>$PILOTPORT</userinput>
+	is not set, and <option>-p</option> is not supplied, all conduits in
+	<emphasis>pilot-link</emphasis> will print the usage information.
+	The default connection rate is 9600 baud. You are welcome to try higher
+	baud rates (19200, 38400, 57600 or higher) by setting the
+	<userinput>$PILOTRATE</userinput> environment variable, but various machines
+	have various limitations. (Be careful about values higher than 115200 on
+	older Linux boxes if you've been using setserial to change the multiplier).
+	</para>
+  </refsect1>
+  <refsect1>
+    <title>Conduits</title>
+    <para>A complete list of conduits available from within the
+	<emphasis>pilot-link</emphasis> package as of the date of this manpage.
+	If you invoke any of the conduits from <emphasis>pilot-link</emphasis> with no
+	command-line arguments at all, the usage summary will be printed.
+	</para>
+	<para>Note that there are widespread changes in this release - some conduits
+	have been merged, a lot have had new options added and some options have been
+	renamed or removed.
+	</para>
+    <refsect2>
+      <title>addresses</title>
+      <para>DEPRECATED: Use pilot-addresses --write|--human-readable instead.</para>
+    </refsect2>
+    <refsect2>
+      <title>hinotes</title>
+      <para>Syncronize your Hi-Notes database with your desktop machine.</para>
+    </refsect2>
+    <refsect2>
+      <title>install-datebook</title>
+      <para>installs a new datebook entry onto your Palm handheld.</para>
+    </refsect2>
+    <refsect2>
+      <title>install-expenses</title>
+      <para>Install an expense record from various parameters and arguments passed at connection time.</para>
+    </refsect2>
+    <refsect2>
+      <title>install-hinote</title>
+      <para>Install local files into your Hi-Note database on your Palm handheld. </para>
+    </refsect2>
+    <refsect2>
+      <title>install-memo</title>
+      <para>Installs a new Memo Pad entry onto your Palm handheld.</para>
+    </refsect2>
+    <refsect2>
+      <title>install-netsync</title>
+      <para>reads or sets the Network Preferences information on a Palm Device. Modifies the "Network Preference" settings and reports additional intormation about the Palm, such as the IP, hostname, and other information as they are set on the Palm.
+	</para>
+    </refsect2>
+    <refsect2>
+      <title>install-todo</title>
+      <para>Updates the Palm ToDo list with one new entry.</para>
+    </refsect2>
+    <refsect2>
+      <title>install-todos</title>
+      <para>Updates the Palm ToDo list with entries from a local file.</para>
+    </refsect2>
+    <refsect2>
+      <title>install-user</title>
+      <para>Reads or sets a Palm User and UserID on a Palm Device. Modifies the "User Preference" settings and reports additional intormation about the Palm, such as the Username and UserID as they are set on the Palm
+	</para>
+    </refsect2>
+    <refsect2>
+      <title>memos</title>
+      <para>Manipulate Memo entries from a file or your Palm device.</para>
+    </refsect2>
+    <refsect2>
+      <title>money2qif</title>
+      <para>Convert and sync your MicroMoney account data Quicken QIF format.</para>
+    </refsect2>
+    <refsect2>
+      <title>pilot-addresses</title>
+      <para>Read and write address book databases to and from a Palm handheld. </para>
+	  <para>Changes in 0.12: Incorporates functionality from the now deprecated <filename>addresses</filename> conduit.</para>
+    </refsect2>
+    <refsect2>
+      <title>pilot-archive</title>
+      <para>DEPRECATED: Use read-todos -w --archived instead. </para>
+    </refsect2>
+    <refsect2>
+      <title>pilot-clip</title>
+      <para>Get or Set the Palm Clipboard contents from STDOUT/STDIN.</para>
+    </refsect2>
+    <refsect2>
+      <title>pilot-dedupe</title>
+      <para>Removes duplicate records from any Palm database.</para>
+    </refsect2>
+    <refsect2>
+      <title>pilot-file</title>
+      <para>Dump application and header information from your local PRC/PDB files. </para>
+    </refsect2>
+    <refsect2>
+      <title>pilot-foto</title>
+      <para>Palm 'Foto' Image Installer/Remover/Fetcher/Converter</para>
+    </refsect2>
+    <refsect2>
+      <title>pilot-schlep</title>
+      <para>Package up any arbitrary file and sync it to your Palm device.</para>
+    </refsect2>
+    <refsect2>
+      <title>pilot-treofoto</title>
+      <para>Copies Treo foto databases to current directory and extracts .jpg files from them.</para>
+    </refsect2>
+    <refsect2>
+      <title>pilot-wav</title>
+      <para>Decodes Palm Voice Memo files to wav files you can read </para>
+    </refsect2>
+    <refsect2>
+      <title>pilot-xfer</title>
+      <para>Backup, sync, and restore databases from a Palm handheld device.</para>
+    </refsect2>
+    <refsect2>
+      <title>read-expenses</title>
+      <para>Export Palm Expense application data in a text format.</para>
+    </refsect2>
+    <refsect2>
+      <title>read-ical</title>
+      <para>Exports the DatebookDB and/or ToDo applications (DatebookDB.pdb and ToDoDB.pdb respectively) to Ical format. (The ical application must be installed and working on your system first. This is NOT the same thing as the iCal Calendar format, however).</para>
+    </refsect2>
+    <refsect2>
+      <title>read-notepad</title>
+      <para>List the record information found in the Palm Notepad (Palm OS4 and later) application.</para>
+    </refsect2>
+    <refsect2>
+      <title>read-palmpix</title>
+      <para>Convert all pictures in the files given or found on a Palm handheld.</para>
+    </refsect2>
+    <refsect2>
+      <title>read-screenshot</title>
+      <para>Read screenshots from Palm (ScreenShotDB).</para>
+    </refsect2>
+    <refsect2>
+      <title>read-todos</title>
+      <para>Syncronize your Palm ToDo application's database with your desktop machine.</para>
+    </refsect2>
+    <refsect2>
+      <title>read-veo</title>
+      <para>Synchronize your Veo Traveler databases </para>
+    </refsect2>
+    <refsect2>
+      <title>reminders</title>
+      <para>Exports your Palm Datebook database into a 'remind' data file format. </para>
+    </refsect2>
+  </refsect1>
+  <refsect1>
+    <title>Tools</title>
+    <refsect2>
+      <title>debugsh</title>
+      <para>Simple debugging console for a Palm Handheld device (deprecated).</para>
+    </refsect2>
+    <refsect2>
+      <title>dlpsh</title>
+      <para>An interactive Desktop Link Protocol (DLP) Shell for your Palm device.  This is very useful for debugging potential problems with your serial port. Query the RAM/ROM, list databases, change your UserID or Username, and many other useful functions. This is the "Swiss Army Knife" of any of pilot-link's tools.</para>
+    </refsect2>
+    <refsect2>
+      <title>pi-csd</title>
+      <para>Connection Service Daemon for Palm Devices</para>
+    </refsect2>
+    <refsect2>
+      <title>pi-getram</title>
+      <para>Retrieves the RAM image from your Palm device for use in debugging.</para>
+    </refsect2>
+    <refsect2>
+      <title>pi-getrom</title>
+      <para>Retrieves the ROM image from your Palm device for use in debugging. </para>
+    </refsect2>
+    <refsect2>
+      <title>pi-getromtoken</title>
+      <para>Reads a ROM token from a Palm Handheld device. </para>
+    </refsect2>
+    <refsect2>
+      <title>pi-nredir</title>
+      <para>Accept connection and redirect via Network Hotsync Protocol. </para>
+    </refsect2>
+  </refsect1>
+  <refsect1>
+    <title>Perl Scripts</title>
+    <para>(Available from the source code, not always installed from packages).</para>
+    <refsect2>
+      <title>ietf2datebook.PL</title>
+      <para>Converts IETF agenda format to install-datebook format </para>
+    </refsect2>
+    <refsect2>
+      <title>pilot-undelete.PL</title>
+      <para>Turn previously archived records into normal (non-archived) records by resetting the "dirty" bit.</para>
+    </refsect2>
+    <refsect2>
+      <title>sync-plan.PL</title>
+      <para>completely synchronize the Palm datebook with the "plan" calendar via
+netplan, including authenticating
+to the netplan server itself.</para>
+    </refsect2>
+  </refsect1>
+  <refsect1>
+    <title>advanced programs</title>
+    <para>Some of these programs are not intended for general end-users. More
+detailed documentation on their usage can be obtained by reading the source of
+the application itself.</para>
+    <refsect2>
+      <title>ccexample</title>
+      <para>test program demonstrating C++ interface.</para>
+    </refsect2>
+    <refsect2>
+      <title>iambicexample</title>
+      <para>test program demonstrating C++ interface.</para>
+    </refsect2>
+    <refsect2>
+      <title>validate</title>
+      <para>experimental program to test C++ features.</para>
+    </refsect2>
+  </refsect1>
+  <refsect1>
+    <title>obtaining</title>
+    <para>The most current version of the pilot-link suite of tools can be found
+at the pilot link homepage:
+http://www.pilot-link.org/</para>
+  </refsect1>
+  <refsect1>
+    <title>mailing list</title>
+    <para>The original pilot-unix mailing list has been taken offline, and is now
+being hosted and maintained by David A. Desrosiers
+<email>desrod@gnu-designs.com</email>. The original pilot-unix mailing list was
+maintained by Matthew Cravit. Its mandate was:
+</para>
+    <blockquote>
+      <para>The pilot-unix mailing list is for discussion and "idea-sharing" for
+those interested in using your Palm handheld with UNIX systems. This includes
+people who are interested in helping to develop tools to allow the Palm to
+operate with UNIX and other POSIX systems, and possibly to develop an SDK
+(Software Develop- ment Kit) for the Palm for Unix.
+</para>
+    </blockquote>
+    <para>For more information, including how to subscribe to the pilot-link mailing
+lists, please visit the pilot-link mailing list subscription page:
+</para>
+    <para>
+http://lists.pilot-link.org/
+</para>
+    <para>pilot-link specific mailing lists are also available for Development,
+General, and Announce topics, at the following:
+</para>
+    <para>
+http://lists.pilot-link.org/mailman/listinfo/pilot-link-devel
+</para>
+    <para>
+http://lists.pilot-link.org/mailman/listinfo/pilot-link-general
+</para>
+    <para>
+http://lists.pilot-link.org/mailman/listinfo/pilot-link-announce
+</para>
+  </refsect1>
+  <refsect1>
+    <title>author</title>
+    <para>Most of the pilot-link tools were written by Kenneth Albanowski. This
+manual page was written by David H. Silber <email>pilot@orbits.com</email>,  and
+updated for version 0.12 of pilot-link by Neil Williams
+<email>linux@codehelp.co.uk</email>.
+</para>
+    <para>Current maintainer of pilot-link as of the authoring of this manpage is
+David A. Desrosiers <email>desrod@gnu-designs.com</email>.</para>
+    <para>Any questions or problems with <emphasis>pilot-link</emphasis> should be
+directed at the various <emphasis>pilot-link</emphasis> mailing lists or to the
+irc channel dedicated to supporting <emphasis>pilot-link</emphasis> at
+<filename>irc.pilot-link.org</filename> in your irc application (not a web
+browser).</para>
+  </refsect1>
+  <refsect1>
+    <title>patches</title>
+    <para>All patches you wish to submit should be sent to
+<email>patches@pilot-link.org</email> directly, with a brief explanation of what
+the patch adds or fixes. Please make sure to send your patched in unified diff
+format (diff -u).
+</para>
+  </refsect1>
+  <refsect1>
+    <title>see also</title>
+    <para><filename>addresses</filename>(1), <filename>dlpsh</filename>(1),
+<filename>hinotes</filename>(1), <filename>ietf2datebook</filename>(1),
+<filename>install-datebook</filename>(1),
+<filename>install-expenses</filename>(1),
+<filename>install-hinote</filename>(1), <filename>install-memo</filename>(1),
+<filename>install-netsync</filename>(1), <filename>install-user</filename>(1),
+<filename>pi-getrom</filename>(1), <filename>pi-getram</filename>(1),
+<filename>pilot-addresses</filename>(1), <filename>pilot-xfer</filename>(1),
+<filename>read-ical</filename>(1), <filename>read-notepad</filename>(1),
+<filename>read-palmpix</filename>(1)
+</para>
+    <para>David Silber <email>pilot@orbits.com</email> has written a Pilot HOWTO,
+which you can find at http://www.sgmltools.org/HOWTO/Pilot-HOWTO/t1.html
+</para>
+  </refsect1>
 </refentry>
