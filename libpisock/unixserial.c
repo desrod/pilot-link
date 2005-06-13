@@ -251,7 +251,7 @@ s_close(pi_socket_t *ps)
 #endif
 	
 	LOG((PI_DBG_DEV, PI_DBG_LVL_INFO,
-		"DEV CLOSE Serial Unix fd: %d\n", ps->sd));
+		"DEV CLOSE unixserial fd: %d\n", ps->sd));
 
 	return close(ps->sd);
 }
@@ -293,13 +293,13 @@ s_poll(pi_socket_t *ps, int timeout)
 	if (!FD_ISSET(ps->sd, &ready)) {
 		/* otherwise throw out any current packet and return */
 		LOG((PI_DBG_DEV, PI_DBG_LVL_WARN,
-			"DEV POLL Serial Unix timeout\n"));
+			"DEV POLL unixserial timeout\n"));
 		data->rx_errors++;
 		errno = ETIMEDOUT;
 		return pi_set_error(ps->sd, PI_ERR_SOCK_TIMEOUT);
 	}
-	LOG((PI_DBG_DEV, PI_DBG_LVL_INFO,
-		"DEV POLL Serial Unix Found data on fd: %d\n", ps->sd));
+	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG,
+		"DEV POLL unixserial found data on fd: %d\n", ps->sd));
 
 	return 0;
 }
@@ -359,8 +359,8 @@ s_write(pi_socket_t *ps, const unsigned char *buf, size_t len,
 	/* hack to slow things down so that the Visor will work */
 	usleep(10 + len);
 
-	LOG((PI_DBG_DEV, PI_DBG_LVL_INFO,
-		"DEV TX Unix Serial Bytes: %d\n", len));
+	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG,
+		"DEV TX unixserial wrote %d bytes\n", len));
 
 	return len;
 }
@@ -399,8 +399,8 @@ s_read_buf (pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags)
 	}
 
 	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG,
-		"DEV RX Unix serial buffer read %d bytes\n", rbuf));
-	
+		"DEV RX unixserial read %d bytes from read-ahead buffer\n", rbuf));
+
 	return rbuf;
 }
 
@@ -452,11 +452,14 @@ s_read(pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags)
 	if (FD_ISSET(ps->sd, &ready)) {
 		if (flags == PI_MSG_PEEK && len > 256)
 			len = 256;
+
 		if (pi_buffer_expect (buf, len) == NULL) {
 			errno = ENOMEM;
 			return pi_set_error(ps->sd, PI_ERR_GENERIC_MEMORY);
 		}
+
 		bytes = read(ps->sd, &buf->data[buf->used], len);
+
 		if (bytes > 0) {
 			if (flags == PI_MSG_PEEK) {
 				memcpy(data->buf + data->buf_size, buf->data + buf->used, bytes);
@@ -467,11 +470,11 @@ s_read(pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags)
 			rbuf += bytes;
 
 			LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG,
-				"DEV RX Unix serial read %d bytes\n", bytes));
+				"DEV RX unixserial read %d bytes\n", bytes));
 		}
 	} else {
 		LOG((PI_DBG_DEV, PI_DBG_LVL_WARN,
-			"DEV RX Unix Serial timeout\n"));
+			"DEV RX unixserial timeout\n"));
 		data->rx_errors++;
 		errno = ETIMEDOUT;
 		return pi_set_error(ps->sd, PI_ERR_SOCK_TIMEOUT);
@@ -516,6 +519,9 @@ s_flush(pi_socket_t *ps, int flags)
 				;
 			fcntl(ps->sd, F_SETFL, fl);
 		}
+
+		LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG,
+			"DEV FLUSH unixserial flushed input buffer\n"));
 	}
 	return 0;
 }
@@ -563,6 +569,9 @@ s_changebaud(pi_socket_t *ps)
 		(struct pi_serial_data *)ps->device->data;
 #ifndef SGTTY
 	struct 	termios tcn;
+
+	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG,
+		"DEV SPEED unixserial switch to %d bps\n", (int)data->rate));
 
 #ifdef sleeping_beauty
 	s_delay(0, 200000);
