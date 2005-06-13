@@ -64,8 +64,7 @@ int plu_connect()
 	}
 
 	if (!plu_quiet && isatty(fileno(stdout))) {
-		printf("\n   Listening to port: %s\n\n"
-			"   Please press the HotSync button now... ",
+		printf("\n   Listening for incoming connection on %s... ",
 			plu_port);
 		fflush(stdout);
 	}

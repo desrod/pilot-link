@@ -85,7 +85,7 @@ pilot_connect(const char *port)
 
 	if (isatty(fileno(stdout))) {
 		printf("\n   Listening to port: %s\n\n"
-			"   Please press the HotSync button now... ",
+			"   Listening for incoming connection... ",
 			port);
 		fflush(stdout);
 	}
