@@ -427,13 +427,13 @@ protocol_queue_find_next (pi_socket_t *ps, int level)
 static void
 protocol_queue_build (pi_socket_t *ps, int autodetect)
 {
-	int 	protocol;
-	pi_protocol_t	*prot,
-			*dev_prot,
-			*dev_cmd_prot;
+	int	protocol,
+		result;
+	pi_protocol_t
+		*dev_prot,
+		*dev_cmd_prot;
 
-	LOG((PI_DBG_SOCK,PI_DBG_LVL_DEBUG,
-		"SOCK fd=%d auto=%d\n",ps->sd,autodetect));
+	LOG((PI_DBG_SOCK,PI_DBG_LVL_DEBUG, "SOCK fd=%d auto=%d\n",ps->sd,autodetect));
 
 	/* The device protocol */
 	dev_prot 	= ps->device->protocol (ps->device);
@@ -441,93 +441,66 @@ protocol_queue_build (pi_socket_t *ps, int autodetect)
 
 	protocol = ps->protocol;
 
-	LOG((PI_DBG_SOCK,PI_DBG_LVL_DEBUG,
-		"SOCK proto=%d (DLP=%d)\n",protocol, PI_PF_DLP));
+	LOG((PI_DBG_SOCK,PI_DBG_LVL_DEBUG, "SOCK proto=%s (%d)\n",
+		protocol == PI_PF_DEV ? "DEV" :
+		protocol == PI_PF_SLP ? "SLP" :
+		protocol == PI_PF_SYS ? "SYS" :
+		protocol == PI_PF_PADP? "PADP" :
+		protocol == PI_PF_NET ? "NET" :
+		protocol == PI_PF_DLP ? "DLP" :
+		"unknown", protocol));
 
 	if (protocol == PI_PF_DLP && autodetect) {
-		int	result,
-			skipped_bytes = 0,
-			new_byte = 1;
+		int	skipped_bytes = 0;
 		pi_buffer_t
 			*detect_buf = pi_buffer_new(64);
 
 		for (;;) {
-			/* peek one byte from the input sent by the device */
-			result = dev_prot->read (ps, detect_buf, 1, PI_MSG_PEEK);
+			/* try to peek a header start from the input sent by the device */
+			result = dev_prot->read (ps, detect_buf, 10, PI_MSG_PEEK);
 			if (result < 0)
 				break;
-			if (result == 0)
+			if (result != 10)
 				continue;
 
-			if (new_byte) {
+			/* detect a valid PADP header packet */
+			if (detect_buf->data[0] == PI_SLP_SIG_BYTE1 &&
+			    detect_buf->data[1] == PI_SLP_SIG_BYTE2 &&
+			    detect_buf->data[2] == PI_SLP_SIG_BYTE3 &&
+			    detect_buf->data[3] == PI_SLP_SOCK_DLP &&	/* src  */
+			    detect_buf->data[4] == PI_SLP_SOCK_DLP &&	/* dest */
+			    detect_buf->data[5] == PI_SLP_TYPE_PADP &&	/* type */
+			    detect_buf->data[8] == 0xff)		/* txid */
+			{
+				protocol = PI_PF_PADP;
 				LOG((PI_DBG_SOCK, PI_DBG_LVL_INFO,
-					"SOCK Peeked and found 0x%.2x (bytes skipped so far: %d)\r",
-					detect_buf->data[0], skipped_bytes++));
+					"\nusing PADP/SLP protocol (skipped %d bytes)\n",
+					skipped_bytes));
+				break;
 			}
 
-			/* detect PADP protocol */
-			if (detect_buf->data[0] == PI_SLP_SIG_BYTE1) {
-				pi_buffer_clear(detect_buf);
-
-				result = dev_prot->read(ps, detect_buf, 3, PI_MSG_PEEK);
-				if (result < 0)
-					break;
-				if (result < 3) {
-					new_byte = 0;
-					continue;	/* wait for the whole header to be there */
-				}
-
-				LOG((PI_DBG_SOCK, PI_DBG_LVL_DEBUG,
-					"\ntesting PADP bytes: 0x%02x 0x%02x 0x%02x\n",
-					detect_buf->data[0],detect_buf->data[1],detect_buf->data[2]));
-
-				if (detect_buf->data[1] == PI_SLP_SIG_BYTE2 &&
-				    detect_buf->data[2] == PI_SLP_SIG_BYTE3)
-				{
-					protocol = PI_PF_PADP;
-					LOG((PI_DBG_SOCK, PI_DBG_LVL_INFO,
-						"\nusing PADP/SLP protocol\n"));
-					break;
-				}
-			}
-
-			/* detect NET protocol */
-			else if (detect_buf->data[0] == 0x01) {
-				pi_buffer_clear(detect_buf);
-
-				result = dev_prot->read(ps, detect_buf, 7, PI_MSG_PEEK);
-				if (result < 0)
-					break;
-				if (result < 7) {
-					new_byte = 0;
-					continue;	/* wait for the whole header to be there */
-				}
-
-				LOG((PI_DBG_SOCK, PI_DBG_LVL_DEBUG,
-					"\ntesting NET bytes: 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x\n",
-					detect_buf->data[0],detect_buf->data[1],detect_buf->data[2],detect_buf->data[3],
-					detect_buf->data[4],detect_buf->data[5],detect_buf->data[6]));
-
-				if (detect_buf->data[1] == 0xff &&	/* txid */
-				    detect_buf->data[2] == 0x00 &&	/* length byte 0 */
-				    detect_buf->data[3] == 0x00 &&	/* length byte 1 */
-				    detect_buf->data[4] == 0x00 &&	/* length byte 2 */
-				    detect_buf->data[5] == 0x16 &&	/* length byte 3 */
-				    detect_buf->data[6] == 0x90)	/* PI_NET_SIG_BYTE1 */
-				{
-					protocol = PI_PF_NET;
-					LOG((PI_DBG_SOCK, PI_DBG_LVL_INFO,
-						"\nusing NET protocol\n"));
-					break;
-				}
+			/* detect NET header packets */
+			else if (detect_buf->data[0] == 0x01 &&	/* NET packet */
+				 detect_buf->data[1] == 0xff &&	/* txid */
+			    	 detect_buf->data[2] == 0x00 &&	/* length byte 0 */
+				 detect_buf->data[3] == 0x00 &&	/* length byte 1 */
+				 detect_buf->data[4] == 0x00 &&	/* length byte 2 */
+				 detect_buf->data[5] == 0x16 &&	/* length byte 3 */
+				 detect_buf->data[6] == 0x90)	/* PI_NET_SIG_BYTE1 */
+			{
+				protocol = PI_PF_NET;
+				LOG((PI_DBG_SOCK, PI_DBG_LVL_INFO,
+					"\nusing NET protocol (skipped %d bytes)\n",
+					skipped_bytes));
+				break;
 			}
 
 			/* eliminate one byte from the input, trying to frame a proper header */
 			result = dev_prot->read (ps, detect_buf, 1, 0);
 			if (result < 0)
 				break;
+			skipped_bytes++;
 			pi_buffer_clear(detect_buf);
-			new_byte = 1;
 		}
 
 		pi_buffer_free(detect_buf);
@@ -549,21 +522,16 @@ protocol_queue_build (pi_socket_t *ps, int autodetect)
 	/* The connected protocol queue */
 	switch (protocol) {
 		case PI_PF_PADP:
-			prot = padp_protocol ();
-			protocol_queue_add (ps, prot);
+			protocol_queue_add (ps, padp_protocol ());
 		case PI_PF_SLP:
-			prot = slp_protocol ();
-			protocol_queue_add (ps, prot);
+			protocol_queue_add (ps, slp_protocol ());
 			break;
 		case PI_PF_NET:
-			prot = net_protocol ();
-			protocol_queue_add (ps, prot);
+			protocol_queue_add (ps, net_protocol ());
 			break;
 		case PI_PF_SYS:
-			prot = sys_protocol ();
-			protocol_queue_add (ps, prot);
-			prot = slp_protocol ();
-			protocol_queue_add (ps, prot);
+			protocol_queue_add (ps, sys_protocol ());
+			protocol_queue_add (ps, slp_protocol ());
 			break;
 	}
 
@@ -571,17 +539,13 @@ protocol_queue_build (pi_socket_t *ps, int autodetect)
 	switch (protocol) {
 		case PI_PF_PADP:
 		case PI_PF_SLP:
-			prot = cmp_protocol ();
-			protocol_cmd_queue_add (ps, prot);
-			prot = padp_protocol ();
-			protocol_cmd_queue_add (ps, prot);
-			prot = slp_protocol ();
-			protocol_cmd_queue_add (ps, prot);
+			protocol_cmd_queue_add (ps, cmp_protocol ());
+			protocol_cmd_queue_add (ps, padp_protocol ());
+			protocol_cmd_queue_add (ps, slp_protocol ());
 			ps->cmd = PI_CMD_CMP;
 			break;
 		case PI_PF_NET:
-			prot = net_protocol ();
-			protocol_cmd_queue_add (ps, prot);
+			protocol_cmd_queue_add (ps, net_protocol ());
 			ps->cmd = PI_CMD_NET;
 			break;
 		case PI_PF_SYS:
