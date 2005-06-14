@@ -642,7 +642,7 @@ slp_dump_header(const unsigned char *data, int rxtx)
 void
 slp_dump(const unsigned char *data)
 {
-	dumpdata((char *)&data[PI_SLP_HEADER_LEN], get_short(&data[PI_SLP_OFFSET_SIZE]);
+	dumpdata((char *)&data[PI_SLP_HEADER_LEN], get_short(&data[PI_SLP_OFFSET_SIZE]));
 }
 
 /* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */
