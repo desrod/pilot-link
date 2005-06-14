@@ -448,8 +448,7 @@ pi_usb_accept(pi_socket_t *ps, struct sockaddr *addr, size_t *addrlen)
 				pi_getsockopt(ps->sd, PI_LEVEL_CMP, PI_CMP_BAUD,
 							  &data->rate, &size);
 
-				if (data->rate != data->establishrate &&
-				    data->impl.changebaud != NULL) {
+				if (data->rate != 9600 && data->impl.changebaud != NULL) {
 				    	/* reconfigure the port to match the negotiated speed */
 					if ((result = data->impl.changebaud(ps)) < 0)
 						return result;
