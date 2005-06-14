@@ -1,16 +1,29 @@
-Updated: Thu Jan 22 17:07:55 EST 2004
+Updated: 14-JUN-2005
 
 Since the release of version 0.10.99 of pilot-link, USB-based Palm handheld
-devices are fully supported by the suite. To get this working will require a
+devices are fully supported by the suite. To get this working may require a
 few things to be configured on your desktop or server machine first, and a
 few steps to verify that it is working properly.
 	
-Currently (as of 1/1/2004), the USB code has only been engineered to work
-with Linux and BSD-based operating systems on several architectures. Porting
-it to work with OSX, Win32, and any other POSIX-compliant environment should
+Currently (as of 6/14/2005), USB connections are supported on Mac OS X,
+Linux and BSD-based operating systems on several architectures. Porting
+it to work with Win32, and any other POSIX-compliant environment should
 not be much harder. Please see README.porting in the pilot-link docs
 subdirectory for more details on how to help.
 
+Mac OS X USB Configuration
+--------------------------
+	There is nothing specific to do. When you compile pilot-link on
+	Mac OS X, the darwinusb driver code is being built and supports
+	USB handhelds as well as PalmConnect USB serial adapters.
+	
+	All pilot-link command line tool take a port name as argument.
+	Use "-p usb:" if your handheld is connected through a USB cradle,
+	cable or a PalmConnect serial-to-USB adapter.
+	
+	Note that USB support on OS X requires Mac OS X 10.2 or later.
+	If you are running Mac OS X, you can ignore all the rest of this
+	document. It Should Just Work (tm).
 
 Linux USB Configuration
 -----------------------
