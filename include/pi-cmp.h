@@ -41,6 +41,7 @@ extern "C" {
 #define PI_CMP_VERS_1_0 0x0100L
 #define PI_CMP_VERS_1_1 0x0101L
 #define PI_CMP_VERS_1_2 0x0102L
+#define PI_CMP_VERS_1_3	0x0103L
 
 	struct pi_cmp_data {
 		unsigned char type;

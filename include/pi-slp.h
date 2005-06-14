@@ -25,6 +25,7 @@
 extern "C" {
 #endif
 
+#define PI_SLP_FRAME_SIZE_LEN 2
 #define PI_SLP_HEADER_LEN  10
 #define PI_SLP_FOOTER_LEN  2
 #define PI_SLP_MTU         0xffff
@@ -42,7 +43,6 @@ extern "C" {
 #define PI_SLP_OFFSET_SIZE 6
 #define PI_SLP_OFFSET_TXID 8
 #define PI_SLP_OFFSET_SUM  9
-
 
 #define PI_SLP_SOCK_DBG  0x00
 #define PI_SLP_SOCK_CON  0x01
