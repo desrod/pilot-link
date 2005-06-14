@@ -25,7 +25,6 @@
 extern "C" {
 #endif
 
-#define PI_SLP_FRAME_SIZE_LEN 2
 #define PI_SLP_HEADER_LEN  10
 #define PI_SLP_FOOTER_LEN  2
 #define PI_SLP_MTU         0xffff
