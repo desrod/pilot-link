@@ -351,6 +351,9 @@ cmp_rx(pi_socket_t *ps, pi_buffer_t *msg, size_t len, int flags)
 			*next;
 	struct 	pi_cmp_data *data;
 
+	LOG((PI_DBG_CMP, PI_DBG_LVL_DEBUG, "CMP RX len=%d flags=0x%04x\n",
+		len, flags));
+
 	prot = pi_protocol(ps->sd, PI_LEVEL_CMP);
 	if (prot == NULL)
 		return pi_set_error(ps->sd, PI_ERR_SOCK_INVALID);
@@ -628,12 +631,11 @@ cmp_dump(const unsigned char *cmp, int rxtx)
 	}
 	
 	LOG((PI_DBG_CMP, PI_DBG_LVL_NONE,
-	    "CMP %s %s", rxtx ? "TX" : "RX", type));
-	LOG((PI_DBG_CMP, PI_DBG_LVL_NONE,
-	    "  Type: %2.2X Flags: %2.2X Version: %8.8lX Baud: %8.8lX (%ld)\n",
-	    get_byte(&cmp[PI_CMP_OFFSET_TYPE]), 
-	    get_byte(&cmp[PI_CMP_OFFSET_FLGS]),
-	    get_long(&cmp[PI_CMP_OFFSET_VERS]),
-	    get_long(&cmp[PI_CMP_OFFSET_BAUD]),
-	    get_long(&cmp[PI_CMP_OFFSET_BAUD])));
+	    "CMP %s %s Type: %2.2X Flags: %2.2X Version: %8.8lX Baud: %8.8lX (%ld)\n",
+		rxtx ? "TX" : "RX", type,
+		get_byte(&cmp[PI_CMP_OFFSET_TYPE]), 
+		get_byte(&cmp[PI_CMP_OFFSET_FLGS]),
+		get_long(&cmp[PI_CMP_OFFSET_VERS]),
+		get_long(&cmp[PI_CMP_OFFSET_BAUD]),
+		get_long(&cmp[PI_CMP_OFFSET_BAUD])));
 }
