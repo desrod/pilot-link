@@ -3,6 +3,7 @@
  *
  * (c) 1996, D. Jeff Dionne.
  * Much of this code adapted from Brian J. Swetland <swetland@uiuc.edu>
+ * Additional work Copyright (c) 2005, Florent Pillet
  *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Library General Public License as published by
@@ -211,8 +212,8 @@ slp_tx(pi_socket_t *ps, const unsigned char *buf, size_t len, int flags)
 	if (next == NULL)
 		return pi_set_error(ps->sd, PI_ERR_SOCK_INVALID);
 
-	slp_buf = (unsigned char *) malloc (PI_SLP_HEADER_LEN + PI_SLP_MTU +
-		PI_SLP_FOOTER_LEN);
+	slp_buf = (unsigned char *) malloc (PI_SLP_HEADER_LEN +
+		PI_SLP_MTU + PI_SLP_FOOTER_LEN);
 	if (slp_buf == NULL)
 		return pi_set_error(ps->sd, PI_ERR_GENERIC_MEMORY);
 
@@ -225,7 +226,7 @@ slp_tx(pi_socket_t *ps, const unsigned char *buf, size_t len, int flags)
 	slp->dest 	= data->dest;
 	slp->src 	= data->src;
 	slp->type 	= data->type;
-	slp->dlen 	= htons(len);
+	set_short(&slp->dlen, len);
 	slp->id_ 	= data->txid;
 
 	for (n = i = 0; i < 9; i++)
@@ -274,9 +275,9 @@ slp_tx(pi_socket_t *ps, const unsigned char *buf, size_t len, int flags)
 ssize_t
 slp_rx(pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags)
 {
-	int 	i, 
-		checksum, 
-		checksum_packet,
+	int 	i,
+		computed_crc,
+		received_crc,
 		b1, 
 		b2, 
 		b3,	
@@ -284,10 +285,15 @@ slp_rx(pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags)
 		expect 		= 0,
 		packet_len,
 		bytes;
+	unsigned char
+		header_checksum;
 	pi_protocol_t	*prot,
 			*next;
 	pi_buffer_t *slp_buf;
 	struct 	pi_slp_data *data;
+
+	LOG((PI_DBG_SLP, PI_DBG_LVL_DEBUG, "SLP RX len=%d flags=0x%04x\n",
+		len, flags));
 
 	prot = pi_protocol(ps->sd, PI_LEVEL_SLP);
 	if (prot == NULL)
@@ -315,10 +321,12 @@ slp_rx(pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags)
 			break;
 
 		case 1:
-			b1 = (0xff & (int)slp_buf->data[PI_SLP_OFFSET_SIG1]);
-			b2 = (0xff & (int)slp_buf->data[PI_SLP_OFFSET_SIG2]);
-			b3 = (0xff & (int)slp_buf->data[PI_SLP_OFFSET_SIG3]);
-			if (b1 == PI_SLP_SIG_BYTE1 && b2 == PI_SLP_SIG_BYTE2 && b3 == PI_SLP_SIG_BYTE3) {
+			b1 = slp_buf->data[PI_SLP_OFFSET_SIG1];
+			b2 = slp_buf->data[PI_SLP_OFFSET_SIG2];
+			b3 = slp_buf->data[PI_SLP_OFFSET_SIG3];
+			if (b1 == PI_SLP_SIG_BYTE1 &&
+			    b2 == PI_SLP_SIG_BYTE2 &&
+			    b3 == PI_SLP_SIG_BYTE3) {
 				state++;
 				expect = PI_SLP_HEADER_LEN - 3;
 			} else {
@@ -335,11 +343,11 @@ slp_rx(pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags)
 
 		case 2:
 			/* Addition check sum for header */
-			for (checksum = i = 0; i < 9; i++)
-				checksum += slp_buf->data[i];
+			for (header_checksum = i = 0; i < 9; i++)
+				header_checksum += slp_buf->data[i];
 
 			/* read in the whole SLP header. */
-			if ((checksum & 0xff) == slp_buf->data[PI_SLP_OFFSET_SUM]) {
+			if (header_checksum == slp_buf->data[PI_SLP_OFFSET_SUM]) {
 				state++;
 				packet_len = get_short(&slp_buf->data[PI_SLP_OFFSET_SIZE]);
 				if (packet_len > (int)len) {
@@ -351,7 +359,8 @@ slp_rx(pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags)
 				expect = packet_len;
 			} else {
 				LOG((PI_DBG_SLP, PI_DBG_LVL_WARN,
-					"SLP RX Header checksum failed\n"));
+					"SLP RX Header checksum failed for header:\n"));
+				dumpdata(slp_buf->data, PI_SLP_HEADER_LEN);
 				pi_buffer_free (slp_buf);
 				return 0;
 			}
@@ -364,19 +373,19 @@ slp_rx(pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags)
 
 		case 4:
 			/* that should be the whole packet. */
-			checksum = crc16(slp_buf->data, PI_SLP_HEADER_LEN + packet_len);
-			checksum_packet = get_short(&slp_buf->data[PI_SLP_HEADER_LEN + packet_len]);
+			computed_crc = crc16(slp_buf->data, PI_SLP_HEADER_LEN + packet_len);
+			received_crc = get_short(&slp_buf->data[PI_SLP_HEADER_LEN + packet_len]);
 			if (get_byte(&slp_buf->data[PI_SLP_OFFSET_TYPE]) == PI_SLP_TYPE_LOOP) {
 				/* Adjust because every tenth loopback
-				   packet has a bogus check sum */
-				if (checksum != checksum_packet)
-					checksum = checksum | 0x00e0;
+				 * packet has a bogus check sum */
+				if (computed_crc != received_crc)
+					computed_crc |= 0x00e0;
 			}
-			if (checksum != checksum_packet) {
+			if (computed_crc != received_crc) {
 				LOG((PI_DBG_SLP, PI_DBG_LVL_ERR,
-				    "SLP RX Packet checksum failed: "
+				    "SLP RX packet crc failed: "
 				    "computed=0x%.4x received=0x%.4x\n",
-				    checksum, checksum_packet));
+				    computed_crc, received_crc));
 				pi_buffer_free (slp_buf);
 				return 0;
 			}
@@ -404,8 +413,7 @@ slp_rx(pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags)
 		do {
 			bytes = next->read(ps, slp_buf, (size_t)expect, flags);
 			if (bytes < 0) {
-				LOG((PI_DBG_SLP, PI_DBG_LVL_ERR,
-					"SLP RX Read Error\n"));
+				LOG((PI_DBG_SLP, PI_DBG_LVL_ERR, "SLP RX Read Error\n"));
 				pi_buffer_free (slp_buf);
 				return bytes;
 			}
@@ -634,10 +642,7 @@ slp_dump_header(const unsigned char *data, int rxtx)
 void
 slp_dump(const unsigned char *data)
 {
-	size_t 	size;
-
-	size = get_short(&data[PI_SLP_OFFSET_SIZE]);
-	dumpdata((char *)&data[PI_SLP_HEADER_LEN], size);
+	dumpdata((char *)&data[PI_SLP_HEADER_LEN], get_short(&data[PI_SLP_OFFSET_SIZE]);
 }
 
 /* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */
