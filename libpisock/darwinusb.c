@@ -152,6 +152,7 @@ typedef struct usb_connection_t
 	int read_pending;			/* set to 1 when a prime_read() has been issued and the read_completion() has not been called yet */
 	int in_pipe_ref;			/* pipe for reads */
 	int out_pipe_ref;			/* pipe for writes */
+	int out_pipe_bulk_size;			/* size of bulk packets on the out pipe (used when talking with a PalmConnect USB) */
 
 	/* these provide hints about the size of the next read */
 	int auto_read_size;			/* if != 0, prime reads to the input pipe to get data permanently */
@@ -1123,7 +1124,10 @@ find_interfaces(usb_connection_t *c,
 						    (pass == 2 && port_number != 0xff && number == port_number) ||
 						    (pass == 3 && ((port_number != 0xff && pair_index == port_number) || (port_number == 0xff && maxPacketSize == 64))) ||
 						     pass == 4)
+						{
 							c->out_pipe_ref = pipeRef;
+							c->out_pipe_bulk_size = maxPacketSize;
+						}
 					}
 				}
 			}
@@ -1292,7 +1296,7 @@ static IOReturn
 klsi_set_portspeed(IOUSBDeviceInterface **dev, int speed)
 {
 	/* set the comms speed for a KLSI serial adapter (PalmConnect USB) */
-	klsi_port_settings settings = {5, KLSI_BAUD_9600, 8, KLSI_PARITY_NONE, KLSI_STOPBITS_1};
+	klsi_port_settings settings = {5, KLSI_BAUD_9600, 8, KLSI_PARITY_NONE, KLSI_STOPBITS_0};
 	switch (speed)
 	{
 		case 230400:	settings.BaudRateIndex = KLSI_BAUD_230400;	break;
@@ -1354,32 +1358,51 @@ read_completion (usb_connection_t *c, IOReturn result, void *arg0)
 	{
 		LOG((PI_DBG_DEV, PI_DBG_LVL_WARN, "darwinusb: async read completion(%p) received error code 0x%08x\n", c, result));
 	}
-	else if (bytes_read > 0)
+	else
 	{
-		if (bytes_read > MAX_AUTO_READ_SIZE)
-			bytes_read = MAX_AUTO_READ_SIZE;			/* just in case, though that would be weird */
-		if (c->read_queue == NULL)
+		if (c->vendorID == VENDOR_PALMONE && c->productID == PRODUCT_PALMCONNECT_USB)
 		{
-			c->read_queue_size = ((bytes_read + 0xfffe) & ~0xffff) - 1;		/* 64k chunks */
-			c->read_queue = (char *) malloc (c->read_queue_size);
-			c->read_queue_used = 0;
+			if (bytes_read < 2)
+				bytes_read = 0;
+			else
+			{
+				int data_size = c->read_buffer[0] | ((int)c->read_buffer[1] << 8);
+				if ((data_size + 2) > bytes_read)
+				{
+					LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "darwinusb: Invalid PalmConnect packet (%d bytes, says %d content bytes)\n",
+						bytes_read, data_size));
+					bytes_read = 0;
+				} else {
+					memmove(&c->read_buffer[0], &c->read_buffer[2], data_size);
+					bytes_read = data_size;
+				}
+			}
 		}
-		else if ((c->read_queue_used + bytes_read) > c->read_queue_size)
-		{
-			c->read_queue_size += ((bytes_read + 0xfffe) & ~0xffff) - 1;
-			c->read_queue = (char *) realloc (c->read_queue, c->read_queue_size);
-		}
-		if (c->read_queue)
-		{
-			memcpy(c->read_queue + c->read_queue_used, c->read_buffer, bytes_read);
-			c->read_queue_used += bytes_read;
-			ULOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: signaling c->read_queue_data_avail_cond for c=%p\n",c));
-			pthread_cond_signal(&c->read_queue_data_avail_cond);
-		}
-		else
-		{
-			c->read_queue_used = 0;
-			c->read_queue_size = 0;
+		if (bytes_read > 0)
+		{		
+			if (c->read_queue == NULL)
+			{
+				c->read_queue_size = ((bytes_read + 0xfffe) & ~0xffff) - 1;		/* 64k chunks */
+				c->read_queue = (char *) malloc (c->read_queue_size);
+				c->read_queue_used = 0;
+			}
+			else if ((c->read_queue_used + bytes_read) > c->read_queue_size)
+			{
+				c->read_queue_size += ((bytes_read + 0xfffe) & ~0xffff) - 1;
+				c->read_queue = (char *) realloc (c->read_queue, c->read_queue_size);
+			}
+			if (c->read_queue)
+			{
+				memcpy(c->read_queue + c->read_queue_used, c->read_buffer, bytes_read);
+				c->read_queue_used += bytes_read;
+				ULOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: signaling c->read_queue_data_avail_cond for c=%p\n",c));
+				pthread_cond_signal(&c->read_queue_data_avail_cond);
+			}
+			else
+			{
+				c->read_queue_used = 0;
+				c->read_queue_size = 0;
+			}
 		}
 	}
 
@@ -1411,13 +1434,21 @@ prime_read(usb_connection_t *c)
 	if (c->opened)
 	{
 		/* select a correct read size (always use a multiple of the USB packet size) */
-		c->last_read_ahead_size = c->read_ahead_size & ~63;
-		if (c->last_read_ahead_size <= 0)
-			c->last_read_ahead_size = c->auto_read_size;
-		if (c->last_read_ahead_size > MAX_AUTO_READ_SIZE)
-			c->last_read_ahead_size = MAX_AUTO_READ_SIZE;
-		else if (c->last_read_ahead_size <= 0)
-			c->last_read_ahead_size = 64;			// USB packet size
+		if (c->vendorID == VENDOR_PALMONE && c->productID == PRODUCT_PALMCONNECT_USB)
+		{
+			/* with PalmConnect USB, always use 64 bytes */
+			c->last_read_ahead_size = 64;
+		}
+		else
+		{
+			c->last_read_ahead_size = c->read_ahead_size & ~63;
+			if (c->last_read_ahead_size <= 0)
+				c->last_read_ahead_size = c->auto_read_size;
+			if (c->last_read_ahead_size > MAX_AUTO_READ_SIZE)
+				c->last_read_ahead_size = MAX_AUTO_READ_SIZE;
+			else if (c->last_read_ahead_size <= 0)
+				c->last_read_ahead_size = 64;			// USB packet size
+		}
 
 		ULOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: prime_read(%p) for %d bytes\n", c, c->last_read_ahead_size));
 
@@ -1584,7 +1615,7 @@ u_poll(struct pi_socket *ps, int timeout)
 		}
 		else
 		{
-			// wait forever for some data to arrive
+			/* wait forever for some data to arrive */
 			pthread_cond_wait(&c->read_queue_data_avail_cond, &c->read_queue_mutex);
 			available = c->read_queue_used;
 		}
@@ -1600,10 +1631,13 @@ u_poll(struct pi_socket *ps, int timeout)
 static ssize_t
 u_write(struct pi_socket *ps, const unsigned char *buf, size_t len, int flags)
 {
+	IOReturn kr;
+	size_t	transferred_bytes = 0,
+		data_size;
 	usb_connection_t *c = ((pi_usb_data_t *)ps->device->data)->ref;
 	if (change_refcount(c,+1)<=0 || !c->opened)
 	{
-		// make sure we report broken connections
+		/* make sure we report broken connections */
 		if (ps->state == PI_SOCK_CONAC || ps->state == PI_SOCK_CONIN)
 			ps->state = PI_SOCK_CONBK;
 		change_refcount(c, -1);
@@ -1612,14 +1646,46 @@ u_write(struct pi_socket *ps, const unsigned char *buf, size_t len, int flags)
 
 	ULOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: u_write(ps=%p, c=%p, len=%d, flags=%d)\n",ps,c,(int)len,flags));
 
-	IOReturn kr = (*c->interface)->WritePipe(c->interface, c->out_pipe_ref, (void *)buf, len);
-	if (kr != kIOReturnSuccess) {
-		LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "darwinusb: darwin_usb_write(): WritePipe returned kr=0x%08lx\n", kr));
+	if (c->vendorID == VENDOR_PALMONE && c->productID == PRODUCT_PALMCONNECT_USB)
+	{
+		/* format packets for the PalmConnect USB adapter */
+		unsigned char *packet = malloc(c->out_pipe_bulk_size);
+		if (packet == NULL)
+			return pi_set_error(ps->sd, PI_ERR_GENERIC_MEMORY);
+
+		while (len > 0)
+		{
+			data_size = len;
+			if (data_size > (size_t)(c->out_pipe_bulk_size - 2))
+				data_size = (size_t)(c->out_pipe_bulk_size - 2);
+			packet[0] = data_size;
+			packet[1] = data_size >> 8;
+			memcpy(&packet[2], &buf[transferred_bytes], data_size);
+
+			kr = (*c->interface)->WritePipe(c->interface, c->out_pipe_ref, packet, c->out_pipe_bulk_size);
+			if (kr != kIOReturnSuccess) {
+				LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "darwinusb: darwin_usb_write(): WritePipe returned kr=0x%08lx\n", kr));
+				break;
+			}
+
+			transferred_bytes += data_size;
+			len -= data_size;
+		}
+		free(packet);
+	}
+	else
+	{
+		kr = (*c->interface)->WritePipe(c->interface, c->out_pipe_ref, (void *)buf, len);
+		if (kr != kIOReturnSuccess) {
+			LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "darwinusb: darwin_usb_write(): WritePipe returned kr=0x%08lx\n", kr));
+		} else
+			transferred_bytes = len;
 	}
 
 	if (change_refcount(c, -1) <= 0)
 		return PI_ERR_SOCK_DISCONNECTED;
-	return (kr != kIOReturnSuccess) ? 0 : len;
+
+	return transferred_bytes;
 }
 
 static ssize_t
@@ -1699,8 +1765,6 @@ u_read(struct pi_socket *ps, pi_buffer_t *buf, size_t len, int flags)
 
 		if (len)
 		{
-			//if (flags != PI_MSG_PEEK)
-			//	dumpdata(c->read_queue, len);
 			pi_buffer_append (buf, c->read_queue, len);
 
 			if (flags != PI_MSG_PEEK)
