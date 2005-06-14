@@ -314,12 +314,11 @@ cmp_tx(pi_socket_t *ps, const unsigned char *buf, size_t len, int flags)
 
 	type = padData;
 	size = sizeof(type);
-	pi_setsockopt(ps->sd, PI_LEVEL_PADP, PI_PADP_TYPE, 
-		      &type, &size);
-	
+	pi_setsockopt(ps->sd, PI_LEVEL_PADP, PI_PADP_TYPE, &type, &size);
+
 	set_byte(&cmp_buf[PI_CMP_OFFSET_TYPE], data->type);
 	set_byte(&cmp_buf[PI_CMP_OFFSET_FLGS], data->flags);
-	set_short(&cmp_buf[PI_CMP_OFFSET_VERS], 0);
+	set_short(&cmp_buf[PI_CMP_OFFSET_VERS], data->version);
 	set_short(&cmp_buf[PI_CMP_OFFSET_RESV], 0);
 	set_long(&cmp_buf[PI_CMP_OFFSET_BAUD], data->baudrate);
 
@@ -631,11 +630,10 @@ cmp_dump(const unsigned char *cmp, int rxtx)
 	}
 	
 	LOG((PI_DBG_CMP, PI_DBG_LVL_NONE,
-	    "CMP %s %s Type: %2.2X Flags: %2.2X Version: %8.8lX Baud: %8.8lX (%ld)\n",
+	    "CMP %s %s Type: 0x%02x Flags: 0x%02x Version: 0x%04x Baud: %d\n",
 		rxtx ? "TX" : "RX", type,
 		get_byte(&cmp[PI_CMP_OFFSET_TYPE]), 
 		get_byte(&cmp[PI_CMP_OFFSET_FLGS]),
 		get_long(&cmp[PI_CMP_OFFSET_VERS]),
-		get_long(&cmp[PI_CMP_OFFSET_BAUD]),
 		get_long(&cmp[PI_CMP_OFFSET_BAUD])));
 }
