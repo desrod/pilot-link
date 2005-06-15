@@ -66,18 +66,26 @@ int crc16(unsigned char *ptr, int count)
 	return (crc & 0xFFFF);
 }
 
+void get_pilot_rate(int *establishrate, int *establishhighrate)
+{
+	/* Default PADP connection rate */
+	char *rate_env = getenv("PILOTRATE");
+	if (rate_env) {
+		/* Establish high rate */
+		if (rate_env[0] == 'H') {
+			*establishrate = atoi(rate_env + 1);
+			*establishhighrate = 1;
+		} else {
+			*establishrate = atoi(rate_env);
+			*establishhighrate = 0;
+		}
+	}
+	else {
+		*establishrate = -1;
+	}
+}
+
 #ifndef HAVE_STRDUP
-/***********************************************************************
- *
- * Function:	strdup
- *
- * Summary:	Duplicate a string
- *
- * Parameters:	None   
- *
- * Returns:	String or NULL
- *
- ***********************************************************************/
 char *strdup(const char *s)
 {
         char *result;
@@ -93,29 +101,15 @@ char *strdup(const char *s)
 }
 #endif
 
-#ifndef HAVE_PUTENV
-
 /* Borrowed from GNU sh-utils, and then probably from GNU libc */
-
+#ifndef HAVE_PUTENV
 #if HAVE_GNU_LD
-# define environ __environ
+	# define environ __environ
 #else
-extern char **environ;
+	extern char **environ;
 #endif
 
-
-/***********************************************************************
- *
- * Function:    putenv
- *
- * Summary:     Put STRING, which is of the form "NAME=VALUE", in the
- *		environment
- *
- * Parameters:  None
- *
- * Returns:     0 for success, nonzero if any errors occur
- *
- ***********************************************************************/
+/* Put STRING, which is of the form "NAME=VALUE", in the environment */
 int putenv(const char *string)
 {
 	const char 	*const name_end = strchr(string, '=');
@@ -167,6 +161,25 @@ int putenv(const char *string)
 	return 0;
 }
 #endif
+
+#ifdef OS2
+/* Replacement version of getenv(), because the one in the EMX 0.9c, fix03
+   dist appears to be busted when called from inside a DLL. (MJJ) */
+char *getenv(const char *envar)
+{
+	APIRET 	rc;
+	unsigned char *envstring;
+
+	/* just call the OS/2 function directly */
+	rc = DosScanEnv(envar, &envstring);
+	if (rc)
+		return NULL;
+	else
+		return envstring;
+}
+#endif
+
+
 
 #ifndef HAVE_INET_ATON
 /***********************************************************************
@@ -275,7 +288,7 @@ char *printlong(unsigned long val)
 
 unsigned long makelong(char *c)
 {
-	int 	l 	= strlen(c);
+	int 	l = strlen(c);
 	char 	c2[4];
 
 	if (l >= 4)
@@ -320,7 +333,7 @@ void dumpline(const char *buf, size_t len, unsigned int addr)
 	}
 
 	strcpy(line+offset,"\n");
-	pi_log(PI_DBG_ALL, PI_DBG_LVL_NONE, line);
+	LOG((PI_DBG_ALL, PI_DBG_LVL_NONE, line));
 }
 
 void dumpdata(const char *buf, size_t len)
@@ -398,24 +411,6 @@ size_t palm_strftime(char *s, size_t max, const char *fmt,
 
         return strftime(s, max, fmt, tm);
 }
-
-
-#ifdef OS2
-/* Replacement version of getenv(), because the one in the EMX 0.9c, fix03
-   dist appears to be busted when called from inside a DLL. (MJJ) */
-char *getenv(const char *envar)
-{
-	APIRET 	rc;
-	unsigned char *envstring;
-
-	/* just call the OS/2 function directly */
-	rc = DosScanEnv(envar, &envstring);
-	if (rc)
-		return NULL;
-	else
-		return envstring;
-}
-#endif
 
 /* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */
 /* Local Variables: */

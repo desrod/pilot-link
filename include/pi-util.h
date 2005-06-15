@@ -55,12 +55,26 @@ extern "C" {
 	buf[3]=(tag) & 0xff; \
 	buf[4]=0; }
 
+
+	/** @brief Read the PILOTRATE environment variable
+	 *
+	 * If the PILOTRATE environment variable is set, read it. It should
+	 * be a speed value. If the first letter is an 'H', then it means
+	 * we want to use this speed even if it's higher than the highest
+	 * speed published by the device.
+	 *
+	 * @param establishrate On return, PILOTRATE value or -1 if environment variable not set
+	 * @param establishhighrate On return, 1 if speed prefixed with 'H', 0 otherwise
+	 */
+	extern void get_pilot_rate
+		PI_ARGS((int *establishrate, int *establishhighrate));
+
 	extern int convert_ToPilotChar
-	    PI_ARGS((const char *charset, const char *text, int bytes,
+		PI_ARGS((const char *charset, const char *text, int bytes,
 		     char **ptext));
 
 	extern int convert_FromPilotChar
-	    PI_ARGS((const char *charset, const char *ptext, int bytes,
+		PI_ARGS((const char *charset, const char *ptext, int bytes,
 		     char **text));
 
 #ifdef __cplusplus
