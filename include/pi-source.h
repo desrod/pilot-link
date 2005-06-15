@@ -59,6 +59,14 @@
 # include <termios.h>
 #endif
 
+#ifndef PI_DEPRECATED
+#if __GNUC__ - 0 > 3 || (__GNUC__ - 0 == 3 && __GNUC_MINOR__ - 0 >= 2)
+# define PI_DEPRECATED __attribute__ ((deprecated))
+#else
+# define PI_DEPRECATED
+#endif
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -130,10 +138,13 @@ extern "C" {
 	extern char *printlong PI_ARGS((unsigned long val));
 	extern unsigned long makelong PI_ARGS((char *c));
 
+	/* provide compatibility for old code. Code should now use pi_dumpline() and pi_dumpdata() */
 	extern void dumpline
-	    PI_ARGS((PI_CONST char *buf, size_t len, unsigned int addr));
+	    PI_ARGS((PI_CONST char *buf, size_t len, unsigned int addr)) PI_DEPRECATED;
+
 	extern void dumpdata
-	    PI_ARGS((PI_CONST char *buf, size_t len));
+	    PI_ARGS((PI_CONST char *buf, size_t len)) PI_DEPRECATED;
+
 
 #ifdef __cplusplus
 }

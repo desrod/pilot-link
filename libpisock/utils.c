@@ -298,52 +298,6 @@ unsigned long makelong(char *c)
 	return get_long(c2);
 }
 
-void dumpline(const char *buf, size_t len, unsigned int addr)
-{
-	unsigned int i;
-	int offset;
-	char line[256];
-
-	offset = sprintf(line, "  %.4x  ", addr);
-
-	for (i = 0; i < 16; i++) {
-		if (i < len)
-			offset += sprintf(line+offset, "%.2x ",
-			       0xff & (unsigned int) buf[i]);
-		else {
-			strcpy(line+offset, "   ");
-			offset += 3;
-		}
-	}
-
-	strcpy(line+offset, "  ");
-	offset += 2;
-
-	for (i = 0; i < len; i++) {
-		if (buf[i] == '%') {
-			/* since we're going through pi_log, we need to
-			 * properly escape % characters
-			 */
-			line[offset++] = '%';
-			line[offset++] = '%';
-		} else if (isprint(buf[i]) && buf[i] >= 32 && buf[i] <= 126)
-			line[offset++] = buf[i];
-		else
-			line[offset++] = '.';
-	}
-
-	strcpy(line+offset,"\n");
-	LOG((PI_DBG_ALL, PI_DBG_LVL_NONE, line));
-}
-
-void dumpdata(const char *buf, size_t len)
-{
-	unsigned int i;
-
-	for (i = 0; i < len; i += 16)
-		dumpline(buf + i, ((len - i) > 16) ? 16 : len - i, i);
-}
-
 double get_float(void *buffer)
 {
 	unsigned char *buf = buffer;

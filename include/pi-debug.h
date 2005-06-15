@@ -58,6 +58,12 @@ extern void pi_debug_set_file PI_ARGS((const char *path));
 
 extern void pi_log PI_ARGS((int type, int level, PI_CONST char *format, ...));
 
+extern void pi_dumpline
+    PI_ARGS((PI_CONST char *buf, size_t len, unsigned int addr));
+
+extern void pi_dumpdata
+    PI_ARGS((PI_CONST char *buf, size_t len));
+
 #ifdef PI_DEBUG
 #define ASSERT(expr)                                            \
      do {                                                       \

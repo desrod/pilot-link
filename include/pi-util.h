@@ -23,15 +23,6 @@
 #ifndef _PILOT_UTIL_H_
 #define _PILOT_UTIL_H_
 
-#ifndef PI_DEPRECATED
-#if __GNUC__ - 0 > 3 || (__GNUC__ - 0 == 3 && __GNUC_MINOR__ - 0 >= 2)
-# define PI_DEPRECATED __attribute__ ((deprecated))
-#else
-# define PI_DEPRECATED
-#endif
-#endif
-
-
 #ifdef __cplusplus
 extern "C" {
 #endif
