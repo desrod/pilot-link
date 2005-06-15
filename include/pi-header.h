@@ -18,7 +18,7 @@
 #ifndef _PI_HEADER_H_
 #define _PI_HEADER_H_
 
-#include "pi-util.h"
+#include "pi-source.h"
 
 #ifndef SWIG
 /* Print the version splash 	*/

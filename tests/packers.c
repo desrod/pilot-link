@@ -242,9 +242,9 @@ int test_memo()
       errors++;
       printf
 	  ("12: pack_MemoAppInfo generated incorrect information. Got:\n");
-      dumpdata(target + 128, l);
+      pi_dumpdata(target + 128, l);
       printf(" expected:\n");
-      dumpdata(MemoAppBlock, sizeof(MemoAppBlock));
+      pi_dumpdata(MemoAppBlock, sizeof(MemoAppBlock));
    }
 
    RecordBuffer = pi_buffer_new(sizeof(MemoRecord));
@@ -278,9 +278,9 @@ int test_memo()
    if (memcmp(RecordBuffer->data, MemoRecord, sizeof(MemoRecord))) {
       errors++;
       printf("16: pack_Memo generated incorrect information. Got:\n");
-      dumpdata(target + 128, l);
+      pi_dumpdata(target + 128, l);
       printf(" expected:\n");
-      dumpdata(MemoRecord, sizeof(MemoRecord));
+      pi_dumpdata(MemoRecord, sizeof(MemoRecord));
    }
 
    pi_buffer_free(RecordBuffer);
@@ -496,9 +496,9 @@ int test_address()
       errors++;
       printf
 	  ("12: pack_AddressAppInfo generated incorrect information. Got:\n");
-      dumpdata(target + 128, l);
+      pi_dumpdata(target + 128, l);
       printf(" expected:\n");
-      dumpdata(AddressAppBlock, sizeof(AddressAppBlock));
+      pi_dumpdata(AddressAppBlock, sizeof(AddressAppBlock));
    }
 
 
@@ -541,9 +541,9 @@ int test_address()
    if (memcmp(RecordBuffer->data, AddressRecord, sizeof(AddressRecord))) {
       errors++;
       printf("16: pack_Address generated incorrect information. Got:\n");
-      dumpdata(RecordBuffer->data, l);
+      pi_dumpdata(RecordBuffer->data, l);
       printf(" expected:\n");
-      dumpdata(AddressRecord, sizeof(AddressRecord));
+      pi_dumpdata(AddressRecord, sizeof(AddressRecord));
    }
    
    pi_buffer_free(RecordBuffer);
@@ -746,9 +746,9 @@ int test_appointment()
       errors++;
       printf
 	  ("12: pack_AppointmentAppInfo generated incorrect information. Got:\n");
-      dumpdata(target + 128, l);
+      pi_dumpdata(target + 128, l);
       printf(" expected:\n");
-      dumpdata(AppointmentAppBlock, sizeof(AppointmentAppBlock));
+      pi_dumpdata(AppointmentAppBlock, sizeof(AppointmentAppBlock));
    }
 
 
@@ -793,9 +793,9 @@ int test_appointment()
       errors++;
       printf
 	  ("16: pack_Appointment generated incorrect information. Got:\n");
-      dumpdata(RecordBuffer->data, l);
+      pi_dumpdata(RecordBuffer->data, l);
       printf(" expected:\n");
-      dumpdata(AppointmentRecord, sizeof(AppointmentRecord));
+      pi_dumpdata(AppointmentRecord, sizeof(AppointmentRecord));
    }
 
    printf("Appointment packers test completed with %d error(s).\n",
@@ -978,9 +978,9 @@ int test_todo()
       errors++;
       printf
 	  ("12: pack_ToDoAppInfo generated incorrect information. Got:\n");
-      dumpdata(target + 128, l);
+      pi_dumpdata(target + 128, l);
       printf(" expected:\n");
-      dumpdata(ToDoAppBlock, sizeof(ToDoAppBlock));
+      pi_dumpdata(ToDoAppBlock, sizeof(ToDoAppBlock));
    }
 
 
@@ -1027,9 +1027,9 @@ int test_todo()
    if (memcmp(RecordBuffer->data, ToDoRecord, sizeof(ToDoRecord))) {
       errors++;
       printf("16: pack_ToDo generated incorrect information. Got:\n");
-      dumpdata(RecordBuffer->data, l);
+      pi_dumpdata(RecordBuffer->data, l);
       printf(" expected:\n");
-      dumpdata(ToDoRecord, sizeof(ToDoRecord));
+      pi_dumpdata(ToDoRecord, sizeof(ToDoRecord));
    }
 
    pi_buffer_free(RecordBuffer);
@@ -1218,9 +1218,9 @@ int test_expense()
       errors++;
       printf
 	  ("10: pack_ExpenseAppInfo generated incorrect information. Got:\n");
-      dumpdata(target + 128, l);
+      pi_dumpdata(target + 128, l);
       printf(" expected:\n");
-      dumpdata(ExpenseAppBlock, sizeof(ExpenseAppBlock));
+      pi_dumpdata(ExpenseAppBlock, sizeof(ExpenseAppBlock));
    }
 
 
@@ -1292,9 +1292,9 @@ int test_expense()
    if (memcmp(target + 128, ExpenseRecord, sizeof(ExpenseRecord))) {
       errors++;
       printf("18: pack_Expense generated incorrect information. Got:\n");
-      dumpdata(target + 128, l);
+      pi_dumpdata(target + 128, l);
       printf(" expected:\n");
-      dumpdata(ExpenseRecord, sizeof(ExpenseRecord));
+      pi_dumpdata(ExpenseRecord, sizeof(ExpenseRecord));
    }
 
    printf("Expense packers test completed with %d error(s).\n", errors);
@@ -1474,9 +1474,9 @@ int test_mail()
       errors++;
       printf
 	  ("10: pack_MailAppInfo generated incorrect information. Got:\n");
-      dumpdata(target + 128, l);
+      pi_dumpdata(target + 128, l);
       printf(" expected:\n");
-      dumpdata(MailAppBlock, sizeof(MailAppBlock));
+      pi_dumpdata(MailAppBlock, sizeof(MailAppBlock));
    }
 
 
@@ -1547,9 +1547,9 @@ int test_mail()
    if (memcmp(target + 128, MailRecord, sizeof(MailRecord))) {
       errors++;
       printf("18: pack_Mail generated incorrect information. Got:\n");
-      dumpdata(target + 128, l);
+      pi_dumpdata(target + 128, l);
       printf(" expected:\n");
-      dumpdata(MailRecord, sizeof(MailRecord));
+      pi_dumpdata(MailRecord, sizeof(MailRecord));
    }
 
 
@@ -1648,9 +1648,9 @@ int test_mail()
       errors++;
       printf
 	  ("28: pack_MailSyncPref generated incorrect information. Got:\n");
-      dumpdata(target + 128, l);
+      pi_dumpdata(target + 128, l);
       printf(" expected:\n");
-      dumpdata(MailSyncPreference, sizeof(MailSyncPreference));
+      pi_dumpdata(MailSyncPreference, sizeof(MailSyncPreference));
    }
 
 
@@ -1748,9 +1748,9 @@ int test_mail()
       errors++;
       printf
 	  ("38: pack_MailSignaturePref generated incorrect information. Got:\n");
-      dumpdata(target + 128, l);
+      pi_dumpdata(target + 128, l);
       printf(" expected:\n");
-      dumpdata(MailSigPreference, sizeof(MailSigPreference));
+      pi_dumpdata(MailSigPreference, sizeof(MailSigPreference));
    }
 
    printf("Mail packers test completed with %d error(s).\n", errors);

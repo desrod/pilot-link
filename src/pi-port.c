@@ -58,7 +58,7 @@ void do_read(struct pi_socket *ps, int type, char *buffer, int length)
 
 	printf("A %d byte packet of type %d has been received from the network\n",
 		length, type);
-	dumpdata(buffer, length);
+	pi_dumpdata(buffer, length);
 	if (type == 0) {
 		struct pi_skb *nskb;
 		nskb = (struct pi_skb *) malloc(sizeof(struct pi_skb));
@@ -201,7 +201,7 @@ int main(int argc, char *argv[])
 
 				printf("Read %d bytes from network at block+%d:\n",
 					r, l);
-				dumpdata(buffer + l, r);
+				pi_dumpdata(buffer + l, r);
 
 				l += r;
 				if (l >= 4) {
@@ -225,7 +225,7 @@ int main(int argc, char *argv[])
 								l);
 						}
 						printf("Buffer now is:\n");
-						dumpdata(buffer, l);
+						pi_dumpdata(buffer, l);
 					}
 				}
 			      skip:

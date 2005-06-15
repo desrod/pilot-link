@@ -119,9 +119,9 @@ int main(int argc, const char *argv[])
 
 #ifdef DEBUG
 		fprintf(stderr, "Orig prefs, %d bytes:\n", ret);
-		dumpdata(buffer, ret);
+		pi_dumpdata(buffer, ret);
 		fprintf(stderr, "New prefs, %d bytes:\n", i);
-		dumpdata(buffer2, i);
+		pi_dumpdata(buffer2, i);
 #endif
 		printf("Expense prefs, current category %d, default currency %d\n",
 			tp.currentCategory, tp.defaultCurrency);
@@ -144,9 +144,9 @@ int main(int argc, const char *argv[])
 #ifdef DEBUG
 	i = pack_ExpenseAppInfo(&tai, buffer2, 0xffff);
 	printf("Orig length %d, new length %d, orig data:\n", ret, i);
-	dumpdata(buffer, ret);
+	pi_dumpdata(buffer, ret);
 	printf("New data:\n");
-	dumpdata(buffer2, i);
+	pi_dumpdata(buffer2, i);
 #endif
 	printf("Expense app info, sort order %d\n", tai.sortOrder);
 	printf(" Currency 1, name '%s', symbol '%s', rate '%s'\n",
@@ -185,9 +185,9 @@ int main(int argc, const char *argv[])
 		ret = pack_Expense(&t, buffer2, 0xffff);
 #ifdef DEBUG
 		fprintf(stderr, "Orig length %d, data:\n", len);
-		dumpdata(buffer, len);
+		pi_dumpdata(buffer, len);
 		fprintf(stderr, "New length %d, data:\n", ret);
-		dumpdata(buffer2, ret);
+		pi_dumpdata(buffer2, ret);
 #endif
 		printf("Category: %s\n", tai.category.name[category]);
 		printf("  Type: %s (%3d)\n  Payment: %s (%3d)\n  Currency: %3d\n",

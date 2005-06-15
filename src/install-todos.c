@@ -31,8 +31,7 @@
 
 void install_ToDos(int sd, int db, char *filename)
 {
-	int 	ToDo_size,
-		cLen		= 0,
+	int 	cLen		= 0,
 		i		= 0,
 		filelen;
 

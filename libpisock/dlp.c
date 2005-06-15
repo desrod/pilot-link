@@ -172,7 +172,7 @@ static void record_dump (unsigned long recID, unsigned int recIndex, int flags,
 	    (flags & dlpRecAttrArchived) ? " Archive" : "",
 	    (!flags) ? " None" : "",
 	    flags, data_len));
-	dumpdata(data, (size_t)data_len);
+	pi_dumpdata(data, (size_t)data_len);
 }
 #endif
 
@@ -497,7 +497,7 @@ dlp_response_read (struct dlpResponse **res, int sd)
 			"dlp_response_read: response too short (%d bytes)\n",
 			bytes));
 		if (bytes)
-			dumpdata(dlp_buf->data, (size_t)dlp_buf->used);
+			pi_dumpdata(dlp_buf->data, (size_t)dlp_buf->used);
 #endif
 		return pi_set_error(sd, PI_ERR_DLP_COMMAND);
 	}
@@ -1657,7 +1657,7 @@ dlp_CallApplication(int sd, unsigned long creator, unsigned long type,
 			     get_long(DLP_RESPONSE_DATA(res, 0, 4)),
 			     data_len));
 			CHECK(PI_DBG_DLP, PI_DBG_LVL_DEBUG, 
-			      dumpdata(DLP_RESPONSE_DATA(res, 0, 16),
+			      pi_dumpdata(DLP_RESPONSE_DATA(res, 0, 16),
 					(size_t)data_len));
 		}
 
@@ -1706,7 +1706,7 @@ dlp_CallApplication(int sd, unsigned long creator, unsigned long type,
 			     get_short(DLP_RESPONSE_DATA(res, 0, 2)),
 			     data_len));
 			CHECK(PI_DBG_DLP, PI_DBG_LVL_DEBUG, 
-			      dumpdata(DLP_RESPONSE_DATA(res, 0, 6),
+			      pi_dumpdata(DLP_RESPONSE_DATA(res, 0, 6),
 				(size_t)data_len));
 		}
 	}
@@ -2490,7 +2490,7 @@ dlp_ReadRecordIDList(int sd, int dbhandle, int sort, int start, int max,
 		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
 		    "DLP ReadRecordIDList %d IDs:\n", ret));
 		CHECK(PI_DBG_DLP, PI_DBG_LVL_DEBUG, 
-		      dumpdata(DLP_RESPONSE_DATA(res, 0, 2), 
+		      pi_dumpdata(DLP_RESPONSE_DATA(res, 0, 2), 
 			(size_t)(ret * 4)));
 	}
 
@@ -2696,7 +2696,7 @@ dlp_ReadResourceByType(int sd, int dbhandle, unsigned long type, int resID,
 		    printlong(type), resID, 
 		    get_short(DLP_RESPONSE_DATA(res, 0, 6)),(size_t)data_len));
 		CHECK(PI_DBG_DLP, PI_DBG_LVL_DEBUG, 
-		      dumpdata(DLP_RESPONSE_DATA(res, 0, 10),(size_t)data_len));
+		      pi_dumpdata(DLP_RESPONSE_DATA(res, 0, 10),(size_t)data_len));
 	} else {
 		data_len = result;
 	}
@@ -2767,7 +2767,7 @@ dlp_ReadResourceByIndex(int sd, int dbhandle, int resindex, pi_buffer_t *buffer,
 		    get_short(DLP_RESPONSE_DATA(res, 0, 4)),
 		    resindex, data_len));
 		CHECK(PI_DBG_DLP, PI_DBG_LVL_DEBUG, 
-		      dumpdata(DLP_RESPONSE_DATA(res, 0, (large ? 12 : 10)),
+		      pi_dumpdata(DLP_RESPONSE_DATA(res, 0, (large ? 12 : 10)),
 			 (size_t)data_len));
 	} else {
 		data_len = result;
@@ -2898,7 +2898,7 @@ dlp_ReadAppBlock(int sd, int dbhandle, int offset, int reqbytes, pi_buffer_t *re
 			LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
 				"DLP ReadAppBlock %d bytes\n", data_len));
 			CHECK(PI_DBG_DLP, PI_DBG_LVL_DEBUG, 
-				  dumpdata(DLP_RESPONSE_DATA(res, 0, 2),
+				  pi_dumpdata(DLP_RESPONSE_DATA(res, 0, 2),
 				(size_t)data_len));
 		}
 	} else {
@@ -2985,7 +2985,7 @@ dlp_ReadSortBlock(int sd, int dbhandle, int offset, int reqbytes, pi_buffer_t *r
 			LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
 				"DLP ReadSortBlock %d bytes\n", data_len));
 			CHECK(PI_DBG_DLP, PI_DBG_LVL_DEBUG, 
-				  dumpdata(DLP_RESPONSE_DATA(res, 0, 2),
+				  pi_dumpdata(DLP_RESPONSE_DATA(res, 0, 2),
 				(size_t)data_len));
 		}
 	} else {
@@ -3191,7 +3191,7 @@ dlp_ReadNextRecInCategory(int sd, int dbhandle, int category,
 			(!flags) ? " None" : "",
 			flags, data_len));
 		CHECK(PI_DBG_DLP, PI_DBG_LVL_DEBUG, 
-			  dumpdata(DLP_RESPONSE_DATA(res, 0, 10),
+			  pi_dumpdata(DLP_RESPONSE_DATA(res, 0, 10),
 			(size_t)data_len));
 	} else {
 		data_len = result;
@@ -3299,7 +3299,7 @@ dlp_ReadAppPreference(int sd, unsigned long creator, int prefID, int backup,
 			get_short(DLP_RESPONSE_DATA(res, 0, 2)),
 			get_short(DLP_RESPONSE_DATA(res, 0, 4))));
 		CHECK(PI_DBG_DLP, PI_DBG_LVL_DEBUG, 
-			  dumpdata(DLP_RESPONSE_DATA(res, 0, 6),
+			  pi_dumpdata(DLP_RESPONSE_DATA(res, 0, 6),
 			(size_t)data_len));
 	} else {
 		data_len = result;

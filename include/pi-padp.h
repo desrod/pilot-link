@@ -40,6 +40,7 @@ extern "C" {
 #define FIRST		0x80
 #define LAST		0x40
 #define MEMERROR	0x20
+#define	LONGSIZEARG	0x10
 
 	typedef struct padp {
 		unsigned char type;

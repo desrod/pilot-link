@@ -378,7 +378,7 @@ u_write(struct pi_socket *ps, const unsigned char *buf, size_t len, int flags)
 	ret = usb_bulk_write (USB_handle, USB_out_endpoint, buf, len, timeout);
 	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "Wrote: %d.\n", ret));
 	if (ret > 0)
-		CHECK (PI_DBG_DEV, PI_DBG_LVL_DEBUG, dumpdata (buf, ret));
+		CHECK (PI_DBG_DEV, PI_DBG_LVL_DEBUG, pi_dumpdata (buf, ret));
 
 	return ret;
 }
@@ -391,7 +391,7 @@ u_read(struct pi_socket *ps, pi_buffer_t *buf, size_t len, int flags)
 	ret = u_read_i (ps, buf, len, flags, ((struct pi_usb_data *)ps->device->data)->timeout);
 	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "Read: %d (%d).\n", ret, len));
 	if (ret > 0)
-		CHECK (PI_DBG_DEV, PI_DBG_LVL_DEBUG, dumpdata (buf->data, ret));
+		CHECK (PI_DBG_DEV, PI_DBG_LVL_DEBUG, pi_dumpdata (buf->data, ret));
 
 	return ret;
 }

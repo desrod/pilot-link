@@ -34,6 +34,7 @@
 #include "pi-dlp.h"
 #include "pi-syspkt.h"
 #include "pi-header.h"
+#include "pi-dumpdata.h"
 
 #ifdef HAVE_SYS_SELECT_H
 #include <sys/select.h>
@@ -113,7 +114,7 @@ void read_pilot(int sd)
 	if (l < 0)
 		exit(EXIT_FAILURE);
 	
-	dumpdata(buf->data, l);
+	pi_dumpdata(buf->data, l);
 
 	if (buf->data[2] == 0) {			/* SysPkt command 	*/
 		if (buf->data[0] == 1) {		/* Console 		*/

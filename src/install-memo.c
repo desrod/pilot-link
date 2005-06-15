@@ -70,11 +70,13 @@ unsigned int check_filenames(filename_array *m)
 
 void append_filename(filename_array *m, const char *filename)
 {
-	if (!m || !m->filenames) return;
-	if (!filename) return;
+	if (!m || !m->filenames)
+		return;
+	if (!filename)
+		return;
 	if (m->filenames_used >= (m->filenames_allocated-1)) {
 		fprintf(stderr,"  ERROR: More filenames listed than were expected.\n");
-		fprintf(stderr,"         File `%s' is ignored.\n");
+		fprintf(stderr,"         File `%s' is ignored.\n", filename);
 		return;
 	}
 
@@ -176,8 +178,7 @@ int main(int argc, char *argv[])
 
 	char
 		*category_name	= NULL,
-		*filename	= NULL,
-		*tmp		= NULL;
+		*filename	= NULL;
 	char messagebuffer[256];
 
         struct 	PilotUser User;

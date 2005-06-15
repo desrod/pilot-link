@@ -116,7 +116,7 @@ unpack_Contact (Contact_t *c, pi_buffer_t *buf, contactsType type)
 	for (i = 0; i < 28; i++) {
 		if ((contents1 & (1 << i)) != 0) {
 			if (ofs <= buf->used)
-				c->entry[i] = strdup (buf->data + ofs);
+				c->entry[i] = strdup ((char *)buf->data + ofs);
 			else
 				/* Record is cut short */
 				return -1;
@@ -132,7 +132,7 @@ unpack_Contact (Contact_t *c, pi_buffer_t *buf, contactsType type)
 	for (i = 0; i < 11; i++) {
 		if ((contents2 & (1 << i)) != 0) {
 			if (ofs <= buf->used)
-				c->entry[i + 28] = strdup (buf->data + ofs);
+				c->entry[i + 28] = strdup ((char *)buf->data + ofs);
 			else
 				/* Record is cut short */
 				return -1;
@@ -194,7 +194,7 @@ unpack_Contact (Contact_t *c, pi_buffer_t *buf, contactsType type)
 			/* Should have at least a 6 byte image header */
 			return -1;
 
-		if (strncasecmp (buf->data + ofs, "Bd00", 4) != 0)
+		if (strncasecmp ((char *)buf->data + ofs, "Bd00", 4) != 0)
 			/* Wrong signature */
 			return -1;
 
@@ -322,7 +322,7 @@ pack_Contact (Contact_t *c, pi_buffer_t *buf, contactsType type)
 	if (type == contacts_v11
 			&& c->pictype == cpic_jpeg
 			&& c->picture != NULL) {
-		strncpy (buf->data + ofs, "Bd00", 4);	/* no \0 */
+		strncpy ((char *)buf->data + ofs, "Bd00", 4);	/* no \0 */
 		ofs += 4;
 		set_short (buf->data + ofs, c->picture->used + 2);
 		ofs += 2;
@@ -439,7 +439,7 @@ unpack_ContactAppInfo (ContactAppInfo_t *ai, pi_buffer_t *buf)
 	ofs = 14 * 16;
 	ai->numCustoms = 9;
 	for (i = 0; i < ai->numCustoms; i++) {
-		strcpy (ai->customLabels[i], ai->labels->data + ofs);
+		strcpy (ai->customLabels[i], (char *)ai->labels->data + ofs);
 		ofs += 16;
 	}
 
@@ -479,7 +479,7 @@ pack_ContactAppInfo (ContactAppInfo_t *ai, pi_buffer_t *buf)
 	/* First write the custom labels back out */
 	ofs = 14 * 16;
 	for (i = 0; i < ai->numCustoms; i++) {
-		strcpy (ai->labels->data + ofs, ai->customLabels[i]);
+		strcpy ((char *)ai->labels->data + ofs, ai->customLabels[i]);
 		ofs += 16;
 	}
 

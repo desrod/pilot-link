@@ -297,8 +297,8 @@ int main (int argc, char **argv)
 						LOG((PI_DBG_USER, PI_DBG_LVL_INFO, "* ERROR: File read: read %d instead of the expected %d\n", len, strlen (name)));
 					} else if (memcmp (name, fileBuf->data, fileBuf->used)) {
 						LOG((PI_DBG_USER, PI_DBG_LVL_INFO, "* ERROR: File read: read data mismatch\n", fileBuf->used, strlen (name)));
-						dumpdata (name, fileBuf->used);
-						dumpdata (fileBuf->data, fileBuf->used);
+						pi_dumpdata (name, fileBuf->used);
+						pi_dumpdata (fileBuf->data, fileBuf->used);
 					} else {
 						LOG((PI_DBG_USER, PI_DBG_LVL_INFO, "* File read: successfully read the data back\n"));
 					}

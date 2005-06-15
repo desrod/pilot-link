@@ -16,7 +16,13 @@
 #
 what=libpisock
 libs=../libpisock/.libs/libpisock.a
-linkflags="-framework Carbon -framework System -framework IOKit -lgcc"
+linkflags="-framework Carbon -framework System -framework IOKit"
+gcc_version=`gcc --version | sed -e '2,$ d
+s/.*) \([[:digit:]+]\).[[:digit:]+].[[:digit:]+].*/\1/g'`
+if [ $gcc_version != 4 ];
+then
+	linkflags="$linkflags -lgcc";
+fi
 incs=../include
 
 rm -Rf $what.framework
@@ -28,7 +34,7 @@ then
 	linkflags="$linkflags -seg1addr $1";
 fi
 
-/usr/bin/libtool -dynamic -arch_only ppc \
+/usr/bin/libtool -v -dynamic -arch_only ppc \
 	-o $what.framework/Versions/A/$what \
 	-install_name @executable_path/../Frameworks/$what.framework/Versions/A/$what \
 	$libs $linkflags

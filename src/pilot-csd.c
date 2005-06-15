@@ -44,6 +44,7 @@
 #include "pi-slp.h"
 #include "pi-header.h"
 #include "pi-userland.h"
+#include "pi-debug.h"
 
 char hostname[130];
 struct in_addr address, netmask;
@@ -414,7 +415,7 @@ int main(int argc, const char *argv[])
 	      invalid:
 		if (!quiet)
 			fprintf(stdout, "invalid packet of %d bytes:\n", n);
-		dumpdata(mesg, n);
+		pi_dumpdata(mesg, n);
 	}
 
 	return 0;

@@ -251,7 +251,7 @@ Read_Pilot(ClientData clientData, int mask)
       return;
 
    /* puts("From Palm:");
-      dumpdata((unsigned char *)buf, l); */
+      pi_dumpdata((unsigned char *)buf, l); */
 
    if (buf[2] == 0) {		/* SysPkt command 	*/
       if (buf[0] == 2) {	/* UI 			*/

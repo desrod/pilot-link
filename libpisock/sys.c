@@ -358,7 +358,7 @@ sys_dump_header(const unsigned char *data, int rxtx)
 void
 sys_dump(const unsigned char *data, size_t len)
 {
-	dumpdata((char *)&data[PI_SYS_HEADER_LEN], len);
+	pi_dumpdata((char *)&data[PI_SYS_HEADER_LEN], len);
 }
 
 /* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */

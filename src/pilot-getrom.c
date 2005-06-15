@@ -270,7 +270,7 @@ int do_get_ram(int sd, const char *filename)
 	PackRPC(&p, 0xA026, RPC_IntReply, RPC_Ptr(print, 8),
 		RPC_Long(penPtr), RPC_Long(8), RPC_End);
 	/* err = */ dlp_RPC(sd, &p, 0);
-	dumpdata(print, 8);
+	pi_dumpdata(print, 8);
 #endif
 
 	signal(SIGINT, sighandler);

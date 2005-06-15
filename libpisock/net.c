@@ -145,7 +145,6 @@ pi_protocol_t
 	}
 
 	if (prot != NULL && data != NULL) {
-
 		prot->level 		= PI_LEVEL_NET;
 		prot->dup 		= net_protocol_dup;
 		prot->free 		= net_protocol_free;
@@ -161,7 +160,7 @@ pi_protocol_t
 		data->txid 		= 0x00;
 		prot->data 		= data;
 	}
-	
+
 	return prot;
 }
 
@@ -381,7 +380,7 @@ net_tx(pi_socket_t *ps, const unsigned char *msg, size_t len, int flags)
 	}
 
 	CHECK(PI_DBG_NET, PI_DBG_LVL_INFO, net_dump_header(buf, 1, ps->sd));
-	CHECK(PI_DBG_NET, PI_DBG_LVL_DEBUG, dumpdata((char *)msg, len));
+	CHECK(PI_DBG_NET, PI_DBG_LVL_DEBUG, pi_dumpdata((char *)msg, len));
 	
 	free(buf);
 	return len;
@@ -512,7 +511,7 @@ net_rx(pi_socket_t *ps, pi_buffer_t *msg, size_t len, int flags)
 				LOG ((PI_DBG_NET, PI_DBG_LVL_ERR,
 					"NET RX (%i): Unknown packet type\n",
 					ps->sd));
-				CHECK(PI_DBG_NET, PI_DBG_LVL_INFO, dumpdata((char *)header->data, PI_NET_HEADER_LEN));
+				CHECK(PI_DBG_NET, PI_DBG_LVL_INFO, pi_dumpdata((char *)header->data, PI_NET_HEADER_LEN));
 				pi_buffer_free(header);
 				return pi_set_error(ps->sd, PI_ERR_PROT_BADPACKET);
 		}
@@ -703,7 +702,7 @@ net_dump(unsigned char *header, unsigned char *data)
 	size_t 	size;
 
 	size = get_long(&header[PI_NET_OFFSET_SIZE]);
-	dumpdata((char *)data, size);
+	pi_dumpdata((char *)data, size);
 }
 
 /* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */
