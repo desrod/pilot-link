@@ -360,7 +360,7 @@ slp_rx(pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags)
 			} else {
 				LOG((PI_DBG_SLP, PI_DBG_LVL_WARN,
 					"SLP RX Header checksum failed for header:\n"));
-				dumpdata(slp_buf->data, PI_SLP_HEADER_LEN);
+				pi_dumpdata((const char *)slp_buf->data, PI_SLP_HEADER_LEN);
 				pi_buffer_free (slp_buf);
 				return 0;
 			}
@@ -642,7 +642,7 @@ slp_dump_header(const unsigned char *data, int rxtx)
 void
 slp_dump(const unsigned char *data)
 {
-	dumpdata((char *)&data[PI_SLP_HEADER_LEN], get_short(&data[PI_SLP_OFFSET_SIZE]));
+	pi_dumpdata((char *)&data[PI_SLP_HEADER_LEN], get_short(&data[PI_SLP_OFFSET_SIZE]));
 }
 
 /* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */

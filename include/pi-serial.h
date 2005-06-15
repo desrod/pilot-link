@@ -46,9 +46,7 @@ extern "C" {
 		unsigned char buf[256];
 		size_t buf_size;
 		
-		/* I/O options */
-		/*int *ref;*/
-		
+		/* I/O options */		
 #ifndef OS2
 # ifndef SGTTY
 		struct termios tco;
@@ -58,13 +56,10 @@ extern "C" {
 #endif
 
 		/* Baud rate info */
-		speed_t rate;	/* Current port baud rate */
-		speed_t establishrate; /* Baud rate to use after link
-					 is established                     */
+		int rate;		/**< Current port baud rate */
+		int establishrate;	/**< Baud rate to use after link is established. If -1, will use the max speed advertised by the device */
 
-		int establishhighrate;	/* Boolean: try to establish
-					 rate higher than the device
-					 publishes*/
+		int establishhighrate;	/**< Boolean: try to establish rate higher than the device publishes*/
 
 		/* Time out */
 		int timeout;

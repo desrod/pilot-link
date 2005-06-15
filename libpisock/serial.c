@@ -3,6 +3,7 @@
  *
  * Copyright (c) 1996, 1997, D. Jeff Dionne & Kenneth Albanowski
  * Copyright (c) 1999, Tilo Christ
+ * Copyright (c) 2005, Florent Pillet
  *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Library General Public License as published by
@@ -44,6 +45,7 @@
 #include "pi-net.h"
 #include "pi-cmp.h"
 #include "pi-error.h"
+#include "pi-util.h"
 
 #ifdef OS2
 #include <sys/select.h>
@@ -214,13 +216,13 @@ pi_serial_device (int type)
 		return NULL;
 	}
 
-	dev->free 		= pi_serial_device_free;
-	dev->protocol 		= pi_serial_protocol;	
-	dev->bind 		= pi_serial_bind;
-	dev->listen 		= pi_serial_listen;
-	dev->accept 		= pi_serial_accept;
-	dev->connect 		= pi_serial_connect;
-	dev->close 		= pi_serial_close;
+	dev->free 	= pi_serial_device_free;
+	dev->protocol 	= pi_serial_protocol;	
+	dev->bind 	= pi_serial_bind;
+	dev->listen 	= pi_serial_listen;
+	dev->accept 	= pi_serial_accept;
+	dev->connect 	= pi_serial_connect;
+	dev->close 	= pi_serial_close;
 
 	switch (type) {
 		case PI_SERIAL_DEV:
@@ -232,8 +234,8 @@ pi_serial_device (int type)
 	}
 	
 	data->buf_size 		= 0;
-	data->rate 		= (speed_t)-1;
-	data->establishrate 	= (speed_t)-1;
+	data->rate 		= -1;
+	data->establishrate 	= -1;
 	data->establishhighrate = -1;
 	data->timeout 		= 0;
 	data->rx_bytes 		= 0;
@@ -262,7 +264,6 @@ static int
 pi_serial_connect(pi_socket_t *ps, struct sockaddr *addr,
 	size_t addrlen)
 {
-	char 	*rate_env;
 	struct 	pi_serial_data *data =
 		(struct pi_serial_data *)ps->device->data;
 	struct 	pi_sockaddr *pa = (struct pi_sockaddr *) addr;
@@ -272,27 +273,14 @@ pi_serial_connect(pi_socket_t *ps, struct sockaddr *addr,
 		if (ps->protocol == PI_PF_SYS) {
 			data->establishrate = data->rate = 57600;
 		} else {
-			if (data->establishrate == (speed_t) -1) {
-				/* Default PADP connection rate */
-				data->establishrate = 9600;
-				rate_env = getenv("PILOTRATE");
-				if (rate_env) {
-					/* Establish high rate */
-					if (rate_env[0] == 'H') {
-						data->establishrate =
-							atoi(rate_env + 1);
-						data->establishhighrate = -1;
-					} else {
-						data->establishrate =
-							atoi(rate_env);
-						data->establishhighrate = 0;
-					}
-				}
-			}
+			if (data->establishrate == -1)
+				get_pilot_rate(&data->establishrate, &data->establishhighrate);
+
 			/* Mandatory CMP connection rate */
 			data->rate = 9600;
 		}
 	} else if (ps->type == PI_SOCK_RAW) {
+		/* Mandatory SysPkt connection rate */
 		data->establishrate = data->rate = 57600;
 	}
 
@@ -312,9 +300,11 @@ pi_serial_connect(pi_socket_t *ps, struct sockaddr *addr,
 			case PI_CMD_CMP:
 				if (cmp_tx_handshake(ps) < 0)
 					goto fail;
+
 				size = sizeof(data->rate);
 				pi_getsockopt(ps->sd, PI_LEVEL_CMP, PI_CMP_BAUD,
-							  &data->rate, &size);
+						&data->rate, &size);
+
 				if ((err = data->impl.changebaud(ps)) < 0)
 					goto fail;
 				break;
@@ -353,30 +343,17 @@ fail:
 static int
 pi_serial_bind(pi_socket_t *ps, struct sockaddr *addr, size_t addrlen)
 {
-	char 	*rate_env;
 	struct 	pi_serial_data *data =
 			(struct pi_serial_data *)ps->device->data;
 	struct 	pi_sockaddr *pa = (struct pi_sockaddr *) addr;
 	int err, count = 0;
 
 	if (ps->type == PI_SOCK_STREAM) {
-		if (data->establishrate == (speed_t) -1) {
-			/* Default PADP connection rate */
-			data->establishrate = 9600;
-			rate_env = getenv("PILOTRATE");
-			if (rate_env) {
-				/* Establish high rate */
-				if (rate_env[0] == 'H') {
-					data->establishrate =
-					    atoi(rate_env + 1);
-					data->establishhighrate = -1;
-				} else {
-					data->establishrate = atoi(rate_env);
-					data->establishhighrate = 0;
-				}
-			}
-		}
-		data->rate = 9600;	/* Mandatory CMP connection rate */
+		if (data->establishrate == -1)
+			get_pilot_rate(&data->establishrate, &data->establishhighrate);
+
+		/* Mandatory CMP connection rate */
+		data->rate = 9600;
 	} else if (ps->type == PI_SOCK_RAW) {
 		/* Mandatory SysPkt connection rate */
 		data->establishrate = data->rate = 57600;
@@ -585,31 +562,27 @@ pi_serial_getsockopt(pi_socket_t *ps, int level, int option_name,
 
 	switch (option_name) {
 		case PI_DEV_RATE:
-			if (*option_len < sizeof (data->rate))
+			if (*option_len != sizeof (data->rate))
 				goto error;
 			memcpy (option_value, &data->rate, sizeof (data->rate));
-			*option_len = sizeof (data->rate);
 			break;
+
 		case PI_DEV_ESTRATE:
-			if (*option_len < sizeof (data->establishrate))
+			if (*option_len != sizeof (data->establishrate))
 				goto error;
-			memcpy (option_value, &data->establishrate, 
-					sizeof (data->establishrate));
-			*option_len = sizeof (data->establishrate);
+			memcpy (option_value, &data->establishrate, sizeof (data->establishrate));
 			break;
+
 		case PI_DEV_HIGHRATE:
-			if (*option_len < sizeof (data->establishhighrate))
+			if (*option_len != sizeof (data->establishhighrate))
 				goto error;
-			memcpy (option_value, &data->establishhighrate,
-					sizeof (data->establishhighrate));
-			*option_len = sizeof (data->establishhighrate);
+			memcpy (option_value, &data->establishhighrate, sizeof (data->establishhighrate));
 			break;
+
 		case PI_DEV_TIMEOUT:
-			if (*option_len < sizeof (data->timeout))
+			if (*option_len != sizeof (data->timeout))
 				goto error;
-			memcpy (option_value, &data->timeout,
-					sizeof (data->timeout));
-			*option_len = sizeof (data->timeout);
+			memcpy (option_value, &data->timeout, sizeof (data->timeout));
 			break;
 	}
 
@@ -640,25 +613,23 @@ pi_serial_setsockopt(pi_socket_t *ps, int level, int option_name,
 		(struct pi_serial_data *)ps->device->data;
 
 	/* FIXME: can't change stuff if already connected */
-
 	switch (option_name) {
 		case PI_DEV_ESTRATE:
 			if (*option_len != sizeof (data->establishrate))
 				goto error;
-			memcpy (&data->establishrate, option_value,
-					sizeof (data->establishrate));
+			memcpy (&data->establishrate, option_value, sizeof (data->establishrate));
 			break;
+
 		case PI_DEV_HIGHRATE:
 			if (*option_len != sizeof (data->establishhighrate))
 				goto error;
-			memcpy (&data->establishhighrate, option_value,
-					sizeof (data->establishhighrate));
+			memcpy (&data->establishhighrate, option_value, sizeof (data->establishhighrate));
 			break;
+
 		case PI_DEV_TIMEOUT:
 			if (*option_len != sizeof (data->timeout))
 				goto error;
-			memcpy (&data->timeout, option_value,
-					sizeof (data->timeout));
+			memcpy (&data->timeout, option_value, sizeof (data->timeout));
 			break;
 	}
 

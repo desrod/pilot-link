@@ -183,7 +183,7 @@ cmp_protocol (void)
  *
  ***********************************************************************/
 int
-cmp_rx_handshake(pi_socket_t *ps, unsigned long establishrate,
+cmp_rx_handshake(pi_socket_t *ps, int establishrate,
 	int establishhighrate) 
 {
 	pi_protocol_t *prot;
@@ -211,15 +211,17 @@ cmp_rx_handshake(pi_socket_t *ps, unsigned long establishrate,
 		return bytes;
 
 	if ((data->version & 0xFF00) == 0x0100) {
-		if (establishrate > data->baudrate) {
-			if (establishhighrate) {
-				LOG((PI_DBG_CMP, PI_DBG_LVL_INFO, 
-				    "CMP Establishing higher rate %ul (%ul)\n",
-				    establishrate, data->baudrate));
+		if (establishrate != -1) {
+			if (establishrate > data->baudrate) {
+				if (establishhighrate) {
+					LOG((PI_DBG_CMP, PI_DBG_LVL_INFO, 
+					    "CMP Establishing higher rate %ul (%ul)\n",
+					    establishrate, data->baudrate));
+					data->baudrate = establishrate;
+				}
+			} else {
 				data->baudrate = establishrate;
 			}
-		} else {
-			data->baudrate = establishrate;
 		}
 		
 		if ((bytes = cmp_init(ps, data->baudrate)) < 0)
@@ -416,7 +418,7 @@ cmp_flush(pi_socket_t *ps, int flags)
  *
  ***********************************************************************/
 int
-cmp_init(pi_socket_t *ps, speed_t baudrate)
+cmp_init(pi_socket_t *ps, int baudrate)
 {	
 	pi_protocol_t *prot;
 	struct 	pi_cmp_data *data;
@@ -478,7 +480,7 @@ cmp_abort(pi_socket_t *ps, int reason)
  *
  ***********************************************************************/
 int
-cmp_wakeup(pi_socket_t *ps, speed_t maxbaud)
+cmp_wakeup(pi_socket_t *ps, int maxbaud)
 {
 	pi_protocol_t *prot;
 	struct 	pi_cmp_data *data;

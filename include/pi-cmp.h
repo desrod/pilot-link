@@ -47,30 +47,34 @@ extern "C" {
 		unsigned char type;
 		unsigned char flags;
 		unsigned int version;
-		speed_t baudrate;
+		int baudrate;
 	};
 
 	extern pi_protocol_t *cmp_protocol
 	    PI_ARGS((void));
 
 	extern int cmp_rx_handshake
-	  PI_ARGS((pi_socket_t *ps, unsigned long establishrate,
-		int establishhighrate));
+	  PI_ARGS((pi_socket_t *ps, int establishrate, int establishhighrate));
+
 	extern int cmp_tx_handshake
 	  PI_ARGS((pi_socket_t *ps));
+
 	extern ssize_t cmp_tx
 	  PI_ARGS((pi_socket_t *ps, PI_CONST unsigned char *buf,
 		size_t len, int flags));
+
 	extern ssize_t cmp_rx
 	  PI_ARGS((pi_socket_t *ps, pi_buffer_t *msg,
 		size_t expect, int flags));
 
 	extern int cmp_init
-	  PI_ARGS((pi_socket_t *ps, speed_t baudrate));
+	  PI_ARGS((pi_socket_t *ps, int baudrate));
+
 	extern int cmp_abort
 	  PI_ARGS((pi_socket_t *ps, int reason));
+
 	extern int cmp_wakeup
-	  PI_ARGS((pi_socket_t *ps, speed_t maxbaud));
+	  PI_ARGS((pi_socket_t *ps, int maxbaud));
 
 	extern void cmp_dump
 	  PI_ARGS((PI_CONST unsigned char *cmp, int rxtx));

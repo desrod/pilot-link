@@ -899,7 +899,7 @@ padp_dump(const unsigned char *data)
 	if (size > PI_PADP_MTU)
 		size = PI_PADP_MTU;
 	if (type != padAck)
-		dumpdata((char *)&data[PI_PADP_HEADER_LEN], size);
+		pi_dumpdata((char *)&data[PI_PADP_HEADER_LEN], size);
 }
 
 /* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */

@@ -3,6 +3,7 @@
  *
  * Copyright (c) 1996, 1997, D. Jeff Dionne & Kenneth Albanowski
  * Copyright (c) 1999, Tilo Christ
+ * Copyright (c) 2005, Florent Pillet
  *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Library General Public License as published by
@@ -42,6 +43,7 @@
 #include "pi-net.h"
 #include "pi-cmp.h"
 #include "pi-error.h"
+#include "pi-util.h"
 
 pi_protocol_t *pi_usb_protocol_dup (pi_protocol_t *prot);
 
@@ -217,9 +219,9 @@ pi_usb_device (int type)
 			dev->close 		= pi_usb_close;
 
 			memset(data, 0, sizeof(struct pi_usb_data));
-			data->rate 		= (speed_t)-1;
-			data->establishrate 	= (speed_t)-1;
-			data->establishhighrate = -1;
+			data->rate 		= -1;
+			data->establishrate 	= -1;
+			data->establishhighrate = 0;
 			pi_usb_impl_init (&data->impl);
 
 			dev->data 		= data;
@@ -252,28 +254,14 @@ pi_usb_connect(pi_socket_t *ps, struct sockaddr *addr, size_t addrlen)
 		if (ps->protocol == PI_PF_SYS) {
 			data->establishrate = data->rate = 57600;
 		} else {
-			if (data->establishrate == (speed_t) -1) {
-				/* Default PADP connection rate */
-				char *rate_env = getenv("PILOTRATE");
-				if (rate_env) {
-					/* Establish high rate */
-					if (rate_env[0] == 'H') {
-						data->establishrate =
-							atoi(rate_env + 1);
-						data->establishhighrate = -1;
-					} else {
-						data->establishrate =
-							atoi(rate_env);
-						data->establishhighrate = 0;
-					}
-				} else {
-					data->establishrate = 9600;
-				}
-			}
+			if (data->establishrate == -1)
+				get_pilot_rate(&data->establishrate, &data->establishhighrate);
+
 			/* Mandatory CMP connection rate */
 			data->rate = 9600;
 		}
 	} else if (ps->type == PI_SOCK_RAW) {
+		/* Mandatory SysPkt connection rate */
 		data->establishrate = data->rate = 57600;
 	}
 
@@ -335,25 +323,11 @@ pi_usb_bind(pi_socket_t *ps, struct sockaddr *addr, size_t addrlen)
 	 * connect through the USB layer, not through a serial tty
 	 */
 	if (ps->type == PI_SOCK_STREAM) {
-		if (data->establishrate == (speed_t) -1) {
-			/* Default PADP connection rate */
-			char *rate_env = getenv("PILOTRATE");
-			if (rate_env) {
-				/* Establish high rate */
-				if (rate_env[0] == 'H') {
-					data->establishrate =
-						atoi(rate_env + 1);
-					data->establishhighrate = -1;
-				} else {
-					data->establishrate =
-						atoi(rate_env);
-					data->establishhighrate = 0;
-				}
-			} else {
-				data->establishrate = 9600;
-			}
-		}
-		data->rate = 9600;	/* Mandatory CMP connection rate */
+		if (data->establishrate == -1)
+			get_pilot_rate(&data->establishrate, &data->establishhighrate);
+
+		/* Mandatory CMP connection rate */
+		data->rate = 9600;
 	} else if (ps->type == PI_SOCK_RAW) {
 		/* Mandatory SysPkt connection rate */
 		data->establishrate = data->rate = 57600;
@@ -448,7 +422,7 @@ pi_usb_accept(pi_socket_t *ps, struct sockaddr *addr, size_t *addrlen)
 				pi_getsockopt(ps->sd, PI_LEVEL_CMP, PI_CMP_BAUD,
 							  &data->rate, &size);
 
-				if (data->rate != 9600 && data->impl.changebaud != NULL) {
+				if (data->impl.changebaud != NULL) {
 				    	/* reconfigure the port to match the negotiated speed */
 					if ((result = data->impl.changebaud(ps)) < 0)
 						return result;
@@ -925,7 +899,7 @@ USB_configure_device (pi_usb_data_t *dev, u_int8_t *input_pipe, u_int8_t *output
 
 	if (flags & USB_INIT_NONE)
 		return 0;
-	else if (flags & USB_INIT_VISOR)
+	if (flags & USB_INIT_VISOR)
 		ret = USB_configure_visor (dev, input_pipe, output_pipe);
 	else if (flags & USB_INIT_SONY_CLIE) {
 		/* according to linux code, PEG S-300 awaits these two requests */

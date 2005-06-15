@@ -129,7 +129,7 @@ static ssize_t s_read(pi_socket_t *ps, pi_buffer_t *buf, size_t len,
 	int flags);
 static int s_poll(pi_socket_t *ps, int timeout);
 
-static speed_t calcrate(speed_t baudrate);
+static speed_t calcrate(int baudrate);
 void pi_serial_impl_init (struct pi_serial_impl *impl);
 static int s_flush(pi_socket_t *ps, int flags);
 
@@ -186,7 +186,7 @@ s_open(pi_socket_t *ps, struct pi_sockaddr *addr, size_t addrlen)
 	tcn.c_iflag 	= IGNBRK | IGNPAR;
 	tcn.c_cflag 	= CREAD | CLOCAL | CS8;
 
-	(void) cfsetspeed(&tcn, calcrate(data->rate));
+	cfsetspeed(&tcn, calcrate(data->rate));
 
 	tcn.c_lflag = NOFLSH;
 
@@ -581,7 +581,7 @@ s_changebaud(pi_socket_t *ps)
 		return pi_set_error(ps->sd, PI_ERR_GENERIC_SYSTEM);
 
 	tcn.c_cflag 	= CREAD | CLOCAL | CS8;
-	(void) cfsetspeed(&tcn, calcrate(data->rate));
+	cfsetspeed(&tcn, calcrate(data->rate));
 
 	if (tcsetattr(ps->sd, TCSADRAIN, &tcn))
 		return pi_set_error(ps->sd, PI_ERR_GENERIC_SYSTEM);
@@ -642,8 +642,8 @@ pi_serial_impl_init (struct pi_serial_impl *impl)
  *		if the requested baudrate is not supported.
  *
  ***********************************************************************/
-speed_t
-calcrate(speed_t baudrate)
+static speed_t
+calcrate(int baudrate)
 {
 #ifdef B50
 	if (baudrate == 50)
@@ -725,12 +725,12 @@ calcrate(speed_t baudrate)
 	else if (baudrate == 460800)
 		return B460800;
 #endif
-	else {
-		LOG((PI_DBG_DEV, PI_DBG_LVL_ERR,
-		    "DEV Serial CHANGEBAUD Unable to set baud rate %d\n",
-		    baudrate));
-		abort();	/* invalid baud rate */
-	}
+
+	LOG((PI_DBG_DEV, PI_DBG_LVL_ERR,
+		"DEV Serial CHANGEBAUD Unable to set baud rate %d\n",
+		baudrate));
+	abort();	/* invalid baud rate */
+	return 0;
 }
 
 /* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */
