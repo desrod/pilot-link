@@ -298,7 +298,8 @@ ssize_t
 cmp_tx(pi_socket_t *ps, const unsigned char *buf, size_t len, int flags)
 {
 	int 	bytes,
-		type;
+		type,
+		cmp_version;
 	size_t	size;
 	pi_protocol_t	*prot,
 			*next;
@@ -320,7 +321,7 @@ cmp_tx(pi_socket_t *ps, const unsigned char *buf, size_t len, int flags)
 
 	set_byte(&cmp_buf[PI_CMP_OFFSET_TYPE], data->type);
 	set_byte(&cmp_buf[PI_CMP_OFFSET_FLGS], data->flags);
-	set_short(&cmp_buf[PI_CMP_OFFSET_VERS], data->version);
+	set_short(&cmp_buf[PI_CMP_OFFSET_VERS], data->version > PI_CMP_VERSION ? PI_CMP_VERSION : data->version);
 	set_short(&cmp_buf[PI_CMP_OFFSET_RESV], 0);
 	set_long(&cmp_buf[PI_CMP_OFFSET_BAUD], data->baudrate);
 
@@ -352,7 +353,7 @@ cmp_rx(pi_socket_t *ps, pi_buffer_t *msg, size_t len, int flags)
 			*next;
 	struct 	pi_cmp_data *data;
 
-	LOG((PI_DBG_CMP, PI_DBG_LVL_DEBUG, "CMP RX len=%d flags=0x%04x\n",
+	LOG((PI_DBG_CMP, PI_DBG_LVL_DEBUG, "CMP RX len=%d flags=0x%02x\n",
 		len, flags));
 
 	prot = pi_protocol(ps->sd, PI_LEVEL_CMP);
@@ -366,7 +367,7 @@ cmp_rx(pi_socket_t *ps, pi_buffer_t *msg, size_t len, int flags)
 
 	bytes = next->read(ps, msg, len, flags);
 	if (bytes < 10)
-		return (bytes < 0) ? bytes : pi_set_error(ps->sd, PI_ERR_PROT_ABORTED);
+		return pi_set_error(ps->sd, (bytes < 0) ? bytes : PI_ERR_PROT_ABORTED);
 
 	CHECK(PI_DBG_CMP, PI_DBG_LVL_INFO, cmp_dump(msg->data, 0));
 
@@ -419,20 +420,19 @@ cmp_flush(pi_socket_t *ps, int flags)
  ***********************************************************************/
 int
 cmp_init(pi_socket_t *ps, int baudrate)
-{	
+{
 	pi_protocol_t *prot;
 	struct 	pi_cmp_data *data;
-	
+
 	prot = pi_protocol(ps->sd, PI_LEVEL_CMP);
 	if (prot == NULL)
 		return pi_set_error(ps->sd, PI_ERR_SOCK_INVALID);
 	data = (struct pi_cmp_data *)prot->data;
 
 	data->type = PI_CMP_TYPE_INIT;
+	data->flags = CMP_FL_LONG_PACKET_SUPPORT;
 	if (baudrate != 9600)
-		data->flags = 0x80;
-	else
-		data->flags = 0x00;
+		data->flags = CMP_FL_CHANGE_BAUD_RATE;
 	data->baudrate = baudrate;
 
 	return cmp_tx(ps, NULL, 0, 0);
@@ -492,7 +492,7 @@ cmp_wakeup(pi_socket_t *ps, int maxbaud)
 	data = (struct pi_cmp_data *)prot->data;
 	data->type 	= PI_CMP_TYPE_WAKE;
 	data->flags 	= 0;
-	data->version 	= PI_CMP_VERS_1_0;
+	data->version 	= PI_CMP_VERSION;
 	data->baudrate 	= maxbaud;
 
 	return cmp_tx(ps, NULL, 0, 0);
@@ -530,6 +530,7 @@ cmp_getsockopt(pi_socket_t *ps, int level, int option_name,
 				sizeof (data->type));
 			*option_len = sizeof (data->type);
 			break;
+
 		case PI_CMP_FLAGS:
 			if (*option_len != sizeof (data->flags))
 				goto error;
@@ -537,6 +538,7 @@ cmp_getsockopt(pi_socket_t *ps, int level, int option_name,
 				sizeof (data->flags));
 			*option_len = sizeof (data->flags);
 			break;
+
 		case PI_CMP_VERS:
 			if (*option_len != sizeof (data->version))
 				goto error;
@@ -544,6 +546,7 @@ cmp_getsockopt(pi_socket_t *ps, int level, int option_name,
 				sizeof (data->version));
 			*option_len = sizeof (data->version);
 			break;
+
 		case PI_CMP_BAUD:
 			if (*option_len != sizeof (data->baudrate))
 				goto error;

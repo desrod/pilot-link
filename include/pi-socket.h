@@ -121,7 +121,8 @@ enum PiOptSLP {
 enum PiOptPADP {
 	PI_PADP_TYPE,
 	PI_PADP_LASTTYPE,
-	PI_PADP_FREEZE_TXID		/**< if set, don't increment txid when receiving a packet. Mainly used by dlp_VFSFileRead() */
+	PI_PADP_FREEZE_TXID,		/**< if set, don't increment txid when receiving a packet. Mainly used by dlp_VFSFileRead() */
+	PI_PADP_USE_LONG_FORMAT		/**< if set, use the long packet size format when transmitting */
 };
 
 /** @brief CMP protocol socket options (use pi_getsockopt() and pi_setsockopt()) */

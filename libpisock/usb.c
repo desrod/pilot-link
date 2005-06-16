@@ -411,19 +411,35 @@ pi_usb_accept(pi_socket_t *ps, struct sockaddr *addr, size_t *addrlen)
 	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s: %d, prot: 0x%x, type: 0x%x, cmd: 0x%x.\n", __FILE__, __LINE__, ps->protocol, ps->type, ps->cmd));
 	if (ps->type == PI_SOCK_STREAM) {
 		struct timeval tv;
+		unsigned char cmp_flags;
 
 		switch (ps->cmd) {
 			case PI_CMD_CMP:
 				LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s: %d, cmp rx.\n", __FILE__, __LINE__));
 				if ((result = cmp_rx_handshake(ps, data->establishrate, data->establishhighrate)) < 0)
+				{
+					LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "usb.c: cmp_rx_handshake returned %d\n", result));
 					return result;
+				}
 
+				/* propagate the long packet format flag to both command and non-command stacks */
+				size = sizeof(cmp_flags);
+				pi_getsockopt(ps->sd, PI_LEVEL_CMP, PI_CMP_FLAGS, &cmp_flags, &size);	
+				if (cmp_flags & CMP_FL_LONG_PACKET_SUPPORT) {
+					int use_long_format = 1;
+					size = sizeof(int);
+					pi_setsockopt(ps->sd, PI_LEVEL_PADP, PI_PADP_USE_LONG_FORMAT,
+						      &use_long_format, &size);
+					ps->command ^= 1;
+					pi_setsockopt(ps->sd, PI_LEVEL_PADP, PI_PADP_USE_LONG_FORMAT,
+						      &use_long_format, &size);
+					ps->command ^= 1;
+				}
+				
+			    	/* reconfigure the port to match the negotiated speed */
 				size = sizeof(data->rate);
-				pi_getsockopt(ps->sd, PI_LEVEL_CMP, PI_CMP_BAUD,
-							  &data->rate, &size);
-
+				pi_getsockopt(ps->sd, PI_LEVEL_CMP, PI_CMP_BAUD, &data->rate, &size);
 				if (data->impl.changebaud != NULL) {
-				    	/* reconfigure the port to match the negotiated speed */
 					if ((result = data->impl.changebaud(ps)) < 0)
 						return result;
 
@@ -437,7 +453,10 @@ pi_usb_accept(pi_socket_t *ps, struct sockaddr *addr, size_t *addrlen)
 			case PI_CMD_NET:
 				LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s: %d, net rx.\n", __FILE__, __LINE__));
 				if ((result = net_rx_handshake(ps)) < 0)
+				{
+					LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "usb.c: cmp_rx_handshake returned %d\n", result));
 					return result;
+				}
 				break;
 
 			default:

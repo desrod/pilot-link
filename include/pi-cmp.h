@@ -43,6 +43,14 @@ extern "C" {
 #define PI_CMP_VERS_1_2 0x0102L
 #define PI_CMP_VERS_1_3	0x0103L
 
+#define PI_CMP_VERSION	PI_CMP_VERS_1_2
+
+/* CMP packet flag values */
+#define	CMP_FL_CHANGE_BAUD_RATE		0x80	/**< Want to switch speeds */
+#define	CMP_FL_ONE_MINUTE_TIMEOUT	0x40	/**< Use a 1 minute timeout before dropping link */
+#define	CMP_FL_TWO_MINUTE_TIMEOUT	0x20	/**< Use a 2 minute timeout before dropping ling */
+#define	CMP_FL_LONG_PACKET_SUPPORT	0x10	/**< long PADP packet format is supported */
+
 	struct pi_cmp_data {
 		unsigned char type;
 		unsigned char flags;

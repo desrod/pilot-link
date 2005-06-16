@@ -1318,6 +1318,8 @@ klsi_set_portspeed(IOUSBDeviceInterface **dev, int speed)
 		kr = control_request(dev, 0x40, KLSI_SET_COMM_DESCRIPTOR, 0, 0, &settings, 5);
 		if (kr == kIOReturnSuccess)
 			kr = control_request(dev, 0x40, KLSI_SET_FLOWCONTROL, (speed > 9600) ? KLSI_FLOW_USE_RTS : 0, 0, NULL, 0);
+
+		control_request(dev, 0x40, KLSI_SET_HANDSHAKE_LINES, KLSI_SETHS_DTR | KLSI_SETHS_RTS, 0, NULL, 0);
 	}
 	return kr;
 }
@@ -1369,7 +1371,6 @@ read_completion (usb_connection_t *c, IOReturn result, void *arg0)
 		if (c->vendorID == VENDOR_PALMONE && c->productID == PRODUCT_PALMCONNECT_USB)
 		{
 			/* decode PalmConnect USB frame */
-			pi_dumpdata(c->read_buffer, bytes_read);
 			if (bytes_read < 2)
 				bytes_read = 0;
 			else
@@ -1383,6 +1384,7 @@ read_completion (usb_connection_t *c, IOReturn result, void *arg0)
 				} else {
 					memmove(&c->read_buffer[0], &c->read_buffer[2], data_size);
 					bytes_read = data_size;
+					pi_dumpdata(c->read_buffer, bytes_read);
 				}
 			}
 		}
@@ -1464,14 +1466,14 @@ prime_read(usb_connection_t *c)
 		ULOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: prime_read(%p) for %d bytes\n", c, c->last_read_ahead_size));
 
 		IOReturn kr = (*c->interface)->ReadPipeAsyncTO (c->interface, c->in_pipe_ref,
-				c->read_buffer, c->last_read_ahead_size, 2000, 2000, (IOAsyncCallback1)&read_completion, (void *)c);
+				c->read_buffer, c->last_read_ahead_size, 5000, 5000, (IOAsyncCallback1)&read_completion, (void *)c);
 
 		if (kr == kIOUSBPipeStalled)
 		{
 			ULOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: stalled -- clearing stall and re-priming\n"));
 			(*c->interface)->ClearPipeStall (c->interface, c->in_pipe_ref);
 			kr = (*c->interface)->ReadPipeAsyncTO (c->interface, c->in_pipe_ref,
-					c->read_buffer, c->last_read_ahead_size, 2000, 2000, (IOAsyncCallback1)&read_completion, (void *)c);
+					c->read_buffer, c->last_read_ahead_size, 5000, 5000, (IOAsyncCallback1)&read_completion, (void *)c);
 		}
 		if (kr == kIOReturnSuccess)
 		{
@@ -1608,11 +1610,7 @@ u_poll(struct pi_socket *ps, int timeout)
 		/* when working with a PalmConnect USB, make sure we use the right speed 
 		 * then let the adapter send us data
 		 */
-		if (klsi_set_portspeed(c->device, ((pi_usb_data_t *)ps->device->data)->rate) == kIOReturnSuccess)
-		{
-			if (((pi_usb_data_t *)ps->device->data)->rate > 9600)
-				control_request(c->device, 0x40, KLSI_SET_FLOWCONTROL, KLSI_FLOW_USE_RTS, 0, NULL, 0);
-		}
+		klsi_set_portspeed(c->device, ((pi_usb_data_t *)ps->device->data)->rate);
 	}
 
 	pthread_mutex_lock(&c->read_queue_mutex);
@@ -1679,7 +1677,7 @@ u_write(struct pi_socket *ps, const unsigned char *buf, size_t len, int flags)
 			packet[1] = data_size >> 8;
 			memcpy(&packet[2], &buf[transferred_bytes], data_size);
 
-			kr = (*c->interface)->WritePipe(c->interface, c->out_pipe_ref, packet, c->out_pipe_bulk_size);
+			kr = (*c->interface)->WritePipeTO(c->interface, c->out_pipe_ref, packet, c->out_pipe_bulk_size, 5000, 5000);
 			if (kr != kIOReturnSuccess) {
 				LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "darwinusb: darwin_usb_write(): WritePipe returned kr=0x%08lx\n", kr));
 				break;
@@ -1692,7 +1690,7 @@ u_write(struct pi_socket *ps, const unsigned char *buf, size_t len, int flags)
 	}
 	else
 	{
-		kr = (*c->interface)->WritePipe(c->interface, c->out_pipe_ref, (void *)buf, len);
+		kr = (*c->interface)->WritePipeTO(c->interface, c->out_pipe_ref, (void *)buf, len, 5000, 5000);
 		if (kr != kIOReturnSuccess) {
 			LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "darwinusb: darwin_usb_write(): WritePipe returned kr=0x%08lx\n", kr));
 		} else
