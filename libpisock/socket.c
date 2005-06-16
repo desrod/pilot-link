@@ -481,11 +481,11 @@ protocol_queue_build (pi_socket_t *ps, int autodetect)
 
 			/* detect NET header packets */
 			else if (detect_buf->data[0] == 0x01 &&	/* NET packet */
-				 detect_buf->data[1] == 0xff &&	/* txid */
+				 /*detect_buf->data[1] == 0xff &&*/	/* txid */
 			    	 detect_buf->data[2] == 0x00 &&	/* length byte 0 */
 				 detect_buf->data[3] == 0x00 &&	/* length byte 1 */
 				 detect_buf->data[4] == 0x00 &&	/* length byte 2 */
-				 detect_buf->data[5] == 0x16 &&	/* length byte 3 */
+			         detect_buf->data[5] >  0    &&	/* length byte 3 */
 				 detect_buf->data[6] == 0x90)	/* PI_NET_SIG_BYTE1 */
 			{
 				protocol = PI_PF_NET;
