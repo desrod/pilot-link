@@ -34,7 +34,7 @@
 #include "pi-dlp.h"
 #include "pi-syspkt.h"
 #include "pi-header.h"
-#include "pi-dumpdata.h"
+#include "pi-debug.h"
 
 #ifdef HAVE_SYS_SELECT_H
 #include <sys/select.h>
