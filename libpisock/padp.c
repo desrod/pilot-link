@@ -3,9 +3,9 @@
  *
  * (c) 1996, D. Jeff Dionne.
  * Much of this code adapted from Brian J. Swetland <swetland@uiuc.edu>
- *
  * Mostly rewritten by Kenneth Albanowski.  Adjusted timeout values and
  * better error handling by Tilo Christ.
+ * (c) 2005, Florent Pillet
  *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Library General Public License as published by
@@ -87,10 +87,7 @@ padp_protocol_dup (pi_protocol_t *prot)
 			new_prot->setsockopt = prot->setsockopt;
 
 			data = (pi_padp_data_t *)prot->data;
-			new_data->type	= data->type;
-			new_data->last_type = data->last_type;
-			new_data->txid 	= data->txid;
-			new_data->next_txid = data->next_txid;
+			memcpy(new_data, data, sizeof(pi_padp_data_t));
 			new_prot->data 	= new_data;
 		}
 	}
@@ -160,6 +157,7 @@ pi_protocol_t
 			data->last_type = -1;
 			data->txid 	= 0xff;
 			data->next_txid = 0xff;
+			data->use_long_format = 0;
 			prot->data 	= data;
 		}
 	}
@@ -181,10 +179,17 @@ pi_protocol_t
 ssize_t
 padp_tx(pi_socket_t *ps, const unsigned char *buf, size_t len, int flags)
 {
-	int 	fl 	= FIRST,
+	int 	fl 	= PADP_FL_FIRST,
 		count 	= 0,
-		retries;
-	size_t	tlen;
+		retries,
+		result,
+		type,
+		socket,
+		timeout,
+		header_size;
+	size_t	size,
+		tlen;
+	unsigned char txid;
 	pi_protocol_t *prot, *next;
 	pi_padp_data_t *data;
 	pi_buffer_t *padp_buf;
@@ -214,18 +219,15 @@ padp_tx(pi_socket_t *ps, const unsigned char *buf, size_t len, int flags)
 	if (data->type != padAck && ps->state == PI_SOCK_CONAC)
 		data->txid = data->next_txid;
 
-	padp_buf = pi_buffer_new (PI_PADP_HEADER_LEN + PI_PADP_MTU);
+	padp_buf = pi_buffer_new (PI_PADP_HEADER_LEN + 2 + PI_PADP_MTU);
 	if (padp_buf == NULL)
 		return pi_set_error(ps->sd, PI_ERR_GENERIC_MEMORY);
+
+	pi_flush(ps->sd, PI_FLUSH_INPUT);
 
 	do {
 		retries = PI_PADP_TX_RETRIES;
 		do {
-			int 	type,
-				socket,
-				timeout;
-			size_t	size;
-
 			padp_buf->used = 0;
 
 			type 	= PI_SLP_TYPE_PADP;
@@ -242,37 +244,48 @@ padp_tx(pi_socket_t *ps, const unsigned char *buf, size_t len, int flags)
 			pi_setsockopt(ps->sd, PI_LEVEL_SLP, PI_SLP_TXID, &data->txid, &size);
 
 			tlen = (len > PI_PADP_MTU) ? PI_PADP_MTU : len;
+			header_size = data->use_long_format ? PI_PADP_HEADER_LEN+2 : PI_PADP_HEADER_LEN;
 
-			/* Construct the packet */
-			set_byte(&padp_buf->data[PI_PADP_OFFSET_TYPE], data->type & 0xff);
-			set_byte(&padp_buf->data[PI_PADP_OFFSET_FLGS], fl | (len == tlen ? LAST : 0));
-			set_short(&padp_buf->data[PI_PADP_OFFSET_SIZE], (fl ? len : (size_t)count));
-			memcpy(padp_buf->data + PI_PADP_HEADER_LEN, buf, tlen);
+			/* build the packet */
+			set_byte(&padp_buf->data[PI_PADP_OFFSET_TYPE], data->type);
+			set_byte(&padp_buf->data[PI_PADP_OFFSET_FLGS], fl |
+				 (len == tlen ? PADP_FL_LAST : 0) |
+				 (data->use_long_format ? PADP_FL_LONG : 0));
+			if (data->use_long_format)
+				set_long(&padp_buf->data[PI_PADP_OFFSET_SIZE], (fl ? len : (size_t)count));
+			else
+				set_short(&padp_buf->data[PI_PADP_OFFSET_SIZE], (fl ? len : (size_t)count));
+			memcpy(padp_buf->data + header_size, buf, tlen);
 
-			CHECK(PI_DBG_PADP, PI_DBG_LVL_INFO,
-				padp_dump_header(padp_buf->data, 1));
-			CHECK(PI_DBG_PADP, PI_DBG_LVL_DEBUG,
-				padp_dump(padp_buf->data));
+			CHECK(PI_DBG_PADP, PI_DBG_LVL_INFO, padp_dump_header(padp_buf->data, 1));
+			CHECK(PI_DBG_PADP, PI_DBG_LVL_DEBUG, padp_dump(padp_buf->data));
 
-			/* FIXME: write return code not handled */
-			next->write(ps, padp_buf->data, tlen + PI_PADP_HEADER_LEN, flags);
+			/* send the packet, check for disconnection (i.e. when running over USB) */
+			result = next->write(ps, padp_buf->data, header_size + tlen, flags);
+			if (result < 0) {
+				if (result == PI_ERR_SOCK_DISCONNECTED)
+					goto disconnected;
+			}
 
 			/* Tickles don't get acks */
 			if (data->type == padTickle)
 				break;
 
 keepwaiting:
-			if (next->read(ps, padp_buf, PI_PADP_HEADER_LEN + PI_PADP_MTU, flags) > 0) {
-				unsigned char txid;
-				
+			result = next->read(ps, padp_buf, PI_PADP_HEADER_LEN + 2 + PI_PADP_MTU, flags);
+			if (result > 0) {				
 				padp.type = get_byte(&padp_buf->data[PI_PADP_OFFSET_TYPE]);
 				padp.flags = get_byte(&padp_buf->data[PI_PADP_OFFSET_FLGS]);
-				padp.size = get_short(&padp_buf->data[PI_PADP_OFFSET_SIZE]);
+				if (padp.flags & PADP_FL_LONG) {
+					header_size = PI_PADP_HEADER_LEN + 2;
+					padp.size = get_long(&padp_buf->data[PI_PADP_OFFSET_SIZE]);
+				} else {
+					header_size = PI_PADP_HEADER_LEN;
+					padp.size = get_short(&padp_buf->data[PI_PADP_OFFSET_SIZE]);
+				}
 
-				CHECK(PI_DBG_PADP, PI_DBG_LVL_INFO,
-					padp_dump_header(padp_buf->data, 0));
-				CHECK(PI_DBG_PADP, PI_DBG_LVL_DEBUG,
-					padp_dump(padp_buf->data));
+				CHECK(PI_DBG_PADP, PI_DBG_LVL_INFO, padp_dump_header(padp_buf->data, 0));
+				CHECK(PI_DBG_PADP, PI_DBG_LVL_DEBUG, padp_dump(padp_buf->data));
 
 				size = sizeof(type);
 				pi_getsockopt(ps->sd, PI_LEVEL_SLP, PI_SLP_LASTTYPE, &type, &size);
@@ -292,26 +305,23 @@ keepwaiting:
 					    "PADP TX Missing Ack\n"));
 					count += tlen;
 					goto done;
-				} else if (padp.type == (unsigned char) 4) {
+				} else if (padp.type == (unsigned char)padTickle) {
 					/* Tickle to avoid timeout */
 					goto keepwaiting;
-				} else if (type == PI_SLP_TYPE_PADP
-							&& padp.type == (unsigned char) padAck
-							&& txid == data->txid) {
-					if (padp.flags & MEMERROR) {
-					/* OS 2.x enjoys sending erroneous 
-					memory errors */
-						LOG((PI_DBG_PADP,
-						 PI_DBG_LVL_WARN,
-						    "PADP TX Memory Error\n"));
-						/* Mimimum failure:
-						 transmission failed due to
-						 lack of memory in reciever
-						 link layer, but connection is
-						 still active. This
-						 transmission was lost, but
-						 other transmissions will be
-						 received. */
+				} else if (type      == PI_SLP_TYPE_PADP &&
+				           padp.type == (unsigned char)padAck &&
+				           txid      == data->txid) {
+					if (padp.flags & PADP_FL_MEMERROR) {
+						/* OS 2.x enjoys sending erroneous memory errors */
+						LOG((PI_DBG_PADP, PI_DBG_LVL_WARN,
+						     "PADP TX Memory Error\n"));
+
+						/* Mimimum failure: transmission failed due to
+						 * lack of memory in reciever link layer, but
+						 * connection is still active. This transmission
+						 * was lost, but other transmissions will be
+						 * received.
+						 */
 						errno = EMSGSIZE;
 						count = -1;
 						goto done;
@@ -323,11 +333,11 @@ keepwaiting:
 					count += tlen;
 					fl = 0;
 					break;
- 				} else if (type == PI_SLP_TYPE_PADP
-						   && padp.type  == data->last_ack_padp.type
-						   && padp.flags == data->last_ack_padp.flags
-						   && padp.size  == data->last_ack_padp.size
-						   && txid       == data->last_ack_txid) {
+ 				} else if (type       == PI_SLP_TYPE_PADP &&
+				           padp.type  == data->last_ack_padp.type &&
+				           padp.flags == data->last_ack_padp.flags &&
+				           padp.size  == data->last_ack_padp.size &&
+				           txid       == data->last_ack_txid) {
 					/* A repeat of a packet we already received.  The
 					ack got lost, so resend it. */
  					LOG((PI_DBG_PADP, PI_DBG_LVL_WARN,
@@ -339,7 +349,6 @@ keepwaiting:
 					    "PADP TX Unexpected packet "
 					    "possible port speed problem? "
 					    "out of sync packet?)\n"));
-
 					padp_dump_header (buf, 1);
 					/* Got unknown packet */
 					errno = EIO;
@@ -347,17 +356,18 @@ keepwaiting:
 					goto done;
 				}
 
-			}
+			} else if (result == PI_ERR_SOCK_DISCONNECTED)
+				goto disconnected;
+
 		} while (--retries > 0);
 
 		if (retries == 0) {
 			/* Maximum failure: transmission
 			   failed, and the connection must be presumed dead */
-			LOG((PI_DBG_PADP, PI_DBG_LVL_ERR,
-				"PADP TX Timed out"));
+			LOG((PI_DBG_PADP, PI_DBG_LVL_ERR, "PADP TX too many retries"));
 			errno = ETIMEDOUT;
-			ps->state = PI_SOCK_CONBK;
 			pi_buffer_free (padp_buf);
+			ps->state = PI_SOCK_CONBK;
 			return pi_set_error(ps->sd, PI_ERR_SOCK_DISCONNECTED);
 		}
 	} while (len);
@@ -367,6 +377,12 @@ done:
 		data->txid = data->next_txid;
 	pi_buffer_free (padp_buf);
 	return count;
+
+disconnected:
+	LOG((PI_DBG_PADP, PI_DBG_LVL_ERR, "PADP TX disconnected"));
+	pi_buffer_free(padp_buf);
+	ps->state = PI_SOCK_CONBK;
+	return pi_set_error(ps->sd, PI_ERR_SOCK_DISCONNECTED);
 }
 
 
@@ -389,7 +405,8 @@ padp_rx(pi_socket_t *ps, pi_buffer_t *buf, size_t expect, int flags)
 		ouroffset 	= 0,
 		honor_rx_timeout,
 		type,
-		timeout;
+		timeout,
+		header_size;
 	unsigned char txid;
 	size_t	total_bytes,
 		size;
@@ -454,28 +471,38 @@ padp_rx(pi_socket_t *ps, pi_buffer_t *buf, size_t expect, int flags)
 
 		total_bytes = 0;
 		padp_buf->used = 0;
-		while (total_bytes < PI_PADP_HEADER_LEN) {
+		header_size = PI_PADP_HEADER_LEN;
+		while (total_bytes < header_size) {
 			bytes = next->read(ps, padp_buf, 
-				(size_t)PI_PADP_HEADER_LEN + PI_PADP_MTU - total_bytes, flags);
+				(size_t)header_size + PI_PADP_MTU - total_bytes, flags);
 			if (bytes < 0) {
-				LOG((PI_DBG_PADP, PI_DBG_LVL_ERR,
-					"PADP RX Read Error\n"));
+				LOG((PI_DBG_PADP, PI_DBG_LVL_ERR, "PADP RX Read Error\n"));
 				pi_buffer_free (padp_buf);
 				return bytes;
 			}
 			total_bytes += bytes;
+
+			/* check for the long packet format flag and adjust header size */
+			if (header_size==PI_PADP_HEADER_LEN &&
+			    total_bytes >= PI_PADP_HEADER_LEN &&
+			    (padp_buf->data[PI_PADP_OFFSET_FLGS] & PADP_FL_LONG)) {
+				header_size += 2;
+			}
 		}
 
-		padp.type = get_byte(&padp_buf->data[PI_PADP_OFFSET_TYPE]);
-		padp.flags = get_byte(&padp_buf->data[PI_PADP_OFFSET_FLGS]);
-		padp.size = get_short(&padp_buf->data[PI_PADP_OFFSET_SIZE]);
+		padp.type = padp_buf->data[PI_PADP_OFFSET_TYPE];
+		padp.flags = padp_buf->data[PI_PADP_OFFSET_FLGS];
+		if (padp.flags & PADP_FL_LONG)
+			padp.size = get_long(&padp_buf->data[PI_PADP_OFFSET_SIZE]);
+		else
+			padp.size = get_short(&padp_buf->data[PI_PADP_OFFSET_SIZE]);
 
 		size = sizeof(type);
 		pi_getsockopt(ps->sd, PI_LEVEL_SLP, PI_SLP_LASTTYPE, &type, &size);
 		size = sizeof(txid);
 		pi_getsockopt(ps->sd, PI_LEVEL_SLP, PI_SLP_LASTTXID, &txid, &size);
 
-		if (padp.flags & MEMERROR) {
+		if (padp.flags & PADP_FL_MEMERROR) {
 			if (txid == data->txid) {
 				LOG((PI_DBG_PADP, PI_DBG_LVL_WARN,
 				    "PADP RX Memory Error\n"));
@@ -491,7 +518,7 @@ padp_rx(pi_socket_t *ps, pi_buffer_t *buf, size_t expect, int flags)
 						 received. */
 			}
 			continue;
-		} else if (padp.type == (unsigned char) 4) {
+		} else if (padp.type == padTickle) {
 			/* Tickle to avoid timeout */
 			LOG((PI_DBG_PADP, PI_DBG_LVL_WARN,
 			    "PADP RX Got Tickled\n"));
@@ -500,7 +527,7 @@ padp_rx(pi_socket_t *ps, pi_buffer_t *buf, size_t expect, int flags)
 		} else if (type != PI_SLP_TYPE_PADP	||
 			   padp.type != padData		||
 			   txid != data->txid		||
-			   !(padp.flags & FIRST)) {
+			   !(padp.flags & PADP_FL_FIRST)) {
 			LOG((PI_DBG_PADP, PI_DBG_LVL_ERR,
 			    "PADP RX Wrong packet type on queue"
 			    "(possible port speed problem? (loc1))\n"));
@@ -520,19 +547,19 @@ padp_rx(pi_socket_t *ps, pi_buffer_t *buf, size_t expect, int flags)
 		padp_sendack(ps, data, data->txid, &padp, flags);
 
 		/* calculate length and offset - remove  */
-		offset = ((padp.flags & FIRST) ? 0 : padp.size);
+		offset = ((padp.flags & PADP_FL_FIRST) ? 0 : padp.size);
 		total_bytes -= PI_PADP_HEADER_LEN;
 
 		/* If packet was out of order, ignore it */
 		if (offset == ouroffset) {
-			if (pi_buffer_append (buf, &padp_buf->data[PI_PADP_HEADER_LEN], total_bytes) == NULL) {
+			if (pi_buffer_append (buf, &padp_buf->data[header_size], total_bytes) == NULL) {
 				errno = ENOMEM;
 				return pi_set_error(ps->sd, PI_ERR_GENERIC_MEMORY);
 			}
 			ouroffset += total_bytes;
 		}
 
-		if (padp.flags & LAST)
+		if (padp.flags & PADP_FL_LAST)
 			break;
 
 		endtime = time(NULL) + PI_PADP_RX_SEGMENT_TO / 1000;
@@ -557,22 +584,32 @@ padp_rx(pi_socket_t *ps, pi_buffer_t *buf, size_t expect, int flags)
 
 			total_bytes = 0;
 			padp_buf->used = 0;
+			header_size = PI_PADP_HEADER_LEN;
 
-			while (total_bytes < PI_PADP_HEADER_LEN) {
+			while (total_bytes < header_size) {
 				bytes = next->read(ps, padp_buf,
-						PI_PADP_HEADER_LEN + PI_PADP_MTU - total_bytes,  flags);
+						header_size + PI_PADP_MTU - total_bytes,  flags);
 				if (bytes < 0) {
-					LOG((PI_DBG_PADP,
-						PI_DBG_LVL_ERR, "PADP RX Read Error"));
+					LOG((PI_DBG_PADP, PI_DBG_LVL_ERR, "PADP RX Read Error"));
 					pi_buffer_free (padp_buf);
-					return bytes;
+					return pi_set_error(ps->sd, bytes);
 				}
 				total_bytes += bytes;
+				
+				/* check for the long packet format flag and adjust header size */
+				if (header_size==PI_PADP_HEADER_LEN &&
+				    total_bytes >= PI_PADP_HEADER_LEN &&
+				    (padp_buf->data[PI_PADP_OFFSET_FLGS] & PADP_FL_LONG)) {
+					header_size += 2;
+				}
 			}				
 
-			padp.type = get_byte(&padp_buf->data[PI_PADP_OFFSET_TYPE]);
-			padp.flags = get_byte(&padp_buf->data[PI_PADP_OFFSET_FLGS]);
-			padp.size = get_short(&padp_buf->data[PI_PADP_OFFSET_SIZE]);
+			padp.type = padp_buf->data[PI_PADP_OFFSET_TYPE];
+			padp.flags = padp_buf->data[PI_PADP_OFFSET_FLGS];
+			if (padp.flags & PADP_FL_LONG)
+				padp.size = get_long(&padp_buf->data[PI_PADP_OFFSET_SIZE]);
+			else
+				padp.size = get_short(&padp_buf->data[PI_PADP_OFFSET_SIZE]);
 
 			CHECK(PI_DBG_PADP, PI_DBG_LVL_INFO, padp_dump_header(padp_buf->data, 0));
 			CHECK(PI_DBG_PADP, PI_DBG_LVL_DEBUG, padp_dump(padp_buf->data));
@@ -582,7 +619,7 @@ padp_rx(pi_socket_t *ps, pi_buffer_t *buf, size_t expect, int flags)
 			size = sizeof(txid);
 			pi_getsockopt(ps->sd, PI_LEVEL_SLP, PI_SLP_LASTTXID, &txid, &size);
 
-			if (padp.flags & MEMERROR) {
+			if (padp.flags & PADP_FL_MEMERROR) {
 				if (txid == data->txid) {
 					/* Mimimum failure: transmission failed due
 					 to lack of memory in receiver link layer,
@@ -610,7 +647,7 @@ padp_rx(pi_socket_t *ps, pi_buffer_t *buf, size_t expect, int flags)
 			if (type != PI_SLP_TYPE_PADP	||
 			    padp.type != padData	||
 			    txid != data->txid		||
-			    (padp.flags & FIRST)) {
+			    (padp.flags & PADP_FL_FIRST)) {
 				LOG((PI_DBG_PADP, PI_DBG_LVL_ERR,
 					"PADP RX Wrong packet type on queue"
 					"(possible port speed problem? (loc2))\n"));
@@ -697,6 +734,12 @@ padp_getsockopt(pi_socket_t *ps, int level, int option_name,
 				goto error;
 			memcpy (option_value, &data->freeze_txid, sizeof(data->freeze_txid));
 			break;
+
+		case PI_PADP_USE_LONG_FORMAT:
+			if (*option_len != sizeof (data->use_long_format))
+				goto error;
+			memcpy (option_value, &data->use_long_format, sizeof(data->use_long_format));
+			break;
 	}
 
 	return 0;
@@ -743,12 +786,17 @@ padp_setsockopt(pi_socket_t *ps, int level, int option_name,
 				goto error;
 			was_frozen = data->freeze_txid;
 			memcpy (&data->freeze_txid, option_value, sizeof (data->freeze_txid));
-			if (was_frozen && !data->freeze_txid)
-			{
+			if (was_frozen && !data->freeze_txid) {
 				data->next_txid++;
 				if (data->next_txid >= 0xfe)
 					data->next_txid = 1;
 			}
+			break;
+
+		case PI_PADP_USE_LONG_FORMAT:
+			if (*option_len != sizeof (data->use_long_format))
+				goto error;
+			memcpy (&data->use_long_format, option_value, sizeof(data->use_long_format));
 			break;
 	}
 
@@ -779,7 +827,8 @@ padp_sendack(struct pi_socket *ps,
 {
 	int	type,
 		socket,
-		result;
+		result,
+		header_size;
 	size_t	size;
 	unsigned char
 		npadp_buf[PI_PADP_HEADER_LEN+2];
@@ -799,14 +848,20 @@ padp_sendack(struct pi_socket *ps,
 	size = sizeof(txid);
 	pi_setsockopt(ps->sd, PI_LEVEL_SLP, PI_SLP_TXID, &txid, &size);
 
+	header_size = PI_PADP_HEADER_LEN;
 	set_byte(&npadp_buf[PI_PADP_OFFSET_TYPE], padAck);
 	set_byte(&npadp_buf[PI_PADP_OFFSET_FLGS], padp->flags);
-	set_short(&npadp_buf[PI_PADP_OFFSET_SIZE], padp->size);
+	if (padp->flags & PADP_FL_LONG) {
+		header_size += 2;
+		set_long(&npadp_buf[PI_PADP_OFFSET_SIZE], padp->size);
+	} else {
+		set_short(&npadp_buf[PI_PADP_OFFSET_SIZE], padp->size);
+	}
 
 	CHECK(PI_DBG_PADP, PI_DBG_LVL_INFO, padp_dump_header(npadp_buf, 1));
 	CHECK(PI_DBG_PADP, PI_DBG_LVL_DEBUG, padp_dump(npadp_buf));
 
-	result = next->write(ps, npadp_buf, PI_PADP_HEADER_LEN, flags);
+	result = next->write(ps, npadp_buf, header_size, flags);
 
 	if (result >= 0) {
 		data->last_ack_txid = txid;
@@ -832,7 +887,7 @@ padp_sendack(struct pi_socket *ps,
 void
 padp_dump_header(const unsigned char *data, int rxtx)
 {
-	int 	s;
+	long 	s;
 	char 	*stype;
 	unsigned char type, flags;
 
@@ -847,11 +902,6 @@ padp_dump_header(const unsigned char *data, int rxtx)
 		case padTickle:
 			stype = "TICKLE";
 			break;
-#if 0		/* fpillet: padWake=0x101, it's strange to test this value on an unsigned char... */
-		case padWake:
-			stype = "WAKE";
-			break;
-#endif
 		case padAbort:
 			stype = "ABORT";
 			break;
@@ -861,14 +911,17 @@ padp_dump_header(const unsigned char *data, int rxtx)
 	}
 
 	flags = get_byte(&data[PI_PADP_OFFSET_FLGS]);
-	s = get_short(&data[PI_PADP_OFFSET_SIZE]);
+	if (flags & PADP_FL_LONG)
+		s = get_long(&data[PI_PADP_OFFSET_SIZE]);
+	else
+		s = get_short(&data[PI_PADP_OFFSET_SIZE]);
 
 	LOG((PI_DBG_PADP, PI_DBG_LVL_NONE, 
-	    "PADP %s %c%c%c type=%s len=0x%.4x\n", 
+	    "PADP %s %c%c%c type=%s len=%ld\n", 
 	    rxtx ? "TX" : "RX",
-	    (flags & FIRST) ? 'F' : ' ',
-	    (flags & LAST) ? 'L' : ' ',
-	    (flags & MEMERROR) ? 'M' : ' ',
+	    (flags & PADP_FL_FIRST) ? 'F' : ' ',
+	    (flags & PADP_FL_LAST) ? 'L' : ' ',
+	    (flags & PADP_FL_MEMERROR) ? 'M' : ' ',
 	    stype, s));
 }
 
@@ -891,15 +944,20 @@ padp_dump(const unsigned char *data)
 	unsigned char
 		type,
 		flags;
+	int header_size = PI_PADP_HEADER_LEN;
 
 	type 	= get_byte (&data[PI_PADP_OFFSET_TYPE]);
 	flags	= get_byte (&data[PI_PADP_OFFSET_FLGS]);
-	size = get_short(&data[PI_PADP_OFFSET_SIZE]);
+	if (flags & PADP_FL_LONG) {
+		header_size += 2;
+		size = get_long(&data[PI_PADP_OFFSET_SIZE]);
+	} else
+		size = get_short(&data[PI_PADP_OFFSET_SIZE]);
 
 	if (size > PI_PADP_MTU)
 		size = PI_PADP_MTU;
 	if (type != padAck)
-		pi_dumpdata((char *)&data[PI_PADP_HEADER_LEN], size);
+		pi_dumpdata((char *)&data[header_size], size);
 }
 
 /* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */
