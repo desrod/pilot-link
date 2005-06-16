@@ -3,7 +3,7 @@
  *
  * Copyright (c) 2004-2005, Florent Pillet.
  *
- * $ Id: $
+ * $Id$
  *
  * libpisock interface modeled after linuxusb.c by Jeff Dionne and 
  * Kenneth Albanowski

@@ -473,18 +473,30 @@ pi_serial_accept(pi_socket_t *ps, struct sockaddr *addr,
 	pi_socket_init(ps);
 	if (ps->type == PI_SOCK_STREAM) {
 		struct timeval tv;
+		unsigned char cmp_flags;
 
 		switch (ps->cmd) {
 			case PI_CMD_CMP:
-				if ((err = cmp_rx_handshake(ps, data->establishrate,
-											data->establishhighrate)) < 0)
+				if ((err = cmp_rx_handshake(ps, data->establishrate, data->establishhighrate)) < 0)
 					goto fail;
-
-				size = sizeof(data->rate);
-				pi_getsockopt(ps->sd, PI_LEVEL_CMP, PI_CMP_BAUD,
-							  &data->rate, &size);
 				
-				/* We always reconfigure our port, no matter what */
+				/* propagate the long packet format flag to both command and non-command stacks */
+				size = sizeof(cmp_flags);
+				pi_getsockopt(ps->sd, PI_LEVEL_CMP, PI_CMP_FLAGS, &cmp_flags, &size);	
+				if (cmp_flags & CMP_FL_LONG_PACKET_SUPPORT) {
+					int use_long_format = 1;
+					size = sizeof(int);
+					pi_setsockopt(ps->sd, PI_LEVEL_PADP, PI_PADP_USE_LONG_FORMAT,
+						      &use_long_format, &size);
+					ps->command ^= 1;
+					pi_setsockopt(ps->sd, PI_LEVEL_PADP, PI_PADP_USE_LONG_FORMAT,
+						      &use_long_format, &size);
+					ps->command ^= 1;
+				}
+					
+					/* We always reconfigure our port, no matter what */
+				size = sizeof(data->rate);
+				pi_getsockopt(ps->sd, PI_LEVEL_CMP, PI_CMP_BAUD, &data->rate, &size);
 				if ((err = data->impl.changebaud(ps)) < 0)
 					goto fail;
 					
@@ -499,7 +511,7 @@ pi_serial_accept(pi_socket_t *ps, struct sockaddr *addr,
 				 * on both the command and non-command instances of the protocol
 				 */
 #ifdef MACOSX
-				/* We need to turn frag. OFF for Bluetooth
+				/* We need to turn fragmentation OFF to improve Bluetooth performance
 				 * but this code is also used by USB on Linux and Freebsd
 				 * therefore, only compile it when running OS X
 				 */

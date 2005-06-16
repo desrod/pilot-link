@@ -338,8 +338,10 @@ pi_inet_accept(pi_socket_t *ps, struct sockaddr *addr, size_t *addrlen)
 		err,
 		split = 0,
 		chunksize = 0;
-	size_t	len;
+	size_t	len,
+		size;
 	pl_socklen_t l = 0;
+	unsigned char cmp_flags;
 	
 	if (addrlen)
 		l = *addrlen;
@@ -359,6 +361,21 @@ pi_inet_accept(pi_socket_t *ps, struct sockaddr *addr, size_t *addrlen)
 		case PI_CMD_CMP:
 			if ((err = cmp_rx_handshake(ps, 57600, 0)) < 0)
 				goto fail;
+
+			/* propagate the long packet format flag to both command and non-command stacks */
+			size = sizeof(cmp_flags);
+			pi_getsockopt(ps->sd, PI_LEVEL_CMP, PI_CMP_FLAGS, &cmp_flags, &size);	
+			if (cmp_flags & CMP_FL_LONG_PACKET_SUPPORT) {
+				int use_long_format = 1;
+				size = sizeof(int);
+				pi_setsockopt(ps->sd, PI_LEVEL_PADP, PI_PADP_USE_LONG_FORMAT,
+					      &use_long_format, &size);
+				ps->command ^= 1;
+				pi_setsockopt(ps->sd, PI_LEVEL_PADP, PI_PADP_USE_LONG_FORMAT,
+					      &use_long_format, &size);
+				ps->command ^= 1;
+			}
+
 			break;
 		case PI_CMD_NET:
 			/* network: make sure we don't split writes. set socket option
