@@ -460,8 +460,10 @@ protocol_queue_build (pi_socket_t *ps, int autodetect)
 			result = dev_prot->read (ps, detect_buf, 10, PI_MSG_PEEK);
 			if (result < 0)
 				break;
-			if (result != 10)
+			if (result != 10) {
+				pi_buffer_clear(detect_buf);
 				continue;
+			}
 
 			/* detect a valid PADP header packet */
 			if (detect_buf->data[0] == PI_SLP_SIG_BYTE1 &&
