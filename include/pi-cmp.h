@@ -37,6 +37,7 @@ extern "C" {
 #define PI_CMP_TYPE_WAKE 0x01
 #define PI_CMP_TYPE_INIT 0x02
 #define PI_CMP_TYPE_ABRT 0x03
+#define PI_CMP_TYPE_EXTN 0x04		/**< Type for extended CMP packets */
 
 #define PI_CMP_VERS_1_0 0x0100L
 #define PI_CMP_VERS_1_1 0x0101L
