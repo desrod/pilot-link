@@ -1,5 +1,5 @@
 /*
- * linuxusb.c: device i/o for linux usb
+ * libusb.c: device i/o for libusb
  *
  * Copyright (c) 2004 Zephaniah E. Hull & Florent Pillet.
  *
@@ -51,8 +51,8 @@
 
 static int u_open(struct pi_socket *ps, struct pi_sockaddr *addr, size_t addrlen);
 static int u_close(struct pi_socket *ps);
-static int u_write(struct pi_socket *ps, const unsigned char *buf, size_t len, int flags);
-static int u_read(struct pi_socket *ps, pi_buffer_t *buf, size_t len, int flags);
+static ssize_t u_write(struct pi_socket *ps, const unsigned char *buf, size_t len, int flags);
+static ssize_t u_read(struct pi_socket *ps, pi_buffer_t *buf, size_t len, int flags);
 static int u_read_i(struct pi_socket *ps, pi_buffer_t *buf, size_t len, int flags, int timeout);
 static int u_poll(struct pi_socket *ps, int timeout);
 static int u_flush(pi_socket_t *ps, int flags);
@@ -102,6 +102,7 @@ USB_open (pi_usb_data_t *data)
 	for (bus = usb_busses; bus; bus = bus->next) {
 		for (dev = bus->devices; dev; dev = dev->next) {
 			int i;
+			LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s: checking device %p\n", __FILE__, dev));
 
 			if (dev->descriptor.bNumConfigurations < 1)
 				continue;
@@ -118,9 +119,9 @@ USB_open (pi_usb_data_t *data)
 			if (USB_check_device (data, dev->descriptor.idVendor, dev->descriptor.idProduct))
 				continue;
 
-			LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s: %d.\n", __FILE__, __LINE__));
+			LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s: trying to open device %p\n", __FILE__, dev));
 			USB_handle = usb_open(dev);
-			LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s: %d.\n", __FILE__, __LINE__));
+			LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s: USB_handle=%p\n", __FILE__, USB_handle));
 
 			data->ref = USB_handle;
 
@@ -362,7 +363,7 @@ u_poll(struct pi_socket *ps, int timeout)
 	return u_read_i (ps, NULL, 1, PI_MSG_PEEK, timeout);
 }
 
-static int
+static ssize_t
 u_write(struct pi_socket *ps, const unsigned char *buf, size_t len, int flags)
 {
 	int timeout = ((struct pi_usb_data *)ps->device->data)->timeout;
@@ -380,10 +381,10 @@ u_write(struct pi_socket *ps, const unsigned char *buf, size_t len, int flags)
 	if (ret > 0)
 		CHECK (PI_DBG_DEV, PI_DBG_LVL_DEBUG, pi_dumpdata (buf, ret));
 
-	return ret;
+	return (ssize_t)ret;
 }
 
-static int
+static ssize_t
 u_read(struct pi_socket *ps, pi_buffer_t *buf, size_t len, int flags)
 {
 	int ret;
@@ -393,14 +394,14 @@ u_read(struct pi_socket *ps, pi_buffer_t *buf, size_t len, int flags)
 	if (ret > 0)
 		CHECK (PI_DBG_DEV, PI_DBG_LVL_DEBUG, pi_dumpdata (buf->data, ret));
 
-	return ret;
+	return (ssize_t)ret;
 }
 
 static int
 u_read_i(struct pi_socket *ps, pi_buffer_t *buf, size_t len, int flags, int timeout)
 {
 	if (!RD_running)
-		return -1;
+		return PI_ERR_SOCK_DISCONNECTED;
 
 	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s %d (%s): %d %d %d\n", __FILE__, __LINE__, __FUNCTION__, len, flags, timeout));
 	pthread_mutex_lock (&RD_buffer_mutex);
@@ -410,7 +411,7 @@ u_read_i(struct pi_socket *ps, pi_buffer_t *buf, size_t len, int flags, int time
 	if (RD_buffer_used < len) {
 		struct timeval now;
 		struct timespec when, nownow;
-		int				last_used;
+		int last_used;
 		gettimeofday(&now, NULL);
 		when.tv_sec = now.tv_sec + timeout / 1000;
 		when.tv_nsec = now.tv_usec + (timeout % 1000) * 1000 * 1000;
@@ -448,7 +449,7 @@ u_read_i(struct pi_socket *ps, pi_buffer_t *buf, size_t len, int flags, int time
 
 	if (!RD_running) {
 		pthread_mutex_unlock (&RD_buffer_mutex);
-		return -1;
+		return PI_ERR_SOCK_DISCONNECTED;
 	}
 
 	if (RD_buffer_used < len)
@@ -474,7 +475,8 @@ u_read_i(struct pi_socket *ps, pi_buffer_t *buf, size_t len, int flags, int time
 	return len;
 }
 
-static int u_flush(pi_socket_t *ps, int flags)
+static int
+u_flush(pi_socket_t *ps, int flags)
 {
 	if (flags & PI_FLUSH_INPUT) {
 		/* clear internal buffer */
