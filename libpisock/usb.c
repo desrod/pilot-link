@@ -386,12 +386,20 @@ pi_usb_accept(pi_socket_t *ps, struct sockaddr *addr, size_t *addrlen)
 
 	data->timeout = timeout = ps->accept_to * 1000;
 
+	if (data->impl.poll_device) {
+		result = data->impl.poll_device (ps, &timeout);
+		if (result <= 0)
+			return result;
+	}
+
 	/* Wait for data */
 #ifdef linux
 	/*
-	 * Evil kludge for what appears to be a linux USB stack bug.
-	 * If we don't get any data the device may still be there.
-	 * We try to wake it up by sending an empty dummy packet.
+	 * Evilish kluge, some palm devices won't send the initial
+	 * packets if we don't try and get them fairly quickly.
+	 *
+	 * Sending a 0 byte NET packet can get them talking again
+	 * in some cases though.
 	 */
 	result = data->impl.poll(ps, 1000);
 	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s: %d, poll result: %d.\n", __FILE__, __LINE__, result));

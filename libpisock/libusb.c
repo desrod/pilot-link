@@ -37,6 +37,7 @@
 #include "pi-source.h"
 #include "pi-socket.h"
 #include "pi-usb.h"
+#include "pi-util.h"
 
 #ifdef HAVE_SYS_IOCTL_COMPAT_H
 #include <sys/ioctl_compat.h>
@@ -55,6 +56,7 @@ static ssize_t u_write(struct pi_socket *ps, const unsigned char *buf, size_t le
 static ssize_t u_read(struct pi_socket *ps, pi_buffer_t *buf, size_t len, int flags);
 static int u_read_i(struct pi_socket *ps, pi_buffer_t *buf, size_t len, int flags, int timeout);
 static int u_poll(struct pi_socket *ps, int timeout);
+static int u_poll_device(struct pi_socket *ps, int *timeout);
 static int u_flush(pi_socket_t *ps, int flags);
 static int u_control_request (pi_usb_data_t *usb_data, int request_type, int request, int value, int index, void *data, int size, int timeout);
 
@@ -66,6 +68,7 @@ void pi_usb_impl_init (struct pi_usb_impl *impl)
 	impl->read 	= u_read;
 	impl->flush	= u_flush;
 	impl->poll 	= u_poll;
+	impl->poll_device= u_poll_device;
 	impl->changebaud= NULL;		/* we don't need this one for libusb (yet) */
 	impl->control_request	= u_control_request;
 }
@@ -86,6 +89,15 @@ static int				USB_out_endpoint;
 static int
 USB_open (pi_usb_data_t *data)
 {
+	usb_init ();
+	usb_find_busses ();
+
+	return 1;
+}
+
+static int
+USB_poll (pi_usb_data_t *data)
+{
 	struct usb_bus *bus;
 	struct usb_device *dev;
 	int ret;
@@ -94,8 +106,6 @@ USB_open (pi_usb_data_t *data)
 	int first;
 #endif
 
-	usb_init ();
-	usb_find_busses ();
 	usb_find_devices ();
 	CHECK (PI_DBG_DEV, PI_DBG_LVL_DEBUG, usb_set_debug (2));
 
@@ -336,10 +346,6 @@ u_open(struct pi_socket *ps, struct pi_sockaddr *addr, size_t addrlen)
 		return -1;
 	if (!USB_open (data))
 		return -1;
-	if (!RD_start ()) {
-		USB_close ();
-		return -1;
-	}
 	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s %d (%s).\n", __FILE__, __LINE__, __FUNCTION__));
 
 	return 1;
@@ -353,6 +359,47 @@ u_close(struct pi_socket *ps)
 	USB_close ();
 	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s %d (%s).\n", __FILE__, __LINE__, __FUNCTION__));
 	return close (ps->sd);
+}
+
+static int
+u_poll_device(struct pi_socket *ps, int *timeout)
+{
+	pi_usb_data_t *data = (pi_usb_data_t *)ps->device->data;
+	struct timespec when;
+	int ret = 0;
+
+	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s %d (%s).\n", __FILE__, __LINE__, __FUNCTION__));
+
+	if (*timeout)
+		pi_timeout_to_timespec (*timeout, &when);
+
+	while (1) {
+		ret = USB_poll (data);
+		if (ret > 0) {
+			/* Evil, calculate how much longer the timeout is. */
+			if (*timeout) {
+				*timeout = pi_timespec_to_timeout (&when);
+				if (*timeout <= 0)
+					*timeout = 1;
+			}
+			if (!RD_start ()) {
+				USB_close ();
+				return -1;
+			}
+			return ret;
+
+		}
+
+		if (*timeout) {
+			if (pi_timeout_expired(&when)) {
+				*timeout = 1;
+				return 0;
+			}
+		}
+		usleep (500000);
+	}
+
+	return 0;
 }
 
 static int
@@ -414,7 +461,7 @@ u_read_i(struct pi_socket *ps, pi_buffer_t *buf, size_t len, int flags, int time
 		int last_used;
 		gettimeofday(&now, NULL);
 		when.tv_sec = now.tv_sec + timeout / 1000;
-		when.tv_nsec = now.tv_usec + (timeout % 1000) * 1000 * 1000;
+		when.tv_nsec = (now.tv_usec + (timeout % 1000) * 1000) * 1000;
 		if (when.tv_nsec >= 1000000000) {
 			when.tv_nsec -= 1000000000;
 			when.tv_sec++;
