@@ -358,6 +358,34 @@ int compareTm(struct tm *a, struct tm *b)
 	return date;
 }
 
+void pi_timeout_to_timespec(int timeout, struct timespec *ts)
+{
+	/* convert a timeout value (in milliseconds) to an absolute timespec */
+	struct timeval now;
+	gettimeofday(&now, NULL);
+	ts->tv_sec = now.tv_sec + (long)(timeout / 1000);
+	ts->tv_nsec = (now.tv_usec + ((long)timeout % 1000) * 1000) * 1000;
+	if (ts->tv_nsec >= 1000000000) {
+		ts->tv_nsec -= 1000000000;
+		ts->tv_sec++;
+	}
+}
+
+int pi_timespec_to_timeout(const struct timespec *ts)
+{
+	/* convert an absolute timespec to a timeout value (in milliseconds) from now
+	* returns a negative if the timeout expired already 
+	*/
+	struct timeval now;
+	gettimeofday(&now, NULL);
+	return (int)(((double)ts->tv_sec * 1000.0 + (double)ts->tv_nsec / 1000000.0) -
+		     ((double)now.tv_sec * 1000.0 + (double)now.tv_usec / 1000.0));
+}
+
+int pi_timeout_expired(const struct timespec *ts)
+{
+	return pi_timespec_to_timeout(ts) <= 0;
+}
 
 /* Fix some issues with some locales reporting 2 or 4 digit years */
 size_t palm_strftime(char *s, size_t max, const char *fmt,

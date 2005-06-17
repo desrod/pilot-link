@@ -68,6 +68,32 @@ extern "C" {
 		PI_ARGS((const char *charset, const char *ptext, int bytes,
 		     char **text));
 
+	/** @brief Convert a milliseconds timeout value to an absolute timespec
+	 *
+	 * @param timeout Timeout value from now, in milliseconds
+	 * @param ts Ptr to a timespec structure to fill. Contains the absolute time on return.
+	 */
+	extern void pi_timeout_to_timespec
+		PI_ARGS((int timeout, struct timespec *ts));
+
+	/** @brief Convert an absolute time to a timeout value from now (in milliseconds)
+	 *
+	 * The returned timeout will be a negative if we passed the absolute time already
+	 *
+	 * @param ts Timespec with an absolute time
+	 * @return Timeout value in milliseconds (negative if expired)
+	 */
+	extern int pi_timespec_to_timeout
+		PI_ARGS((const struct timespec *ts));
+
+	/** @brief Checks if an absolute timeout is expired
+	 *
+	 * @param ts Absolute time defining the timeout time
+	 * @return Non-zero if expired
+	 */
+	extern int pi_timeout_expired
+		PI_ARGS((const struct timespec *ts));
+
 #ifdef __cplusplus
 }
 #endif
