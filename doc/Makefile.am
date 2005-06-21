@@ -1,7 +1,6 @@
-# Only build the XML targets if we're using CVS
 if CVS_BUILD
 SUBDIRS = xml man
-else 
+else
 SUBDIRS = man
 endif
 
@@ -11,7 +10,8 @@ EXTRA_DIST = 		 \
 	README.freebsd	 \
 	README.usb	 \
 	TODO		 \
-	syncabs.sgml
+	syncabs.sgml  \
+	doxygen.cfg.in
 
 DIST_CLEAN_FILES=doxygen.cfg
 
