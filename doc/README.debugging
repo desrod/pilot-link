@@ -1,7 +1,10 @@
-LOGGING
+DEBUGGING PILOT-LINK
+--------------------
 
 In order to debug problems, libpisock by default contains runtime debugging
-(pass the --disable-debug configure option to disable).
+
+Pass the --disable-debug configure option to disable at build time. Debugging
+is enabled by default, so there is no --enable-debugging target.
 
 The runtime debugging is controlled by four different environment variables:
 
@@ -25,7 +28,7 @@ PILOT_DEBUG controls what types of information are displayed.
 	    
 You can specify multiple types of information, ie:
 
-	PILOT_DEBUG="DEV SLP PADP".
+	PILOT_DEBUG="DEV SLP PADP"
 
 PILOT_DEBUG_LEVEL controls the level of information displayed for each type.
 
@@ -38,12 +41,12 @@ PILOT_DEBUG_LEVEL controls the level of information displayed for each type.
 	    DEBUG    Verbose debugging info
 
 If PILOT_LOG is set, the information will be written to the file
-"PiDebug.log", this can be overridden by setting PILOT_LOGFILE to the
+"pilot-link.debug", this can be overridden by setting PILOT_LOGFILE to the
 desired file name.
 
 Here's an example of the usage (for bash, your shell may vary): 
 
 	export PILOT_DEBUG="DEV SLP CMP PADP SOCK NET USER"
 	export PILOT_DEBUG_LEVEL="DEBUG"
-	export PILOT_LOG=1  # Set this to 0 to disable debugging
-	export PILOT_LOGFILE="pilot-link-debug.log"
+	export PILOT_LOG=1			# Set this to 0 to disable debugging
+	export PILOT_LOGFILE="debug.log"

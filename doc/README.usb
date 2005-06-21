@@ -1,45 +1,61 @@
-Updated: 14-JUN-2005
+Updated: 20-June--2005
 
-Since the release of version 0.10.99 of pilot-link, USB-based Palm handheld
-devices are fully supported by the suite. To get this working may require a
-few things to be configured on your desktop or server machine first, and a
-few steps to verify that it is working properly.
+Since the release of version 0.10.99 of pilot-link, USB-based Palm
+handheld devices are fully supported by the entire toolset.
+
+To get this working may require a few things to be configured on your
+desktop or server machine first, and you should verify a few items to make
+sure that it is working properly.
 	
 Currently (as of 6/14/2005), USB connections are supported on Mac OS X,
-Linux and BSD-based operating systems on several architectures. Porting
-it to work with Win32, and any other POSIX-compliant environment should
-not be much harder. Please see README.porting in the pilot-link docs
-subdirectory for more details on how to help.
+Linux and BSD-based operating systems on several hardware architectures.
+
+Porting it to work with Win32, and any other POSIX-compliant environment
+should not be much harder. Please see README.porting in the pilot-link
+docs subdirectory for more details on how to help.
+
 
 Mac OS X USB Configuration
 --------------------------
 	There is nothing specific to do. When you compile pilot-link on
-	Mac OS X, the darwinusb driver code is being built and supports
-	USB handhelds as well as PalmConnect USB serial adapters.
+	Mac OS X, the darwinusb driver code is detected and built and
+	supports USB handhelds as well as the PalmConnect USB serial
+	adapter.
 	
-	All pilot-link command line tool take a port name as argument.
-	Use "-p usb:" if your handheld is connected through a USB cradle,
-	cable or a PalmConnect serial-to-USB adapter.
+	All pilot-link command line tools take a special port name as
+	argument. This is not like Linux where there is a specific entry
+	in /dev to manage. In OS X, there is no /dev, so we use a magic
+	port designation which talks to the bus directly.
+
+	Use the port designation of "-p usb:" if your Palm handheld is
+	connected through a USB cradle, cable or a PalmConnect
+	serial-to-USB adapter.
 	
 	Note that USB support on OS X requires Mac OS X 10.2 or later.
 	If you are running Mac OS X, you can ignore all the rest of this
 	document. It Should Just Work (tm).
+
 
 Linux USB Configuration
 -----------------------
 	First, in order to get USB working with your Palm device, your
 	desktop machine must support the USB subsystem. Depending on your
 	machine configuration, this may require enabling USB in the
-	machine's BIOS, or a kernel recompile, or the insertion of the
-	required modules for your USB subsystem. Many of these are supported
-	by current Linux kernels.
+	machine's BIOS, or in your Linux kernel configuration, or perhaps
+	just as simple as loading the required modules for your USB
+	subsystem. Many of these are supported by current Linux kernels.
 
-	If you should find that your kernel is older than 2.4.21 (as of the
-	time of this README), you will need to do a kernel upgrade. Using
-	kernels older than 2.4.21 are not recommended and may not work for
-	newer Palm devices, as the kernel-level visor.o module that is
-	required may not have support for your newer Palm device. More on
-	this later.
+	If you should find that your kernel is older than 2.4.21 (as of
+	the date of this README), you will need to do a kernel upgrade. 
+
+	Using kernels older than 2.4.21 are not recommended and may not
+	work for newer Palm devices, as the kernel-level visor.o module
+	that is required may not have support for your newer Palm device.
+
+	With each new Palm device that is released, the vendor and product
+	identifiers in the hardware have to be added to the visor driver
+	to allow it to recognize the device at connect time. See the
+	"Loading visor" section below for more detail.
 
 	First, verify that you have USB working on your system. If you're
 	using a USB-based keyboard or mouse and it works properly, you
@@ -108,41 +124,138 @@ Linux USB Configuration
 		usb-ohci               18080   0  (unused)
 		usb-uhci               23012   0  (unused)
 
-	Next we must verify that the actual USB devices are created and
-	registered in /dev for you.
 
-	In your kernel source directory, under the kernel source directory
-	Documentation/usb/usb-serial.txt, is an overview of how to create
-	the proper USB devices on your system. 
+	Loading visor dynamically with custom device ids
+	------------------------------------------------
+	   If you're running Linux kernel 2.4.22 or higher, you can add
+	   your vendor_id and product_id at module load time by passing
+	   the values to modprobe(1) as follows:
 
-	For Palm devices, you will need no more than two of these devices,
-	/dev/ttyUSB0 and /dev/ttyUSB1, depending on your Palm device
-	manufacturer (as of the time of this README, two Sony models use
-	/dev/ttyUSB0, and the rest of the Sony and Palm models seem to be
-	using /dev/ttyUSB1)
+		modprobe visor product=0x70 vendor=0x80
+
+	   If you do not know the values that your device requires, you
+	   can check your system logs in /var/log/messages after you hit
+	   HotSync on your Palm device. It should show something like
+	   this:
+
+		usb.c: USB device 11 (vend/prod 0x830/0x61) 
+			is not claimed by any active driver.
+
+	   In that case, you know you want to pass the following values to
+	   modprobe:
+
+		modprobe visor product=0x61 vendor=0x830
+
+	   Or you can put it in your /etc/modules.conf file as well, using
+	   a similar syntax as follows:
+
+		options visor vendor=0x54c product=0x144
+
+	   Simple, right? 
+
+
+	Verifying device inode creation (non-udev)
+	------------------------------------------
+	   Next we must verify that the actual USB devices are created and
+	   registered in /dev for you.
+
+	   In your kernel source directory, under the kernel source
+	   directory Documentation/usb/usb-serial.txt, is an overview of
+	   how to create the proper USB devices on your system.
+
+	   For Palm devices, you will need no more than two of these
+	   /devices, dev/ttyUSB0 and /dev/ttyUSB1, depending on your Palm
+	   device manufacturer (as of the time of this README, two Sony
+	   models use dev/ttyUSB0, and the rest of the Sony and Palm
+	   models seem to be using /dev/ttyUSB1)
 
 		# /bin/mknod /dev/ttyUSB0 c 188 0
 		# /bin/mknod /dev/ttyUSB1 c 188 1
 
-	If you are using devfs (currently not recommended for security
-    	reasons), the devices supported will show up as /dev/usb/tts/0 and
-    	/dev/usb/tts/1 respectively. More on devfs issues will be covered
-	later in this document.
+	   If you are using devfs (currently not recommended for security
+    	   reasons), the devices supported will show up as /dev/usb/tts/0
+    	   and /dev/usb/tts/1 respectively. More on devfs issues will be
+    	   covered later in this README.
 
-	Also, make sure your user has read and write permissions to those
-	device nodes: 
+	   Also, make sure your user has read and write permissions to those
+	   device nodes: 
 
 		# the '?' used below is a wildcard and will chmod all
 		# ttyUSB* devices with a single digit (USB1, USB2, USB3,
 		# and so on).
 
 		# /bin/chmod 0666 /dev/ttyUSB?
-	..or
+	   ..or
 
 		# /bin/chmod a+rw /dev/ttyUSB?
 
+	Configuring udev to create inodes dynamically for you
+	-----------------------------------------------------
+	   With the newer Linux distributions, you can take advantage of
+	   udev(1), which will create and name devices for you
+	   dynamically. Using udev, you don't have to create the devices
+	   in /dev manually, nor do you have to create symlinks to
+	   /dev/pilot if you want to use that interface.
 
-Linux Kernel Condfiguration
+	   Configuring udev is fairly straightforward: 
+
+		1. Install the latest udev package for your Linux distribution
+
+		2. Create a file in /etc/udev/rules.d called pilot.rules,
+		   with the following information in it:
+
+			KERNEL="ttyUSB1" SYMLINK="pilot"
+
+		   Yep, that's it. Make sure your Palm device node is
+		   properly represented there. If your device uses
+		   ttyUSB0, put that in pilot.rules. If it uses ttyUSB1,
+		   use that.
+
+		3. Restart udev using whatever service restart tools your
+		   distribution provides. You do not have to reboot.
+
+	Configuring non-kernel syncronization through libusb
+	----------------------------------------------------
+	   If you want a nice, speedy 600% speedup from the standard
+	   kernel visor driver, you can use libusb "natively" to
+	   syncronize your Palm device. Its a bit trickier, and requires
+	   some specific permission changes, but it does work well, and
+	   REALLY fast.
+
+		1. Install the udev package, version 0.1 or later. You
+		   MUST install the headers, not the runtime libraries. If
+		   you're installing libusb from source, you'll get both. 
+		   Many distributions split up packages into separate
+		   'runtime' and 'development' packages. Make sure you get
+		   the 'development' package.
+
+		2. Build pilot-link with --enable-libusb. If you have the
+		   right udev support, you should see something like this
+		   at the end of the configure process:
+
+			  Direct USB support...... : yes, libusb
+
+		   If you don't see that, go back to step 1 and verify. 
+
+		3. Blacklist the visor driver, so it doesn't load at
+		   device connect time. To do this, add the word 'visor'
+		   on its own line to /etc/hotplug/blacklist and restart
+		   hotplug.
+
+		4. To sync using libusb, currently you have to be root
+		   (the permissions on /proc/bus/usb prohibit normal users
+		   from reading/writing to it). 
+
+		   To sync, just use the port designation of 'usb:'
+		   without the quotes. For example:
+
+			su - -c "pilot-xfer --port usb: --backup ~/.palm/backups"
+
+		   We're working on a way to set those permissions in
+		   /proc/bus/usb so you can use it as a normal user.
+
+
+Linux Kernel Configuration
 ---------------------------
 	If your distrubution-supplied Linux kernel does not have native USB
 	support, you will have to build it into your kernel first. Building
@@ -192,12 +305,11 @@ Talking to your Palm over USB
 	To now "speak" to these devices you've created, using the drivers
 	you loaded, you must hit the HotSync button on your cradle first,
 	before launching any of pilot-link's various utilities, if your
-	version of pilot-link is earlier than 0.11.8. If your pilot-link
-	version is 0.11.8 or later, you don't need to hit HotSync first.
+	version of pilot-link is earlier than 0.11.8.
 
-	When you hit the HotSync button on the cradle or by tapping on your
-	HotSync icon on the Palm itself, you should see something similar to
-	the following in the system logs (/var/log):
+	When you hit the HotSync button on the cradle or by tapping on
+	your HotSync icon on the Palm itself, you should see something
+	similar to the following in the system logs (/var/log):
 
 		kernel: Manufacturer: Palm, Inc.
 		kernel: Product: Palm Handheld
@@ -214,47 +326,11 @@ Talking to your Palm over USB
 
 		kernel: usb.c: USB device 28 (vend/prod 0x54c/0x95) is not claimed by any active driver
 
-	In this case, you will need to upgrade your 'visor' driver to a more
-	current version. You can do this with a kernel upgrade, or by simply
-	replacing the visor.c and visor.h files with more recent versions. 
+	...see the "Loading visor dynamically" section above. 
 
-	You can also add the proper values for your device to the visor.h
-	file manually, and rebuilding just the module itself, without a
-	kernel upgrade, using the following process:
-
-	1.) Edit the drivers/usb/serial/visor.h file and add the proper
-	    vendor and product values for your device. You can find out what
-	    these might be by looking at the log error message as described
-	    above, or look at the pilot-link wiki for your device model at
-	    the following URL:
-
-		http://wiki.pilot-link.org/index.php/DeviceMatrix
-
-	2.) Make sure your kernel's .config is current for the target
-	    hardware you plan on running, and execute the following:
-
-		# make dep
-		# make modules SUBDIRS=drivers/usb/serial          # no leading slash
-		# make modules_install SUBDIRS=drivers/usb/serial  # ditto to above
-		# /sbin/depmod -ae
-
-	3.) With this module installed, you can now 'modprobe' the module to
-	    install it.
-
-	NOTE: With kernels later than 2.4.21, you can insert this module
-	with some parameters for your vendor and product id, without
-	recompiling it, using the following syntax:
-
-		# /sbin/insmod visor vendor=0x54c product=0x144
-
-	You can also put these in your /etc/modules.conf file as well, using
-	a similar syntax as follows:
-
-		options visor vendor=0x54c product=0x144
-
-	Once your module is loaded, and you see the successful message when
-	you hit HotSync, you can now launch any of pilot-link's various
-	conduits such as:
+	Once your module is loaded, and you see the successful message
+	when you hit HotSync, you can now launch any of pilot-link's
+	various conduits such as:
 
 		$ dlpsh -p /dev/ttyUSB1
 
@@ -269,19 +345,90 @@ Talking to your Palm over USB
 	if it exists. Substitute ttyUSB1 for your port, based on the
 	DeviceMatrix above.
 
+
+FreeBSD USB Configuration 
+-------------------------
+	This information copyright 2002 Anish Mistry & David A. Desrosiers. 
+	All rights reserved. Written by Anish Mistry of AM Productions
+	(http://am-productions.yi.org)
+
+	Configuring FreeBSD to speak to your Palm device over USB is a bit
+	different from Linux and OSX. Here are the quick steps: 
+
+	1. Create a small shell script to be executed from your usbd.conf.
+
+		#!/bin/sh
+
+		# export the following enviornmental variables to enable full
+		# logging of a connection
+		#
+		# export PILOT_LOGFILE=$HOME/.pilot/pilot-link.log
+		# export PILOT_LOG=1		# set to 0 to disable logging
+		# export PILOT_DEBUG="DEV SLP CMP PADP NET SOCK"
+		# export PILOT_DEBUG_LEVEL="DEBUG"
+		/usr/local/bin/pilot-xfer -p usb:/dev/$1 --sync $HOME/.pilot/
+
+	2. You will need to su to root and add the following to your
+ 	   /etc/usbd.conf before the passthrough entry. Your entry may vary
+ 	   depending on your handheld.
+
+	   In order to find out what your particular Palm handheld requires
+	   for 'vendor' and 'product' below, make sure your kernel has
+	   support for 'ucom' and 'uvisor', and run 'usbdevs -v' AFTER
+	   hitting HotSync on your Palm device. The fields will be displayed,
+	   simply copy them into the appropriate places as shown below.
+
+		##########################
+		## Handspring visor (PDA)
+		device "Handspring Visor"
+		   devname "ugen0"
+		   vendor 0x082d
+		   product 0x0100
+		   release 0x0100
+		   # pilot-link
+		   # attach "/home/dir/.pliot/pilot-sync.sh ${DEVNAME}"
+
+	3. Kill and restart the usbd daemon with the following (as root)
+
+		# killall usbd && usbd
+
+		Verify that usbd properly restarted with: 
+
+		# ps ax | grep usbd
+
+	4. Press the HotSync button again on your cradle.
+
+	5. Launch the application of your choice to syncronize with your Palm
+	   handheld. 'pilot-xfer' and 'dlpsh' are two common ones to try. The
+	   correct syntax is:
+
+		$ /usr/local/bin/pilot-xfer -p /dev/ucom0 -b $HOME/.pilot/
+
+		$ /usr/local/bin/dlpsh -p /dev/ucom0
+
+		The first sync can take a while, so please be patient.
+
+		Alternately, you can uncomment the 'attach' line in
+		/etc/usbd.conf above and restart usbd as explained in step 3
+		above.
+
+	6. You're done. Enjoy! (This is the most important item.)
+
+
 USB Palm Handheld Device Kernel Matrix
 --------------------------------------
-	Many thanks go to Greg Kroah for his tireless work supporting these
-	new devices as they come out. The matrix of which kernels support
-	which Palm handheld device can be found at the pilot-link wiki, at the following URL:
+	Many thanks go to Greg Kroah for his tireless work supporting
+	these new devices as they come out. The matrix of which kernels
+	support which Palm handheld device can be found at the pilot-link
+	wiki, at the following URL:
 
 		http://wiki.pilot-link.org/index.php/DeviceMatrix
 
 	If you see your Palm in this list, you must be running the
-	corresponding kernel version to be able to use it with pilot-link or
-	ColdSync using the USB interface. 
+	corresponding kernel version to be able to use it with pilot-link
+	or ColdSync using the USB interface.
 
-	If you don't see your Palm device there, feel free to add your entry
-	so others can benefit from the vendor and product information you've
-	added.
+	If you don't see your Palm device there, feel free to add your
+	entry so others can benefit from the vendor and product
+	information you've added.
 

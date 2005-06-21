@@ -715,7 +715,7 @@ env_dbgcheck (void)
 
 		logfile = getenv("PILOT_LOGFILE");
 		if (logfile == NULL)
-			pi_debug_set_file("PiDebug.log");
+			pi_debug_set_file("pilot-link.debug");
 		else
 			pi_debug_set_file(logfile);
 	}

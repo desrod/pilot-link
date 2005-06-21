@@ -1,4 +1,4 @@
-06-01-2005
+06-20-2005
 	
 	- Revamp of the TODO list for better readability; Major, Minor,
 	  Tweak, Feature. The remainder below illustrates this: 
@@ -11,18 +11,7 @@ Major Issues
 	- read-expenses/install-expense doesn't return the string of Type
 	  for 'Train, Airplane', etc.
 
-	- Need to clean up the OS/2 defines, or remove them entirely. This
-	  requires that the ./configure be reversed into configure.in/auto*
-	  scripts. The 'p4' stuff should be tweaked, and ${HOST} detected
-	  upon ./configure.
-
 	- Check RPC code (something broken on large-endian machines?)
-
-        - pilot-addresses -T header fix (don't import header into record)
-	  - Progress output per record
-	  - Check for 0-byte files on read
-	  - Strip CR/LF on read
-	  - Export categories to csv
 
         - pilot-xfer -f fix (support '-f FooDB' as 'FooDB.p{db|rc|qa}
 	  - Split out "Sync" from Backup function
@@ -39,9 +28,6 @@ Minor Issues
 ------------
 	Open/Pending
 	------------
-        - configure.in to handle testing for python-devel installed
-          #include <Python.h> int main() {PyObject x; return 0;}
-
 	- Add current date/time to dlp_AddSyncLogEntry(); 
 
 	- install-hinote duplicate note detection, export of notes from
@@ -102,10 +88,6 @@ Tweaks/Enhancements
 	  faster, since we can use the DLP equivalent of
 	  DmOpenDatabaseByTypeCreator())
 
-	- Add 'reada()/writea()' socket calls that allocate the return
-	  buffer (important for NetSync, as results larger then 64K are
-	  possible).
-
 	- Add Tcl 8 specific code to allow retrieval of raw records, and
 	  optionally use Tcl routines for packing and unpacking; Add all dlp
 	  functions, clean up the channel code rats nest. Somehow. (Separate
@@ -115,8 +97,6 @@ Tweaks/Enhancements
 	  to match Python implementation. Add packers. Document.
 
 	- Collapse: read-todos/install-todos, memos/install-memos, etc.
-
-        - replace missing pilot-datebook
 
 
 New Features
