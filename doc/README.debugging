@@ -43,7 +43,7 @@ desired file name.
 
 Here's an example of the usage (for bash, your shell may vary): 
 
-	export PILOT_DEBUG="DEV SLP CMP PADP SOCK"
+	export PILOT_DEBUG="DEV SLP CMP PADP SOCK NET USER"
 	export PILOT_DEBUG_LEVEL="DEBUG"
 	export PILOT_LOG=1  # Set this to 0 to disable debugging
 	export PILOT_LOGFILE="pilot-link-debug.log"
