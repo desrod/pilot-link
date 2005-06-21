@@ -6,8 +6,8 @@
    </refmeta>
    <refnamediv>
       <refname>dlpsh</refname>
-      <refpurpose>An interactive Desktop Link Protocol (DLP) Shell for your
-         Palm device. 
+      <refpurpose>
+	 An interactive Desktop Link Protocol (DLP) Shell for your Palm device.
       </refpurpose>
    </refnamediv>
    <refsect1>
@@ -19,7 +19,7 @@
       <para>
          <emphasis>dlpsh</emphasis>
          [<option>-p</option>|<option>--port</option> &lt;<userinput>port</userinput>&gt;]
-         [<option>--version</option>] [<option>-q</option>|<option>--quiet</option>]
+         [<option>--version</option>]
          [<option>-?</option>|<option>--help</option>] [<option>--usage</option>]
          [<option>-c</option>|<option>--command</option> <userinput>STRING</userinput>]
          [<option>-i</option>|<option>--interactive</option>]
@@ -34,48 +34,37 @@
             <option>--command STRING</option>
          </para>
          <blockquote>
-            <para>
-               Execute <userinput>cmd</userinput> and exit immediately.
-            </para>
+            <para>Execute <userinput>cmd</userinput> and exit immediately.</para>
          </blockquote>
          <para>
             <option>-i</option>, <option>--interactive</option>
          </para>
          <blockquote>
-            <para>Enter interactive mode.</para>
+            <para>Enter interactive mode</para>
          </blockquote>
       </refsect2>
       <refsect2>
-         <title>conduit options</title>
+         <title>Conduit Options</title>
          <para>
-            <option>-p</option>, <option>--port</option>
-            &lt;<userinput>port</userinput>&gt;
+            <option>-p</option>, <option>--port</option> lt;<userinput>port</userinput>&gt;
          </para>
          <blockquote>
             <para>
-               Use device file &lt;<filename>port</filename>&gt; to communicate
-               with the Palm handheld. If this is not specified,
-               <emphasis>dlpsh</emphasis> will look for the
-               <filename>$PILOTPORT</filename> environment variable. If
-               neither are found, <emphasis>dlpsh</emphasis> will print the
-               usage
-               information.
+               Use device file &lt;<filename>port</filename>&gt; to communicate with the Palm
+               handheld. If this is not specified, <emphasis>dlpsh</emphasis> will look for the
+               <filename>$PILOTPORT</filename> environment variable. If the port is missing and
+               <filename>$PILOTPORT</filename> is not set, <emphasis>dlpsh</emphasis> will print
+               the usage information.
             </para>
          </blockquote>
          <para>
             <option>--version</option>
          </para>
          <blockquote>
-            <para>Display the copyright information,version number, licence
-               details
-               and build details and exit without connecting.
+            <para>
+	       Display the copyright information, version number, license details and build details
+               and exit.
             </para>
-         </blockquote>
-         <para>
-            <option>-q</option>, <option>--quiet</option>
-         </para>
-         <blockquote>
-            <para>Suppress 'Hit HotSync button' message</para>
          </blockquote>
       </refsect2>
       <refsect2>
@@ -84,52 +73,54 @@
             <option>-?</option>, <option>--help</option>
          </para>
          <blockquote>
-            <para>Show the help message and exit without connecting.</para>
+            <para>
+               Show the help message and exit without connecting.
+            </para>
          </blockquote>
          <para>
             <option>--usage</option>
          </para>
          <blockquote>
-            <para>Display a brief usage message and exit without connecting.</para>
+            <para>
+	       Display a brief usage message and exit without connecting.
+	    </para>
          </blockquote>
       </refsect2>
    </refsect1>
    <refsect1>
       <title>Description</title>
       <para>
-         <filename>dlpsh</filename> allows the user to connect to a Palm
-         handheld and execute arbitrary DLP commands.
+            <filename>dlpsh</filename> allows the user to connect to a Palm handheld and execute
+            arbitrary DLP commands.
       </para>
-      <para>dlpsh can query many different types of information from your Palm
-         device, such as username, memory capacity, set the time, as well as
-         other useful functions.
+      <para>
+            dlpsh can query many different types of information from your Palm device, such as
+            username, memory capacity, set the time, as well as other useful functions.
       </para>
-      <para> Once connected, the user may execute most of the
-         built-in <emphasis>DLP</emphasis> commands. (See <emphasis>BUILT-IN
-            COMMANDS
-         </emphasis>
-         below for more detail on currently supported
-         options).
+      <para>
+            Once connected, the user may execute most of the built-in <emphasis>DLP</emphasis>
+            commands. (See <emphasis>BUILT-IN COMMANDS </emphasis> below for more detail on
+            currently supported options).
       </para>
-      <para>The connection to the Pilot is kept alive by sending a
-         <filename>PadTickle</filename> packet to the Pilot after a small
-         period	of non-activity. (7 seconds by default)
+      <para>
+            The connection to the Pilot is kept alive by sending a <filename>PadTickle</filename>
+            packet to the Pilot after a small period of non-activity. (7 seconds by default)
       </para>
    </refsect1>
    <refsect1>
       <title>Built-in Commands</title>
-      <para>There are many options available while connected to your Palm
-         handheld
-         via <filename>dlpsh</filename>, including the following.
+      <para>
+            There are many options available while connected to your Palm handheld via
+            <filename>dlpsh</filename>, including the following:
       </para>
       <para>
          <option>user</option>
       </para>
       <blockquote>
-         <para>Print the currently set User information, including Username,
-            UserID, PCid, and ViewerID. You may also set these values from this
-            command as well. Use 'user --help' while connected to see details
-            on		how to set or change these values.
+         <para>
+            Print the currently set User information, including Username, UserID, PCid, and
+            ViewerID. You may also set these values from this command as well. Use 'user --help'
+            while connected to see details on how to set or change these values.
          </para>
       </blockquote>
       <para>
@@ -137,101 +128,94 @@
       </para>
       <blockquote>
          <para>
-            Used with <option>-l</option> and <option>-r</option> to provide
-            long and RAM and ROM file lists, similar to the Unix
-            '<systemitem>ls</systemitem>' command. This does not yet allow you
-            to
-            narrow your listing to a certain range of files. It will simply
-            list		them all.
+            Used with <option>-l</option> and <option>-r</option> to provide long and RAM and ROM
+            file lists, similar to the Unix '<systemitem>ls</systemitem>' command. This does not
+            yet allow you to narrow your listing to a certain range of files. It will simply list
+            them all.
          </para>
       </blockquote>
       <para>
          <option>df</option>
       </para>
       <blockquote>
-         <para>Display how much RAM and ROM is free on your device, again
-            similar
-            to the Unix <systemitem>'df'</systemitem> command. This does not
-            accept
-            arguments at this time.
+         <para>
+            Display how much RAM and ROM is free on your device, again similar to the Unix
+            <systemitem>'df'</systemitem> command. This does not accept arguments at this time.
          </para>
       </blockquote>
       <para>
          <option>time</option>
       </para>
       <blockquote>
-         <para>Set the time on the Palm from the currently-set desktop time.
-            This
-            does not work on OS version 3.3, due to a bug in PalmOS at that
-            time.
+         <para>
+            Set the time on the Palm from the currently-set desktop time.  This does not work on OS
+            version 3.3, due to a bug in PalmOS at that time.
          </para>
       </blockquote>
       <para>
          <option>rm</option>
       </para>
       <blockquote>
-         <para>Remove a file and delete it entirely from the Palm device. This
-            is
-            an irrevokable process, and you cannot "undelete" a file, once it
-            has been
-            deleted with this command.
+         <para>
+            Remove a file and delete it entirely from the Palm device. This is an irrevokable
+            process, and you cannot "undelete" a file, once it has been deleted with this command.
          </para>
       </blockquote>
       <para>
          <option>quit</option>
       </para>
       <blockquote>
-         <para>Exit the DLP Protocol Shell</para>
+         <para>
+            Exit the DLP Protocol Shell
+         </para>
       </blockquote>
    </refsect1>
    <refsect1>
       <title>options</title>
       <para>
-         While in <userinput>dlpsh</userinput>, you can always invoke 'help'
-         or <option> --help</option> to get further information on that
-         option.
+         While in <userinput>dlpsh</userinput>, you can always invoke 'help' or <option>
+         --help</option> to get further information on that option.
       </para>
    </refsect1>
    <refsect1>
       <title>usage</title>
-      <para>The program will connect to your Palm handheld and give the user an
-         interactive prompt (a "shell") for executing commands across the DLP
-         <emphasis>HotSync</emphasis> protocol.
+      <para>
+         The program will connect to your Palm handheld and give the user an interactive prompt (a
+         "shell") for executing commands across the DLP <emphasis>HotSync</emphasis> protocol.
       </para>
    </refsect1>
    <refsect1>
       <title>Author</title>
       <para>
          <userinput>dlpsh</userinput> was originally written by Chris Stevens
-         <email>stevens@rpi.edu</email> and Damien Neil
-         <email>neild@rpi.edu</email>
+         <email>stevens@rpi.edu</email> and Damien Neil <email>neild@rpi.edu</email>
       </para>
-      <para>This manual page was written by Neil Williams
-         <email>linux@codehelp.co.uk</email>
+      <para>
+         This manual page was written by Neil Williams <email>linux@codehelp.co.uk</email>
       </para>
    </refsect1>
    <refsect1>
       <title>Reporting Bugs</title>
-      <para>Report bugs at:
-         <emphasis>http://bugs.pilot-link.org</emphasis>
+      <para>
+          Report bugs at: <emphasis>http://bugs.pilot-link.org</emphasis>
       </para>
    </refsect1>
    <refsect1>
       <title>Copyright</title>
-      <para>This program is free software; you can redistribute it and/or
-         modify it under the terms of the GNU General Public License as
-         published by the Free Software Foundation; either version 2 of the 
-         License,  or  (at your option) any later version.
+      <para>
+         This program is free software; you can redistribute it and/or modify it under the terms of
+         the GNU General Public License as published by the Free Software Foundation; either
+         version 2 of the License, or (at your option) any later version.
       </para>
-      <para>This program is distributed in the hope that it will be useful,
-         but WITHOUT ANY WARRANTY; without even the implied warranty of
-         MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-         General Public License for more details.
+      <para>
+         This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+         without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+         See the GNU General Public License for more details.
       </para>
-      <para>You should have received a copy of the GNU General Public
-         License along with this program; if not, write to the Free Software
-         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 
-         USA
+      <para>
+         You should have received a copy of the GNU General Public License along with this program;
+         if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
+         MA 02111-1307 USA
       </para>
    </refsect1>
    <refsect1>

@@ -6,7 +6,9 @@
    </refmeta>
    <refnamediv>
       <refname>pi-getromtoken</refname>
-      <refpurpose>Reads a ROM token from a Palm Handheld device. </refpurpose>
+      <refpurpose>
+         Reads a ROM token from a Palm Handheld device.
+      </refpurpose>
    </refnamediv>
    <refsect1>
       <title>Section</title>
@@ -17,9 +19,8 @@
       <para>
          <emphasis>pi-getromtoken</emphasis>
          [<option>-p</option>|<option>--port</option> &lt;<userinput>port</userinput>&gt;]
-         [<option>--version</option>] [<option>-q</option>|<option>--quiet</option>]
-         [<option>-?</option>|<option>--help</option>] [<option>--usage</option>]
-         [<option>-t</option>|<option>--token</option> <userinput>token</userinput>]
+         [<option>--version</option>] [<option>-?</option>|<option>--help</option>]
+         [<option>--usage</option>] [<option>-t</option>|<option>--token</option> <userinput>token</userinput>]
          [<option>-s</option>|<option>--sysinfo</option>] [<option>--ram</option>]
          [<option>--rom</option>] [<filename>filename</filename>]
       </para>
@@ -37,19 +38,15 @@
          <para>snum:  Device serial number (from Memory Card Flash ID)</para>
       </blockquote>
       <para>
-         <emphasis>pi-getromtoken</emphasis> is used to fetch the ROM from your
-         Palm handheld for use in debugging Palm applications through the use
-         of		POSE, the <filename>Palm OS Emulator application</filename>.
+         <emphasis>pi-getromtoken</emphasis> is used to fetch the ROM from your Palm handheld for
+         use in debugging Palm applications through the use of POSE, the <filename>Palm OS Emulator
+         application</filename>.
       </para>
       <para>
-         Note, because <emphasis>pi-getrom</emphasis> uses the low-level RPC
-         protocol to fetch the ROM image, and the new OS5 devices do not use
-         this
-         protocol, you currently cannot fetch an OS5 ROM image using this
-         utility.
-         This will be updated in a future release to handle fetching OS5 ROM
-         images,
-         using the debugger protocol.
+         Note, because <emphasis>pi-getrom</emphasis> uses the low-level RPC protocol to fetch the
+         ROM image, and the new OS5 devices do not use this protocol, you currently cannot fetch an
+         OS5 ROM image using this utility.  This will be updated in a future release to handle
+         fetching OS5 ROM images, using the debugger protocol.
       </para>
    </refsect1>
    <refsect1>
@@ -61,74 +58,67 @@
             <option>--token</option> <userinput>token</userinput>
          </para>
          <blockquote>
-            <para>A ROM token to read (i.e. snum)</para>
+            <para>
+            A ROM token to read (i.e. snum)</para>
          </blockquote>
          <para>
             <option>-s</option>, <option>--sysinfo</option>
          </para>
          <blockquote>
-            <para>Print SysInfo</para>
+            <para>
+            Print SysInfo</para>
          </blockquote>
          <para>
             <option>--ram</option>
          </para>
          <blockquote>
-            <para>Read RAM</para>
+            <para>
+            Read RAM</para>
          </blockquote>
          <para>
             <option>--rom</option>
          </para>
          <blockquote>
-            <para>Read ROM</para>
+            <para>
+            Read ROM</para>
          </blockquote>
          <para>
             &lt;<option>filename</option>&gt;
          </para>
          <blockquote>
-            <para>Write the ROM image to the file named by
-               &lt;<filename>filename</filename>&gt;. If this is omitted, the
-               filename will be written out as the rom version name as follows:
-               <filename>'pilot-$VERSION.rom'</filename>, where an OS 3.5 image
-               would be written as the filename of
-               <filename>'pilot-3.5.0.rom'</filename>.
+            <para>
+               Write the ROM image to the file named by lt;<filename>filename</filename>&gt;. If
+               this is omitted, the filename will be written out as the rom version name as
+               follows: <filename>'pilot-$VERSION.rom'</filename>, where an OS 3.5 image would be
+               written as the filename of <filename>'pilot-3.5.0.rom'</filename>.
             </para>
          </blockquote>
       </refsect2>
       <refsect2>
-         <title>conduit options</title>
+         <title>Conduit Options</title>
          <para>
             <option>-p</option>, <option>--port</option>
             &lt;<userinput>port</userinput>&gt;
          </para>
          <blockquote>
             <para>
-               Use device file &lt;<filename>port</filename>&gt; to communicate
-               with the Palm handheld. If this is not specified,
-               <emphasis>pi-getrom</emphasis> will look for the
-               <filename>$PILOTPORT</filename> environment variable. If neither
-               are
-               found or supplied, <emphasis>pi-getrom</emphasis> will
-               print the usage information.
+               Use device file &lt;<filename>port</filename>&gt; to communicate with the Palm
+               handheld. If this is not specified, <emphasis>pi-getrom</emphasis> will look for the
+               <filename>$PILOTPORT</filename> environment variable. If neither are found or
+               supplied, <emphasis>pi-getrom</emphasis> will print the usage information.
             </para>
-         </blockquote>
-         <para>
-            <option>-q</option>, <option>--quiet</option>
-         </para>
-         <blockquote>
-            <para>Suppress 'Hit HotSync button' message</para>
          </blockquote>
          <para>
             <emphasis>-v</emphasis>, <emphasis>--version</emphasis>
          </para>
          <blockquote>
             <para>
-               Display version of <emphasis>pi-getrom</emphasis> and exit
-               without connecting.
+               Display version of <emphasis>pi-getrom</emphasis> and exit without connecting.
             </para>
          </blockquote>
       </refsect2>
       <refsect2>
-         <title>help options</title>
+         <title>Help Options</title>
          <para>
             <option>-h</option>, <option>--help</option>
          </para>
@@ -148,24 +138,23 @@
    </refsect1>
    <refsect1>
       <title>Usage</title>
-      <para>Connect to a target Palm handheld and fetch the ROM for use in
-         debugging Palm applications through the use of POSE, the
-         <filename>Palm OS Emulator</filename> or with the
+      <para>
+         Connect to a target Palm handheld and fetch the ROM for use in debugging Palm applications
+         through the use of POSE, the <filename>Palm OS Emulator</filename> or with the
          <filename>CoPilot</filename> application (deprecated).
       </para>
    </refsect1>
    <refsect1>
       <title>Licensing</title>
       <para>
-         <emphasis>Warning</emphasis>: Please completely back up your Palm
-         this program! The developers of <emphasis>pilot-link</emphasis> are
-         not responsible for any data loss that may occur from the use of
-         this application.
+         <emphasis>Warning</emphasis>: Please completely back up your Palm this program! The
+         developers of <emphasis>pilot-link</emphasis> are not responsible for any data loss that
+         may occur from the use of this application.
       </para>
-      <para>Use of this program MAY place you in violation of your license
-         agreement with Palmsource, Inc. or other OEM partners. Please read
-         your Palm documentation (specifically the "Software License
-         Agreement")		before running this program.
+      <para>
+         Use of this program MAY place you in violation of your license agreement with Palmsource,
+         Inc. or other OEM partners. Please read your Palm documentation (specifically the
+         "Software License Agreement") before running this program.
       </para>
    </refsect1>
    <refsect1>
@@ -173,8 +162,8 @@
       <para>
          <emphasis>pi-getrom</emphasis> was written by Owen Stenseth.
       </para>
-      <para>This manual page was written by Neil Williams
-         <email>linux@codehelp.co.uk</email>
+      <para>
+            This manual page was written by Neil Williams <email>linux@codehelp.co.uk</email>
       </para>
    </refsect1>
    <refsect1>
@@ -182,36 +171,35 @@
       <refsect2>
          <title>Known Bugs</title>
          <para>
-            <emphasis>pi-getrom</emphasis> does not work with OS5 devices as
-            yet, due to changes in the architecture and design of the Palm
-            HotSync protocol and file type changes from m68k to ARM. Other
-            than that, <emphasis>pi-getrom</emphasis> has no known bugs at
-            this time.
+            <emphasis>pi-getrom</emphasis> does not work with OS5 devices as yet, due to changes in
+            the architecture and design of the Palm HotSync protocol and file type changes from
+            m68k to ARM. Other than that, <emphasis>pi-getrom</emphasis> has no known bugs at this
+            time.
          </para>
       </refsect2>
       <refsect2>
          <title>Reporting Bugs</title>
-         <para>Report bugs at
-            <emphasis>http://bugs.pilot-link.org/</emphasis>.
+         <para>
+            Report bugs at <emphasis>http://bugs.pilot-link.org/</emphasis>.
          </para>
       </refsect2>
    </refsect1>
    <refsect1>
       <title>Copyright</title>
-      <para>This program is free software; you can redistribute it and/or
-         modify it under the terms of the GNU General Public License as
-         published by the Free Software Foundation; either version 2 of the 
-         License,  or  (at your option) any later version.
+      <para>
+         This program is free software; you can redistribute it and/or modify it under the terms of
+         the GNU General Public License as published by the Free Software Foundation; either
+         version 2 of the License, or (at your option) any later version.
       </para>
-      <para>This program is distributed in the hope that it will be useful,
-         but WITHOUT ANY WARRANTY; without even the implied warranty of
-         MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-         General Public License for more details.
+      <para>
+         This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+         without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+         See the GNU General Public License for more details.
       </para>
-      <para>You should have received a copy of the GNU General Public
-         License along with this program; if not, write to the Free Software
-         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 
-         USA
+      <para>
+         You should have received a copy of the GNU General Public License along with this program;
+         if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
+         MA 02111-1307 USA
       </para>
    </refsect1>
    <refsect1>

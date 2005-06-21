@@ -6,7 +6,8 @@
    </refmeta>
    <refnamediv>
       <refname>read-notepad</refname>
-      <refpurpose>List the record information found in the Palm Notepad
+      <refpurpose>
+         List the record information found in the Palm Notepad
       </refpurpose>
    </refnamediv>
    <refsect1>
@@ -18,28 +19,23 @@
       <para>
          <emphasis>read-notepad</emphasis>
          [<option>-p</option>|<option>--port</option> &lt;<userinput>port</userinput>&gt;]
-         [<option>--version</option>] [<option>-q</option>|<option>--quiet</option>]
-         [<option>-?</option>|<option>--help</option>] [<option>--usage</option>]
-         [<option>-l</option>|<option>--list</option>]
+         [<option>--version</option>] [<option>-?</option>|<option>--help</option>]
+         [<option>--usage</option>] [<option>-l</option>|<option>--list</option>]
          [<option>-t</option>|<option>--type</option> <userinput>type</userinput>]
       </para>
    </refsect1>
    <refsect1>
       <title>Description</title>
-      <para>Connect to the Palm handheld and list the record information found
-         in
-         the Palm Notepad application (found on OS4 and newer devices).
-         Alternately,
-         if no options are given, each record's image will be converted to
-         files,
-         using Portable Network Graphic (.png) or Portable Pixmap (.ppm)
-         format. The default type is ppm.
+      <para>
+         Connect to the Palm handheld and list the record information found in the Palm Notepad
+         application (found on OS4 and newer devices).  Alternately, if no options are given, each
+         record's image will be converted to files, using Portable Network Graphic (.png) or
+         Portable Pixmap (.ppm) format. The default type is ppm.
       </para>
       <para>
-         <emphasis>read-notepad</emphasis> allows a user running PalmOS 4.0 or
-         later to read the data stored in the Palm Notepad application and
-         extract the data into images and convert them to Portable Network Graphics
-         (.png) or Portable Pixmap (.ppm) files.
+         <emphasis>read-notepad</emphasis> allows a user running PalmOS 4.0 or later to read the
+         data stored in the Palm Notepad application and extract the data into images and convert
+         them to Portable Network Graphics (.png) or Portable Pixmap (.ppm) files.
       </para>
    </refsect1>
    <refsect1>
@@ -50,9 +46,9 @@
             <option>-l</option>, <option>--list</option>
          </para>
          <blockquote>
-            <para>List picture information found on the device instead of
-               converting
-               them to image files.
+            <para>
+               List picture information found on the device instead of converting them to image
+               files.
             </para>
          </blockquote>
          <para>
@@ -60,53 +56,43 @@
             <option>--type</option> <userinput>type</userinput>
          </para>
          <blockquote>
-            <para>Specify the output picture type. Can be either "png" or
-               "ppm".
+            <para>
+               Specify the output picture type. Can be either "png" or "ppm".
             </para>
          </blockquote>
       </refsect2>
       <refsect2>
-         <title>conduit options</title>
+         <title>Conduit Options</title>
          <para>
             <option>-p</option>, <option>--port</option>
             &lt;<userinput>port</userinput>&gt;
          </para>
          <blockquote>
             <para>
-               Use device file &lt;<filename>port</filename>&gt; to communicate
-               with the Palm handheld. If this is not specified,
-               <emphasis>read-notepad</emphasis> will look for the
-               <filename>$PILOTPORT</filename> environment variable. If neither
-               are
-               found or supplied, <emphasis>read-notepad</emphasis> will
-               print the usage information.
+               Use device file &lt;<filename>port</filename>&gt; to communicate with the Palm
+               handheld. If this is not specified, <emphasis>read-notepad</emphasis> will look for
+               the <filename>$PILOTPORT</filename> environment variable. If neither are found or
+               supplied, <emphasis>read-notepad</emphasis> will print the usage information.
             </para>
-         </blockquote>
-         <para>
-            <option>-q</option>, <option>--quiet</option>
-         </para>
-         <blockquote>
-            <para>Suppress 'Hit HotSync button' message</para>
          </blockquote>
          <para>
             <option>-v</option>, <option>--version</option>
          </para>
          <blockquote>
             <para>
-               Display version of <emphasis>read-notepad</emphasis>
-               and exit without connecting.
+               Display version of <emphasis>read-notepad</emphasis> and exit without connecting.
             </para>
          </blockquote>
       </refsect2>
       <refsect2>
-         <title>help options</title>
+         <title>Help Options</title>
          <para>
             <option>-h</option>, <option>--help</option>
          </para>
          <blockquote>
             <para>
-               Display the help synopsis for <emphasis>read-notepad</emphasis>
-               and exit without connecting.
+               Display the help synopsis for <emphasis>read-notepad</emphasis> and exit without
+               connecting.
             </para>
          </blockquote>
          <para>
@@ -119,9 +105,10 @@
    </refsect1>
    <refsect1>
       <title>Usage</title>
-      <para>The program will connect to the target Palm handheld, and list or
-         convert the records and images found in the Palm Notepad application
-         to Portable Network Graphic (.png) or Portable Pixmap (.ppm) files.
+      <para>
+         The program will connect to the target Palm handheld, and list or convert the records and
+         images found in the Palm Notepad application to Portable Network Graphic (.png) or
+         Portable Pixmap (.ppm) files.
       </para>
    </refsect1>
    <refsect1>
@@ -130,32 +117,32 @@
          <emphasis>read-notepad</emphasis> was written by Angus Ainslie
          <email>angusa@deltatee.com</email>.
       </para>
-      <para>This manual page was written by Neil Williams
-         <email>linux@codehelp.co.uk</email>
+      <para>
+         This manual page was written by Neil Williams <email>linux@codehelp.co.uk</email>
       </para>
    </refsect1>
    <refsect1>
       <title>Reporting Bugs</title>
-      <para>Report bugs at:
-         <emphasis>http://bugs.pilot-link.org</emphasis>
+      <para>
+         Report bugs at: <emphasis>http://bugs.pilot-link.org</emphasis>
       </para>
    </refsect1>
    <refsect1>
       <title>Copyright</title>
-      <para>This program is free software; you can redistribute it and/or
-         modify it under the terms of the GNU General Public License as
-         published by the Free Software Foundation; either version 2 of the 
-         License,  or  (at your option) any later version.
+      <para>
+         This program is free software; you can redistribute it and/or modify it under the terms of
+         the GNU General Public License as published by the Free Software Foundation; either
+         version 2 of the License, or (at your option) any later version.
       </para>
-      <para>This program is distributed in the hope that it will be useful,
-         but WITHOUT ANY WARRANTY; without even the implied warranty of
-         MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-         General Public License for more details.
+      <para>
+         This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+         without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+         See the GNU General Public License for more details.
       </para>
-      <para>You should have received a copy of the GNU General Public
-         License along with this program; if not, write to the Free Software
-         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 
-         USA
+      <para>
+         You should have received a copy of the GNU General Public License along with this program;
+         if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
+         MA 02111-1307 USA
       </para>
    </refsect1>
    <refsect1>

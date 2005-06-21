@@ -6,8 +6,8 @@
    </refmeta>
    <refnamediv>
       <refname>hinotes</refname>
-      <refpurpose>Syncronize your Hi-Notes database with your desktop
-         machine.
+      <refpurpose>
+         Syncronize your Hi-Notes database with your desktop machine.
       </refpurpose>
    </refnamediv>
    <refsect1>
@@ -19,48 +19,44 @@
       <para>
          <emphasis>hinotes</emphasis>
          [<option>-p</option>|<option>--port</option> &lt;<userinput>port</userinput>&gt;]
-         [<option>--version</option>] [<option>-q</option>|<option>--quiet</option>]
+         [<option>--version</option>] 
          [<option>-?</option>|<option>--help</option>] [<option>--usage</option>]
          [<option>-d</option>|<option>--dirname</option> <filename>dir</filename>]
       </para>
    </refsect1>
    <refsect1>
       <title>Description</title>
-      <para>Hi-Notes must be installed on your Palm handheld (and at least one
-         entry must exist within Hi-Notes).
+      <para>
+         Hi-Notes must be installed on your Palm handheld (and at least one entry must exist within
+         Hi-Notes).
       </para>
-      <para>By default, the contents of your Palm's Hi-Notes database
-         (Hi-NoteDB.pdb) will be written to STDOUT as a standard Unix mailbox
-         (in mbox-format) file, with each memo as a separate message. The
-         subject
-         of each message will be set as the category.
+      <para>
+         By default, the contents of your Palm's Hi-Notes database (Hi-NoteDB.pdb) will be written
+         to STDOUT as a standard Unix mailbox (in mbox-format) file, with each memo as a separate
+         message. The subject of each message will be set as the category.
       </para>
-      <para>The memos will be written to STDOUT unless the
-         <userinput>-d</userinput> option is specified.
-         Using <userinput>-d</userinput> will be save the memos in
-         subdirectories of
-         <filename>dir</filename>.  Each subdirectory will contain the name of
-         a	category on the Palm where the record was stored, and will contain
-         the memos
-         found in that category. 
+      <para>
+         The memos will be written to STDOUT unless the <userinput>-d</userinput> option is
+         specified.  Using <userinput>-d</userinput> will be save the memos in subdirectories of
+         <filename>dir</filename>.  Each subdirectory will contain the name of a category on the
+         Palm where the record was stored, and will contain the memos found in that category.
       </para>
-      <para>Each memo's filename will be the first
-         line (up to the first 40 characters) of the memo.  Control characters,
-         slashes, and equal signs that would otherwise appear in filenames are
+      <para>
+         Each memo's filename will be the first line (up to the first 40 characters) of the memo. 
+         Control characters, slashes, and equal signs that would otherwise appear in filenames are
          converted using the correct MIME's quoted-printable encoding.
       </para>
-      <para>Please see http://www.cyclos.com/ for more information on Hi-Note.
+      <para>
+         Please see http://www.cyclos.com/ for more information on Hi-Note.
       </para>
    </refsect1>
    <refsect1>
       <title>warning</title>
-      <para>Note that if you have two memos in the same category whose first
-         lines
-         are identical, one of them will be OVERWRITTEN! This is unavoidable at
-         the present time, but may be fixed in a future release. Also, please
-         note
-         that syncronizing Hi-Note images is not supported at this time, only
-         text.
+      <para>
+         Note that if you have two memos in the same category whose first lines are identical, one
+         of them will be OVERWRITTEN! This is unavoidable at the present time, but may be fixed in
+         a future release. Also, please note that syncronizing Hi-Note images is not supported at
+         this time, only text.
       </para>
    </refsect1>
    <refsect1>
@@ -72,53 +68,41 @@
             <filename>dir</filename>
          </para>
          <blockquote>
-            <para>Stores the Hi-Note entries in subdirectories of
-               <filename>dir</filename>. Each subdirectory will contain the
-               name of a
-               category on the Palm where the record was stored, and will
-               contain the
-               memos found in that category.
+            <para>
+               Stores the Hi-Note entries in subdirectories of <filename>dir</filename>. Each
+               subdirectory will contain the name of a category on the Palm where the record was
+               stored, and will contain the memos found in that category.
             </para>
-            <para>Each memo's filename will be the first line (up to the first
-               40
-               characters) of the memo. Control characters, slashes, and equal
-               signs
-               ('=') that would otherwise appear in filenames are converted
-               using the
-               correct MIME's quoted\-printable encoding methods.
+            <para>
+               Each memo's filename will be the first line (up to the first 40 characters) of the
+               memo. Control characters, slashes, and equal signs ('=') that would otherwise appear
+               in filenames are converted using the correct MIME's quoted\-printable encoding
+               methods.
             </para>
          </blockquote>
       </refsect2>
       <refsect2>
-         <title>conduit options</title>
+         <title>Conduit Options</title>
          <para>
             <option>-p</option>, <option>--port</option>
             &lt;<userinput>port</userinput>&gt;
          </para>
          <blockquote>
             <para>
-               Use device file &lt;<filename>port</filename>&gt; to communicate
-               with the Palm handheld. If this is not specified,
-               <emphasis>hinotes</emphasis> will look for the
-               <filename>$PILOTPORT</filename> environment variable. If neither
-               are found, <emphasis>hinotes</emphasis> will print the usage
-               information.
+               Use device file &lt;<filename>port</filename>&gt; to communicate with the Palm
+               handheld. If this is not specified, <emphasis>hinotes</emphasis> will look for the
+               <filename>$PILOTPORT</filename> environment variable. If neither are found,
+               <emphasis>hinotes</emphasis> will print the usage information.
             </para>
          </blockquote>
          <para>
             <option>--version</option>
          </para>
          <blockquote>
-            <para>Display the copyright information,version number, licence
-               details
-               and build details and exit without connecting.
+            <para>
+               Display the copyright information, version number, license details and build details
+               and exit without connecting.
             </para>
-         </blockquote>
-         <para>
-            <option>-q</option>, <option>--quiet</option>
-         </para>
-         <blockquote>
-            <para>Suppress 'Hit HotSync button' message</para>
          </blockquote>
       </refsect2>
       <refsect2>
@@ -127,63 +111,63 @@
             <option>-?</option>, <option>--help</option>
          </para>
          <blockquote>
-            <para>Show the help message and exit without connecting.</para>
+            <para>
+               Show the help message and exit without connecting.
+            </para>
          </blockquote>
          <para>
             <option>--usage</option>
          </para>
          <blockquote>
-            <para>Display a brief usage message and exit without connecting.</para>
+            <para>
+               Display a brief usage message and exit without connecting.
+             </para>
          </blockquote>
       </refsect2>
    </refsect1>
    <refsect1>
       <title>Usage</title>
-      <para>The program will dump your MemoPad database (MemoDB.pdb) from the
-         Palm
-         and output format suitable for the <filename>Hi-Notes</filename>
-         application
-         to use.
+      <para>
+         The program will dump your MemoPad database (MemoDB.pdb) from the Palm and output format
+         suitable for the <filename>Hi-Notes</filename> application to use.
       </para>
       <para>
-         Please see <filename>http://www.cyclos.com/</filename> for more
-         information on Hi-Note.
+         Please see <filename>http://www.cyclos.com/</filename> for more information on Hi-Note.
       </para>
    </refsect1>
    <refsect1>
       <title>Author</title>
       <para>
-         <emphasis>hinotes</emphasis> was originally written by Kenneth
-         Albanowski, based on code by Bill Goodman
-         <email>bgoodman@cyclos.com</email> and modified by Michael Bravo
+         <emphasis>hinotes</emphasis> was originally written by Kenneth Albanowski, based on code
+         by Bill Goodman <email>bgoodman@cyclos.com</email> and modified by Michael Bravo
          <email>mbravo@kronverk.spb.su</email>
       </para>
-      <para>This manual page was written by Neil Williams
-         <email>linux@codehelp.co.uk</email>
+      <para>
+         This manual page was written by Neil Williams <email>linux@codehelp.co.uk</email>
       </para>
    </refsect1>
    <refsect1>
       <title>Reporting Bugs</title>
-      <para>Report bugs at:
-         <emphasis>http://bugs.pilot-link.org</emphasis>
+      <para>
+         Report bugs at: <emphasis>http://bugs.pilot-link.org</emphasis>
       </para>
    </refsect1>
    <refsect1>
       <title>Copyright</title>
-      <para>This program is free software; you can redistribute it and/or
-         modify it under the terms of the GNU General Public License as
-         published by the Free Software Foundation; either version 2 of the 
-         License,  or  (at your option) any later version.
+      <para>
+         This program is free software; you can redistribute it and/or modify it under the terms of
+         the GNU General Public License as published by the Free Software Foundation; either
+         version 2 of the License, or (at your option) any later version.
       </para>
-      <para>This program is distributed in the hope that it will be useful,
-         but WITHOUT ANY WARRANTY; without even the implied warranty of
-         MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-         General Public License for more details.
+      <para>
+         This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+         without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+         See the GNU General Public License for more details.
       </para>
-      <para>You should have received a copy of the GNU General Public
-         License along with this program; if not, write to the Free Software
-         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 
-         USA
+      <para>
+         You should have received a copy of the GNU General Public License along with this program;
+         if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
+         MA 02111-1307 USA
       </para>
    </refsect1>
    <refsect1>

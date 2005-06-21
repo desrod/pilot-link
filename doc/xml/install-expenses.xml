@@ -6,7 +6,8 @@
    </refmeta>
    <refnamediv>
       <refname>install-expenses</refname>
-      <refpurpose>Install an expense record from various parameters and
+      <refpurpose>
+         Install an expense record from various parameters and
          arguments
          passed at connection time.
       </refpurpose>
@@ -20,7 +21,7 @@
       <para>
          <emphasis>install-expenses</emphasis>
          [<option>-p</option>|<option>--port</option> &lt;<userinput>port</userinput>&gt;]
-         [<option>--version</option>] [<option>-q</option>|<option>--quiet</option>]
+         [<option>--version</option>] 
          [<option>-?</option>|<option>--help</option>] [<option>--usage</option>]
          [<option>-t</option>|<option>--ptype</option> <userinput>STRING</userinput>]
          [<option>-e</option>|<option>--etype</option> <userinput>STRING</userinput>]
@@ -36,13 +37,10 @@
    <refsect1>
       <title>Description</title>
       <para>
-         <emphasis>install-expenses</emphasis> allows a Palm handheld with the
-         Expense application to have expense records synchronized to it from
-         the		commandline. You can pass any of the fields (except categories,
-         currently)
-         to <emphasis>install-expenses</emphasis> and create new expense
-         records on
-         your Palm handheld.
+         <emphasis>install-expenses</emphasis> allows a Palm handheld with the Expense application
+         to have expense records synchronized to it from the commandline. You can pass any of the
+         fields (except categories, currently) to <emphasis>install-expenses</emphasis> and create
+         new expense records on your Palm handheld.
       </para>
    </refsect1>
    <refsect1>
@@ -54,14 +52,13 @@
             <option>--ptype</option> <userinput>STRING</userinput>
          </para>
          <blockquote>
-            <para>Add entries to the "Payment Type" field. These can be in the
-               form of
-               "Cash", "Cheque" and others. See the Expense application on your
-               Palm
-               device for full details on payment types.
+            <para>
+               Add entries to the "Payment Type" field. These can be in the form of "Cash",
+               "Cheque" and others. See the Expense application on your Palm device for full
+               details on payment types.
             </para>
-            <para>Note that the long name for this option has been renamed
-               since		0.11.8.
+            <para>
+               Note that the long name for this option has been renamed since 0.11.8.
             </para>
          </blockquote>
          <para>
@@ -69,11 +66,10 @@
             <option>--etype</option> <userinput>STRING</userinput>
          </para>
          <blockquote>
-            <para>Add entries to the "Expense Type" field. These can be in the
-               form of
-               Airfare, Meals, and Others. See the Expense application on your
-               Palm device
-               for full details on expense types.
+            <para>
+               Add entries to the "Expense Type" field. These can be in the form of Airfare, Meals,
+               and Others. See the Expense application on your Palm device for full details on
+               expense types.
             </para>
          </blockquote>
          <para>
@@ -81,11 +77,10 @@
             <option>--amount</option> <userinput>STRING</userinput>
          </para>
          <blockquote>
-            <para>Add currency amount entries to the "Amount" field. These can
-               be in
-               the form of 1.00 or "$10.00" and so on. See the Expense
-               application on your
-               Palm device for full details on amount types.
+            <para>
+               Add currency amount entries to the "Amount" field. These can be in the form of 1.00
+               or "$10.00" and so on. See the Expense application on your Palm device for full
+               details on amount types.
             </para>
          </blockquote>
          <para>
@@ -93,11 +88,9 @@
             <option>--vendor</option> <userinput>STRING</userinput>
          </para>
          <blockquote>
-            <para>Add entries to the "Vendor" field. These are free-form
-               values, and
-               can be the name of a restaurant, an airline, or any other text
-               value you
-               wish to use.
+            <para>
+               Add entries to the "Vendor" field. These are free-form values, and can be the name
+               of a restaurant, an airline, or any other text value you wish to use.
             </para>
          </blockquote>
          <para>
@@ -105,10 +98,10 @@
             <option>--guests</option> <userinput>DIGIT</userinput>
          </para>
          <blockquote>
-            <para>Add the number of attendees to the expense record, identified
-               by
-               <userinput>DIGIT</userinput>. If you ate lunch with four (4)
-               additional people, you would put five (5) here, a numeric value.
+            <para>
+               Add the number of attendees to the expense record, identified by
+               <userinput>DIGIT</userinput>. If you ate lunch with four (4) additional people, you
+               would put five (5) here, a numeric value.
             </para>
          </blockquote>
          <para>
@@ -116,11 +109,10 @@
             <option>--city</option> <userinput>STRING</userinput>
          </para>
          <blockquote>
-            <para>Add entries to the "City" field in the expense record. These
-               are
-               free-form values, and can be the name of the location, city, or
-               town
-               that the expense record occured in.
+            <para>
+               Add entries to the "City" field in the expense record. These are free-form values,
+               and can be the name of the location, city, or town that the expense record occured
+               in.
             </para>
          </blockquote>
          <para>
@@ -128,8 +120,9 @@
             <option>--note</option> <userinput>STRING</userinput>
          </para>
          <blockquote>
-            <para>Add a "Note" entry to the expense record. These are free-form
-               values, and can be some notes related to the expense entry.
+            <para>
+               Add a "Note" entry to the expense record. These are free-form values, and can be
+               some notes related to the expense entry.
             </para>
          </blockquote>
          <para>
@@ -137,54 +130,45 @@
             <option>--category</option> <userinput>STRING</userinput>
          </para>
          <blockquote>
-            <para>Install entries into the named category defined here. See the
-               Expense application on your Palm device for full details on
-               using		these categories.
+            <para>
+               Install entries into the named category defined here. See the Expense application on
+               your Palm device for full details on using these categories.
             </para>
          </blockquote>
          <para>
             <option>--replace</option>
          </para>
          <blockquote>
-            <para>Replace the entry found in the named category identified by
-               the <option>--category</option> option
+            <para>
+               Replace the entry found in the named category identified by the
+               <option>--category</option> option
             </para>
-            <para>Note that the short name for this option has been removed
-               since
-               0.11.8
+            <para>
+               Note that the short name for this option has been removed since 0.11.8
             </para>
          </blockquote>
       </refsect2>
       <refsect2>
-         <title>conduit options</title>
+         <title>Conduit Options</title>
          <para>
             <option>-p</option>, <option>--port</option>
             &lt;<userinput>port</userinput>&gt;
          </para>
          <blockquote>
             <para>
-               Use device file &lt;<filename>port</filename>&gt; to communicate
-               with the Palm handheld. If this is not specified,
-               <emphasis>install-expenses</emphasis> will look for the
-               <filename>$PILOTPORT</filename> environment variable. If neither
-               are
-               found or supplied, <emphasis>install-expenses</emphasis> will
-               print the usage information.
+               Use device file &lt;<filename>port</filename>&gt; to communicate with the Palm
+               handheld. If this is not specified, <emphasis>install-expenses</emphasis> will look
+               for the <filename>$PILOTPORT</filename> environment variable. If neither are found
+               or supplied, <emphasis>install-expenses</emphasis> will print the usage information.
             </para>
-         </blockquote>
-         <para>
-            <option>-q</option>, <option>--quiet</option>
-         </para>
-         <blockquote>
-            <para>Suppress 'Hit HotSync button' message</para>
          </blockquote>
          <para>
             <option>--version</option>
          </para>
          <blockquote>
             <para>
-               Display version information for <emphasis>install-expenses</emphasis>
-               and exit without connecting. 
+               Display version information for <emphasis>install-expenses</emphasis> and exit
+               without connecting.
             </para>
          </blockquote>
       </refsect2>
@@ -194,8 +178,8 @@
             <option>-h</option>, <option>--help</option>
          </para>
          <blockquote>
-            <para>Display the help synopsis for
-               <emphasis>install-expenses</emphasis>  and exit without
+            <para>
+               Display the help synopsis for <emphasis>install-expenses</emphasis> and exit without
                connecting.
             </para>
          </blockquote>
@@ -209,9 +193,9 @@
    </refsect1>
    <refsect1>
       <title>Usage</title>
-      <para>The program will connect to the Palm handheld, and install entries
-         into the Expense application based on values passed to
-         <emphasis>install-expenses</emphasis> arguments.
+      <para>
+         The program will connect to the Palm handheld, and install entries into the Expense
+         application based on values passed to <emphasis>install-expenses</emphasis> arguments.
       </para>
    </refsect1>
    <refsect1>
@@ -225,45 +209,44 @@
          <emphasis>-g</emphasis> 21 <emphasis>-l</emphasis> "San Francisco"
          <emphasis>-N</emphasis> "This is a note"
       </para>
-      <para>Installs a new expense; you are recording having 21 guests at
-         McDonalds
-         in the city of San Francisco for a meal which cost 10.00 units of your
-         default currency and you added a simple note. The expense will take
-         the	default date - today.
+      <para>
+         Installs a new expense; you are recording having 21 guests at McDonalds in the city of San
+         Francisco for a meal which cost 10.00 units of your default currency and you added a
+         simple note. The expense will take the default date - today.
       </para>
    </refsect1>
    <refsect1>
       <title>Author</title>
       <para>
-         <emphasis>install-expenses</emphasis> was written by community
-         authors, the original author is unknown.
+         <emphasis>install-expenses</emphasis> was written by community authors, the original
+         author is unknown.
       </para>
-      <para>This manual page was written by Neil Williams
-         <email>linux@codehelp.co.uk</email>
+      <para>
+         This manual page was written by Neil Williams <email>linux@codehelp.co.uk</email>
       </para>
    </refsect1>
    <refsect1>
       <title>Reporting Bugs</title>
-      <para>Report bugs at:
-         <emphasis>http://bugs.pilot-link.org</emphasis>
+      <para>
+         Report bugs at: <emphasis>http://bugs.pilot-link.org</emphasis>
       </para>
    </refsect1>
    <refsect1>
       <title>Copyright</title>
-      <para>This program is free software; you can redistribute it and/or
-         modify it under the terms of the GNU General Public License as
-         published by the Free Software Foundation; either version 2 of the 
-         License,  or  (at your option) any later version.
+      <para>
+         This program is free software; you can redistribute it and/or modify it under the terms of
+         the GNU General Public License as published by the Free Software Foundation; either
+         version 2 of the License, or (at your option) any later version.
       </para>
-      <para>This program is distributed in the hope that it will be useful,
-         but WITHOUT ANY WARRANTY; without even the implied warranty of
-         MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-         General Public License for more details.
+      <para>
+         This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+         without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+         See the GNU General Public License for more details.
       </para>
-      <para>You should have received a copy of the GNU General Public
-         License along with this program; if not, write to the Free Software
-         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 
-         USA
+      <para>
+         You should have received a copy of the GNU General Public License along with this program;
+         if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
+         MA 02111-1307 USA
       </para>
    </refsect1>
    <refsect1>

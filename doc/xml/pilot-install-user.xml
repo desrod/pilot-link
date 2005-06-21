@@ -6,8 +6,8 @@
    </refmeta>
    <refnamediv>
       <refname>install-user</refname>
-      <refpurpose>Reads or sets a Palm User and UserID on a Palm
-         Device.
+      <refpurpose>
+         Reads or sets a Palm User and UserID on a Palm Device.
       </refpurpose>
    </refnamediv>
    <refsect1>
@@ -19,9 +19,8 @@
       <para>
          <emphasis>install-user</emphasis>
          [<option>-p</option>|<option>--port</option> &lt;<userinput>port</userinput>&gt;]
-         [<option>--version</option>] [<option>-q</option>|<option>--quiet</option>]
-         [<option>-?</option>|<option>--help</option>] [<option>--usage</option>]
-         [<option>-u</option>|<option>--user</option> <userinput>username</userinput>]
+         [<option>--version</option>] [<option>-?</option>|<option>--help</option>]
+         [<option>--usage</option>] [<option>-u</option>|<option>--user</option> <userinput>username</userinput>]
          [<option>-i</option>|<option>--id</option> <userinput>userid</userinput>]
          [<option>-l</option>|<option>--list</option>]
       </para>
@@ -29,8 +28,8 @@
    <refsect1>
       <title>Description</title>
       <para>
-         <emphasis>install-user</emphasis> allows the user to read or change
-         the User and UserID information on the Palm handheld.
+         <emphasis>install-user</emphasis> allows the user to read or change the User and UserID
+         information on the Palm handheld.
       </para>
    </refsect1>
    <refsect1>
@@ -42,8 +41,8 @@
             <option>--user</option> <userinput>username</userinput>
          </para>
          <blockquote>
-            <para>Set the username, use quotes for spaces in the username, as
-               in	  "John Q. Public".
+            <para>
+               Set the username, use quotes for spaces in the username, as in "John Q. Public".
             </para>
          </blockquote>
          <para>
@@ -51,9 +50,9 @@
             <option>--id</option> <userinput>userid</userinput>
          </para>
          <blockquote>
-            <para>Set the 5-digit numeric UserID on the device (used for many
-               Palm
-               application registration methods).
+            <para>
+               Set the 5-digit numeric UserID on the device (used for many Palm application
+               registration methods).
             </para>
          </blockquote>
          <para>
@@ -64,48 +63,37 @@
          </blockquote>
       </refsect2>
       <refsect2>
-         <title>conduit options</title>
+         <title>Conduit Options</title>
          <para>
             <option>-p</option>, <option>--port</option>
             &lt;<userinput>port</userinput>&gt;
          </para>
          <blockquote>
             <para>
-               Use device file &lt;<filename>port</filename>&gt; to communicate
-               with the Palm handheld. If this is not specified,
-               <emphasis>install-user</emphasis> will look for the
-               <filename>$PILOTPORT</filename> environment variable. If neither
-               are
-               found or supplied, <emphasis>install-user</emphasis> will
-               print the usage information.
+               Use device file &lt;<filename>port</filename>&gt; to communicate with the Palm
+               handheld. If this is not specified, <emphasis>install-user</emphasis> will look for
+               the <filename>$PILOTPORT</filename> environment variable. If neither are found or
+               supplied, <emphasis>install-user</emphasis> will print the usage information.
             </para>
-         </blockquote>
-         <para>
-            <option>-q</option>, <option>--quiet</option>
-         </para>
-         <blockquote>
-            <para>Suppress 'Hit HotSync button' message</para>
          </blockquote>
          <para>
             <option>-v</option>, <option>--version</option>
          </para>
          <blockquote>
             <para>
-               Display version of <emphasis>install-user</emphasis> and exit
-               without connecting.
+               Display version of <emphasis>install-user</emphasis> and exit without connecting.
             </para>
          </blockquote>
       </refsect2>
       <refsect2>
-         <title>help options</title>
+         <title>Help Options</title>
          <para>
             <option>-h</option>, <option>--help</option>
          </para>
          <blockquote>
             <para>
-               Display the help synopsis for <emphasis>install-user</emphasis>
-               and
-               exit without connecting.
+               Display the help synopsis for <emphasis>install-user</emphasis> and exit without
+               connecting.
             </para>
          </blockquote>
          <para>
@@ -118,43 +106,43 @@
    </refsect1>
    <refsect1>
       <title>Usage</title>
-      <para>The program will connect to a target Palm handheld, and read or set
-         the Palm UserName specified or display the Palm username and UserID if
-         none is specified.
+      <para>
+         The program will connect to a target Palm handheld, and read or set the Palm UserName
+         specified or display the Palm username and UserID if none is specified.
       </para>
    </refsect1>
    <refsect1>
       <title>Author</title>
       <para>
-         <emphasis>install-user</emphasis> was originally written by
-         D. Jeff Dionne <email>jeff@RyeHam.ee.ryerson.ca</email>.
+         <emphasis>install-user</emphasis> was originally written by D. Jeff Dionne
+         <email>jeff@RyeHam.ee.ryerson.ca</email>.
       </para>
-      <para>This manual page was written by Neil Williams
-         <email>linux@codehelp.co.uk</email>
+      <para>
+         This manual page was written by Neil Williams <email>linux@codehelp.co.uk</email>
       </para>
    </refsect1>
    <refsect1>
       <title>Reporting Bugs</title>
-      <para>Report bugs at:
-         <emphasis>http://bugs.pilot-link.org</emphasis>
+      <para>
+         Report bugs at: <emphasis>http://bugs.pilot-link.org</emphasis>
       </para>
    </refsect1>
    <refsect1>
       <title>Copyright</title>
-      <para>This program is free software; you can redistribute it and/or
-         modify it under the terms of the GNU General Public License as
-         published by the Free Software Foundation; either version 2 of the 
-         License,  or  (at your option) any later version.
+      <para>
+         This program is free software; you can redistribute it and/or modify it under the terms of
+         the GNU General Public License as published by the Free Software Foundation; either
+         version 2 of the License, or (at your option) any later version.
       </para>
-      <para>This program is distributed in the hope that it will be useful,
-         but WITHOUT ANY WARRANTY; without even the implied warranty of
-         MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-         General Public License for more details.
+      <para>
+         This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+         without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+         See the GNU General Public License for more details.
       </para>
-      <para>You should have received a copy of the GNU General Public
-         License along with this program; if not, write to the Free Software
-         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 
-         USA
+      <para>
+         You should have received a copy of the GNU General Public License along with this program;
+         if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
+         MA 02111-1307 USA
       </para>
    </refsect1>
    <refsect1>

@@ -6,8 +6,8 @@
    </refmeta>
    <refnamediv>
       <refname>read-ical</refname>
-      <refpurpose>Exports the DatebookDB and/or ToDo applications to ical
-         format.
+      <refpurpose>
+         Exports the DatebookDB and/or ToDo applications to ical format.
       </refpurpose>
    </refnamediv>
    <refsect1>
@@ -19,9 +19,8 @@
       <para>
          <emphasis>read-ical</emphasis>
          [<option>-p</option>|<option>--port</option> &lt;<userinput>port</userinput>&gt;]
-         [<option>--version</option>] [<option>-q</option>|<option>--quiet</option>]
-         [<option>-?</option>|<option>--help</option>] [<option>--usage</option>]
-         [<option>-d</option>|<option>--datebook</option>]
+         [<option>--version</option>] [<option>-?</option>|<option>--help</option>]
+         [<option>--usage</option>] [<option>-d</option>|<option>--datebook</option>]
          [<option>-t</option>|<option>--pubtext</option> <userinput>pubtext</userinput>]
          [<option>-f</option>|<option>--file</option>
          <filename>file</filename>]	
@@ -29,22 +28,20 @@
    </refsect1>
    <refsect1>
       <title>Description</title>
-      <para>Note, this is not the same as the iCal calendar format.</para>
       <para>
-         <emphasis>read-ical</emphasis> allows the user to retrieve the
-         contents of the ToDo and Datebook databases on a Palm handheld, and
-         convert
-         their contents to an Ical calendar.
+         Note, this is not the same as the iCal calendar format.</para>
+      <para>
+         <emphasis>read-ical</emphasis> allows the user to retrieve the contents of the ToDo and
+         Datebook databases on a Palm handheld, and convert their contents to an Ical calendar.
       </para>
       <para>
-         Note that the calendar file named by <filename>filename</filename>
-         will be deleted, so do not use your main calendar. Instead, use a
-         separate
-         one for this purpose, and include it in your main calendar.
+         Note that the calendar file named by <filename>filename</filename> will be deleted, so do
+         not use your main calendar. Instead, use a separate one for this purpose, and include it
+         in your main calendar.
       </para>
       <para>
-         As <emphasis>read-ical</emphasis> works by passing a script to ical,
-         the ical application must be in your $PATH.
+         As <emphasis>read-ical</emphasis> works by passing a script to ical, the ical application
+         must be in your $PATH.
       </para>
    </refsect1>
    <refsect1>
@@ -62,8 +59,8 @@
             <option>--pubtext</option> <userinput>pubtext</userinput>
          </para>
          <blockquote>
-            <para>Replace text of items not started with a bullet with
-               <userinput>pubtext</userinput>
+            <para>
+               Replace text of items not started with a bullet with <userinput>pubtext</userinput>
             </para>
          </blockquote>
          <para>
@@ -71,106 +68,96 @@
             <option>--file</option> <filename>file</filename>
          </para>
          <blockquote>
-            <para>This is the file in which the ical-formatted data should be
-               saved.
-               Note that this will be deleted, so do not use your primary
-               calendar
-               file. See <emphasis>DESCRIPTION</emphasis> for details.
+            <para>
+               This is the file in which the ical-formatted data should be saved.  Note that this
+               will be deleted, so do not use your primary calendar file. See
+               <emphasis>DESCRIPTION</emphasis> for details.
             </para>
          </blockquote>
       </refsect2>
       <refsect2>
-         <title>conduit options</title>
+         <title>Conduit Options</title>
          <para>
             <option>-p</option>, <option>--port</option>
             &lt;<userinput>port</userinput>&gt;
          </para>
          <blockquote>
             <para>
-               Use device file &lt;<filename>port</filename>&gt; to communicate
-               with the Palm handheld. If this is not specified,
-               <emphasis>read-ical</emphasis> will look for the
-               <filename>$PILOTPORT</filename> environment variable. If neither
-               are
-               found, <emphasis>read-ical</emphasis> will
-               print the usage information.
+               Use device file &lt;<filename>port</filename>&gt; to communicate with the Palm
+               handheld. If this is not specified, <emphasis>read-ical</emphasis> will look for the
+               <filename>$PILOTPORT</filename> environment variable. If neither are found,
+               <emphasis>read-ical</emphasis> will print the usage information.
             </para>
-         </blockquote>
-         <para>
-            <option>-q</option>, <option>--quiet</option>
-         </para>
-         <blockquote>
-            <para>Suppress 'Hit HotSync button' message</para>
          </blockquote>
          <para>
             <option>-v</option>, <option>--version</option>
          </para>
          <blockquote>
             <para>
-               Display version of <emphasis>read-ical</emphasis>
-               and exit without connecting.
+               Display version of <emphasis>read-ical</emphasis> and exit without connecting.
             </para>
          </blockquote>
       </refsect2>
       <refsect2>
-         <title>help options</title>
+         <title>Help Options</title>
          <para>
             <option>-h</option>, <option>--help</option>.
          </para>
          <blockquote>
             <para>
-               Display the help synopsis for <emphasis>read-ical</emphasis>
-               and exit without connecting.
+               Display the help synopsis for <emphasis>read-ical</emphasis> and exit without
+               connecting.
             </para>
          </blockquote>
          <para>
             <option>--usage</option> 
          </para>
          <blockquote>
-            <para>Display a brief usage message and exit without connecting.</para>
+            <para>
+               Display a brief usage message and exit without connecting.
+            </para>
          </blockquote>
       </refsect2>
    </refsect1>
    <refsect1>
       <title>Usage</title>
-      <para>The program will connect to a target device, retrieve the ToDo and
-         Datebook databases (ToDoDB.pdb and DatebookDB.pdb respectively), then
-         instruct <filename>ical</filename> to write a calendar file based on
-         the retrieved information.
+      <para>
+         The program will connect to a target device, retrieve the ToDo and Datebook databases
+         (ToDoDB.pdb and DatebookDB.pdb respectively), then instruct <filename>ical</filename> to
+         write a calendar file based on the retrieved information.
       </para>
    </refsect1>
    <refsect1>
       <title>Author</title>
       <para>
-         <emphasis>read-ical</emphasis> was originally written by
-         Kenneth Albanowski.
+         <emphasis>read-ical</emphasis> was originally written by Kenneth Albanowski.
       </para>
-      <para>This manual page was written by Neil Williams
-         <email>linux@codehelp.co.uk</email>
+      <para>
+         This manual page was written by Neil Williams <email>linux@codehelp.co.uk</email>
       </para>
    </refsect1>
    <refsect1>
       <title>Reporting Bugs</title>
-      <para>Report bugs at:
-         <emphasis>http://bugs.pilot-link.org</emphasis>
+      <para>
+         Report bugs at: <emphasis>http://bugs.pilot-link.org</emphasis>
       </para>
    </refsect1>
    <refsect1>
       <title>Copyright</title>
-      <para>This program is free software; you can redistribute it and/or
-         modify it under the terms of the GNU General Public License as
-         published by the Free Software Foundation; either version 2 of the 
-         License,  or  (at your option) any later version.
+      <para>
+         This program is free software; you can redistribute it and/or modify it under the terms of
+         the GNU General Public License as published by the Free Software Foundation; either
+         version 2 of the License, or (at your option) any later version.
       </para>
-      <para>This program is distributed in the hope that it will be useful,
-         but WITHOUT ANY WARRANTY; without even the implied warranty of
-         MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-         General Public License for more details.
+      <para>
+         This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+         without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+         See the GNU General Public License for more details.
       </para>
-      <para>You should have received a copy of the GNU General Public
-         License along with this program; if not, write to the Free Software
-         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 
-         USA
+      <para>
+         You should have received a copy of the GNU General Public License along with this program;
+         if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
+         MA 02111-1307 USA
       </para>
    </refsect1>
    <refsect1>

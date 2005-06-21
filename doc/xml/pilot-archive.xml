@@ -6,8 +6,8 @@
    </refmeta>
    <refnamediv>
       <refname>pilot-archive</refname>
-      <refpurpose>Exports any ToDo records marked as "Archived" on your Palm to
-         CSV format.
+      <refpurpose>
+         Exports any ToDo records marked as "Archived" on your Palm to CSV format.
       </refpurpose>
    </refnamediv>
    <refsect1>
@@ -19,24 +19,22 @@
       <para>
          <emphasis>pilot-archive</emphasis>
          [<option>-p</option>|<option>--port</option> &lt;<userinput>port</userinput>&gt;]
-         [<option>--version</option>] [<option>-q</option>|<option>--quiet</option>]
-         
-         [<option>-?</option>|<option>--help</option>][<option>--usage</option>]	
+         [<option>--version</option>] [<option>-?</option>|<option>--help</option>]
+         [<option>--usage</option>]	
       </para>
    </refsect1>
    <refsect1>
       <title>Description</title>
       <para>
-         <emphasis>pilot-archive</emphasis> is used to print records marked as
-         "Archive to Desktop" on your Palm handheld to a generic CSV format,
-         which can be used to create "archive" files on the desktop, if you
-         choose to do so.
+         <emphasis>pilot-archive</emphasis> is used to print records marked as "Archive to Desktop"
+         on your Palm handheld to a generic CSV format, which can be used to create "archive" files
+         on the desktop, if you choose to do so.
       </para>
-      <para>When you delete data on your Palm device, whether it in in the
-         Datebook or ToDo or other application, the Palm will prompt you to
-         "archive" these deleted records.  With
-         <emphasis>pilot-archive</emphasis>, you can store and maintain those
-         deleted records, if you wish.
+      <para>
+         When you delete data on your Palm device, whether it in in the Datebook or ToDo or other
+         application, the Palm will prompt you to "archive" these deleted records.  With
+         <emphasis>pilot-archive</emphasis>, you can store and maintain those deleted records, if
+         you wish.
       </para>
    </refsect1>
    <refsect1>
@@ -47,65 +45,57 @@
       </para>
       <blockquote>
          <para>
-            Use device file &lt;<filename>port</filename>&gt; to communicate
-            with the Palm handheld. If this is not specified, will look for the
-            <filename>$PILOTPORT</filename> environment variable. If neither
-            are		found or supplied, <emphasis>pilot-archive</emphasis> will
-            fall back to
-            <filename>/dev/pilot</filename>.
+            Use device file &lt;<filename>port</filename>&gt; to communicate with the Palm
+            handheld. If this is not specified, will look for the <filename>$PILOTPORT</filename>
+            environment variable. If neither are found or supplied,
+            <emphasis>pilot-archive</emphasis> will fall back to <filename>/dev/pilot</filename>.
          </para>
       </blockquote>
       <para>
          <option>-h</option>, <option>--help</option>
       </para>
       <blockquote>
-         <para>Display the help synopsis for
-            <emphasis>pilot-archive</emphasis> and exit without connecting.
+         <para>
+            Display the help synopsis for <emphasis>pilot-archive</emphasis> and exit without
+            connecting.
          </para>
-      </blockquote>
-      <para>
-         <option>-q</option>, <option>--quiet</option>
-      </para>
-      <blockquote>
-         <para>Suppress 'Hit HotSync button' message</para>
       </blockquote>
       <para>
          <option>-v</option>, <option>--version</option>
       </para>
       <blockquote>
          <para>
-            Display version of <emphasis>pilot-archive</emphasis>
-            and exit without connecting.
+            Display version of <emphasis>pilot-archive</emphasis> and exit without connecting.
          </para>
       </blockquote>
       <para>
          <option>--usage</option>
       </para>
       <blockquote>
-         <para>Display a brief usage message and exit without connecting.</para>
+         <para>
+            Display a brief usage message and exit without connecting.
+         </para>
       </blockquote>
    </refsect1>
    <refsect1>
       <title>Usage</title>
-      <para>Connect to a target Palm handheld and return the "archived"
-         (deleted)
-         records in your ToDo database in a common, generic CSV format, which
-         can
-         be used to create "archive" files on the desktop.
+      <para>
+         Connect to a target Palm handheld and return the "archived" (deleted) records in your ToDo
+         database in a common, generic CSV format, which can be used to create "archive" files on
+         the desktop.
       </para>
       <para>
-         <emphasis>pilot-archive</emphasis> only speaks to the ToDoDB.pdb file
-         at this time, but adding support for the other applications is very
-         trivial. Just look at the code and add your database connection as
-         required.
+         <emphasis>pilot-archive</emphasis> only speaks to the ToDoDB.pdb file at this time, but
+         adding support for the other applications is very trivial. Just look at the code and add
+         your database connection as required.
       </para>
    </refsect1>
    <refsect1>
       <title>Examples</title>
-      <para>To output the "deleted" items on your Palm handheld into CSV format
-         with <emphasis>pilot-archive</emphasis>, simply supply the port
-         option to <emphasis>pilot-archive</emphasis> and connect to your Palm
-         device as follows:
+      <para>
+         To output the "deleted" items on your Palm handheld into CSV format with
+         <emphasis>pilot-archive</emphasis>, simply supply the port option to
+         <emphasis>pilot-archive</emphasis> and connect to your Palm device as follows:
       </para>
       <para>
          <emphasis>pilot-archive</emphasis>
@@ -113,49 +103,46 @@
          <filename>/dev/pilot</filename>
       </para>
       <para>
-         <emphasis>pilot-archive</emphasis> will connect to your Palm device,
-         and output something similar to the following:
+         <emphasis>pilot-archive</emphasis> will connect to your Palm device, and output something
+         similar to the following:
       </para>
       <para>
-         <computeroutput>"Category", "Technology", "Priority", "1",
-            "Completed", "No", "Due", "Sat Dec 20 00:00:00 2003 ",
-            "Description",
-            "Mail expense forms to work", "Note", "",
+         <computeroutput>"Category", "Technology", "Priority", "1", "Completed", "No", "Due", "Sat
+            Dec 20 00:00:00 2003 ", "Description", "Mail expense forms to work", "Note", "",
          </computeroutput>
       </para>
    </refsect1>
    <refsect1>
       <title>Author</title>
       <para>
-         <emphasis>pilot-archive</emphasis> was written by
-         David A. Desrosiers
+         <emphasis>pilot-archive</emphasis> was written by David A. Desrosiers
       </para>
-      <para>This manual page was written by Neil Williams
-         <email>linux@codehelp.co.uk</email>
+      <para>
+         This manual page was written by Neil Williams <email>linux@codehelp.co.uk</email>
       </para>
    </refsect1>
    <refsect1>
       <title>Reporting Bugs</title>
-      <para>Report bugs at:
-         <emphasis>http://bugs.pilot-link.org</emphasis>
+      <para>
+         Report bugs at: <emphasis>http://bugs.pilot-link.org</emphasis>
       </para>
    </refsect1>
    <refsect1>
       <title>Copyright</title>
-      <para>This program is free software; you can redistribute it and/or
-         modify it under the terms of the GNU General Public License as
-         published by the Free Software Foundation; either version 2 of the 
-         License,  or  (at your option) any later version.
+      <para>
+         This program is free software; you can redistribute it and/or modify it under the terms of
+         the GNU General Public License as published by the Free Software Foundation; either
+         version 2 of the License, or (at your option) any later version.
       </para>
-      <para>This program is distributed in the hope that it will be useful,
-         but WITHOUT ANY WARRANTY; without even the implied warranty of
-         MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-         General Public License for more details.
+      <para>
+         This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+         without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+         See the GNU General Public License for more details.
       </para>
-      <para>You should have received a copy of the GNU General Public
-         License along with this program; if not, write to the Free Software
-         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 
-         USA
+      <para>
+         You should have received a copy of the GNU General Public License along with this program;
+         if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
+         MA 02111-1307 USA
       </para>
    </refsect1>
    <refsect1>

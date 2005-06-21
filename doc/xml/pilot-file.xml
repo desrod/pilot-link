@@ -6,21 +6,21 @@
    </refmeta>
    <refnamediv>
       <refname>pilot-file</refname>
-      <refpurpose>Dump application and header information from your local
-         PRC/PDB
-         files.
+      <refpurpose>
+         Dump application and header information from your local PRC/PDB files.
       </refpurpose>
    </refnamediv>
    <refsect1>
       <title>Section</title>
-      <para>pilot-link: Tools</para>
+      <para>
+            pilot-link: Tools</para>
    </refsect1>
    <refsect1>
       <title>Synopsis</title>
       <para>
          <emphasis>pilot-file</emphasis>
          [<option>-p</option>|<option>--port</option> &lt;<userinput>port</userinput>&gt;]
-         [<option>--version</option>] [<option>-q</option>|<option>--quiet</option>]
+         [<option>--version</option>]
          [<option>-?</option>|<option>--help</option>] [<option>--usage</option>]
          [<option>-H</option>|<option>--header</option>]
          [<option>-a</option>|<option>--appinfo</option>]
@@ -35,8 +35,8 @@
    <refsect1>
       <title>Description</title>
       <para>
-         <emphasis>pilot-file</emphasis> is used to
-         Dump application and header information from your local PRC/PDB files.
+         <emphasis>pilot-file</emphasis> is used to Dump application and header information from
+         your local PRC/PDB files.
       </para>
       <para>
          <emphasis>pilot-file</emphasis> does not connect to your Palm.
@@ -90,47 +90,36 @@
          </blockquote>
       </refsect2>
       <refsect2>
-         <title>conduit options</title>
+         <title>Conduit Options</title>
          <para>
-            <option>-p</option>, <option>--port</option>
-            &lt;<userinput>port</userinput>&gt;
+            <option>-p</option>, <option>--port</option> lt;<userinput>port</userinput>&gt;
          </para>
          <blockquote>
             <para>
-               Use device file &lt;<filename>port</filename>&gt; to communicate
-               with the Palm handheld. If this is not specified,
-               <emphasis>pilot-file</emphasis> will look for the
-               <filename>$PILOTPORT</filename> environment variable. If neither
-               are
-               found or supplied, <emphasis>pilot-file</emphasis>
-               will print the usage information.
+               Use device file &lt;<filename>port</filename>&gt; to communicate with the Palm
+               handheld. If this is not specified, <emphasis>pilot-file</emphasis> will look for
+               the <filename>$PILOTPORT</filename> environment variable. If neither are found or
+               supplied, <emphasis>pilot-file</emphasis> will print the usage information.
             </para>
-         </blockquote>
-         <para>
-            <option>-q</option>, <option>--quiet</option>
-         </para>
-         <blockquote>
-            <para>Suppress 'Hit HotSync button' message</para>
          </blockquote>
          <para>
             <option>-v</option>, <option>--version</option>
          </para>
          <blockquote>
             <para>
-               Display version of <emphasis>pilot-file</emphasis> and exit
-               without connecting.
+               Display version of <emphasis>pilot-file</emphasis> and exit without connecting.
             </para>
          </blockquote>
       </refsect2>
       <refsect2>
-         <title>help options</title>
+         <title>Help Options</title>
          <para>
             <option>-h</option>, <option>--help</option>
          </para>
          <blockquote>
             <para>
-               Display the help synopsis for <emphasis>pilot-file</emphasis>
-               and exit without connecting.
+               Display the help synopsis for <emphasis>pilot-file</emphasis> and exit without
+               connecting.
             </para>
          </blockquote>
          <para>
@@ -143,32 +132,32 @@
    </refsect1>
    <refsect1>
       <title>Author</title>
-      <para>This manual page was written by Neil Williams
-         <email>linux@codehelp.co.uk</email>
+      <para>
+         This manual page was written by Neil Williams <email>linux@codehelp.co.uk</email>
       </para>
    </refsect1>
    <refsect1>
       <title>Reporting Bugs</title>
-      <para>Report bugs at:
-         <emphasis>http://bugs.pilot-link.org</emphasis>
+      <para>
+         Report bugs at: <emphasis>http://bugs.pilot-link.org</emphasis>
       </para>
    </refsect1>
    <refsect1>
       <title>Copyright</title>
-      <para>This program is free software; you can redistribute it and/or
-         modify it under the terms of the GNU General Public License as
-         published by the Free Software Foundation; either version 2 of the 
-         License,  or  (at your option) any later version.
+      <para>
+         This program is free software; you can redistribute it and/or modify it under the terms of
+         the GNU General Public License as published by the Free Software Foundation; either
+         version 2 of the License, or (at your option) any later version.
       </para>
-      <para>This program is distributed in the hope that it will be useful,
-         but WITHOUT ANY WARRANTY; without even the implied warranty of
-         MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-         General Public License for more details.
+      <para>
+         This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+         without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+         See the GNU General Public License for more details.
       </para>
-      <para>You should have received a copy of the GNU General Public
-         License along with this program; if not, write to the Free Software
-         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 
-         USA
+      <para>
+         You should have received a copy of the GNU General Public License along with this program;
+         if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
+         MA 02111-1307 USA
       </para>
    </refsect1>
    <refsect1>
