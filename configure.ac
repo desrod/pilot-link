@@ -143,7 +143,7 @@ dnl ******************************
 if test -d "${srcdir}/CVS" ; then
        PL_FROM_CVS=yes
 fi
-
+AM_CONDITIONAL(CVS_BUILD,[test -d "${srcdir}/CVS"])
 
 dnl ******************************
 dnl Pilot Link Checks
@@ -675,6 +675,7 @@ AC_ARG_ENABLE(profile,
 dnl *************************************
 dnl Check for xsltproc
 dnl *************************************
+if [[ x"$PL_FROM_CVS" = xyes ]]; then
 
 # It's just rude to go over the net to build
 XSLTPROC_FLAGS=--nonet
@@ -718,6 +719,7 @@ END
            XSLTPROC_WORKS=yes
         fi
         AC_MSG_RESULT($XSLTPROC_WORKS)
+fi
 fi
 AM_CONDITIONAL(have_xsltproc, test "$XSLTPROC_WORKS" = "yes")
 

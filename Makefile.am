@@ -1,26 +1,20 @@
-AUTOMAKE_OPTIONS = 1.6
+if CVS_BUILD
+SUBDIRS = xml man
+else
+SUBDIRS = man
+endif
 
-SUBDIRS=popt 		\
-	libpisock 	\
-	libpisync 	\
-	include 	\
-	src 		\
-	bindings 	\
-	doc 		\
-	tests 		\
-	darwin
+EXTRA_DIST = 		 \
+	CodingGuidelines \
+	README.debugging \
+	README.freebsd	 \
+	README.usb	 \
+	TODO		 \
+	syncabs.sgml  \
+	doxygen.cfg.in
 
-m4dir = $(datadir)/aclocal
-m4_DATA = pilot-link.m4
+DIST_CLEAN_FILES=doxygen.cfg
 
-pkgconfigdir = $(libdir)/pkgconfig
-pkgconfig_DATA = pilot-link.pc 
-
-ACLOCAL_AMFLAGS = -I m4
-
-EXTRA_DIST = 			\
-	autogen.sh		\
-	$(m4_DATA)		\
-	pilot-link.pc.in	\
-	pilot-link-pp.pc.in
-
+doc: doxygen.cfg
+	rm -rf html refman.pdf
+	doxygen doxygen.cfg

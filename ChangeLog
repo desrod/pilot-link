@@ -1,5 +1,10 @@
 2005-06-21 Neil Williams <linux@codehelp.co.uk>
 
+	* configure.ac: improved conditional xsl build.
+	* doc/Makefile.am: Skip xml if not CVS.
+
+2005-06-21 Neil Williams <linux@codehelp.co.uk>
+
 	* configure.ac: Detect and configure xsltproc
 	for building from CVS only. Remove manpages
 	from CVS and build automatically.
