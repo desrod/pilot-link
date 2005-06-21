@@ -5,7 +5,7 @@
       <refmiscinfo>Copyright FSF 1996-2005</refmiscinfo>
    </refmeta>
    <refnamediv>
-      <refname>install-todo</refname>
+      <refname>install-todos</refname>
       <refpurpose>Updates the Palm ToDo list with entries from a local
          file.
       </refpurpose>

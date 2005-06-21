@@ -1,0 +1,81 @@
+<?xml version="1.0"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook V4.1//EN"
+ "http://www.oasis-open.org/docbook/xml/4.1/docbookx.dtd" [
+<!ENTITY pilotlink SYSTEM "pilot-link.xml">
+<!ENTITY debugsh SYSTEM "debugsh.xml">
+<!ENTITY dlpsh SYSTEM "dlpsh.xml">
+<!ENTITY hinotes SYSTEM "hinotes.xml">
+<!ENTITY ietf2 SYSTEM "ietf2datebook.xml">
+<!ENTITY datebook SYSTEM "install-datebook.xml">
+<!ENTITY expenses SYSTEM "install-expenses.xml">
+<!ENTITY installhinote SYSTEM "install-hinote.xml">
+<!ENTITY installmemo SYSTEM "install-memo.xml">
+<!ENTITY installnetsync SYSTEM "install-netsync.xml">
+<!ENTITY installtodo SYSTEM "install-todo.xml">
+<!ENTITY installtodos SYSTEM "install-todos.xml">
+<!ENTITY installuser SYSTEM "install-user.xml">
+<!ENTITY memos SYSTEM "memos.xml">
+<!ENTITY picsd SYSTEM "pi-csd.xml">
+<!ENTITY pigetram SYSTEM "pi-getram.xml">
+<!ENTITY pigetrom SYSTEM "pi-getrom.xml">
+<!ENTITY pigetromtoken SYSTEM "pi-getromtoken.xml">
+<!ENTITY pilotaddresses SYSTEM "pilot-addresses.xml">
+<!ENTITY pilotclip SYSTEM "pilot-clip.xml">
+<!ENTITY pilotdedupe SYSTEM "pilot-dedupe.xml">
+<!ENTITY pilotfile SYSTEM "pilot-file.xml">
+<!ENTITY pilotfoto SYSTEM "pilot-foto.xml">
+<!ENTITY pilotschlep SYSTEM "pilot-schlep.xml">
+<!ENTITY pilottreofoto SYSTEM "pilot-treofoto.xml">
+<!ENTITY pilotwav SYSTEM "pilot-wav.xml">
+<!ENTITY pilotxfer SYSTEM "pilot-xfer.xml">
+<!ENTITY pinredir SYSTEM "pi-nredir.xml">
+<!ENTITY readexpenses SYSTEM "read-expenses.xml">
+<!ENTITY readical SYSTEM "read-ical.xml">
+<!ENTITY readnotepad SYSTEM "read-notepad.xml">
+<!ENTITY readpalmpix SYSTEM "read-palmpix.xml">
+<!ENTITY readscreenshot SYSTEM "read-screenshot.xml">
+<!ENTITY readtodos SYSTEM "read-todos.xml">
+<!ENTITY readveo SYSTEM "read-veo.xml">
+<!ENTITY reminders SYSTEM "reminders.xml">
+ ]>
+<book label="pilot-link" status="0.12">
+<chapter label="1" id="manpages">
+<title>manpages</title>
+&pilotlink;
+&debugsh;
+&dlpsh;
+&hinotes;
+&ietf2;
+&datebook;
+&expenses;
+&installhinote;
+&installmemo;
+&installnetsync;
+&installtodo;
+&installtodos;
+&installuser;
+&memos;
+&picsd;
+&pigetram;
+&pigetrom;
+&pigetromtoken;
+&pilotaddresses;
+&pilotclip;
+&pilotdedupe;
+&pilotfile;
+&pilotfoto;
+&pilotschlep;
+&pilottreofoto;
+&pilotwav;
+&pilotxfer;
+&pinredir;
+&readexpenses;
+&readical;
+&readnotepad;
+&readpalmpix;
+&readscreenshot;
+&readtodos;
+&readveo;
+&reminders;
+</chapter>
+</book>

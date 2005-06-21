@@ -17,11 +17,11 @@ man_MANS =			\
 	pi-getrom.1		\
 	pi-getromtoken.1	\
 	pilot-addresses.1	\
-	pilot-archive.1		\
 	pilot-clip.1		\
 	pilot-dedupe.1		\
 	pilot-file.1		\
 	pilot-foto.1		\
+	pilot-link.7		\
 	pilot-schlep.1		\
 	pilot-treofoto.1	\
 	pilot-wav.1		\
@@ -36,7 +36,4 @@ man_MANS =			\
 	read-veo.1		\
 	reminders.1
 
-EXTRA_DIST = 
-	$(man_MANS)
-
-	     
+EXTRA_DIST=$(man_MANS)

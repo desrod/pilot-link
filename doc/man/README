@@ -1,7 +1,6 @@
-These manpages have gone through many hands. Nobody likes to write
-documentation, so the job falls back on me.
+These manpages are generated automatically - do NOT edit them!
+Edit the XML in ../xml/ ONLY!
 
-These manpages are eventually going to be sourced entirely in
-XML/SGML format, and converted to their proper man(1) format via
-docbook transformation.
+Pilot-link uses XML and a customised XSL to convert to their proper man(1) format via
+docbook transformation using xsltproc.
 

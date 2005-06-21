@@ -1,4 +1,4 @@
-SUBDIRS = man
+SUBDIRS = xml man
 
 EXTRA_DIST = 		 \
 	CodingGuidelines \
@@ -6,4 +6,11 @@ EXTRA_DIST = 		 \
 	README.freebsd	 \
 	README.usb	 \
 	TODO		 \
-	syncabs.sgml
+	syncabs.sgml  \
+	doxygen.cfg.in
+
+DIST_CLEAN_FILES=doxygen.cfg
+
+doc: doxygen.cfg
+	rm -rf html refman.pdf
+	doxygen doxygen.cfg

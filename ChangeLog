@@ -1,3 +1,32 @@
+2005-06-21 Neil Williams <linux@codehelp.co.uk>
+
+	* configure.ac: Detect and configure xsltproc
+	for building from CVS only. Remove manpages
+	from CVS and build automatically.
+	* doc/.cvsignore: ignore build config files.
+	* doc/Makefile.am: Build xml and provide a doc
+	target for Doxygen output.
+	* doc/doxygen.cfg.in: Usable Doxygen config with
+	version string.
+	* doc/doxygen_main_page.c: Helpful index page.
+	* doc/man/Makefile.am: tweak
+	* doc/man/README: Changing to generated manpages.
+	* doc/xml/.cvsignore:
+	* doc/xml/Makefile.am: Find the XML Catalogs
+	* doc/xml/README: Only edit the XML files!
+	* doc/xml/catalog.xml.in: Use a customised manpage
+	XSL alongside standard catalogs.
+	* doc/xml/docbook.xsl.in: Customised for pilot-link.
+	Edit to affect all generated manpages.
+	* doc/xml/install-todos.xml: Typo.
+	* doc/xml/pilot-foto.xml: Missing copyright.
+	* doc/xml/pilot-link.docbook: Auto-generation.
+	* doc/xml/pilot-schlep.xml
+	* doc/xml/pilot-treofoto.xml
+	* doc/xml/pilot-wav.xml
+	* doc/xml/read-screenshot.xml
+	* doc/xml/read-veo.xml: Missing copyright lines.
+
 2005-06-13 05:34  fpillet
 
 	* libpisock/darwinusb.c: preliminary KLSI adapter support. Not
