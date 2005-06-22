@@ -92,12 +92,13 @@
 #include "pi-source.h"
 #include "pi-usb.h"
 #include "pi-error.h"
+#include "pi-util.h"
 
 /* Define this to make debug logs include USB debug info */
 #ifdef PI_DEBUG
     #define DEBUG_USB 1
 #endif
-#undef DEBUG_USB        /* comment out to leave debug enabled */
+//#undef DEBUG_USB        /* comment out to leave debug enabled */
 
 /* Macro to log more information when debugging USB. Note that this is for
  * my own use, mostly, as the info logged is primarily being used to
@@ -151,6 +152,7 @@ typedef struct usb_connection_t
 
 	unsigned short vendorID;		/* connected USB device vendor ID */
 	unsigned short productID;		/* connected USB device product ID */
+	unsigned short dev_flags;		/* copy of the flags from the acceptedDevices structure */
 
 	int opened;				/* set to != 0 if the connection is opened */
 	int device_present;
@@ -296,9 +298,14 @@ typedef struct
  * devices come out. To accept ALL the devices from a vendor, add
  * an entry with the vendorID and 0xFFFF as productID.
  */
+
+#define FLAG_ANSWERS_CONN_INFO		0x0001		/* device is known to answer connection information requests */
+#define FLAG_REJECT			0x8000		/* device is known but not supported yet */
+
 static struct {
 	unsigned short vendorID;
 	unsigned short productID;
+	unsigned short flags;
 }
 acceptedDevices[] = {
 	/* Sony */
@@ -313,21 +320,21 @@ acceptedDevices[] = {
 	{0x054c, 0x0169},	/* Sony TJ */
 
 	/* Keyspan serial-to-USB PDA adapter */
-	{0x06cd, 0x0103},	/* ID sent by an adapter which firmware has not been uploaded yet */
-	{0x06cd, 0x0104},	/* ID sent by an adapter with proper firmware uploaded */
+	{0x06cd, 0x0103, FLAG_REJECT},	/* ID sent by an adapter which firmware has not been uploaded yet */
+	{0x06cd, 0x0104, FLAG_REJECT},	/* ID sent by an adapter with proper firmware uploaded */
 
 	/* AlphaSmart */
-	{0x081e, 0xdf00},   /* Dana */
+	{0x081e, 0xdf00},	/* Dana */
 
 	/* HANDSPRING (vendor 0x082d) */
 	{0x082d, 0x0100},	/* Visor */
 	{0x082d, 0x0200},	/* Treo */
-	{0x082d, 0x0300},	/* Treo 600 */
+	{0x082d, 0x0300, FLAG_ANSWERS_CONN_INFO},	/* Treo 600 */
 
 	/* PalmOne, Palm Inc */
-	{0x0830, 0x0001},	/* m500 */
-	{0x0830, 0x0002},	/* m505 */
-	{0x0830, 0x0003},	/* m515 */
+	{0x0830, 0x0001, FLAG_ANSWERS_CONN_INFO},	/* m500 */
+	{0x0830, 0x0002, FLAG_ANSWERS_CONN_INFO},	/* m505 */
+	{0x0830, 0x0003, FLAG_ANSWERS_CONN_INFO},	/* m515 */
 	{0x0830, 0x0010},
 	{0x0830, 0x0011},
 	{0x0830, 0x0020},	/* i705 */
@@ -338,11 +345,11 @@ acceptedDevices[] = {
 	{0x0830, 0x0051},
 	{0x0830, 0x0052},
 	{0x0830, 0x0053},
-	{0x0830, 0x0060},	/* Tungsten series, Zire 71 */
-	{0x0830, 0x0061},	/* Zire 31, 72, T5, LifeDrive */
+	{0x0830, 0x0060, FLAG_ANSWERS_CONN_INFO},	/* Tungsten series, Zire 71 */
+	{0x0830, 0x0061, FLAG_ANSWERS_CONN_INFO},	/* Zire 31, 72, T5, LifeDrive */
 	{0x0830, 0x0062},
 	{0x0830, 0x0063},
-	{0x0830, 0x0070},	/* Zire */
+	{0x0830, 0x0070, FLAG_ANSWERS_CONN_INFO},	/* Zire */
 	{0x0830, 0x0071},
 	{0x0830, 0x0080},	/* palmOne serial adapter (actually, a Keyspan adapter) */
 	{0x0830, 0x0099},
@@ -356,7 +363,7 @@ acceptedDevices[] = {
 	{0x0c88, 0xa226},	/* 6035 Smartphone */
 
 	/* Tapwave */
-	{0x12ef, 0x0100},	/* Zodiac, Zodiac2 */
+	{0x12ef, 0x0100, FLAG_ANSWERS_CONN_INFO},	/* Zodiac, Zodiac2 */
 
 	/* ACEECA */
 	{0x4766, 0x0001},	/* MEZ1000 */
@@ -373,8 +380,8 @@ static IOReturn control_request (IOUSBDeviceInterface **dev, UInt8 requestType, 
 static void device_added (void *refCon, io_iterator_t iterator);
 static void device_notification (usb_connection_t *connexion, io_service_t service, natural_t messageType, void *messageArgument);
 static void read_completion (usb_connection_t *connexion, IOReturn result, void *arg0);
-static int accepts_device (unsigned short vendor, unsigned short product);
-static IOReturn	configure_device (IOUSBDeviceInterface **dev, unsigned short vendor, unsigned short product, int *port_number, int *input_pipe_number, int *output_pipe_number, int *pipe_info_retrieved);
+static int accepts_device (unsigned short vendor, unsigned short product, unsigned short *flags);
+static IOReturn	configure_device (IOUSBDeviceInterface **dev, unsigned short vendor, unsigned short product, unsigned short flags, int *port_number, int *input_pipe_number, int *output_pipe_number, int *pipe_info_retrieved);
 static IOReturn	find_interfaces (usb_connection_t *usb, IOUSBDeviceInterface **dev, unsigned short vendor, unsigned short product, int port_number, int input_pipe_number, int output_pipe_number, int pipe_info_retrieved);
 static int prime_read (usb_connection_t *connexion);
 static IOReturn	read_visor_connection_information (IOUSBDeviceInterface **dev, int *port_number, int *input_pipe, int *output_pipe);
@@ -554,6 +561,8 @@ start_listening(void)
 			NULL,
 			&usb_device_added_iter);
 
+	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: added service matching notification (kr=0x%08lx)\n", kr));
+
 	/* Iterate once to get already-present devices and arm the notification */
 	device_added (NULL, usb_device_added_iter);
 
@@ -592,14 +601,14 @@ stop_listening(usb_connection_t *c)
 	if (c->interface)
 	{
 		(*c->interface)->USBInterfaceClose (c->interface);
-		(*c->interface)->Release (c->interface);
+		(*c->interface)->Release(c->interface);
 		c->interface = NULL;
 	}
 
 	if (c->device)
 	{
 		(*c->device)->USBDeviceClose (c->device);
-		(*c->device)->Release (c->device);
+		(*c->device)->Release(c->device);
 		c->device = NULL;
 	}
 
@@ -613,6 +622,8 @@ usb_thread_run(void *foo)
 {
 	if (start_listening() == 0)
 	{
+		LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: usb_thread_run, starting...\n"));
+
 		/* obtain the CFRunLoop for this thread */
 		pthread_mutex_lock(&usb_run_loop_mutex);
 		usb_run_loop = CFRunLoopGetCurrent();
@@ -624,6 +635,8 @@ usb_thread_run(void *foo)
 		pthread_mutex_unlock(&usb_thread_ready_mutex);
 
 		CFRunLoopRun();
+
+		LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: usb_thread_run, done with runloop\n"));
 
 		pthread_mutex_lock(&usb_run_loop_mutex);
 		usb_run_loop = 0;
@@ -673,6 +686,11 @@ usb_thread_run(void *foo)
 			}
 		}
 		pthread_mutex_unlock(&usb_connections_mutex);
+
+		usb_thread = 0;
+		usb_run_loop = NULL;
+
+		LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: usb_thread_run, exited.\n"));
 	}
 	else
 	{
@@ -696,6 +714,7 @@ device_added (void *refCon, io_iterator_t iterator)
 	HRESULT res;
 	SInt32 score;
 	UInt16 vendor, product;
+	unsigned short accept_flags;
 	int port_number = 0xff,
 		input_pipe_number = 0xff,
 		output_pipe_number = 0xff,
@@ -741,7 +760,7 @@ device_added (void *refCon, io_iterator_t iterator)
 
 		kr = (*dev)->GetDeviceVendor (dev, &vendor);
 		kr = (*dev)->GetDeviceProduct (dev, &product);
-		if (accepts_device(vendor, product) == 0)
+		if (accepts_device(vendor, product, &accept_flags) == 0)
 		{
 			ULOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: not accepting device (vendor=0x%04x product=0x%04x)\n", vendor, product));
 			(*dev)->Release(dev);
@@ -761,7 +780,7 @@ device_added (void *refCon, io_iterator_t iterator)
 		}
 
 		/* configure the device and query for its preferred I/O pipes */
-		kr = configure_device (dev, vendor, product, &port_number, &input_pipe_number, &output_pipe_number, &pipe_info_retrieved);
+		kr = configure_device (dev, vendor, product, accept_flags, &port_number, &input_pipe_number, &output_pipe_number, &pipe_info_retrieved);
 		if (kr != kIOReturnSuccess)
 		{
 			LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, (kr == kIOReturnNotReady)
@@ -792,6 +811,7 @@ device_added (void *refCon, io_iterator_t iterator)
 		c->device_present = 1;
 		c->vendorID = vendor;
 		c->productID = product;
+		c->dev_flags = accept_flags;
 
 		/* try to locate the pipes we need to talk to the device */
 		kr = find_interfaces(c, dev, vendor, product, port_number, input_pipe_number, output_pipe_number, pipe_info_retrieved);
@@ -845,8 +865,6 @@ device_added (void *refCon, io_iterator_t iterator)
 
 		add_connection(c);
 		prime_read(c);
-		if (!accept_multiple_simultaneous_connections)
-			break;
 	}
 }
 
@@ -854,6 +872,7 @@ static IOReturn
 configure_device(IOUSBDeviceInterface **di,
 				 unsigned short vendor,
 				 unsigned short product,
+				 unsigned short flags,
 				 int *port_number,
 				 int *input_pipe_number,
 				 int *output_pipe_number,
@@ -929,6 +948,9 @@ configure_device(IOUSBDeviceInterface **di,
 		kr = read_visor_connection_information (di, port_number, input_pipe_number, output_pipe_number);
 	if (kr == kIOReturnNotReady)
 		return kr;
+	if (kr != kIOReturnSuccess && (flags & FLAG_ANSWERS_CONN_INFO))
+		return kIOReturnNotReady;
+
 	*pipe_info_retrieved = (kr == kIOReturnSuccess);
 
 	/* query bytes available. Not that we really care, but most devices expect to receive this
@@ -943,7 +965,7 @@ configure_device(IOUSBDeviceInterface **di,
 		LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "GENERIC_REQUEST_BYTES_AVAILABLE returns 0x%02x%02x\n", ba[0], ba[1]));
 	}
 
-    return kIOReturnSuccess;
+	return kIOReturnSuccess;
 }
 
 static IOReturn
@@ -1354,13 +1376,12 @@ read_completion (usb_connection_t *c, IOReturn result, void *arg0)
 	size_t bytes_read = (size_t) arg0;
 
 	ULOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: read_completion(c=%p, result=0x%08lx, bytes_read=%d)\n", c, (long)result, bytes_read));
+
 	if (!c->opened)
 	{
 	    	change_refcount(c, -1);
 	    	return;
 	}
-
-	pthread_mutex_lock(&c->read_queue_mutex);
 
 	if (result != kIOReturnSuccess)
 	{
@@ -1390,6 +1411,7 @@ read_completion (usb_connection_t *c, IOReturn result, void *arg0)
 		}
 		if (bytes_read > 0)
 		{		
+			pthread_mutex_lock(&c->read_queue_mutex);
 			if (c->read_queue == NULL)
 			{
 				c->read_queue_size = ((bytes_read + 0xfffe) & ~0xffff) - 1;		/* 64k chunks */
@@ -1413,10 +1435,9 @@ read_completion (usb_connection_t *c, IOReturn result, void *arg0)
 				c->read_queue_used = 0;
 				c->read_queue_size = 0;
 			}
+			pthread_mutex_unlock(&c->read_queue_mutex);
 		}
 	}
-
-	pthread_mutex_unlock(&c->read_queue_mutex);
 
 	if (result != kIOReturnAborted && c->opened && usb_run_loop)
 	{
@@ -1488,14 +1509,22 @@ prime_read(usb_connection_t *c)
 }
 
 static int
-accepts_device(unsigned short vendor, unsigned short product)
+accepts_device(unsigned short vendor, unsigned short product, unsigned short *flags)
 {
 	int i;
 	for (i=0; i < (int)(sizeof(acceptedDevices) / sizeof(acceptedDevices[0])); i++)
 	{
-		if (vendor == acceptedDevices[i].vendorID &&
-			(acceptedDevices[i].productID == 0xffff || product == acceptedDevices[i].productID))
-			return 1;
+		if (vendor == acceptedDevices[i].vendorID)
+		{
+			if (acceptedDevices[i].flags & FLAG_REJECT)
+				return 0;
+			if (acceptedDevices[i].productID == 0xffff || product == acceptedDevices[i].productID)
+			{
+				if (flags)
+					*flags = acceptedDevices[i].flags;
+				return 1;
+			}
+		}
 	}
 	return 0;
 }
@@ -1567,28 +1596,30 @@ u_close(struct pi_socket *ps)
 }
 
 static int
-u_poll(struct pi_socket *ps, int timeout)
+u_wait_for_device(struct pi_socket *ps, int *timeout)
 {
 	usb_connection_t *c = connection_for_socket(ps);
-	struct timespec to;
+	struct timespec to, when;
 
-	ULOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: u_poll(ps=%p c=%p, timeout=%d)\n",ps,c,timeout));
+	ULOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: u_wait_for_device(ps=%p c=%p, timeout=%d)\n",ps,c,timeout ? *timeout : 0));
 
-	if (timeout)
+	if (timeout && *timeout)
 	{
-		to.tv_sec = timeout / 1000;
-		to.tv_nsec = (timeout % 1000) * 1000 * 1000;
+		pi_timeout_to_timespec(*timeout, &when);
+		to.tv_sec = *timeout / 1000;
+		to.tv_nsec = (*timeout % 1000) * 1000 * 1000;
 	}
 
 	if (c == NULL)
 	{
-		LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: u_poll -> waiting for a connection to come up\n"));
+		LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: u_wait_for_device -> waiting for a connection to come up\n"));
 		pthread_mutex_lock(&usb_connections_mutex);
-		if (timeout)
+		if (timeout && *timeout)
 		{
 			if (pthread_cond_timedwait_relative_np(&usb_connection_added_cond, &usb_connections_mutex, &to) == ETIMEDOUT)
+//			if (pthread_cond_timedwait(&usb_connection_added_cond, &usb_connections_mutex, &when) == ETIMEDOUT)
 			{
-				LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: u_poll -> connection wait timed out\n"));
+				LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: u_wait_for_device -> connection wait timed out\n"));
 				pthread_mutex_unlock(&usb_connections_mutex);
 				return PI_ERR_SOCK_TIMEOUT;
 			}
@@ -1599,18 +1630,40 @@ u_poll(struct pi_socket *ps, int timeout)
 
 		c = connection_for_socket(ps);
 
-		ULOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: u_poll -> end of wait, c=%p\n",c));
+		ULOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: u_wait_for_device -> end of wait, c=%p\n",c));
 
-		if (c == NULL)
-			return PI_ERR_SOCK_DISCONNECTED;
+		if (c && c->vendorID==VENDOR_PALMONE && c->productID==PRODUCT_PALMCONNECT_USB)
+		{
+			/* when working with a PalmConnect USB, make sure we use the right speed 
+			 * then let the adapter send us data
+			 */
+			klsi_set_portspeed(c->device, ((pi_usb_data_t *)ps->device->data)->rate);
+		}
+
+		if (timeout && *timeout)
+		{
+			/* if there was a timeout, compute the remaining timeout time */
+			*timeout = pi_timespec_to_timeout(&when);
+		}
 	}
-	
-	if (c->vendorID == VENDOR_PALMONE && c->productID == PRODUCT_PALMCONNECT_USB)
+	return (c != NULL);
+}
+
+static int
+u_poll(struct pi_socket *ps, int timeout)
+{
+	usb_connection_t *c = connection_for_socket(ps);
+	if (c == NULL)
+		return PI_ERR_SOCK_DISCONNECTED;
+
+	struct timespec to;
+
+	ULOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: u_poll(ps=%p c=%p, timeout=%d)\n",ps,c,timeout));
+
+	if (timeout)
 	{
-		/* when working with a PalmConnect USB, make sure we use the right speed 
-		 * then let the adapter send us data
-		 */
-		klsi_set_portspeed(c->device, ((pi_usb_data_t *)ps->device->data)->rate);
+		to.tv_sec = timeout / 1000;
+		to.tv_nsec = (timeout % 1000) * 1000 * 1000;
 	}
 
 	pthread_mutex_lock(&c->read_queue_mutex);
@@ -1707,6 +1760,7 @@ static ssize_t
 u_read(struct pi_socket *ps, pi_buffer_t *buf, size_t len, int flags)
 {
 	int timeout = ((struct pi_usb_data *)ps->device->data)->timeout;
+	int timed_out = 0;
 	usb_connection_t *c = ((pi_usb_data_t *)ps->device->data)->ref;
 
 	if (change_refcount(c,+1)<=0 || !c->opened)
@@ -1756,7 +1810,10 @@ u_read(struct pi_socket *ps, pi_buffer_t *buf, size_t len, int flags)
 			if (timeout)
 			{
 				if (pthread_cond_timedwait(&c->read_queue_data_avail_cond, &c->read_queue_mutex, &when) == ETIMEDOUT)
+				{
+					timed_out = 1;
 					break;
+				}
 			}
 			else
 				pthread_cond_wait(&c->read_queue_data_avail_cond, &c->read_queue_mutex);
@@ -1797,6 +1854,8 @@ u_read(struct pi_socket *ps, pi_buffer_t *buf, size_t len, int flags)
 				}
 			}
 		}
+		else if (timed_out)
+			len = PI_ERR_SOCK_TIMEOUT;
 	}
 
 #ifdef DEBUG_USB
@@ -1804,8 +1863,13 @@ u_read(struct pi_socket *ps, pi_buffer_t *buf, size_t len, int flags)
 	gettimeofday(&endTime, NULL);
 	a = (double)startTime.tv_sec + (double)startTime.tv_usec / (double)1000000;
 	b = (double)endTime.tv_sec + (double)endTime.tv_usec / (double)1000000;
-	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: -> u_read complete (bytes_read=%d, remaining bytes in queue=%d) in %.06fs\n",
-	    len, c->read_queue_used,b-a));
+	if (len >= 0) {
+		LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: -> u_read complete (bytes_read=%d, remaining bytes in queue=%d) in %.06fs\n",
+		     len, c->read_queue_used,b-a));
+	} else {
+		LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: -> u_read end with error (err=%d) in %.06fs\n",
+		     len,b-a));
+	}
 #endif
 
 	pthread_mutex_unlock(&c->read_queue_mutex);
@@ -1843,6 +1907,7 @@ pi_usb_impl_init (struct pi_usb_impl *impl)
 	impl->read		= u_read;
 	impl->flush		= u_flush;
 	impl->poll		= u_poll;
+	impl->wait_for_device	= u_wait_for_device;
 	impl->changebaud	= u_changebaud;
 	impl->control_request	= NULL;   /* that is, until we factor out common code */
 }
