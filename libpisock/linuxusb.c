@@ -65,6 +65,7 @@ void pi_usb_impl_init (struct pi_usb_impl *impl)
 	impl->read 		= u_read;
 	impl->flush		= u_flush;
 	impl->poll 		= u_poll;
+	impl->wait_for_device	= NULL;		/* not implemented in linuxusb yet */
 	impl->changebaud	= NULL;		/* we don't need this one on linuxusb
 						 * as USB serial adapters redirect to serial ports
 						 */
