@@ -386,8 +386,8 @@ pi_usb_accept(pi_socket_t *ps, struct sockaddr *addr, size_t *addrlen)
 
 	data->timeout = timeout = ps->accept_to * 1000;
 
-	if (data->impl.poll_device) {
-		result = data->impl.poll_device (ps, &timeout);
+	if (data->impl.wait_for_device) {
+		result = data->impl.wait_for_device (ps, &timeout);
 		if (result <= 0)
 			return result;
 	}

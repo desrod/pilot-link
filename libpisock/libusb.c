@@ -56,20 +56,20 @@ static ssize_t u_write(struct pi_socket *ps, const unsigned char *buf, size_t le
 static ssize_t u_read(struct pi_socket *ps, pi_buffer_t *buf, size_t len, int flags);
 static int u_read_i(struct pi_socket *ps, pi_buffer_t *buf, size_t len, int flags, int timeout);
 static int u_poll(struct pi_socket *ps, int timeout);
-static int u_poll_device(struct pi_socket *ps, int *timeout);
+static int u_wait_for_device(struct pi_socket *ps, int *timeout);
 static int u_flush(pi_socket_t *ps, int flags);
 static int u_control_request (pi_usb_data_t *usb_data, int request_type, int request, int value, int index, void *data, int size, int timeout);
 
 void pi_usb_impl_init (struct pi_usb_impl *impl)
 {
-	impl->open 	= u_open;
-	impl->close	= u_close;
-	impl->write	= u_write;
-	impl->read 	= u_read;
-	impl->flush	= u_flush;
-	impl->poll 	= u_poll;
-	impl->poll_device= u_poll_device;
-	impl->changebaud= NULL;		/* we don't need this one for libusb (yet) */
+	impl->open 		= u_open;
+	impl->close		= u_close;
+	impl->write		= u_write;
+	impl->read 		= u_read;
+	impl->flush		= u_flush;
+	impl->poll 		= u_poll;
+	impl->wait_for_device	= u_wait_for_device;
+	impl->changebaud	= NULL;		/* we don't need this one for libusb (yet) */
 	impl->control_request	= u_control_request;
 }
 
@@ -362,7 +362,7 @@ u_close(struct pi_socket *ps)
 }
 
 static int
-u_poll_device(struct pi_socket *ps, int *timeout)
+u_wait_for_device(struct pi_socket *ps, int *timeout)
 {
 	pi_usb_data_t *data = (pi_usb_data_t *)ps->device->data;
 	struct timespec when;
