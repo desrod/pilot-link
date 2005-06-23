@@ -1,36 +1,322 @@
-2005-06-21 Neil Williams <linux@codehelp.co.uk>
+2005-06-23 09:57  desrod
 
-	* configure.ac: improved conditional xsl build.
-	* doc/Makefile.am: Skip xml if not CVS.
+	* src/read-palmpix.c: Minor patch from Goffredo
+	  <goffredo@goffredo.eti.br> to write out the file with the same
+	  date and time as the photo itself.
 
-2005-06-21 Neil Williams <linux@codehelp.co.uk>
+2005-06-22 08:28  fpillet
 
-	* configure.ac: Detect and configure xsltproc
-	for building from CVS only. Remove manpages
-	from CVS and build automatically.
-	* doc/.cvsignore: ignore build config files.
-	* doc/Makefile.am: Build xml and provide a doc
-	target for Doxygen output.
-	* doc/doxygen.cfg.in: Usable Doxygen config with
-	version string.
-	* doc/doxygen_main_page.c: Helpful index page.
-	* doc/man/Makefile.am: tweak
-	* doc/man/README: Changing to generated manpages.
-	* doc/xml/.cvsignore:
-	* doc/xml/Makefile.am: Find the XML Catalogs
-	* doc/xml/README: Only edit the XML files!
-	* doc/xml/catalog.xml.in: Use a customised manpage
-	XSL alongside standard catalogs.
-	* doc/xml/docbook.xsl.in: Customised for pilot-link.
-	Edit to affect all generated manpages.
-	* doc/xml/install-todos.xml: Typo.
-	* doc/xml/pilot-foto.xml: Missing copyright.
-	* doc/xml/pilot-link.docbook: Auto-generation.
-	* doc/xml/pilot-schlep.xml
-	* doc/xml/pilot-treofoto.xml
-	* doc/xml/pilot-wav.xml
-	* doc/xml/read-screenshot.xml
-	* doc/xml/read-veo.xml: Missing copyright lines.
+	* libpisock/linuxusb.c: linuxusb doesn't implement
+	  wait_for_device()
+
+2005-06-22 07:40  fpillet
+
+	* include/pi-usb.h, libpisock/libusb.c, libpisock/usb.c: renamed
+	  poll_device() to wait_for_device()
+
+2005-06-22 07:39  fpillet
+
+	* libpisock/darwinusb.c: Fixed an issue I introduced recently with
+	  the matching notification not being properly armed. Added support
+	  for the new wait_for_device() semantics.
+
+2005-06-21 14:06  desrod
+
+	* doc/xml/: dlpsh.xml, hinotes.xml, ietf2datebook.xml,
+	  install-datebook.xml, install-expenses.xml, install-hinote.xml,
+	  install-memo.xml, install-netsync.xml, install-todo.xml,
+	  install-user.xml, memos.xml, pi-getram.xml, pi-getrom.xml,
+	  pilot-foto.xml, read-expenses.xml, read-ical.xml,
+	  read-notepad.xml, read-palmpix.xml: Minor adjustments to correct
+	  attribution on manpages
+
+2005-06-21 13:54  desrod
+
+	* doc/xml/: debugsh.xml, dlpsh.xml, hinotes.xml, ietf2datebook.xml,
+	  install-datebook.xml, install-expenses.xml, install-hinote.xml,
+	  install-memo.xml, install-netsync.xml, install-todo.xml,
+	  install-todos.xml, install-user.xml, memos.xml, pi-csd.xml,
+	  pi-getram.xml, pi-getrom.xml, pi-getromtoken.xml, pi-nredir.xml,
+	  pilot-addresses.xml, pilot-archive.xml, pilot-clip.xml,
+	  pilot-dedupe.xml, pilot-file.xml, pilot-foto.xml, pilot-link.xml,
+	  pilot-schlep.xml, pilot-treofoto.xml, pilot-wav.xml,
+	  pilot-xfer.xml, read-expenses.xml, read-ical.xml,
+	  read-notepad.xml, read-palmpix.xml, read-screenshot.xml,
+	  read-todos.xml, read-veo.xml, reminders.xml: More cleanup,
+	  reformatted the manpages to try to unify the structure a bit, so
+	  they can be further templated out at a later time.
+
+2005-06-21 10:37  desrod
+
+	* configure.ac: Oops... was testing something and it slipped
+	  through.
+
+2005-06-21 10:35  desrod
+
+	* doc/README.debugging, doc/README.freebsd, doc/README.usb,
+	  doc/TODO, doc/doxygen.cfg.in, doc/doxygen_main_page.c,
+	  doc/dox/doxygen.css, doc/dox/footer.html, doc/dox/header.html,
+	  libpisock/socket.c: Documentation fixes, doxygen fixes, minor
+	  peeks and pokes here and there.
+
+2005-06-21 09:28  neilw
+
+	* Makefile.am, doc/Makefile.am: Ooops! copied the Makefile into the
+	  parent folder
+
+2005-06-21 09:07  desrod
+
+	* Makefile.am, configure.ac, doc/Makefile.am, doc/README.debugging,
+	  doc/doxygen.cfg.in: Fixing up some build breakage for building
+	  manpages from XML targets
+
+2005-06-21 05:58  neilw
+
+	* ChangeLog, Makefile.am, configure.ac: skip xml build when not
+	  from CVS
+
+2005-06-21 03:41  neilw
+
+	* ChangeLog, configure.ac, doc/.cvsignore, doc/Makefile.am,
+	  doc/doxygen.cfg.in, doc/doxygen_main_page.c, doc/man/Makefile.am,
+	  doc/man/README, doc/man/addresses.1.in, doc/man/debugsh.1.in,
+	  doc/man/dlpsh.1.in, doc/man/hinotes.1.in,
+	  doc/man/ietf2datebook.1.in, doc/man/install-datebook.1.in,
+	  doc/man/install-expenses.1.in, doc/man/install-hinote.1.in,
+	  doc/man/install-memo.1.in, doc/man/install-netsync.1.in,
+	  doc/man/install-todo.1.in, doc/man/install-todos.1.in,
+	  doc/man/install-user.1.in, doc/man/memos.1.in,
+	  doc/man/pi-csd.1.in, doc/man/pi-getram.1.in,
+	  doc/man/pi-getrom.1.in, doc/man/pi-getromtoken.1.in,
+	  doc/man/pi-nredir.1.in, doc/man/pilot-addresses.1.in,
+	  doc/man/pilot-archive.1.in, doc/man/pilot-clip.1.in,
+	  doc/man/pilot-dedupe.1.in, doc/man/pilot-file.1.in,
+	  doc/man/pilot-foto.1.in, doc/man/pilot-link.7.in,
+	  doc/man/pilot-schlep.1.in, doc/man/pilot-treofoto.1.in,
+	  doc/man/pilot-wav.1.in, doc/man/pilot-xfer.1.in,
+	  doc/man/read-expenses.1.in, doc/man/read-ical.1.in,
+	  doc/man/read-notepad.1.in, doc/man/read-palmpix.1.in,
+	  doc/man/read-screenshot.1.in, doc/man/read-todos.1.in,
+	  doc/man/read-veo.1.in, doc/man/reminders.1.in,
+	  doc/xml/.cvsignore, doc/xml/Makefile.am, doc/xml/README,
+	  doc/xml/catalog.xml.in, doc/xml/docbook.xsl.in,
+	  doc/xml/install-todos.xml, doc/xml/pilot-foto.xml,
+	  doc/xml/pilot-link.docbook, doc/xml/pilot-schlep.xml,
+	  doc/xml/pilot-treofoto.xml, doc/xml/pilot-wav.xml,
+	  doc/xml/read-screenshot.xml, doc/xml/read-veo.xml:
+	  Auto-generation of manpages using xsltproc, only in CVS builds
+
+2005-06-17 09:49  desrod
+
+	* src/install-netsync.c: Fixed fubar'd example
+
+2005-06-17 06:38  warp
+
+	* include/pi-usb.h, libpisock/libusb.c, libpisock/usb.c: Add
+	  poll_device to the USB implementation structure, along with code
+	  to call it if it's set in usb.c.
+
+	  Move some code around in libusb.c (and add a bit of new code) to
+	  support poll_device, we will now loop trying to find a device
+	  instead of dying if none exists.
+
+	  Fix a minor bug in libusb's read loop dealing with timeout
+	  amounts.
+
+2005-06-17 06:34  fpillet
+
+	* libpisock/libusb.c: changed some protos, return
+	  PI_ERR_SOCK_DISCONNECTED when needed
+
+2005-06-17 06:22  fpillet
+
+	* libpisock/utils.c, include/pi-util.h: Added
+	  pi_timeout_to_timespec(), pi_timespec_to_timeout() and
+	  pi_timeout_expired() functions
+
+2005-06-17 05:40  fpillet
+
+	* include/pi-cmp.h: added type for extended CMP packets (not
+	  supported yet)
+
+2005-06-16 17:53  fpillet
+
+	* libpisock/socket.c: Left a bad bug: buffer wasn't clear before
+	  re-peeking to the message
+
+2005-06-16 17:21  fpillet
+
+	* libpisock/socket.c: Loosened rules for recognizing NET packets so
+	  that it works on Linux even if we missed the initial packet
+
+2005-06-16 11:42  desrod
+
+	* src/debugsh.c: Fixed minor typo... oops!
+
+2005-06-16 06:05  fpillet
+
+	* libpisock/: darwinusb.c, inet.c, serial.c: propagate PADP long
+	  packet format support
+
+2005-06-16 05:24  fpillet
+
+	* libpisock/cmp.c, libpisock/darwinusb.c, libpisock/usb.c,
+	  include/pi-cmp.h, include/pi-socket.h: more work on the long
+	  packet thing
+
+2005-06-16 05:23  fpillet
+
+	* libpisock/padp.c, include/pi-padp.h: moving towards full support
+	  for long packet format both ways, fixed a long packet fmt issue
+
+2005-06-15 10:09  fpillet
+
+	* darwin/build_framework.sh, include/pi-header.h,
+	  include/pi-padp.h, libpisock/contact.c, libpisock/dlp.c,
+	  libpisock/libusb.c, libpisock/net.c, libpisock/sys.c,
+	  src/debugsh.c, src/install-memo.c, src/install-todos.c,
+	  src/pi-csd.c, src/pi-getrom.c, src/pi-port.c, src/pilot-debug.c,
+	  src/read-expenses.c, tests/packers.c, tests/vfs-test.c: use
+	  pi_dumpdata() instead of dumpdata(). Some cleanup for compilation
+	  warnings.
+
+2005-06-15 10:08  fpillet
+
+	* libpisock/darwinusb.c: ongoing KLSI work
+
+2005-06-15 10:07  fpillet
+
+	* libpisock/cmp.c, libpisock/serial.c, libpisock/slp.c,
+	  libpisock/usb.c, include/pi-cmp.h, include/pi-serial.h,
+	  libpisock/padp.c, libpisock/unixserial.c: Factored out the code
+	  to read PILOTRATE. Changed some protos so as to take an int for
+	  the speed (use speed_t only when converting to a speed_t value
+	  for Linux). More general cleanup
+
+2005-06-15 10:06  fpillet
+
+	* include/pi-debug.h, include/pi-source.h, include/pi-util.h,
+	  libpisock/debug.c, libpisock/utils.c: dumpdata() and dumpline()
+	  become pi_dumpdata() and pi_dumpline(). Provide wrappers with the
+	  old names for compatibility
+
+2005-06-15 03:21  fpillet
+
+	* include/pi-util.h, libpisock/utils.c: Factored out get_pilot_rate
+	  function; slight code reorg
+
+2005-06-14 13:39  fpillet
+
+	* doc/README.usb: updated README.usb with Mac OS X instructions
+
+2005-06-14 12:28  fpillet
+
+	* libpisock/cmp.c: advertise same version of CMP than the device
+	  uses
+
+2005-06-14 12:20  fpillet
+
+	* libpisock/usb.c: change the baudrate if it's not 9600 after CMP
+	  negotiation
+
+2005-06-14 12:19  fpillet
+
+	* libpisock/slp.c: missing parenthesis
+
+2005-06-14 12:00  fpillet
+
+	* libpisock/slp.c: SLP code overhaul
+
+2005-06-14 11:51  fpillet
+
+	* include/pi-slp.h: oops removed dubious define I had added for
+	  testing
+
+2005-06-14 11:49  fpillet
+
+	* include/: pi-cmp.h, pi-slp.h: Added definition for CMP 1.3
+
+2005-06-14 11:48  fpillet
+
+	* libpisock/padp.c: tweaks to PADP
+
+2005-06-14 10:29  fpillet
+
+	* libpisock/socket.c: tweaked protocol detection again, much
+	  cleaner now
+
+2005-06-14 10:26  fpillet
+
+	* libpisock/cmp.c: tweaked log messages
+
+2005-06-14 10:17  fpillet
+
+	* libpisock/darwinusb.c: working klsi support
+
+2005-06-13 10:15  desrod
+
+	* configure.ac: Tagged tree as -pre4, rolled to -pre5 (which may
+	  become 0.12.0 final!)
+
+2005-06-13 10:09  fpillet
+
+	* libpisock/linuxusb.c: rx_byte doesn't exist in linuxusb (sorry,
+	  copy/paste syndrome)
+
+2005-06-13 09:55  desrod
+
+	* libpisock/connect.c: Oops, now they both match.. (are we even
+	  using connect.c anymore, now that we have the same structures in
+	  userland.c? Why the duplication? Will investigate later)
+
+2005-06-13 09:51  desrod
+
+	* libpisock/connect.c, src/userland.c: Reword a little bit to
+	  more-accurately match the current state of connect action
+
+2005-06-13 09:31  desrod
+
+	* ChangeLog, configure.ac, doc/man/Makefile.am, doc/man/README,
+	  doc/man/addresses.1.in, doc/man/debugsh.1.in, doc/man/dlpsh.1.in,
+	  doc/man/hinotes.1.in, doc/man/ietf2datebook.1.in,
+	  doc/man/install-datebook.1.in, doc/man/install-expenses.1.in,
+	  doc/man/install-hinote.1.in, doc/man/install-memo.1.in,
+	  doc/man/install-netsync.1.in, doc/man/install-todo.1.in,
+	  doc/man/install-todos.1.in, doc/man/install-user.1.in,
+	  doc/man/memos.1.in, doc/man/money2qif.1.in, doc/man/pi-csd.1.in,
+	  doc/man/pi-getram.1.in, doc/man/pi-getrom.1.in,
+	  doc/man/pi-getromtoken.1.in, doc/man/pi-nredir.1.in,
+	  doc/man/pilot-addresses.1.in, doc/man/pilot-archive.1.in,
+	  doc/man/pilot-clip.1.in, doc/man/pilot-dedupe.1.in,
+	  doc/man/pilot-file.1.in, doc/man/pilot-foto.1.in,
+	  doc/man/pilot-link.7.in, doc/man/pilot-schlep.1.in,
+	  doc/man/pilot-treofoto.1.in, doc/man/pilot-wav.1.in,
+	  doc/man/pilot-xfer.1.in, doc/man/read-expenses.1.in,
+	  doc/man/read-ical.1.in, doc/man/read-notepad.1.in,
+	  doc/man/read-palmpix.1.in, doc/man/read-screenshot.1.in,
+	  doc/man/read-todos.1.in, doc/man/read-veo.1.in,
+	  doc/man/reminders.1.in, doc/xml/addresses.xml,
+	  doc/xml/debugsh.xml, doc/xml/dlpsh.xml, doc/xml/hinotes.xml,
+	  doc/xml/ietf2datebook.xml, doc/xml/install-datebook.xml,
+	  doc/xml/install-expenses.xml, doc/xml/install-hinote.xml,
+	  doc/xml/install-memo.xml, doc/xml/install-netsync.xml,
+	  doc/xml/install-todo.xml, doc/xml/install-todos.xml,
+	  doc/xml/install-user.xml, doc/xml/memos.xml,
+	  doc/xml/money2qif.xml, doc/xml/pi-csd.xml, doc/xml/pi-getram.xml,
+	  doc/xml/pi-getrom.xml, doc/xml/pi-getromtoken.xml,
+	  doc/xml/pi-nredir.xml, doc/xml/pilot-addresses.xml,
+	  doc/xml/pilot-archive.xml, doc/xml/pilot-clip.xml,
+	  doc/xml/pilot-dedupe.xml, doc/xml/pilot-file.xml,
+	  doc/xml/pilot-foto.xml, doc/xml/pilot-link.xml,
+	  doc/xml/pilot-schlep.xml, doc/xml/pilot-treofoto.xml,
+	  doc/xml/pilot-wav.xml, doc/xml/pilot-xfer.xml,
+	  doc/xml/read-expenses.xml, doc/xml/read-ical.xml,
+	  doc/xml/read-notepad.xml, doc/xml/read-palmpix.xml,
+	  doc/xml/read-screenshot.xml, doc/xml/read-todos.xml,
+	  doc/xml/read-veo.xml, doc/xml/reminders.xml, libpisock/libusb.c,
+	  src/Makefile.am, src/money2qif.c, src/reminders.c: Mostly a
+	  documentation update, minor fix for Florent's libusb typo, some
+	  deprecated conduits removed from the tree... more to come.
 
 2005-06-13 05:34  fpillet
 
