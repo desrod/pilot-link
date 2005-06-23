@@ -29,6 +29,8 @@
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <time.h>
+#include <utime.h>
 
 #include "pi-file.h"
 #include "pi-socket.h"
@@ -340,6 +342,9 @@ static int write_all (const struct PalmPixHeader *header,
 
 	f = fopen (fname, "wb");
 	if (f) {
+                struct  utimbuf timep   ;
+                struct  tm      timeptr ;
+
 #ifdef HAVE_PNG
 		if( state->output_type == PALMPIX_OUT_PPM )
 			write_ppm(f, state, header);
@@ -350,6 +355,17 @@ static int write_all (const struct PalmPixHeader *header,
 			write_ppm (f, state, header);
 #endif
 			fclose (f);
+
+                        /* Keep file date the same date as the photo */
+                        timeptr.tm_year = header->year - 1900;
+                        timeptr.tm_mon  = header->month -1;
+                        timeptr.tm_mday = header->day;
+                        timeptr.tm_hour = header->hour;
+                        timeptr.tm_min  = header->min;
+                        timeptr.tm_sec  = header->sec;
+                        timep.actime    = timep.modtime = mktime(&timeptr);
+
+                        utime (fname,&timep);
 	} else {
 		fprintf (stderr, "%s: can't write to %s\n",
 			progname, fname);
