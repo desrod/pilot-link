@@ -149,7 +149,7 @@ pack_Address(Address_t *addr, pi_buffer_t *buf, addressType type)
 		return -1;
 
 	for (v = 0; v < 19; v++)
-		if (addr->entry[v])
+		if (addr->entry[v] && strlen(addr->entry[v]))
 			destlen += strlen(addr->entry[v]) + 1;
 
 
