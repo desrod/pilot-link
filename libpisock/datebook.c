@@ -281,7 +281,7 @@ pack_Appointment(Appointment_t *a, pi_buffer_t *buf, datebookType type)
 		destlen = 8;
 	char 	*pos;
 
-	if (a == NULL)
+	if (a == NULL || buf == NULL)
 		return -1;
 
 	if (type != datebook_v1)

@@ -165,7 +165,7 @@ pack_ToDo(ToDo_t *todo, pi_buffer_t *buf, todoType type)
 	int pos;
 	size_t destlen = 3;
 
-	if (todo == NULL)
+	if (todo == NULL || buf == NULL)
 		return -1;
 
 	if (type != todo_v1)
@@ -177,9 +177,6 @@ pack_ToDo(ToDo_t *todo, pi_buffer_t *buf, todoType type)
 	if (todo->note)
 		destlen += strlen(todo->note);
 	destlen++;
-
-	if (buf == NULL || buf->data == NULL)
-		return -1;
 
 	pi_buffer_expect (buf, destlen);
 	buf->used = destlen;	

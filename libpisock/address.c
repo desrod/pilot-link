@@ -141,7 +141,7 @@ pack_Address(Address_t *addr, pi_buffer_t *buf, addressType type)
 
 	unsigned char offset;
 
-	if (addr == NULL)
+	if (addr == NULL || buf == NULL)
 		return -1;
 
 	if (type != address_v1)
@@ -151,10 +151,6 @@ pack_Address(Address_t *addr, pi_buffer_t *buf, addressType type)
 	for (v = 0; v < 19; v++)
 		if (addr->entry[v] && strlen(addr->entry[v]))
 			destlen += strlen(addr->entry[v]) + 1;
-
-
-	if (buf == NULL || buf->data == NULL)
-		return -1;
 
 	pi_buffer_expect (buf, destlen);
 	buf->used = destlen;

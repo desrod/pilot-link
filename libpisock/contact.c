@@ -251,7 +251,7 @@ pack_Contact (Contact_t *c, pi_buffer_t *buf, contactsType type)
 	unsigned short packed_date;
 	int companyOffset = 0;
 
-	if (c == NULL)
+	if (c == NULL || buf == NULL)
 		return -1;
 
 	if (type != contacts_v10
@@ -273,9 +273,6 @@ pack_Contact (Contact_t *c, pi_buffer_t *buf, contactsType type)
 			destlen += c->picture->used + 8;
 	}
 
-	if (buf == NULL || buf->data == NULL)
-		return -1;
-	
 	pi_buffer_expect (buf, destlen);
 
 	ofs = 17;
