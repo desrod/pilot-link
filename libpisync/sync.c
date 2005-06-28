@@ -620,6 +620,7 @@ int sync_CopyFromPilot(SyncHandler * sh)
 
 cleanup:
 	close_db(sh, dbhandle);
+	sync_FreePilotRecord (precord);
 	return result;
 }
 

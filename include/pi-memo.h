@@ -1,6 +1,10 @@
 #ifndef _PILOT_MEMO_H_		/* -*- C++ -*- */
 #define _PILOT_MEMO_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "pi-appinfo.h"
 #include "pi-buffer.h"
 
@@ -33,5 +37,9 @@
 	extern int pack_MemoAppInfo
 	    PI_ARGS((struct MemoAppInfo *, unsigned char *AppInfo,
 		     size_t len));
+
+#ifdef __cplusplus
+  };
+#endif
 
 #endif				/* _PILOT_MEMO_H_ */

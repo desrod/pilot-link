@@ -5,6 +5,10 @@
 #include "pi-appinfo.h"
 #include "pi-buffer.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 	typedef enum {
 		datebook_v1,
 	} datebookType;
@@ -88,5 +92,9 @@
 	extern int pack_AppointmentAppInfo
 	  PI_ARGS((struct AppointmentAppInfo *, unsigned char *AppInfo,
 		     size_t len));
+
+#ifdef __cplusplus
+  };
+#endif
 
 #endif				/* _PILOT_DATEBOOK_H_ */

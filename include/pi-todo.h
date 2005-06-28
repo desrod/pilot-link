@@ -1,6 +1,10 @@
 #ifndef _PILOT_TODO_H_
 #define _PILOT_TODO_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <time.h>
 #include "pi-appinfo.h"
 #include "pi-buffer.h"
@@ -34,5 +38,9 @@
 	    PI_ARGS((ToDoAppInfo_t *, unsigned char *record, size_t len));
 	extern int pack_ToDoAppInfo
 	    PI_ARGS((ToDoAppInfo_t *, unsigned char *record, size_t len));
+
+#ifdef __cplusplus
+  };
+#endif
 
 #endif				/* _PILOT_TODO_H_ */

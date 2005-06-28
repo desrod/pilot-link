@@ -3,6 +3,10 @@
 
 #include "pi-args.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 	typedef struct CategoryAppInfo {
 		unsigned int renamed[16];	/* Boolean array of categories
 						 with changed names */
@@ -23,5 +27,9 @@
 	    PI_ARGS((CategoryAppInfo_t *, unsigned char *AppInfo, size_t len));
 	extern int pack_CategoryAppInfo
 	    PI_ARGS((CategoryAppInfo_t *, unsigned char *AppInfo, size_t len));
+
+#ifdef __cplusplus
+  };
+#endif
 
 #endif				/* _PILOT_APPINFO_H_ */
