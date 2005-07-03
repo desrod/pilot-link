@@ -1,4 +1,4 @@
-if CVS_BUILD
+if BUILD_XML
 SUBDIRS = xml man
 else
 SUBDIRS = man

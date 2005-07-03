@@ -675,7 +675,8 @@ AC_ARG_ENABLE(profile,
 dnl *************************************
 dnl Check for xsltproc
 dnl *************************************
-if [[ x"$PL_FROM_CVS" = xyes ]]; then
+AM_CONDITIONAL(BUILD_XML,[test ! -d "${srcdir}/doc/man/pilot-link.7"])
+if test ! -d "${srcdir}/doc/man/pilot-link.7" ; then
 
 # It's just rude to go over the net to build
 XSLTPROC_FLAGS=--nonet

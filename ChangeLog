@@ -1,3 +1,9 @@
+2005-07-03 19:37  Neil Williams <linux@codehelp.co.uk>
+
+	* configure.ac: Improving manpage build to cover
+	cvs exports
+	* doc/Makefile.am: Conditional xml build improvement.
+
 2005-06-28 13:31  fpillet
 
 	* libpisock/: address.c, contact.c, datebook.c, todo.c: Loosened
