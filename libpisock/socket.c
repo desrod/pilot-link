@@ -465,6 +465,8 @@ protocol_queue_build (pi_socket_t *ps, int autodetect)
 				continue;
 			}
 
+			pi_dumpdata(&detect_buf->data[0], 10);
+
 			/* detect a valid PADP header packet */
 			if (detect_buf->data[0] == PI_SLP_SIG_BYTE1 &&
 			    detect_buf->data[1] == PI_SLP_SIG_BYTE2 &&
@@ -495,6 +497,29 @@ protocol_queue_build (pi_socket_t *ps, int autodetect)
 					"\nusing NET protocol (skipped %d bytes)\n",
 					skipped_bytes));
 				break;
+			}
+
+			/* detect NET packet for cases where we lost the first 6 bytes
+			 * (this unfortunately happens on Linux with unixserial, and the
+			 * correct way to cope with this is to recognize the second
+			 * part of the NET handshake packet)
+			 */
+			else if (detect_buf->data[0] == 0x90 &&	/* PI_NET_SIG_BYTE1 */
+				 detect_buf->data[1] == 0x01 &&	
+				 detect_buf->data[2] == 0x00 &&
+				 detect_buf->data[3] == 0x00 &&
+				 detect_buf->data[4] == 0x00 &&
+				 detect_buf->data[5] == 0x00 &&
+				 detect_buf->data[6] == 0x00 &&
+				 detect_buf->data[7] == 0x00 &&
+				 detect_buf->data[8] == 0x00 &&
+				 detect_buf->data[9] == 0x20)
+			{
+			    protocol = PI_PF_NET;
+			    LOG((PI_DBG_SOCK, PI_DBG_LVL_INFO,
+					"\nusing NET protocol (skipped %d bytes)\n",
+					skipped_bytes));
+			    break;
 			}
 
 			/* eliminate one byte from the input, trying to frame a proper header */
