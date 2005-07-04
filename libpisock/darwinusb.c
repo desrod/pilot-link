@@ -1405,12 +1405,12 @@ read_completion (usb_connection_t *c, IOReturn result, void *arg0)
 				} else {
 					memmove(&c->read_buffer[0], &c->read_buffer[2], data_size);
 					bytes_read = data_size;
-					pi_dumpdata(c->read_buffer, bytes_read);
 				}
 			}
 		}
 		if (bytes_read > 0)
 		{		
+//pi_dumpdata(c->read_buffer, bytes_read);
 			pthread_mutex_lock(&c->read_queue_mutex);
 			if (c->read_queue == NULL)
 			{
@@ -1676,10 +1676,10 @@ u_poll(struct pi_socket *ps, int timeout)
 			if (pthread_cond_timedwait_relative_np(&c->read_queue_data_avail_cond, &c->read_queue_mutex, &to) == ETIMEDOUT)
 			{
 				ULOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: u_poll -> data wait timed out\n"));
-				pthread_mutex_unlock(&c->read_queue_mutex);
-				return PI_ERR_SOCK_TIMEOUT;
+				available = PI_ERR_SOCK_TIMEOUT;
 			}
-			available = c->read_queue_used;
+			else
+				available = c->read_queue_used;
 		}
 		else
 		{
@@ -1691,7 +1691,7 @@ u_poll(struct pi_socket *ps, int timeout)
 	pthread_mutex_unlock(&c->read_queue_mutex);
 	change_refcount(c, -1);
 
-	ULOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: u_poll -> end, c=%p, available=%d\n",c,available));
+	ULOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: u_poll -> end, c=%p, result=%d\n",c,available));
 
 	return available;
 }
