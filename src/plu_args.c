@@ -56,7 +56,7 @@ static void callback(poptContext pc,
 }
 
 struct poptOption plu_common_options[] = {
-	{ NULL,0,POPT_ARG_CALLBACK,callback,0,NULL,NULL},
+	{ NULL, 0, POPT_ARG_CALLBACK, callback, 0, NULL, NULL},
 	{ "port",    'p', POPT_ARG_STRING, &plu_port,  0 , "Use device <port> to communicate with Palm", "<port>"},
 	{ "version",  0 , POPT_ARG_NONE,    NULL, 'v', "Display version information", NULL},
 	{ "quiet",   'q', POPT_ARG_NONE,  &plu_quiet,  0 , "Suppress 'Hit HotSync button' message", NULL},

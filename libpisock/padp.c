@@ -216,7 +216,7 @@ padp_tx(pi_socket_t *ps, const unsigned char *buf, size_t len, int flags)
 			data->next_txid = data->txid + 1;
 	}
 
-	if (data->type != padAck && ps->state == PI_SOCK_CONAC)
+	if (data->type != padAck && ps->state == PI_SOCK_CONN_ACCEPT)
 		data->txid = data->next_txid;
 
 	padp_buf = pi_buffer_new (PI_PADP_HEADER_LEN + 2 + PI_PADP_MTU);
@@ -367,13 +367,13 @@ keepwaiting:
 			LOG((PI_DBG_PADP, PI_DBG_LVL_ERR, "PADP TX too many retries"));
 			errno = ETIMEDOUT;
 			pi_buffer_free (padp_buf);
-			ps->state = PI_SOCK_CONBK;
+			ps->state = PI_SOCK_CONN_BREAK;
 			return pi_set_error(ps->sd, PI_ERR_SOCK_DISCONNECTED);
 		}
 	} while (len);
 
 done:
-	if (data->type != padAck && ps->state == PI_SOCK_CONIN)
+	if (data->type != padAck && ps->state == PI_SOCK_CONN_INIT)
 		data->txid = data->next_txid;
 	pi_buffer_free (padp_buf);
 	return count;
@@ -381,7 +381,7 @@ done:
 disconnected:
 	LOG((PI_DBG_PADP, PI_DBG_LVL_ERR, "PADP TX disconnected"));
 	pi_buffer_free(padp_buf);
-	ps->state = PI_SOCK_CONBK;
+	ps->state = PI_SOCK_CONN_BREAK;
 	return pi_set_error(ps->sd, PI_ERR_SOCK_DISCONNECTED);
 }
 
@@ -442,7 +442,7 @@ padp_rx(pi_socket_t *ps, pi_buffer_t *buf, size_t expect, int flags)
 	 * over VFS. In this case, all packets have the same txid
 	 */
 	if (!data->freeze_txid) {
-		if (ps->state == PI_SOCK_CONAC) {
+		if (ps->state == PI_SOCK_CONN_ACCEPT) {
 			if (data->txid >= 0xfe)
 				data->next_txid = 1;	/* wrap */
 			else
@@ -459,7 +459,7 @@ padp_rx(pi_socket_t *ps, pi_buffer_t *buf, size_t expect, int flags)
 				"PADP RX Timed out"));
 			/* Bad timeout breaks connection */
 			errno 		= ETIMEDOUT;
-			ps->state 	= PI_SOCK_CONBK;
+			ps->state 	= PI_SOCK_CONN_BREAK;
 			pi_buffer_free (padp_buf);
 			return pi_set_error(ps->sd, PI_ERR_SOCK_DISCONNECTED);
 		}
@@ -573,7 +573,7 @@ padp_rx(pi_socket_t *ps, pi_buffer_t *buf, size_t expect, int flags)
 				errno = ETIMEDOUT;
 				ouroffset = -1;
 				/* Bad timeout breaks connection */
-				ps->state = PI_SOCK_CONBK;
+				ps->state = PI_SOCK_CONN_BREAK;
 				pi_buffer_free (padp_buf);
 				return pi_set_error(ps->sd, PI_ERR_SOCK_DISCONNECTED);
 			}

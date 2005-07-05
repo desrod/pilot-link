@@ -309,7 +309,7 @@ pi_inet_connect(pi_socket_t *ps, struct sockaddr *addr, size_t addrlen)
 				goto fail;
 			break;
 	}
-	ps->state = PI_SOCK_CONIN;
+	ps->state = PI_SOCK_CONN_INIT;
 	ps->command = 0;
 
 	LOG((PI_DBG_DEV, PI_DBG_LVL_INFO, "DEV CONNECT Inet: Connected\n"));
@@ -326,7 +326,7 @@ pi_inet_listen(pi_socket_t *ps, int backlog)
 	
 	result = listen(ps->sd, backlog);
 	if (result == 0)
-		ps->state = PI_SOCK_LISTN;
+		ps->state = PI_SOCK_LISTEN;
 
 	return result;
 }
@@ -402,7 +402,7 @@ pi_inet_accept(pi_socket_t *ps, struct sockaddr *addr, size_t *addrlen)
 			break;
 	}
 
-	ps->state 	= PI_SOCK_CONAC;
+	ps->state 	= PI_SOCK_CONN_ACCEPT;
 	ps->command 	= 0;
 	ps->dlprecord = 0;
 
@@ -474,7 +474,7 @@ pi_inet_write(pi_socket_t *ps, const unsigned char *msg, size_t len, int flags)
 				return pi_set_error(ps->sd, PI_ERR_SOCK_TIMEOUT);
 		}
 		if (!FD_ISSET(ps->sd, &ready)) {
-			ps->state = PI_SOCK_CONBK;
+			ps->state = PI_SOCK_CONN_BREAK;
 			return pi_set_error(ps->sd, PI_ERR_SOCK_DISCONNECTED);
 		}
 
@@ -482,7 +482,7 @@ pi_inet_write(pi_socket_t *ps, const unsigned char *msg, size_t len, int flags)
 		if (nwrote < 0) {
 			/* test errno to properly set the socket error */
 			if (errno == EPIPE || errno == EBADF) {
-				ps->state = PI_SOCK_CONBK;
+				ps->state = PI_SOCK_CONN_BREAK;
 				return pi_set_error(ps->sd, PI_ERR_SOCK_DISCONNECTED);
 			}
 			return pi_set_error(ps->sd, PI_ERR_SOCK_IO);
@@ -533,7 +533,7 @@ pi_inet_read(pi_socket_t *ps, pi_buffer_t *msg, size_t len, int flags)
 		r = recv(ps->sd, msg->data + msg->used, len, fl);
 		if (r < 0) {
 			if (errno == EPIPE || errno == EBADF) {
-				ps->state = PI_SOCK_CONBK;
+				ps->state = PI_SOCK_CONN_BREAK;
 				return pi_set_error(ps->sd, PI_ERR_SOCK_DISCONNECTED);
 			}
 			return pi_set_error(ps->sd, PI_ERR_SOCK_IO);

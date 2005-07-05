@@ -347,7 +347,7 @@ s_write(pi_socket_t *ps, const unsigned char *buf, size_t len,
 		nwrote = write(ps->sd, buf, len);
 		if (nwrote < 0) {
 			if (errno == EPIPE || errno == EBADF) {
-				ps->state = PI_SOCK_CONBK;
+				ps->state = PI_SOCK_CONN_BREAK;
 				return pi_set_error(ps->sd, PI_ERR_SOCK_DISCONNECTED);
 			}
 			return pi_set_error(ps->sd, PI_ERR_SOCK_IO);

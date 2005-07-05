@@ -99,19 +99,19 @@ int plu_connect()
 
 int plu_findcategory(const struct CategoryAppInfo *info, const char *name, int flags)
 {
-	int index, match_category;
+	int cat_index, match_category;
 
 	match_category = -1;
-	for (index = 0; index < 16; index += 1) {
-		if (info->name[index][0]) {
+	for (cat_index = 0; cat_index < 16; cat_index += 1) {
+		if (info->name[cat_index][0]) {
 			if (flags & PLU_CAT_CASE_INSENSITIVE) {
-				if (strncasecmp(info->name[index], name, 15) == 0) {
-					match_category = index;
+				if (strncasecmp(info->name[cat_index], name, 15) == 0) {
+					match_category = cat_index;
 					break;
 				}
 			} else {
-				if (strncmp(info->name[index],name,15) == 0) {
-					match_category = index;
+				if (strncmp(info->name[cat_index],name,15) == 0) {
+					match_category = cat_index;
 					break;
 				}
 			}

@@ -759,7 +759,7 @@ env_dbgcheck (void)
 static int
 is_connected (pi_socket_t *ps)
 {
-	return (ps->state == PI_SOCK_CONIN || ps->state == PI_SOCK_CONAC) ? 1 : 0;
+	return (ps->state == PI_SOCK_CONN_INIT || ps->state == PI_SOCK_CONN_ACCEPT) ? 1 : 0;
 }
 
 /***********************************************************************
@@ -776,7 +776,7 @@ is_connected (pi_socket_t *ps)
 static int
 is_listener (pi_socket_t *ps)
 {
-	return (ps->state == PI_SOCK_LISTN) ? 1 : 0;
+	return (ps->state == PI_SOCK_LISTEN) ? 1 : 0;
 }
 
 /* Alarm Handling Code */

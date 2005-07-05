@@ -75,15 +75,15 @@ extern "C" {
 #include "pi-macros.h"
 #include "pi-buffer.h"
 
-#define PI_SOCK_LISTN  0x01  /* Listener */
-#define PI_SOCK_CONAC  0x02  /* Connected by accepting */
-#define PI_SOCK_CONIN  0x04  /* Connected by initiating */
-#define PI_SOCK_CONBK  0x08  /* Connected but broken */
-#define PI_SOCK_CONEN  0x10  /* Connected but end */
-#define PI_SOCK_CLOSE  0x20  /* Closed */
+#define PI_SOCK_LISTEN       0x01       /* Listener */
+#define PI_SOCK_CONN_ACCEPT  0x02       /* Connected by accepting */
+#define PI_SOCK_CONN_INIT    0x04       /* Connected by initiating */
+#define PI_SOCK_CONN_BREAK   0x08       /* Connected but broken */
+#define PI_SOCK_CONN_END     0x10       /* Connected but end */
+#define PI_SOCK_CLOSE        0x20       /* Closed */
 
-#define PI_FLUSH_INPUT	0x01	/* for flush() */
-#define	PI_FLUSH_OUTPUT	0x02	/* for flush() */
+#define PI_FLUSH_INPUT       0x01       /* for flush() */
+#define	PI_FLUSH_OUTPUT      0x02       /* for flush() */
 
 	typedef struct pi_protocol {
 		int level;

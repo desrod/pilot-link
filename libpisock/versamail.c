@@ -22,11 +22,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#if TIME_WITH_SYS_TIME
+#ifdef TIME_WITH_SYS_TIME
 # include <sys/time.h>
 # include <time.h>
 #else
-# if HAVE_SYS_TIME_H
+# ifdef HAVE_SYS_TIME_H
 #  include <sys/time.h>
 # else
 #  include <time.h>
@@ -50,17 +50,28 @@ Todo: What is unknown1 and 2?
 
 */
 
-void free_VersaMail(struct VersaMail *a) {
-  if (a->messageUID) free(a->messageUID);
-  if (a->to) free(a->to);
-  if (a->from) free(a->from);
-  if (a->cc) free(a->cc);
-  if (a->bcc) free(a->bcc);
-  if (a->subject) free(a->subject);
-  if (a->dateString) free(a->dateString);
-  if (a->body) free(a->body);
-  if (a->replyTo) free(a->replyTo);
-  if (a->unknown3) free(a->unknown3);
+void free_VersaMail(struct VersaMail *a)
+{
+    if (a->messageUID)
+	free(a->messageUID);
+    if (a->to)
+	free(a->to);
+    if (a->from)
+	free(a->from);
+    if (a->cc)
+	free(a->cc);
+    if (a->bcc)
+	free(a->bcc);
+    if (a->subject)
+	free(a->subject);
+    if (a->dateString)
+	free(a->dateString);
+    if (a->body)
+	free(a->body);
+    if (a->replyTo)
+	free(a->replyTo);
+    if (a->unknown3)
+	free(a->unknown3);
 }
 
 
@@ -113,51 +124,52 @@ void free_VersaMail(struct VersaMail *a) {
 #define CONVERT_TIME_T_PALM_TO_UNIX(t) (t=t-2082844800)
 #define CONVERT_TIME_T_UNIX_TO_PALM(t) (t=t+2082844800)
 
-int unpack_VersaMail(struct VersaMail *a, unsigned char *buffer, int len) {
-  time_t date_t;
-  struct tm *date_tm;
-  unsigned char *start = buffer;
+int unpack_VersaMail(struct VersaMail *a, char *buffer, int len)
+{
+    time_t date_t;
+    struct tm *date_tm;
+    char *start = buffer;
 
-  /* 000000 - 000003 */
-  a->imapuid = (unsigned long) get_long(buffer);
-  SHUFFLE_BUFFER(4);
+    /* 000000 - 000003 */
+    a->imapuid = (unsigned long) get_long(buffer);
+    SHUFFLE_BUFFER(4);
 
 
-  /* This is different to the other databases, because Palm didn't
-     write VersaMail :-) */
-  /* 000004 - 000007 */
-  date_t = (time_t) get_long(buffer);
-  CONVERT_TIME_T_PALM_TO_UNIX(date_t);
-  date_tm = localtime(&date_t);
-  memcpy(&(a->date), date_tm, sizeof(struct tm));
-  SHUFFLE_BUFFER(4);
+    /* This is different to the other databases, because Palm didn't
+       write VersaMail :-) */
+    /* 000004 - 000007 */
+    date_t = (time_t) get_long(buffer);
+    CONVERT_TIME_T_PALM_TO_UNIX(date_t);
+    date_tm = localtime(&date_t);
+    memcpy(&(a->date), date_tm, sizeof(struct tm));
+    SHUFFLE_BUFFER(4);
 
-  /* 000008 - 000009 */
-  GET_SHORT_INTO(a->category);
+    /* 000008 - 000009 */
+    GET_SHORT_INTO(a->category);
 
-  /* 00000A - 00000B */
-  GET_SHORT_INTO(a->accountNo);
+    /* 00000A - 00000B */
+    GET_SHORT_INTO(a->accountNo);
 
-  /* 00000C - 00000D */
-  GET_SHORT_INTO(a->unknown1);
-  /* 00000E - 00000E */
-  GET_BYTE_INTO(a->download);
-  /* 00000F - 00000F */
-  GET_BYTE_INTO(a->mark);
-  /* of the above, bit 0 is mark, apparently bit 4 is header-only flag,
-     and it looks like bit 1 is always set, which gives a normal
-     value of 2 */
+    /* 00000C - 00000D */
+    GET_SHORT_INTO(a->unknown1);
+    /* 00000E - 00000E */
+    GET_BYTE_INTO(a->download);
+    /* 00000F - 00000F */
+    GET_BYTE_INTO(a->mark);
+    /* of the above, bit 0 is mark, apparently bit 4 is header-only flag,
+       and it looks like bit 1 is always set, which gives a normal
+       value of 2 */
 
-  /* 000010 - 000011 */
-  GET_SHORT_INTO(a->unknown2);
+    /* 000010 - 000011 */
+    GET_SHORT_INTO(a->unknown2);
 
-  /* 000012 - 000013 */
-  a->reserved1 = (get_byte(buffer  )     );
-  a->reserved2 = (get_byte(buffer+1) >> 1);
-  a->read      = (get_byte(buffer+1) && 1);
-  SHUFFLE_BUFFER(2);
+    /* 000012 - 000013 */
+    a->reserved1 = (get_byte(buffer));
+    a->reserved2 = (get_byte(buffer + 1) >> 1);
+    a->read = (get_byte(buffer + 1) && 1);
+    SHUFFLE_BUFFER(2);
 
-  /* This is the size, as provided by the imap server:
+    /* This is the size, as provided by the imap server:
      * 1 FETCH (UID 12779 BODY[] {3377} .... )
      Size==3377
      I guess VersaMail uses it to determine how much
@@ -165,152 +177,152 @@ int unpack_VersaMail(struct VersaMail *a, unsigned char *buffer, int len) {
      to know there IS more to download though, because
      the palm doesn't track most of the headers, so it'll never
      be able to calculate if there is more or not, exactly.
-  */
+     */
 
-  /* 000014 - 000017 */
-  a->msgSize = get_long(buffer);
-  SHUFFLE_BUFFER(4);
+    /* 000014 - 000017 */
+    a->msgSize = get_long(buffer);
+    SHUFFLE_BUFFER(4);
 
-  GET_STR_INTO(a->messageUID);
-  GET_STR_INTO(a->to);
-  GET_STR_INTO(a->from);
-  GET_STR_INTO(a->cc);
-  GET_STR_INTO(a->bcc);
-  GET_STR_INTO(a->subject);
-  GET_STR_INTO(a->dateString);
-  GET_STR_INTO(a->body);
-  GET_STR_INTO(a->replyTo);
+    GET_STR_INTO(a->messageUID);
+    GET_STR_INTO(a->to);
+    GET_STR_INTO(a->from);
+    GET_STR_INTO(a->cc);
+    GET_STR_INTO(a->bcc);
+    GET_STR_INTO(a->subject);
+    GET_STR_INTO(a->dateString);
+    GET_STR_INTO(a->body);
+    GET_STR_INTO(a->replyTo);
 
-  a->unknown3length = 0;
-  a->unknown3 = NULL;
-  a->attachmentCount = 0;
-  if (len > 0) {
-    a->unknown3 = (void *)malloc(len);
+    a->unknown3length = 0;
+    a->unknown3 = NULL;
+    a->attachmentCount = 0;
+    if (len > 0) {
+	a->unknown3 = (void *) malloc(len);
 
-    /*
-      printf("Msg has extra %d bytes. That's 4*%d + %d\n",
-           len, len / 4, len % 4);
-    */
+	/*
+	   printf("Msg has extra %d bytes. That's 4*%d + %d\n",
+	   len, len / 4, len % 4);
+	 */
 
 
-    /*
-Example:
+	/*
+	   Example:
 
-Byte   0: 0x        43 | C |     67   / Variable amount of 'rubbish'
-Byte   1: 0x        50 | P |     80   \ NOT neccessary !NULL
-Byte   2: 0x         0 | . |      0   /
-Byte   3: 0x        68 | h |    104   | Each attachment adds four bytes,
-Byte   4: 0x  ffffffc0 | . |    -64   | NULL, an int, then two signed ints
-Byte   5: 0x  ffffff90 | . |   -112   \
-Byte   6: 0x         0 | . |      0   /
-Byte   7: 0x        68 | h |    104   |
-Byte   8: 0x  ffffffc0 | . |    -64   |
-Byte   9: 0x  ffffff92 | . |   -110   \
-Byte  10: 0x         0 | . |      0   /
-Byte  11: 0x        68 | h |    104   |
-Byte  12: 0x  ffffffc0 | . |    -64   |
-Byte  13: 0x  ffffff94 | . |   -108   \
-Byte  14: 0x         0 | . |      0   /
-Byte  15: 0x         0 | . |      0   | Then we end with a block of
-Byte  16: 0x         0 | . |      0   | four NULLs
-Byte  17: 0x         0 | . |      0   \
+	   Byte   0: 0x        43 | C |     67   / Variable amount of 'rubbish'
+	   Byte   1: 0x        50 | P |     80   \ NOT neccessary !NULL
+	   Byte   2: 0x         0 | . |      0   /
+	   Byte   3: 0x        68 | h |    104   | Each attachment adds four bytes,
+	   Byte   4: 0x  ffffffc0 | . |    -64   | NULL, an int, then two signed ints
+	   Byte   5: 0x  ffffff90 | . |   -112   \
+	   Byte   6: 0x         0 | . |      0   /
+	   Byte   7: 0x        68 | h |    104   |
+	   Byte   8: 0x  ffffffc0 | . |    -64   |
+	   Byte   9: 0x  ffffff92 | . |   -110   \
+	   Byte  10: 0x         0 | . |      0   /
+	   Byte  11: 0x        68 | h |    104   |
+	   Byte  12: 0x  ffffffc0 | . |    -64   |
+	   Byte  13: 0x  ffffff94 | . |   -108   \
+	   Byte  14: 0x         0 | . |      0   /
+	   Byte  15: 0x         0 | . |      0   | Then we end with a block of
+	   Byte  16: 0x         0 | . |      0   | four NULLs
+	   Byte  17: 0x         0 | . |      0   \
 
-The 'rubbish' doesn't seem to be for alignment within the pdb, AFAIKS.
-    */
+	   The 'rubbish' doesn't seem to be for alignment within the pdb, AFAIKS.
+	 */
 
-    a->attachmentCount = (len / 4) - 1;
-    if (a->unknown3) {
-      a->unknown3length = len;
-      memcpy(a->unknown3, buffer, len);
-      SHUFFLE_BUFFER(len);
+	a->attachmentCount = (len / 4) - 1;
+	if (a->unknown3) {
+	    a->unknown3length = len;
+	    memcpy(a->unknown3, buffer, len);
+	    SHUFFLE_BUFFER(len);
+	}
     }
-  }
 
-  return (buffer - start);
+    return (buffer - start);
 }
 
-int pack_VersaMail(struct VersaMail *a, unsigned char *buffer, int len) {
-  time_t date_t;
-  unsigned int destlen;
-  unsigned char *start = buffer;
+int pack_VersaMail(struct VersaMail *a, char *buffer, int len)
+{
+    time_t date_t;
+    int destlen;
+    char *start = buffer;
 
-  destlen = 4+4+2+2+2+2+2+2+4+a->unknown3length;
+    destlen = 4 + 4 + 2 + 2 + 2 + 2 + 2 + 2 + 4 + a->unknown3length;
 
-  ADD_LENGTH(a->messageUID, destlen);
-  ADD_LENGTH(a->to, destlen);
-  ADD_LENGTH(a->from, destlen);
-  ADD_LENGTH(a->cc, destlen);
-  ADD_LENGTH(a->bcc, destlen);
-  ADD_LENGTH(a->subject, destlen);
-  ADD_LENGTH(a->dateString, destlen);
-  ADD_LENGTH(a->body, destlen);
-  ADD_LENGTH(a->replyTo, destlen);
+    ADD_LENGTH(a->messageUID, destlen);
+    ADD_LENGTH(a->to, destlen);
+    ADD_LENGTH(a->from, destlen);
+    ADD_LENGTH(a->cc, destlen);
+    ADD_LENGTH(a->bcc, destlen);
+    ADD_LENGTH(a->subject, destlen);
+    ADD_LENGTH(a->dateString, destlen);
+    ADD_LENGTH(a->body, destlen);
+    ADD_LENGTH(a->replyTo, destlen);
 
-  if (!buffer)
-    return destlen;
-  if (len < destlen)
-    return 0;
+    if (!buffer)
+	return destlen;
 
-  set_long(buffer, a->imapuid);
-  SHUFFLE_BUFFER(4);
+    if (len < destlen)
+	return 0;
 
-  date_t = mktime(&(a->date));
-  CONVERT_TIME_T_UNIX_TO_PALM(date_t);
-  set_long(buffer, (unsigned long) date_t);
-  SHUFFLE_BUFFER(4);
+    set_long(buffer, a->imapuid);
+    SHUFFLE_BUFFER(4);
 
-  set_short(buffer, a->category);
-  SHUFFLE_BUFFER(2);
-  set_short(buffer, a->accountNo);
-  SHUFFLE_BUFFER(2);
-  set_short(buffer, a->unknown1);
-  SHUFFLE_BUFFER(2);
-  set_byte(buffer, a->download);
-  SHUFFLE_BUFFER(1);
-  set_byte(buffer, a->mark);
-  SHUFFLE_BUFFER(1);
-  set_short(buffer, a->unknown2);
-  SHUFFLE_BUFFER(2);
+    date_t = mktime(&(a->date));
+    CONVERT_TIME_T_UNIX_TO_PALM(date_t);
+    set_long(buffer, (unsigned long) date_t);
+    SHUFFLE_BUFFER(4);
 
-  set_byte(buffer, a->reserved1);
-  set_byte(buffer+1, ((a->reserved2 << 1) || a->read));
-  SHUFFLE_BUFFER(2);
+    set_short(buffer, a->category);
+    SHUFFLE_BUFFER(2);
+    set_short(buffer, a->accountNo);
+    SHUFFLE_BUFFER(2);
+    set_short(buffer, a->unknown1);
+    SHUFFLE_BUFFER(2);
+    set_byte(buffer, a->download);
+    SHUFFLE_BUFFER(1);
+    set_byte(buffer, a->mark);
+    SHUFFLE_BUFFER(1);
+    set_short(buffer, a->unknown2);
+    SHUFFLE_BUFFER(2);
 
-  set_long(buffer, a->msgSize);
-  SHUFFLE_BUFFER(4);
+    set_byte(buffer, a->reserved1);
+    set_byte(buffer + 1, ((a->reserved2 << 1) || a->read));
+    SHUFFLE_BUFFER(2);
 
-  PUT_STR_FROM(a->messageUID);
-  PUT_STR_FROM(a->to);
-  PUT_STR_FROM(a->from);
-  PUT_STR_FROM(a->cc);
-  PUT_STR_FROM(a->bcc);
-  PUT_STR_FROM(a->subject);
-  PUT_STR_FROM(a->dateString);
-  PUT_STR_FROM(a->body);
-  PUT_STR_FROM(a->replyTo);
+    set_long(buffer, a->msgSize);
+    SHUFFLE_BUFFER(4);
 
-  if (a->unknown3length > 0) {
-    memcpy(buffer, a->unknown3, a->unknown3length);
-  }
+    PUT_STR_FROM(a->messageUID);
+    PUT_STR_FROM(a->to);
+    PUT_STR_FROM(a->from);
+    PUT_STR_FROM(a->cc);
+    PUT_STR_FROM(a->bcc);
+    PUT_STR_FROM(a->subject);
+    PUT_STR_FROM(a->dateString);
+    PUT_STR_FROM(a->body);
+    PUT_STR_FROM(a->replyTo);
 
-  return (buffer - start);
-}
+    if (a->unknown3length > 0) {
+	memcpy(buffer, a->unknown3, a->unknown3length);
+    }
 
-void free_VersaMailAppInfo(struct VersaMailAppInfo *a) {
+    return (buffer - start);
 }
 
 int unpack_VersaMailAppInfo(struct VersaMailAppInfo *ai,
-                        unsigned char *record, size_t len) {
-  int i;
-  unsigned char *start = record;
+			    unsigned char *record, size_t len)
+{
+    int i;
+    unsigned char *start = record;
 
-  i = unpack_CategoryAppInfo(&ai->category, record, len);
-  if (!i)
-    return i;
-  record += i;
-  len -= i;
+    i = unpack_CategoryAppInfo(&ai->category, record, len);
+    if (!i)
+	return i;
+    record += i;
+    len -= i;
 
-  return (record - start);
+    return (record - start);
 }
 
 /*

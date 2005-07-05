@@ -661,7 +661,7 @@ struct dlpResponse {
 	 * @param time The date to convert
 	 * @param timeDateData Ptr to an 8 byte buffer to hold the Palm OS date
 	 */
-	extern void dlp_htopdate PI_ARGS((time_t time, unsigned char *timeDateData));
+	extern void dlp_htopdate PI_ARGS((time_t palm_time, unsigned char *timeDateData));
 /*@}*/
 
 /** @name System functions */
@@ -672,7 +672,7 @@ struct dlpResponse {
 	 * @param time Pointer to a time_t to fill
 	 * @return A negative value if an error occured (see pi-error.h)
 	 */
-	extern PI_ERR dlp_GetSysDateTime PI_ARGS((int sd, time_t *time));
+	extern PI_ERR dlp_GetSysDateTime PI_ARGS((int sd, time_t *palm_time));
 
 	/** @brief Set the time on the Palm using a local time_t value.
 	 *
@@ -680,7 +680,7 @@ struct dlpResponse {
 	 * @param time New time to set the device to (expressed using the computer's timezone)
 	 * @return A negative value if an error occured (see pi-error.h)
 	 */
-	extern PI_ERR dlp_SetSysDateTime PI_ARGS((int sd, time_t time));
+	extern PI_ERR dlp_SetSysDateTime PI_ARGS((int sd, time_t palm_time));
 
 	/** @brief Read the system information block
 	 *

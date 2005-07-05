@@ -150,7 +150,7 @@ int main(int argc, const char *argv[])
 
 	pi_buffer_free (buffer);
 
-	state = PI_SOCK_CONEN;
+	state = PI_SOCK_CONN_END;
 	size = sizeof (state);
 	pi_setsockopt (sd, PI_LEVEL_SOCK, PI_SOCK_STATE, &state, &size);
 	pi_setsockopt (sd2, PI_LEVEL_SOCK, PI_SOCK_STATE, &state, &size);

@@ -544,7 +544,7 @@ net_rx(pi_socket_t *ps, pi_buffer_t *msg, size_t len, int flags)
 	CHECK(PI_DBG_NET, PI_DBG_LVL_DEBUG, net_dump(header->data, msg->data));
 
 	/* Update the transaction id */
-	if (ps->state == PI_SOCK_CONIN || ps->command == 1)
+	if (ps->state == PI_SOCK_CONN_INIT || ps->command == 1)
 		data->txid = header->data[PI_NET_OFFSET_TXID];
 	else {
 		data->txid++;

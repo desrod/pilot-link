@@ -1930,7 +1930,7 @@ dlp_EndOfSync(int sd, int status)
 	/* Messy code to set end-of-sync flag on socket 
 	   so pi_close won't do it for us */
 	if (result == 0)
-		ps->state = PI_SOCK_CONEN;
+		ps->state = PI_SOCK_CONN_END;
 
 	return result;
 }
@@ -1949,7 +1949,7 @@ dlp_AbortSync(int sd)
 		return PI_ERR_SOCK_INVALID;
 	}
 
-	ps->state = PI_SOCK_CONEN;
+	ps->state = PI_SOCK_CONN_END;
 
 	return 0;
 }

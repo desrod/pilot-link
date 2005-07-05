@@ -1,3 +1,12 @@
+2005-07-05 15:49  desrod
+
+	* libpisock/socket.c: Removing extraneous pi_dumpdata() call
+
+2005-07-05 15:43  desrod
+
+	* ChangeLog, bindings/Perl/Makefile.PL.in: Fixing up a divide by
+	  zero error (and updating ChangeLog)
+
 2005-07-04 09:12  fpillet
 
 	* libpisock/darwinusb.c: Fixed a bug that could keep disconnected

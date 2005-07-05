@@ -58,7 +58,7 @@ static int u_read_i(struct pi_socket *ps, pi_buffer_t *buf, size_t len, int flag
 static int u_poll(struct pi_socket *ps, int timeout);
 static int u_wait_for_device(struct pi_socket *ps, int *timeout);
 static int u_flush(pi_socket_t *ps, int flags);
-static int u_control_request (pi_usb_data_t *usb_data, int request_type, int request, int value, int index, void *data, int size, int timeout);
+static int u_control_request (pi_usb_data_t *usb_data, int request_type, int request, int value, int control_index, void *data, int size, int timeout);
 
 void pi_usb_impl_init (struct pi_usb_impl *impl)
 {
@@ -536,7 +536,7 @@ u_flush(pi_socket_t *ps, int flags)
 
 static int
 u_control_request (pi_usb_data_t *usb_data, int request_type, int request,
-		int value, int index, void *data, int size, int timeout)
+		int value, int control_index, void *data, int size, int timeout)
 {
 	return usb_control_msg (usb_data->ref, request_type, request, value, index, data, size, timeout);
 }

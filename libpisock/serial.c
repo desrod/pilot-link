@@ -320,7 +320,7 @@ pi_serial_connect(pi_socket_t *ps, struct sockaddr *addr,
 				break;
 		}
 	}
-	ps->state = PI_SOCK_CONIN;
+	ps->state = PI_SOCK_CONN_INIT;
 	ps->command = 0;
 	return 0;
 
@@ -439,7 +439,7 @@ static int pi_serial_listen(pi_socket_t *ps, int backlog)
 	/* ps->rate has been set by bind */
 	result = data->impl.changebaud(ps);
 	if (result == 0)
-		ps->state = PI_SOCK_LISTN;
+		ps->state = PI_SOCK_LISTEN;
 	
 	return result;
 }
@@ -545,7 +545,7 @@ pi_serial_accept(pi_socket_t *ps, struct sockaddr *addr,
 
 	data->timeout = 0;
 	ps->command = 0;
-	ps->state = PI_SOCK_CONAC;
+	ps->state = PI_SOCK_CONN_ACCEPT;
 
 	return ps->sd;
 
