@@ -1,8 +1,39 @@
-2005-07-03 19:37  Neil Williams <linux@codehelp.co.uk>
+2005-07-04 09:12  fpillet
 
-	* configure.ac: Improving manpage build to cover
-	cvs exports
-	* doc/Makefile.am: Conditional xml build improvement.
+	* libpisock/darwinusb.c: Fixed a bug that could keep disconnected
+	  entry stay in the list forever if deconnection occured during
+	  u_poll(Ã)
+
+2005-07-04 05:03  fpillet
+
+	* libpisock/socket.c: Fixed protocol detection for cases where
+	  unixserial (with USB handhelds) is losing the first 6 bytes sent
+	  by the device
+
+2005-07-03 17:40  neilw
+
+	* doc/Makefile.am: removing README.freebsd from make dist now that
+	  it has been removed from CVS
+
+2005-07-03 14:41  neilw
+
+	* ChangeLog, configure.ac, doc/Makefile.am: improving conditional
+	  xsltproc manpage builds
+
+2005-06-28 14:13  desrod
+
+	* bindings/Perl/Makefile.PL.in:
+	  Attempt to fix and close issue #900. Still need to poke at this a
+	  bit more to get the other macros supported (MANDIR, DATADIR,
+	  BINDIR, and so on).
+
+2005-06-28 13:40  desrod
+
+	* ChangeLog, include/pi-address.h, include/pi-appinfo.h,
+	  include/pi-datebook.h, include/pi-memo.h, include/pi-todo.h,
+	  libpisync/sync.c: Update tree to handle more consistant C++ and
+	  preprocessor behavior for authors that are using C++ to talk to
+	  our API.
 
 2005-06-28 13:31  fpillet
 

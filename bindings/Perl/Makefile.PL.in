@@ -14,7 +14,7 @@ WriteMakefile(
     'XSPROTOARG' => '-noprototypes',
     'INC'        => '-I../../include',
     'DEFINE'     => '-DPERL_POLLUTE',
-    'PREFIX'     => $prefix,
-    'MANDIR'     => $prefix/man,
+    'PREFIX'     => "$prefix",
+    'MANDIR'     => "$prefix/man",
     dynamic_lib  => {'OTHERLDFLAGS' => $lib}
 );
