@@ -465,8 +465,6 @@ protocol_queue_build (pi_socket_t *ps, int autodetect)
 				continue;
 			}
 
-			pi_dumpdata(&detect_buf->data[0], 10);
-
 			/* detect a valid PADP header packet */
 			if (detect_buf->data[0] == PI_SLP_SIG_BYTE1 &&
 			    detect_buf->data[1] == PI_SLP_SIG_BYTE2 &&
