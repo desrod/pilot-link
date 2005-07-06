@@ -1706,8 +1706,8 @@ u_write(struct pi_socket *ps, const unsigned char *buf, size_t len, int flags)
 	if (change_refcount(c,+1)<=0 || !c->opened)
 	{
 		/* make sure we report broken connections */
-		if (ps->state == PI_SOCK_CONAC || ps->state == PI_SOCK_CONIN)
-			ps->state = PI_SOCK_CONBK;
+		if (ps->state == PI_SOCK_CONN_ACCEPT || ps->state == PI_SOCK_CONN_INIT)
+			ps->state = PI_SOCK_CONN_BREAK;
 		change_refcount(c, -1);
 		return PI_ERR_SOCK_DISCONNECTED;
 	}
@@ -1766,8 +1766,8 @@ u_read(struct pi_socket *ps, pi_buffer_t *buf, size_t len, int flags)
 	if (change_refcount(c,+1)<=0 || !c->opened)
 	{
 		/* make sure we report broken connections */
-		if (ps->state == PI_SOCK_CONAC || ps->state == PI_SOCK_CONIN)
-			ps->state = PI_SOCK_CONBK;
+		if (ps->state == PI_SOCK_CONN_ACCEPT || ps->state == PI_SOCK_CONN_INIT)
+			ps->state = PI_SOCK_CONN_BREAK;
 		if (c != NULL)
 			change_refcount(c, -1);
 		return PI_ERR_SOCK_DISCONNECTED;
@@ -1826,8 +1826,8 @@ u_read(struct pi_socket *ps, pi_buffer_t *buf, size_t len, int flags)
 	if (!c->opened)
 	{
 		/* make sure we report broken connections */
-		if (ps->state == PI_SOCK_CONAC || ps->state == PI_SOCK_CONIN)
-			ps->state = PI_SOCK_CONBK;
+		if (ps->state == PI_SOCK_CONN_ACCEPT || ps->state == PI_SOCK_CONN_INIT)
+			ps->state = PI_SOCK_CONN_BREAK;
 		len = PI_ERR_SOCK_DISCONNECTED;
 	}
 	else
