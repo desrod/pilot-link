@@ -125,11 +125,7 @@ static PyObject *_wrap_pi_file_retrieve (PyObject *self, PyObject *args)
 		return NULL;
 	}
 
-	{
-		result = pi_file_retrieve(pf, sd, cardno, NULL);
-		result = 0;
-	}
-
+	result = pi_file_retrieve(pf, sd, cardno, NULL);
 	if (result < 0) {
 		PyEval_RestoreThread(save);
 		pythonWrapper_handlePiErr(sd, result);
