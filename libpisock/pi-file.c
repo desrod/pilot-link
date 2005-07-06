@@ -520,9 +520,9 @@ pi_file_id_used(const pi_file_t *pf, recordid_t uid)
 pi_file_t *
 pi_file_create(const char *name, const struct DBInfo *info)
 {
-	pi_file_t *pf;
+	pi_file_t *pf = calloc(1, sizeof(pi_file_t));
 
-	if ((pf = calloc(1, sizeof *pf)) == NULL)
+	if (pf == NULL)
 		return NULL;
 
 	if ((pf->file_name = strdup(name)) == NULL)
@@ -539,14 +539,15 @@ pi_file_create(const char *name, const struct DBInfo *info)
 		pf->ent_hdr_size = PI_RECORD_ENT_SIZE;
 	}
 
-	if ((pf->tmpf = tmpfile()) == NULL)
+	pf->tmpbuf = pi_buffer_new(2048);
+	if (pf->tmpbuf == NULL)
 		goto bad;
 
 	return (pf);
 
 bad:
 	pi_file_free(pf);
-	return (NULL);
+	return NULL;
 }
 
 int
@@ -631,9 +632,9 @@ pi_file_append_resource(pi_file_t *pf, void *data, size_t size,
 	if (entp == NULL)
 		return PI_ERR_GENERIC_MEMORY;
 
-	if (size && fwrite(data, size, 1, pf->tmpf) != 1) {
+	if (size && pi_buffer_append(pf->tmpbuf, data, size) == NULL) {
 		pf->err = 1;
-		return PI_ERR_FILE_ERROR;
+		return PI_ERR_GENERIC_MEMORY;
 	}
 
 	entp->size 	= size;
@@ -658,9 +659,9 @@ pi_file_append_record(pi_file_t *pf, void *data, size_t size,
 	if (entp == NULL)
 		return PI_ERR_GENERIC_MEMORY;
 
-	if (size && fwrite(data, size, 1, pf->tmpf) != 1) {
+	if (size && pi_buffer_append(pf->tmpbuf, data, size) == NULL) {
 		pf->err = 1;
-		return PI_ERR_FILE_ERROR;
+		return PI_ERR_GENERIC_MEMORY;
 	}
 
 	entp->size 	= size;
@@ -1265,8 +1266,7 @@ static int
 pi_file_close_for_write(pi_file_t *pf)
 {
 	int 	i,
-		offset,
-		c;
+		offset;
 	FILE 	*f;
 	
 	struct 	DBInfo *ip;
@@ -1359,14 +1359,10 @@ pi_file_close_for_write(pi_file_t *pf)
 		goto bad;
 
 
-	rewind(pf->tmpf);
-	do {
-		c = fread (buf, 1, sizeof (buf), pf->tmpf);
-		fwrite (buf, 1, (size_t)c, f);
-	} while (c == sizeof (buf));
+	fwrite(pf->tmpbuf->data, pf->tmpbuf->used, 1, f);
 	fflush(f);
 
-	if (ferror(f) || feof(f) || !feof(pf->tmpf))
+	if (ferror(f) || feof(f))
 		goto bad;
 
 	fclose(f);
@@ -1411,8 +1407,8 @@ void pi_file_free(pi_file_t *pf)
 	if (pf->rbuf != NULL)
 		free(pf->rbuf);
 	
-	if (pf->tmpf != 0)
-		fclose(pf->tmpf);
+	if (pf->tmpbuf != NULL)
+		pi_buffer_free(pf->tmpbuf);
 
 	/* in case caller forgets the struct has been freed... */
 	memset(pf, 0, sizeof(pi_file_t));

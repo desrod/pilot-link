@@ -70,7 +70,7 @@ typedef struct pi_file {
 	int	nentries_allocated;	/**< Number of entries allocated in the entries memory block */
 	int	rbuf_size;		/**< Size of the internal read buffer */
 	FILE 	*f;			/**< Actual on-disk file */
-	FILE 	*tmpf;			/**< Temporary file for databases opened with pi_file_create() */
+	pi_buffer_t *tmpbuf;		/**< Temporary buffer for databases opened with pi_file_create() */
 	char 	*file_name;		/**< Access path */
 	void 	*app_info;		/**< Pointer to the appInfo block or NULL */
 	void	*sort_info;		/**< Pointer to the sortInfo block or NULL */
