@@ -41,11 +41,11 @@ static PyObject *_wrap_pi_file_install (PyObject *self, PyObject *args)
 	char *path = NULL;
 	pi_file_t *pf = NULL;
 
-	if (!PyArg_ParseTuple(args,(char *)"OOOO",&obj1, &obj2, &obj3, &cback))
+	if (!PyArg_ParseTuple(args,(char *)"OOOO:pi_file_install",&obj1, &obj2, &obj3, &cback))
 		return NULL;
 
-	sd = (int)(SWIG_As_int(obj1));
-	cardno = (int)(SWIG_As_int(obj2));
+	sd = (int)SWIG_As_int(obj1);
+	cardno = (int)SWIG_As_int(obj2);
 	if (!SWIG_AsCharPtr(obj3, (char**)&path)) {
 		SWIG_arg_fail(3);
 		return NULL;
@@ -89,45 +89,55 @@ static PyObject *_wrap_pi_file_retrieve (PyObject *self, PyObject *args)
 	char *path = NULL;
 	struct DBInfo dbi;
 	pi_file_t *pf = NULL;
+	PyThreadState *save;
 
-	if (!PyArg_ParseTuple(args, (char *)"OOOOO",&obj1,&obj2,&obj3,&obj4,&cback))
+	if (!PyArg_ParseTuple(args, (char *)"OOOOO:pi_file_retrieve",&obj1,&obj2,&obj3,&obj4,&cback))
 		return NULL;
-	sd = (int)(SWIG_As_int(obj1));
-	cardno = (int)(SWIG_As_int(obj2));
+
+	sd = SWIG_As_int(obj1);
+	cardno = SWIG_As_int(obj2);
+
 	if (!SWIG_AsCharPtr(obj3, (char**)&dbname)) {
 		SWIG_arg_fail(3);
 		return NULL;
 	}
+
 	if (!SWIG_AsCharPtr(obj4, (char **)&path)) {
 		SWIG_arg_fail(4);
 		return NULL;
 	}
 
-	memset(&dbi, 0, sizeof(dbi));
+	/* let other threads run */
+ 	save = PyEval_SaveThread();
+
+ 	memset(&dbi, 0, sizeof(dbi));
 	result = dlp_FindDBByName(sd, cardno, dbname, NULL, NULL, &dbi, NULL);
 	if (result < 0) {
+		PyEval_RestoreThread(save);
 		pythonWrapper_handlePiErr(sd, result);
 		return NULL;
 	}
 
 	pf = pi_file_create(path, &dbi);
 	if (pf == NULL) {
+		PyEval_RestoreThread(save);
 		PyErr_SetObject(PIError, Py_BuildValue("(is)", PI_ERR_FILE_INVALID, "invalid file"));
 		return NULL;
 	}
 
 	{
-		PyThreadState *save = PyEval_SaveThread();
 		result = pi_file_retrieve(pf, sd, cardno, NULL);
-		PyEval_RestoreThread(save);
+		result = 0;
 	}
 
 	if (result < 0) {
+		PyEval_RestoreThread(save);
 		pythonWrapper_handlePiErr(sd, result);
 		return NULL;
 	}
 
 	result = pi_file_close(pf);
+	PyEval_RestoreThread(save);
 	if (result < 0) {
 		pythonWrapper_handlePiErr(sd, result);
 		return NULL;
