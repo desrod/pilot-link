@@ -216,13 +216,13 @@ u_write(pi_socket_t *ps, unsigned char *buf, size_t len, int flags)
 		}
 
 		if (!FD_ISSET(ps->sd, &ready)) {
-			ps->state = PI_SOCK_CONBK;
+			ps->state = PI_SOCK_CONN_BREAK;
 			return pi_set_error(ps->sd, PI_ERR_SOCK_DISCONNECTED);
 		}
 
 		nwrote = write(ps->sd, buf, len);
 		if (nwrote < 0) {
-			ps->state = PI_SOCK_CONBK;
+			ps->state = PI_SOCK_CONN_BREAK;
 			return pi_set_error(ps->sd, PI_ERR_SOCK_DISCONNECTED);
 		}
 

@@ -1,3 +1,39 @@
+2005-07-06 12:26  fpillet
+
+	* bindings/Python/src/pi-file-maps.i: oops.. left a minor error
+	  there
+
+2005-07-06 12:26  fpillet
+
+	* bindings/Python/src/pi-file-maps.i: allow other threads to run
+	  while dlp_FindDB performs its duty
+
+2005-07-06 12:25  fpillet
+
+	* include/pi-file.h, libpisock/pi-file.c: Don't use a temporary
+	  file for pi_file creation anymore. Instead, we use a pi_buffer_t*
+	  which both is faster and makes more sense (and also because I
+	  discovered that Python doesn't like tmpfile() being used, for
+	  some reason)
+
+2005-07-06 06:03  fpillet
+
+	* libpisock/darwinusb.c: updated to new defines from pi-source.h
+
+2005-07-05 17:11  desrod
+
+	* ChangeLog, include/pi-dlp.h, include/pi-source.h,
+	  include/pi-versamail.h, libpisock/dlp.c, libpisock/inet.c,
+	  libpisock/libusb.c, libpisock/net.c, libpisock/padp.c,
+	  libpisock/serial.c, libpisock/socket.c, libpisock/unixserial.c,
+	  libpisock/usb.c, libpisock/versamail.c, src/pi-nredir.c,
+	  src/plu_args.c, src/userland.c: Bright lights! Bright lights!
+	  Just closing some shadowed globals..
+
+	  The other bit might break things temporarily, but it keeps the
+	  names clean and informative when being read. Other smallish fixes
+	  here. Builds clean.
+
 2005-07-05 15:49  desrod
 
 	* libpisock/socket.c: Removing extraneous pi_dumpdata() call
