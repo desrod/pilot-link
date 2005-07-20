@@ -471,6 +471,8 @@ s_read(pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags)
 
 			LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG,
 				"DEV RX unixserial read %d bytes\n", bytes));
+		} else if (bytes < 0) {
+			rbuf = bytes;
 		}
 	} else {
 		LOG((PI_DBG_DEV, PI_DBG_LVL_WARN,
