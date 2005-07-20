@@ -1387,7 +1387,8 @@ read_completion (usb_connection_t *c, IOReturn result, void *arg0)
 	{
 		LOG((PI_DBG_DEV, PI_DBG_LVL_WARN, "darwinusb: async read completion(%p) received error code 0x%08x\n", c, result));
 	}
-	else
+
+	if (bytes_read)
 	{
 		if (c->vendorID == VENDOR_PALMONE && c->productID == PRODUCT_PALMCONNECT_USB)
 		{
@@ -1410,7 +1411,6 @@ read_completion (usb_connection_t *c, IOReturn result, void *arg0)
 		}
 		if (bytes_read > 0)
 		{		
-//pi_dumpdata(c->read_buffer, bytes_read);
 			pthread_mutex_lock(&c->read_queue_mutex);
 			if (c->read_queue == NULL)
 			{
@@ -1441,10 +1441,10 @@ read_completion (usb_connection_t *c, IOReturn result, void *arg0)
 
 	if (result != kIOReturnAborted && c->opened && usb_run_loop)
 	{
-		if (result == kIOUSBPipeStalled)
+		if (result != kIOReturnSuccess)
 		{
-			LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "darwinusb: input pipe stalled\n"));
-			(*c->interface)->ClearPipeStall (c->interface, c->in_pipe_ref);
+			LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "darwinusb: clearing input pipe stall\n"));
+			(*c->interface)->ClearPipeStallBothEnds (c->interface, c->in_pipe_ref);
 		}
 		prime_read(c);
 	}
