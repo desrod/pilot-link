@@ -576,6 +576,9 @@ protocol_queue_build (pi_socket_t *ps, int autodetect)
 		case PI_PF_SYS:
 			ps->cmd = PI_CMD_SYS;
 			break;
+		default:
+			LOG((PI_DBG_SOCK, PI_DBG_LVL_ERR, "invalid protocol (%d)", protocol));
+			break;
 	}
 
 	protocol_queue_add (ps, dev_prot);
