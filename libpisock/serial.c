@@ -465,9 +465,21 @@ pi_serial_accept(pi_socket_t *ps, struct sockaddr *addr,
 	int	err;
 
 	/* Wait for data */
+#ifdef linux
+	if (ps->accept_to) {
+		/* shield against losing the first packet */
+		result = data->impl.poll(ps, 1000);
+		LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s: %d, poll result: %d.\n", __FILE__, __LINE__, result));
+
+		if (result <= 0) {
+			char buf[] = { 0x01, 0x00, 0x00, 0x00, 0x00, 0x00 };
+			data->impl.write(ps, buf, sizeof (buf), 1000);
+		}
+	}
+#endif
 	if ((err = data->impl.poll(ps, ps->accept_to * 1000)) < 0)
 		goto fail;
-	
+
 	data->timeout = ps->accept_to * 1000;
 
 	pi_socket_init(ps);
