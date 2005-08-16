@@ -693,7 +693,7 @@ palm_fetch_internal(const char *dbname)
 		printf("Failed, unable to fetch database from the Palm.\n");
 	}
 
-	printf("complete.\n\n");
+	printf(" complete.\n\n");
 
 	snprintf(synclog, sizeof(synclog)-1,
 			"File '%s' successfully fetched.\n\n"
@@ -1598,7 +1598,6 @@ palm_merge(const char *filename)
 	else
 		printf("OK\n");
 	pi_file_close(f);
-	free(f);
 
 	printf("Merge done\n");
 }
