@@ -320,7 +320,7 @@ else
 			usb_type=freebsd
 			msg_usb="yes, FreeBSD"
 		;;
-	    *darwin*)
+		*darwin*)
 		    AC_DEFINE(HAVE_USB, 1, [Define if we have USB support])
 		    usb_type=darwin
 		    msg_usb="yes, Darwin"

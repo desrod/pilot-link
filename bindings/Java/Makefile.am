@@ -64,7 +64,6 @@ java_classes= \
 	org/gnu/pilotlink/ToDoRecord.class	\
 	org/gnu/pilotlink/Record.class	\
 	test.class	\
-	tst/ftbtest.class	\
 	datebooktst.class	\
 	adrtest.class
 

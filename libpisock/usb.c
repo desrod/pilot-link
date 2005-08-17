@@ -393,7 +393,7 @@ pi_usb_accept(pi_socket_t *ps, struct sockaddr *addr, size_t *addrlen)
 	}
 
 	/* Wait for data */
-#ifdef linux
+#ifdef LINUX
 	/*
 	 * Evilish kluge, some palm devices won't send the initial
 	 * packets if we don't try and get them fairly quickly.

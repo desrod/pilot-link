@@ -104,7 +104,7 @@ JNIEXPORT jobject JNICALL Java_org_gnu_pilotlink_PilotLink_readAppInfo
     }
     if (bProceed) {
         /* Read app-info block && verify successful read */
-        iNumBytesRead = dlp_ReadAppBlock(handle, db, 0, pBuffer, MAX_RESOURCE_SIZE);
+        iNumBytesRead = dlp_ReadAppBlock(handle, db, 0, MAX_RESOURCE_SIZE, (pi_buffer_t*)pBuffer);
         if (iNumBytesRead < 0) {
             /* Throw Java exception, iNumBytesRead is actually an error code */
             postPilotLinkException(env, "Unable to read app-block", iNumBytesRead, errno);
@@ -565,7 +565,7 @@ JNIEXPORT jobject JNICALL Java_org_gnu_pilotlink_PilotLink_getAppInfoBlock(JNIEn
 		return NULL;
 	}
 	jbyte buff[0xffff];
-	int l=dlp_ReadAppBlock(handle,db,0,&buff,0xffff);
+	int l=dlp_ReadAppBlock(handle,db,0,0xffff,(pi_buffer_t*)&buff);
 	printf("read app-Block of size %d\n",l);
 	fflush(stdout);
 
@@ -662,8 +662,8 @@ JNIEXPORT jobject JNICALL Java_org_gnu_pilotlink_PilotLink_getRecordByIndex
     recordid_t id;
     jint size, attr, category;
     //printf("Getting record..\n");
-    int ret = dlp_ReadRecordByIndex(handle, db, idx, buffer,
-        &id, &size, &attr, &category);
+    int ret = dlp_ReadRecordByIndex(handle, db, idx, (pi_buffer_t*)buffer,
+        &id, &attr, &category);
     if (ret<0) {
 	    postPilotLinkException(env,"Error reading database by index",ret,errno);
         return NULL;
@@ -875,10 +875,8 @@ int pilot_connect(JNIEnv * env, const char *port)
 /*
                 if (port != NULL) {
 */
-                        addr.pi_family = PI_AF_PILOT;
-                        strncpy(addr.pi_device, port, sizeof(addr.pi_device));
                         result =
-                            pi_bind(parent_sd, (struct sockaddr *) &addr, sizeof(addr));
+                            pi_bind(parent_sd, port);
 /*
                 } else {
                         result = pi_bind(parent_sd, NULL, 0);
@@ -999,7 +997,7 @@ int pilot_connect(JNIEnv * env, const char *port)
                         bProceed = 0;
                 } else {
                     int so_timeout = 16;
-                    int sizeof_so_timeout = sizeof(so_timeout);
+                    size_t sizeof_so_timeout = sizeof(so_timeout);
 
                     pi_setsockopt(client_sd, PI_LEVEL_DEV, PI_DEV_TIMEOUT, 
                         &so_timeout, &sizeof_so_timeout);
@@ -1055,7 +1053,7 @@ JNIEXPORT jobject JNICALL Java_org_gnu_pilotlink_PilotLink_getResourceByIndex
 
         /* Invoke C library function */
         iResult = dlp_ReadResourceByIndex(iSockHandle, iDBHandle, iRsrcIndex,
-            pRsrcData, &iRsrcType, &iRsrcID, &iRsrcSize);
+            (pi_buffer_t*)pRsrcData, &iRsrcType, &iRsrcID);
         if (iResult >= 0) {
             jclass pRecordClass;
             jmethodID pRecordConstructor;
@@ -1178,7 +1176,7 @@ JNIEXPORT jobject JNICALL Java_org_gnu_pilotlink_PilotLink_readDBList
     jobject pDBInfoObject = NULL;
 
     /* Execute low-level library call... */
-    iResult = dlp_ReadDBList(iSockHandle, cardno, flags, start, &rInfoDB);
+    iResult = dlp_ReadDBList(iSockHandle, cardno, flags, start, (pi_buffer_t*)&rInfoDB);
     if (iResult >= 0) {
         jclass pDBInfoClass = NULL;
         jmethodID pDBInfoMethod = NULL;
