@@ -157,6 +157,7 @@ pi_protocol_t
 			data->last_type = -1;
 			data->txid 	= 0xff;
 			data->next_txid = 0xff;
+			data->freeze_txid   = 0;
 			data->use_long_format = 0;
 			prot->data 	= data;
 		}
