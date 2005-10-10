@@ -4304,7 +4304,7 @@ dlp_VFSFileSetDate(int sd, FileRef fileRef, int which, time_t date)
 	struct dlpResponse *res;
 	
 	RequireDLPVersion(sd,1,2);
-	TraceX(dlp_VFSFileSetDate,"fileRef=%ld which=%d date=0x%08lx";
+	TraceX(dlp_VFSFileSetDate,"fileRef=%ld which=%d date=0x%08lx",
 	    (long)fileRef,which,(long)date);
 	pi_reset_errors(sd);
 
