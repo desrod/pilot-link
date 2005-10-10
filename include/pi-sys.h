@@ -15,8 +15,8 @@
  * along with this library; if not, write to the Free Software Foundation,
  * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. *
  */
-#ifndef _PILOT_SYSPKT_H
-#define _PILOT_SYSPKT_H
+#ifndef _PILOT_SYS_H
+#define _PILOT_SYS_H
 
 #include "pi-args.h"
 #include "pi-buffer.h"
