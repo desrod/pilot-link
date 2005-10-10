@@ -153,6 +153,7 @@ static int dlp_version_minor = PI_DLP_VERSION_MINOR;
     #endif
 #else
 	#define Trace(name)
+	#define TraceX(name,format,...)
 #endif
 
 #ifdef PI_DEBUG
