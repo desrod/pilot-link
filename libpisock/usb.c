@@ -247,7 +247,7 @@ pi_usb_connect(pi_socket_t *ps, struct sockaddr *addr, size_t addrlen)
 {
 	struct 	pi_usb_data *data = (pi_usb_data_t *)ps->device->data;
 	struct 	pi_sockaddr *pa = (struct pi_sockaddr *) addr;
-	int	result;
+	int	result, timeout;
 	size_t	size;
 
 	if (ps->type == PI_SOCK_STREAM) {
@@ -268,6 +268,19 @@ pi_usb_connect(pi_socket_t *ps, struct sockaddr *addr, size_t addrlen)
 	result = data->impl.open(ps, pa, addrlen);
 	if (result < 0)
 		goto fail;
+
+	data->timeout = timeout = ps->accept_to * 1000;
+
+	if (data->impl.wait_for_device) {
+		result = data->impl.wait_for_device (ps, &timeout);
+		if (result <= 0)
+			goto fail;
+	}
+	result = data->impl.poll(ps, timeout);
+	if (result <= 0)
+		goto fail;
+
+	pi_socket_init(ps);
 
 	ps->raddr 	= malloc(addrlen);
 	memcpy(ps->raddr, addr, addrlen);
