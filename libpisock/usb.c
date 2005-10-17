@@ -276,11 +276,6 @@ pi_usb_connect(pi_socket_t *ps, struct sockaddr *addr, size_t addrlen)
 		if (result <= 0)
 			goto fail;
 	}
-	result = data->impl.poll(ps, timeout);
-	if (result <= 0)
-		goto fail;
-
-	pi_socket_init(ps);
 
 	ps->raddr 	= malloc(addrlen);
 	memcpy(ps->raddr, addr, addrlen);
