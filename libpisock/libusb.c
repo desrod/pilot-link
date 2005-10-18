@@ -32,6 +32,7 @@
 #include <fcntl.h>
 #include <string.h>
 #include <pthread.h>
+#include <signal.h>
 
 #include "pi-debug.h"
 #include "pi-source.h"
@@ -295,9 +296,11 @@ RD_main (void *foo)
 	RD_buffer = NULL;
 	RD_buffer_size = 0;
 
-	while (RD_running) {
+	while (RD_running == 1) {
 		RD_do_read (0);
 	}
+
+	RD_running = 0;
 
 	return NULL;
 }
@@ -318,12 +321,36 @@ RD_start (void)
 static int
 RD_stop (void)
 {
+	int start, now;
+
 	if (!RD_thread || !RD_running)
 		return 0;
 
-	RD_running = 0;
+	RD_running = -1;
+
+	/*
+	 * FIXME: Evil kluge.
+	 * Handles the case where the app wants to close,
+	 * and the PDA stays put and quiet.
+	 */
+	start = time(NULL);
+	while (RD_running) {
+		now = time(NULL);
+		if ((now - start) >= 5) {
+			LOG((PI_DBG_DEV, PI_DBG_LVL_WARN, "libusb: Killing read thread.\n"));
+			pthread_kill (RD_thread, SIGURG);
+			RD_running = 0;
+			return 1;
+		}
+		sleep (1);
+	}
+
 	pthread_join (RD_thread, NULL);
-	RD_thread = 0;
+
+	/* Clean up the buffers. */
+	free (RD_buffer);
+	RD_buffer = NULL;
+	RD_buffer_size = 0;
 
 	return 1;
 }
