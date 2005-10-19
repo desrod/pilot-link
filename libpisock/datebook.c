@@ -265,13 +265,14 @@ unpack_Appointment(Appointment_t *a, pi_buffer_t *buf, datebookType type)
  * Function:    pack_Appointment
  *
  * Summary:	Fill in the raw appointment record data based on the 
- *		appointment structure
+ *		appointment structure.
  *
- * Parameters:  Appointment_t*, char* to buffer, buffer length
+ * Parameters:  Appointment_t*, pi_buffer_t*, datebook database version
+ *              from the datebookType enumeration -- only v1 is supported
+ *              for now.
  *
- * Returns:     The length of the buffer required if record is NULL,
- *		or 0 on error, the length of the data used from the 
- *		buffer otherwise
+ * Returns:     -1 on error (bad arguments, mostyle) or 0 on success.
+ *              The buffer is sized to accomodate the required data.
  *
  ***********************************************************************/
 int
