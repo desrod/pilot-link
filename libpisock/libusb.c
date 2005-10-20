@@ -296,6 +296,8 @@ RD_main (void *foo)
 	RD_buffer = NULL;
 	RD_buffer_size = 0;
 
+	pthread_setcanceltype (PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
+
 	while (RD_running == 1) {
 		RD_do_read (0);
 	}
@@ -338,7 +340,7 @@ RD_stop (void)
 		now = time(NULL);
 		if ((now - start) >= 5) {
 			LOG((PI_DBG_DEV, PI_DBG_LVL_WARN, "libusb: Killing read thread.\n"));
-			pthread_kill (RD_thread, SIGURG);
+			pthread_cancel (RD_thread);
 			RD_running = 0;
 			return 1;
 		}
