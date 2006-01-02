@@ -1,7 +1,7 @@
 /*
  * darwinusb.c: I/O support for Darwin (Mac OS X) USB
  *
- * Copyright (c) 2004-2005, Florent Pillet.
+ * Copyright (c) 2004-2006, Florent Pillet.
  *
  * $Id$
  *
@@ -166,6 +166,9 @@ typedef struct usb_connection_t
 	int read_ahead_size;			/* when waiting for big chunks of data, used as a hint to make bigger read requests */
 	int last_read_ahead_size;		/* also need this to properly compute the size of the next read */
 
+	unsigned long total_bytes_read;		/* total number of bytes received since connection was opened */
+	unsigned long total_bytes_written;	/* total number of bytes sent since connection was opened */
+
 	pthread_mutex_t read_queue_mutex;
 	pthread_cond_t read_queue_data_avail_cond;
 	char *read_queue;			/* stores completed reads, grows by 64k chunks */
@@ -300,6 +303,9 @@ typedef struct
  */
 
 #define FLAG_ANSWERS_CONN_INFO		0x0001		/* device is known to answer connection information requests */
+#define FLAG_USE_FIRST_PAIR		0x0002		/* thanks to dumb programmers at Palm, the connection information doesn't match the actual pipes being used. If this flag is set, always try to use the first endoints pair */
+#define FLAG_USE_SECOND_PAIR		0x0004		/* ditto */
+#define FLAG_ANSWERS_PALM_CONN_INFO	0x0008		/* means that if the device doesn't answer PALM_EXT_CONNECTION_INFORMATION, don't try the visor variant (for stupid PalmOne handhelds) */
 #define FLAG_REJECT			0x8000		/* device is known but not supported yet */
 
 static struct {
@@ -346,12 +352,12 @@ acceptedDevices[] = {
 	{0x0830, 0x0052},
 	{0x0830, 0x0053},
 	{0x0830, 0x0060, FLAG_ANSWERS_CONN_INFO},	/* Tungsten series, Zire 71 */
-	{0x0830, 0x0061, FLAG_ANSWERS_CONN_INFO},	/* Zire 31, 72, T5, LifeDrive */
+	{0x0830, 0x0061, FLAG_ANSWERS_PALM_CONN_INFO | FLAG_USE_FIRST_PAIR},	/* Zire 22, 31, 72, T|5, T|X, LifeDrive -- for T|X and LD, they don't answer to the PALM_EXT_CONNECTION_INFORMATION control code. In this case we revert to using the first pair of pipes */
 	{0x0830, 0x0062},
 	{0x0830, 0x0063},
 	{0x0830, 0x0070, FLAG_ANSWERS_CONN_INFO},	/* Zire */
 	{0x0830, 0x0071},
-	{0x0830, 0x0080},	/* palmOne serial adapter (actually, a Keyspan adapter) */
+	{0x0830, 0x0080},	/* palmOne serial adapter */
 	{0x0830, 0x0099},
 	{0x0830, 0x0100},
 
@@ -367,7 +373,10 @@ acceptedDevices[] = {
 
 	/* ACEECA */
 	{0x4766, 0x0001},	/* MEZ1000 */
-
+	
+	/* Fossil */
+	{0x0e67, 0x0002},	/* Abacus wrist PDA */
+	
 	/* Samsung */
 	{0x04e8, 0x8001}	/* I330 */
 };
@@ -382,7 +391,7 @@ static void device_notification (usb_connection_t *connexion, io_service_t servi
 static void read_completion (usb_connection_t *connexion, IOReturn result, void *arg0);
 static int accepts_device (unsigned short vendor, unsigned short product, unsigned short *flags);
 static IOReturn	configure_device (IOUSBDeviceInterface **dev, unsigned short vendor, unsigned short product, unsigned short flags, int *port_number, int *input_pipe_number, int *output_pipe_number, int *pipe_info_retrieved);
-static IOReturn	find_interfaces (usb_connection_t *usb, IOUSBDeviceInterface **dev, unsigned short vendor, unsigned short product, int port_number, int input_pipe_number, int output_pipe_number, int pipe_info_retrieved);
+static IOReturn	find_interfaces (usb_connection_t *usb, IOUSBDeviceInterface **dev, unsigned short vendor, unsigned short product, unsigned short accept_flags, int port_number, int input_pipe_number, int output_pipe_number, int pipe_info_retrieved);
 static int prime_read (usb_connection_t *connexion);
 static IOReturn	read_visor_connection_information (IOUSBDeviceInterface **dev, int *port_number, int *input_pipe, int *output_pipe);
 static IOReturn	decode_generic_connection_information(palm_ext_connection_info *ci, int *port_number, int *input_pipe, int *output_pipe);
@@ -414,7 +423,7 @@ add_connection(usb_connection_t *c)
 	pthread_mutex_lock(&usb_connections_mutex);
 	c->next = usb_connections;
 	usb_connections = c;
-	pthread_cond_signal(&usb_connection_added_cond);
+	//pthread_cond_signal(&usb_connection_added_cond);
 	pthread_mutex_unlock(&usb_connections_mutex);
 }
 
@@ -469,7 +478,7 @@ connection_for_socket(pi_socket_t *ps)
 
 	pthread_mutex_lock(&usb_connections_mutex);
 	c = usb_connections;
-	while (c && (c->ps != NULL || c->opened == 0))		/* skip connections which are being disposed of (opened=0) */
+	while (c && (c->ps != NULL || c->opened == 0 || c->total_bytes_read == 0))	/* skip connections which are being disposed of (opened=0) */
 		c = c->next;
 	if (change_refcount(c, +1) <= 0)
 		c = NULL;
@@ -814,7 +823,7 @@ device_added (void *refCon, io_iterator_t iterator)
 		c->dev_flags = accept_flags;
 
 		/* try to locate the pipes we need to talk to the device */
-		kr = find_interfaces(c, dev, vendor, product, port_number, input_pipe_number, output_pipe_number, pipe_info_retrieved);
+		kr = find_interfaces(c, dev, vendor, product, accept_flags, port_number, input_pipe_number, output_pipe_number, pipe_info_retrieved);
 		if (kr != kIOReturnSuccess)
 		{
 			LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "darwinusb: unable to find interfaces (kr=0x%08x)\n", kr));
@@ -940,14 +949,28 @@ configure_device(IOUSBDeviceInterface **di,
 
 	/* Try reading pipe information. Most handhelds support a control request that returns info about the ports and
 	 * pipes. We first try the generic control code, and if it doesn't work we try the Visor one which seems to be
-	 * supported by some devices Also, we can detect that a T5 is in "wait" mode (device seen on USB but not synchronizing)
-	 * and in this case we return a kIOReturnNotReady code.
+	 * supported by some devices Also, we can detect that a T5 / LifeDrive is in "wait" mode
+	 * (device appears on USB but not synchronizing) and in this case we return a kIOReturnNotReady code.
 	 */
 	kr = read_generic_connection_information (di, port_number, input_pipe_number, output_pipe_number);
-	if (kr != kIOReturnSuccess && kr != kIOReturnNotReady)
+	if (kr != kIOReturnSuccess && kr != kIOReturnNotReady && !(flags & FLAG_ANSWERS_PALM_CONN_INFO))
 		kr = read_visor_connection_information (di, port_number, input_pipe_number, output_pipe_number);
 	if (kr == kIOReturnNotReady)
 		return kr;
+
+	/* With some devices (Palm) we need to hardcord the location of the pipes to use
+	 * because the Palm engineers had the good idea to mismatch the connection information data
+	 * and the actual pipes to use
+	 */
+	if (flags & (FLAG_USE_FIRST_PAIR | FLAG_USE_SECOND_PAIR))
+	{
+		*pipe_info_retrieved = 1;
+		return kIOReturnSuccess;
+	}
+
+	/* For device which we know return connection information, we want it to be returned to
+	 * consider the device alive
+	 */
 	if (kr != kIOReturnSuccess && (flags & FLAG_ANSWERS_CONN_INFO))
 		return kIOReturnNotReady;
 
@@ -973,6 +996,7 @@ find_interfaces(usb_connection_t *c,
 				IOUSBDeviceInterface **di,
 				unsigned short vendor,
 				unsigned short product,
+				unsigned short accept_flags,
 				int port_number,
 				int input_pipe_number,
 				int output_pipe_number,
@@ -989,7 +1013,6 @@ find_interfaces(usb_connection_t *c,
 	IOCFPlugInInterface **plugInInterface = NULL;
 	UInt8 direction, number, transferType, interval;
 	UInt16 maxPacketSize;
-	int pair_index;
 
 	request.bInterfaceClass = kIOUSBFindInterfaceDontCare;
 	request.bInterfaceSubClass = kIOUSBFindInterfaceDontCare;
@@ -1110,9 +1133,11 @@ find_interfaces(usb_connection_t *c,
 			c->in_pipe_ref = 0;
 			c->out_pipe_ref = 0;
 
+			int input_pipes_seen = 0;
+			int output_pipes_seen = 0;
+			
 			for (pipeRef = 1; pipeRef <= intfNumEndpoints; pipeRef++)
 			{
-				UInt8 prev_dir = direction;
 				kr = (*c->interface)->GetPipeProperties (c->interface, pipeRef, &direction, &number,
 									  &transferType, &maxPacketSize, &interval);
 				if (kr != kIOReturnSuccess)
@@ -1121,24 +1146,28 @@ find_interfaces(usb_connection_t *c,
 				}
 				else
 				{
-					pair_index = (pipeRef > 1 && direction == prev_dir) ? (pair_index + 1) : 1;
-					LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: pipe %d: direction=0x%02x, number=0x%02x, transferType=0x%02x, maxPacketSize=%d, interval=0x%02x, pair_index=%d\n",
+					int pair_index = (direction == kUSBIn) ? ++input_pipes_seen : ++output_pipes_seen;
+					
+					LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG,
+						"darwinusb: pipe %d: direction=0x%02x, number=0x%02x, transferType=0x%02x, maxPacketSize=%d, interval=0x%02x, pair_index=%d\n",
 						pipeRef,(int)direction,(int)number,(int)transferType,(int)maxPacketSize,(int)interval,pair_index));
 					if (c->in_pipe_ref == 0 &&
 					    direction == kUSBIn &&
 					    transferType == kUSBBulk)
 					{
 						if ((pass == 1 && input_pipe_number != 0xff && number == input_pipe_number) ||
+						    (pass == 1 && port_number == 0xff && input_pipe_number == 0xff && (accept_flags & FLAG_USE_FIRST_PAIR)) ||
 						    (pass == 2 && port_number != 0xff && number == port_number) ||
 						    (pass == 3 && ((port_number != 0xff && pair_index == port_number) || (port_number == 0xff && maxPacketSize == 64))) ||
 						     pass == 4)
 							c->in_pipe_ref = pipeRef;
 					}
 					else if (c->out_pipe_ref == 0 &&
-							 direction == kUSBOut &&
-							 transferType == kUSBBulk)
+					         direction == kUSBOut &&
+					         transferType == kUSBBulk)
 					{
 						if ((pass == 1 && output_pipe_number != 0xff && number == output_pipe_number) ||
+						    (pass == 1 && port_number == 0xff && input_pipe_number == 0xff && (accept_flags & FLAG_USE_FIRST_PAIR)) ||
 						    (pass == 2 && port_number != 0xff && number == port_number) ||
 						    (pass == 3 && ((port_number != 0xff && pair_index == port_number) || (port_number == 0xff && maxPacketSize == 64))) ||
 						     pass == 4)
@@ -1410,7 +1439,7 @@ read_completion (usb_connection_t *c, IOReturn result, void *arg0)
 			}
 		}
 		if (bytes_read > 0)
-		{		
+		{
 			pthread_mutex_lock(&c->read_queue_mutex);
 			if (c->read_queue == NULL)
 			{
@@ -1436,6 +1465,15 @@ read_completion (usb_connection_t *c, IOReturn result, void *arg0)
 				c->read_queue_size = 0;
 			}
 			pthread_mutex_unlock(&c->read_queue_mutex);
+
+			if (c->total_bytes_read == 0)
+			{
+				/* the connection is now considered live */
+				pthread_mutex_lock(&usb_connections_mutex);
+				pthread_cond_signal(&usb_connection_added_cond);
+				pthread_mutex_unlock(&usb_connections_mutex);
+			}
+			c->total_bytes_read += (unsigned long)bytes_read;
 		}
 	}
 
@@ -1489,8 +1527,10 @@ prime_read(usb_connection_t *c)
 		IOReturn kr = (*c->interface)->ReadPipeAsyncTO (c->interface, c->in_pipe_ref,
 				c->read_buffer, c->last_read_ahead_size, 5000, 5000, (IOAsyncCallback1)&read_completion, (void *)c);
 
-		if (kr == kIOUSBPipeStalled)
+		if (kr == kIOUSBPipeStalled || kr == kIOUSBTransactionTimeout || kr == kIOUSBDataToggleErr)
 		{
+			// this code may be removed later as we are now using ReadPipeAsyncTO which is not
+			// supposed to return them (it calls the completion callback instead)
 			ULOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: stalled -- clearing stall and re-priming\n"));
 			(*c->interface)->ClearPipeStall (c->interface, c->in_pipe_ref);
 			kr = (*c->interface)->ReadPipeAsyncTO (c->interface, c->in_pipe_ref,
@@ -1585,10 +1625,14 @@ u_close(struct pi_socket *ps)
 	ULOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: u_close(ps=%p c=%p\n",ps,c));
 	if (c && change_refcount(c, 1) > 0) 
 	{
+		// @@@ TODO: for KLSI, we should set total_bytes_read to 0 so that next time we receive data,
+		// @@@ a new connection is declared `live'
 		//if (c->vendorID == VENDOR_PALMONE && c->productID == PRODUCT_PALMCONNECT_USB)
 		//	control_request(c->device, 0x40, KLSI_SET_HANDSHAKE_LINES, KLSI_SETHS_RTS, 0, NULL, 0);
 
 		c->opened = 0;		/* set opened to 0 so that other threads don't try to acquire this connection, as it is on the way out */
+		c->total_bytes_read = 0;
+		c->total_bytes_written = 0;
 		c->ps = NULL;
 		change_refcount(c, -2);	/* decrement current refcount + disconnect */
 	}
@@ -1599,13 +1643,13 @@ static int
 u_wait_for_device(struct pi_socket *ps, int *timeout)
 {
 	usb_connection_t *c = connection_for_socket(ps);
-	struct timespec to, when;
+	struct timespec to, to_expiration;
 
 	ULOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: u_wait_for_device(ps=%p c=%p, timeout=%d)\n",ps,c,timeout ? *timeout : 0));
 
 	if (timeout && *timeout)
 	{
-		pi_timeout_to_timespec(*timeout, &when);
+		pi_timeout_to_timespec(*timeout, &to_expiration);
 		to.tv_sec = *timeout / 1000;
 		to.tv_nsec = (*timeout % 1000) * 1000 * 1000;
 	}
@@ -1631,7 +1675,6 @@ u_wait_for_device(struct pi_socket *ps, int *timeout)
 		c = connection_for_socket(ps);
 
 		ULOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: u_wait_for_device -> end of wait, c=%p\n",c));
-
 		if (c && c->vendorID==VENDOR_PALMONE && c->productID==PRODUCT_PALMCONNECT_USB)
 		{
 			/* when working with a PalmConnect USB, make sure we use the right speed 
@@ -1643,7 +1686,7 @@ u_wait_for_device(struct pi_socket *ps, int *timeout)
 		if (timeout && *timeout)
 		{
 			/* if there was a timeout, compute the remaining timeout time */
-			*timeout = pi_timespec_to_timeout(&when);
+			*timeout = pi_timespec_to_timeout(&to_expiration);
 		}
 	}
 	return (c != NULL);
@@ -1736,6 +1779,7 @@ u_write(struct pi_socket *ps, const unsigned char *buf, size_t len, int flags)
 				break;
 			}
 
+			c->total_bytes_written += (unsigned long)data_size;
 			transferred_bytes += data_size;
 			len -= data_size;
 		}
@@ -1744,10 +1788,15 @@ u_write(struct pi_socket *ps, const unsigned char *buf, size_t len, int flags)
 	else
 	{
 		kr = (*c->interface)->WritePipeTO(c->interface, c->out_pipe_ref, (void *)buf, len, 5000, 5000);
-		if (kr != kIOReturnSuccess) {
+		if (kr != kIOReturnSuccess)
+		{
 			LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "darwinusb: darwin_usb_write(): WritePipe returned kr=0x%08lx\n", kr));
-		} else
+		}
+		else
+		{
+			c->total_bytes_written += (unsigned long)len;
 			transferred_bytes = len;
+		}
 	}
 
 	if (change_refcount(c, -1) <= 0)
