@@ -91,7 +91,6 @@ static int
 USB_open (pi_usb_data_t *data)
 {
 	usb_init ();
-	usb_find_busses ();
 
 	return 1;
 }
@@ -107,6 +106,7 @@ USB_poll (pi_usb_data_t *data)
 	int first;
 #endif
 
+	usb_find_busses ();
 	usb_find_devices ();
 	CHECK (PI_DBG_DEV, PI_DBG_LVL_DEBUG, usb_set_debug (2));
 
