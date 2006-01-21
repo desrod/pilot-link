@@ -222,7 +222,7 @@ pi_dumpdata(const char *buf, size_t len)
 	unsigned int i;
 
 	for (i = 0; i < len; i += 16)
-		dumpline(buf + i, ((len - i) > 16) ? 16 : len - i, i);
+		pi_dumpline(buf + i, ((len - i) > 16) ? 16 : len - i, i);
 }
 
 void

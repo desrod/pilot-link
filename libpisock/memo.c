@@ -98,7 +98,7 @@ pack_Memo(Memo_t *memo, pi_buffer_t *record, memoType type)
 	if (memo->text)
 		strcpy((char *) record->data, memo->text);
 	else
-		record->data[0] = NULL;
+		record->data[0] = 0;
 
 	return 0;
 }
