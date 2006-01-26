@@ -178,6 +178,7 @@ int plu_protect_files(char *name, const char *extension, const size_t namelength
 extern struct poptOption plu_common_options[];
 extern int plu_quiet;
 extern char *plu_port;
+extern int plu_timeout;
 
 
 #endif

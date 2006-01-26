@@ -27,6 +27,7 @@
 #include "pi-header.h"
 
 char *plu_port = NULL;
+int plu_timeout = 0;
 int plu_quiet = 0;
 static char *badoption_help = NULL;
 
@@ -58,6 +59,7 @@ static void callback(poptContext pc,
 struct poptOption plu_common_options[] = {
 	{ NULL, 0, POPT_ARG_CALLBACK, callback, 0, NULL, NULL},
 	{ "port",    'p', POPT_ARG_STRING, &plu_port,  0 , "Use device <port> to communicate with Palm", "<port>"},
+	{ "timeout",    't', POPT_ARG_INT, &plu_timeout,  0 , "Use timeout <timeout> seconds", "<timeout>"},
 	{ "version",  0 , POPT_ARG_NONE,    NULL, 'v', "Display version information", NULL},
 	{ "quiet",   'q', POPT_ARG_NONE,  &plu_quiet,  0 , "Suppress 'Hit HotSync button' message", NULL},
 	{ "bad-option",0, POPT_ARG_NONE | POPT_ARGFLAG_DOC_HIDDEN, NULL, ARGUMENT_BAD_OPTION, NULL, NULL },

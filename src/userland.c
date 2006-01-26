@@ -75,7 +75,7 @@ int plu_connect()
 		return -1;
 	}
 
-	sd = pi_accept(sd, 0, 0);
+	sd = pi_accept_to(sd, 0, 0, plu_timeout);
 	if (sd < 0) {
 		fprintf(stderr, "\n   Error accepting data on %s\n", plu_port);
 		pi_close(sd);
