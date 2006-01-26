@@ -362,8 +362,16 @@ pi_serial_bind(pi_socket_t *ps, struct sockaddr *addr, size_t addrlen)
 begin:
 	if ((err = data->impl.open(ps, pa, addrlen)) < 0) {
 		int 	save_errno = errno;
-		char	realport[50];
-		
+#ifdef MAXPATHLEN
+		char	realport[MAXPATHLEN];
+#else
+ # ifdef PATH_MAX
+		char	realport[PATH_MAX];
+ # else
+		char	realport[4096];
+ # endif /* PATH_MAX */
+#endif /* MAXPATHLEN */
+
 		realpath(pa->pi_device, realport);
 		errno = save_errno;
 
