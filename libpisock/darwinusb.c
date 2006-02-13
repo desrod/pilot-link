@@ -86,6 +86,7 @@
 #include <IOKit/IOMessage.h>
 #include <IOKit/IOCFPlugIn.h>
 #include <IOKit/usb/IOUSBLib.h>
+#include <CoreFoundation/CFByteOrder.h>
 
 #include "pi-debug.h"
 #include "pi-socket.h"
@@ -1238,7 +1239,7 @@ read_visor_connection_information (IOUSBDeviceInterface **dev, int *port_number,
 	else
 	{
 		CHECK(PI_DBG_DEV, PI_DBG_LVL_DEBUG, pi_dumpdata((const char *)&ci, sizeof(ci)));
-		ci.num_ports >>= 8;		/* number of ports is little-endian */
+		ci.num_ports = CFSwapInt16LittleToHost(ci.num_ports);		/* number of ports is little-endian */
 		if (ci.num_ports > 8)
 			ci.num_ports = 8;
 		LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: VISOR_GET_CONNECTION_INFORMATION, num_ports=%d\n", ci.num_ports));
@@ -1249,25 +1250,25 @@ read_visor_connection_information (IOUSBDeviceInterface **dev, int *port_number,
 			switch (ci.connections[i].port_function_id)
 			{
 				case VISOR_FUNCTION_GENERIC:
-					function_str="GENERIC";
+					function_str = "GENERIC";
 					break;
 				case VISOR_FUNCTION_DEBUGGER:
-					function_str="DEBUGGER";
+					function_str = "DEBUGGER";
 					break;
 				case VISOR_FUNCTION_HOTSYNC:
-					function_str="HOTSYNC";
+					function_str = "HOTSYNC";
 					if (port_number)
 						*port_number = ci.connections[i].port;
 					kr = kIOReturnSuccess;
 					break;
 				case VISOR_FUNCTION_CONSOLE:
-					function_str="CONSOLE";
+					function_str = "CONSOLE";
 					break;
 				case VISOR_FUNCTION_REMOTE_FILE_SYS:
-					function_str="REMOTE_FILE_SYSTEM";
+					function_str = "REMOTE_FILE_SYSTEM";
 					break;
 				default:
-					function_str="UNKNOWN";
+					function_str = "UNKNOWN";
 					break;
 			}
 			LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "\t[%d] port_function_id=0x%02x (%s)\n", i, ci.connections[i].port_function_id, function_str));
@@ -1287,19 +1288,20 @@ decode_generic_connection_information(palm_ext_connection_info *ci, int *port_nu
 
 	for (i=0; i < ci->num_ports; i++)
 	{
-		LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "\t[%d] port_function_id=0x%08lx ('%4.4s')\n", i, ci->connections[i].port_function_id, (char*)&ci->connections[i].port_function_id));
+		UInt32 port_function_id = CFSwapInt32LittleToHost(ci->connections[i].port_function_id);
+		LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "\t[%d] port_function_id=0x%08lx ('%4.4s')\n", i, port_function_id, (char*)&port_function_id));
 		LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "\t[%d] port=%d\n", i, ci->connections[i].port));
 		LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "\t[%d] endpoint_info=%d (0x%02x)\n", i, ci->connections[i].endpoint_info, (int)ci->connections[i].endpoint_info));
-		if (ci->connections[i].port_function_id == 'Lsfr')
+		if (port_function_id == 'rfsL')
 		{
 			/* This is a T5 in USB connected but not synchronizing:
 			 * don't bother trying to talk to it
 			 */
 			return kIOReturnNotReady;
 		}
-		if (ci->connections[i].port_function_id == 'cnys')
+		if (port_function_id == 'sync')
 		{
-			/* 'sync': we found the port/pipes to use for synchronization
+			/* we found the port/pipes to use for synchronization
 			 * If endpoint_numbers_different is != 0, then the number of each
 			 * endpoint to use for IN and OUT is stored in endpoint_info.
 			 * Otherwise, the port number (same for both endpoints) is in
@@ -1426,7 +1428,7 @@ read_completion (usb_connection_t *c, IOReturn result, void *arg0)
 				bytes_read = 0;
 			else
 			{
-				int data_size = c->read_buffer[0] | ((int)c->read_buffer[1] << 8);
+				int data_size = (int)c->read_buffer[0] | ((int)c->read_buffer[1] << 8);
 				if ((data_size + 2) > bytes_read)
 				{
 					LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "darwinusb: invalid PalmConnect packet (%d bytes, says %d content bytes)\n",
