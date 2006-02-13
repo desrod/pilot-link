@@ -298,8 +298,7 @@ ssize_t
 cmp_tx(pi_socket_t *ps, const unsigned char *buf, size_t len, int flags)
 {
 	int 	bytes,
-		type,
-		cmp_version;
+		type;
 	size_t	size;
 	pi_protocol_t	*prot,
 			*next;
