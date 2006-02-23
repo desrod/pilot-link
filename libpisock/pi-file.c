@@ -902,15 +902,15 @@ pi_file_install(pi_file_t *pf, int socket, int cardno,
 	/* Delete DB if it already exists */
 	dlp_DeleteDB(socket, cardno, pf->info.name);
 
-	 /* Judd - 25Nov99 - Graffiti hack We want to make sure that these 2
+	/* Set up DB flags */
+	flags = pf->info.flags;
+	
+	/* Judd - 25Nov99 - Graffiti hack We want to make sure that these 2
 	    flags get set for this one */
 	if (pf->info.creator == pi_mktag('g', 'r', 'a', 'f')) {
 		flags |= dlpDBFlagNewer;
 		flags |= dlpDBFlagReset;
 	}
-
-	/* Set up DB flags */
-	flags = pf->info.flags;
 
 	if (strcmp(pf->info.name, "Graffiti ShortCuts ") == 0) {
 		flags |= 0x8000;	/* Rewrite an open DB */
