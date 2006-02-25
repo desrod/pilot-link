@@ -893,7 +893,7 @@ struct dlpResponse {
 
 /*@}*/
 
-/** @name Databse access functions */
+/** @name Database access functions */
 /*@{*/
 	/** @brief Read the database list from the device
 	 *
