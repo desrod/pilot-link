@@ -99,7 +99,7 @@
 #ifdef PI_DEBUG
     #define DEBUG_USB 1
 #endif
-//#undef DEBUG_USB        /* comment out to leave debug enabled */
+#undef DEBUG_USB        /* comment out to leave debug enabled */
 
 /* Macro to log more information when debugging USB. Note that this is for
  * my own use, mostly, as the info logged is primarily being used to
