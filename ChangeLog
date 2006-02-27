@@ -1,3 +1,13 @@
+2006-02-27 23:04  neilw
+
+	* configure.ac : Fix test to look for a file, not directory.
+	Fix the xsltproc check to find Mac OSX stylesheets. 
+	* doc/xml/Makefile.am : Remove recursive loop.
+	* doc/xml/docbook.xsl.in : Fix error reported by doclifter
+	by Eric Raymond.
+	* doc/xml/*.xml : Update options list handling to a more
+	consistent formatting.
+
 2005-07-20 18:13  fpillet
 
 	* libpisock/darwinusb.c: Reset the data toggle on error, it helps
