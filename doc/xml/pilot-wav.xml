@@ -18,6 +18,7 @@
          <emphasis>pilot-wav</emphasis>
          [<option>-p</option>|<option>--port</option> &lt;<userinput>port</userinput>&gt;]
          [<option>--version</option>] [<option>-?</option>|<option>--help</option>]
+	 [<option>-q</option>|<option>--quiet</option>]
          [<option>--usage</option>] [<option>-f</option>|<option>--fetch</option>
          [<filename>file</filename>|<option>all</option>]]
          [<option>-c</option>|<option>--convert</option> <filename>file</filename>]
@@ -27,77 +28,103 @@
       <title>Options</title>
       <refsect2>
          <title>pilot-wav options</title>
-         <para>
+	<variablelist>
+	<varlistentry>
+		<term>
             <option>-f</option>,
-            <option>--fetch</option>=[<filename>file</filename>|<option>all</option>]
-         </para>
-         <blockquote>
+            <option>--fetch</option> [<filename>file</filename>|<option>all</option>]
+		</term>
+         <listitem>
             <para>
                Fetch all wav files or specified wav file from the Palm.
             </para>
-         </blockquote>
-         <para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             <option>-c</option>,
-            <option>--convert</option>=<filename>file.wav.pdb</filename>
-         </para>
-         <blockquote>
+            <option>--convert</option> <filename>file.wav.pdb</filename>
+         </term>
+         <listitem>
             <para>
                Convert <filename>file.wav.pdb</filename> file to wav
             </para>
-         </blockquote>
+         </listitem>
+	</varlistentry>
+	</variablelist>
       </refsect2>
       <refsect2>
          <title>Conduit Options</title>
-         <para>
-            <option>-p</option>, <option>--port</option><filename>port</filename>
-         </para>
-         <blockquote>
+	<variablelist>
+	<varlistentry>
+		<term>
+            <option>-p</option>, <option>--port</option> <filename>port</filename>
+		</term>
+         <listitem>
             <para>
                Use device file <filename>port</filename> to communicate with the Palm handheld. If
                this is not specified, <emphasis>pilot-wav</emphasis> will look for the
                <filename>$PILOTPORT</filename> environment variable. If neither are found or
                supplied, <emphasis>pilot-wav</emphasis> will print the usage information.
             </para>
-         </blockquote>
-         <para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+		<term>
+		<option>-q</option>, 
+		<option>--quiet</option>
+		</term>
+		<listitem>
+		<para>Suppress 'Hit HotSync button' message</para>
+		</listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             <option>-v</option>, <option>--version</option>
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>
                Display version of <emphasis>pilot-wav</emphasis>.
             </para>
-         </blockquote>
+         </listitem>
+	</varlistentry>
+	</variablelist>
       </refsect2>
       <refsect2>
          <title>Help Options</title>
-         <para>
+	<variablelist>
+	<varlistentry>
+		<term>
             <option>-h</option>, <option>--help</option>
-         </para>
-         <blockquote>
+		</term>
+         <listitem>
             <para>
                Display the help synopsis for <emphasis>pilot-wav</emphasis>.
             </para>
-         </blockquote>
-         <para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             <option>--usage</option> 
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>Display a brief usage message and exit without connecting.</para>
-         </blockquote>
+         </listitem>
+	</varlistentry>
+	</variablelist>
       </refsect2>
    </refsect1>
    <refsect1>
       <title>Examples</title>
       <para>
-         <!-- FIXME: Add programlisting/userinput here as per other manpages -->
-         <userinput>pilot-wav</userinput> 
+         <emphasis>pilot-wav</emphasis> 
          <option>-p</option>
          <filename>/dev/pilot</filename>
          <option>-f</option>
          <filename>MyVoiceMemo.wav.pdb</filename>
       </para>
       <para>
-         <userinput>pilot-wav</userinput>
+         <emphasis>pilot-wav</emphasis>
          <option>-c</option>
          <filename>MyVoiceMemo.wav.pdb</filename>
       </para>

@@ -20,7 +20,7 @@
       <para>
          <emphasis>pi-getram</emphasis>
          [<option>-p</option>|<option>--port</option> &lt;<userinput>port</userinput>&gt;]
-         [<option>--version</option>] 
+         [<option>--version</option>] [<option>-q</option>|<option>--quiet</option>] 
          [<option>-?</option>|<option>--help</option>] [<option>--usage</option>]
          [<option>-t</option>|<option>--token</option> <userinput>token</userinput>]
          [<option>-s</option>|<option>--sysinfo</option>] [<option>--ram</option>]
@@ -37,10 +37,9 @@
          <emphasis>pi-getromtoken</emphasis>, <emphasis>pi-getrom</emphasis> and
          <emphasis>pi-getram</emphasis> are inter-related. All relevant code is implemented in
          <emphasis>pi-getrom</emphasis>, and you can do
-         <emphasis>pi-getromtoken</emphasis><option>--ram</option><filename>filename</filename> to
+         <emphasis>pi-getromtoken</emphasis> <option>--ram</option> <filename>filename</filename> to
          get the RAM dump if you like.
       </para> 
-
       <para>
          Note, because <emphasis>pi-getrom</emphasis> uses the low-level RPC protocol to fetch the
          ROM image, and the new OS5 devices do not use this protocol, you currently cannot fetch an
@@ -52,88 +51,121 @@
       <title>Options</title>
       <refsect2>
          <title>pi-getram options</title>
-         <para>
+	<variablelist>
+	<varlistentry>
+		<term>
             <option>-t</option>,
             <option>--token</option> <userinput>token</userinput>
-         </para>
-         <blockquote>
+		</term>
+         <listitem>
             <para>
             A ROM token to read (i.e. snum)</para>
-         </blockquote>
-         <para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             <option>-s</option>, <option>--sysinfo</option>
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>
             Print SysInfo</para>
-         </blockquote>
-         <para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             <option>--ram</option>
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>
             Read RAM</para>
-         </blockquote>
-         <para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             <option>--rom</option>
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>
             Read ROM</para>
-         </blockquote>
-         <para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             &lt;<option>filename</option>&gt;
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>
-               Write the RAM image to the file named by lt;<filename>filename</filename>&gt;. If
+               Write the RAM image to the file named by &lt;<filename>filename</filename>&gt;. If
                this is omitted, the filename will be written out as the RAM version name as
                follows: '<filename>pilot-$VERSION.ram</filename>', where an OS 3.5 image would be
                written as the filename of '<filename>pilot-3.5.0.ram</filename>'.
             </para>
-         </blockquote>
+         </listitem>
+	</varlistentry>
+	</variablelist>
       </refsect2>
       <refsect2>
          <title>Conduit Options</title>
-         <para>
+	<variablelist>
+	<varlistentry>
+		<term>
             <option>-p</option>, <option>--port</option>
             &lt;<userinput>port</userinput>&gt;
-         </para>
-         <blockquote>
+		</term>
+         <listitem>
             <para>
                Use device file &lt;<filename>port</filename>&gt; to communicate with the Palm
                handheld. If this is not specified, <emphasis>pi-getram</emphasis> will look for the
                <filename>$PILOTPORT</filename> environment variable. If neither are found or
                supplied, <emphasis>pi-getram</emphasis> will print the usage information.
             </para>
-         </blockquote>
-         <para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+		<term>
+		<option>-q</option>, 
+		<option>--quiet</option>
+		</term>
+		<listitem>
+		<para>Suppress 'Hit HotSync button' message</para>
+		</listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             <option>-v</option>, <option>--version</option>
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>
                Display version of <emphasis>pi-getram</emphasis> and exit
                without connecting.
             </para>
-         </blockquote>
+         </listitem>
+	</varlistentry>
+	</variablelist>
       </refsect2>
       <refsect2>
          <title>Help Options</title>
-         <para>
+	<variablelist>
+	<varlistentry>
+		<term>
             <option>-h</option>, <option>--help</option>
-         </para>
-         <blockquote>
+	        </term>
+         <listitem>
             <para>
                Display the help synopsis for <emphasis>pi-getram</emphasis> and exit without
                connecting.
             </para>
-         </blockquote>
-         <para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             <option>--usage</option> 
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>Display a brief usage message and exit without connecting.</para>
-         </blockquote>
+         </listitem>
+	</varlistentry>
+	</variablelist>
       </refsect2>
    </refsect1>
    <refsect1>

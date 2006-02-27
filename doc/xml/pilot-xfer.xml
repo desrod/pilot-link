@@ -51,54 +51,66 @@
       <title>Options</title>
       <refsect2>
          <title>pilot-xfer options</title>
-         <para>
+	<variablelist>
+	<varlistentry>
+		<term>
             <option>-a</option>, <option>--archive</option>
             &lt;<filename>dir</filename>&gt;
-         </para>
-         <blockquote>
+		</term>
+         <listitem>
             <para>
                Archives files which have been removed from the Palm to
                &lt;<filename>dir</filename>&gt; instead of just deleting (unlinking) them.
             </para>
-         </blockquote>
-         <para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             <option>-b</option>, <option>--backup</option>
             &lt;<filename>dir</filename>&gt;
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>
                Backs up the Palm into the specified directory (which will be created if it does not
                already exist).
             </para>
-         </blockquote>
-         <para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             <option>-C</option>, <option>--cardinfo</option>
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>Show information on available cards</para>
-         </blockquote>
-         <para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             --delete &lt;<userinput>dbname</userinput>&gt;
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>
                Permanently delete the specified database(s) by name (without extension). Obviously,
                be very careful with this one.
             </para>
-         </blockquote>
-         <para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             <option>-D</option>, <option>--vfsdir</option>=<filename>dir</filename>
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>
                Modifies <option>-l</option>, <option>-i</option> or <option>-f</option> to use VFS
                <filename>dir</filename> instead of internal storage
             </para>
-         </blockquote>
-         <para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             <option>-e</option>, --exclude=<filename>file</filename>
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>
                Reads a list of databases from &lt;<filename>file</filename>&gt; and prevents
                <option>--backup</option>, <option>--sync</option>, or <option>--update</option>
@@ -106,104 +118,126 @@
                excluded. Databases should be specified by name without the extension, as displayed
                with --list, in any order.
             </para>
-         </blockquote>
-         <para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             <option>-f</option>, --fetch
             &lt;<userinput>dbname</userinput>&gt;
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>
                Fetch each specified database out of the Palm into the current directory.
             </para>
-         </blockquote>
-         <para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             <option>-F</option>, <option>--Flash</option>
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>
                Obsolete. Replaced by <option>--rom</option> in v0.12.
             </para>
-         </blockquote>
-         <para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             <option>-i</option>, --install &lt;<filename>file</filename>&gt;
             [...]
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>
                Install each specified file into the Palm. Wildcards are valid with this syntax and
                multiple files may be listed at once.
             </para>
-         </blockquote>
-         <para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             <option>-l</option>, <option>--list</option>
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>
             Note: changed behaviour in 0.12</para>
             <para>
                List all the databases in the Palm, including OS-specific native databases.
             </para>
-         </blockquote>
-         <para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             <option>-L</option>, <option>--Listall</option>
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>
                Unsupported in 0.12 - see <option>-l</option>
             </para>
-         </blockquote>
-         <para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             <option>-m</option>, <option>--merge</option>
             &lt;<filename>file</filename>&gt; [...]
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>
                Adds the records in each specified file into the corresponding Palm database.
             </para>
-         </blockquote>
-         <para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             <option>-O</option>, --<option>Osflash</option>
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>
                Obsolete. Replaced by <option>--with-os</option> in 0.12
             </para>
-         </blockquote>
-         <para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             <option>-P</option>, <option>--Purge</option>
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>
                Purge any deleted data that hasn't been cleaned up by a sync (this is a safe
                operation, and will prevent your Palm from accumulating crud if you delete records
                but aren't syncing with a PIM.) The only information you can lose is archived but
                un-synced records.
             </para>
-         </blockquote>
-         <para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             <option>-r</option>, <option>--restore</option>
             &lt;<filename>dir</filename>&gt;
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>
                Installs all files contained in a directory into the Palm.  (Use this to restore
                your Palm after a hard reset has cleared its memory, using your backup directory as
                a baseline.)
             </para>
-         </blockquote>
-         <para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             <option>--rom</option>
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>
                Modifies <option>-b</option>, <option>-u</option>, and <option> s </option>, to back
                up non-OS dbs from Flash ROM
             </para>
-         </blockquote>
-         <para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             <option>-s</option>, <option>--sync</option> lt;<filename>dir</filename>&gt;
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>
                Backs up the Palm into the specified directory (which will be created if it does not
                already exist). Any Palm databases which have not been modified or created since the
@@ -213,36 +247,44 @@
                <emphasis>NOTE</emphasis>: Any Palm databases which have been deleted will have
                their corresponding backup file removed.
             </para>
-         </blockquote>
-         <para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             <option>-S</option>, <option>--novsf</option>
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>Not supported in 0.12. No replacement.</para>
-         </blockquote>
-         <para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             <option>--with-os</option>
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>
                Modifies <option>-b</option>, <option>-u</option>, and <option> s </option>, to back
                up OS dbs from Flash ROM.
             </para>
-         </blockquote>
-         <para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             <option>-u</option>, <option>--update</option>
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>
                Backs up the Palm into the specified directory (which will be created if it does not
                already exist). Any Palm databases which have not been modified or created since the
                versions stored in the specified directory will not be backed up.
             </para>
-         </blockquote>
-         <para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             <option>-I</option>, <option>--Illegal</option>
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>
                This will back up the UnsavedPreferences.pdb file from the Palm.  Normally this file
                is not backed up by normal means (Palm Computing recommends that you do
@@ -253,58 +295,74 @@
                This also modifies the behavior of <option>--backup</option>,
                <option>--sync</option>, and <option>--update</option>.
             </para>
-         </blockquote>
-         <para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             <option>-x</option>, <option>--exec=command</option>
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>
                Execute a shell command for intermediate processing.  All commands will be done,
                from left to right in the command-line, before the connection to the pilot is made.
             </para>
-         </blockquote>
+         </listitem>
+	</varlistentry>
+	</variablelist>
       </refsect2>
       <refsect2>
          <title>Conduit Options</title>
-         <para>
+	<variablelist>
+	<varlistentry>
+		<term>
             <option>-p</option>, <option>--port</option> lt;<userinput>port</userinput>&gt;
-         </para>
-         <blockquote>
+		</term>
+         <listitem>
             <para>
                Use device file &lt;<filename>port</filename>&gt; to communicate with the Palm
                handheld. If this is not specified, <emphasis>pilot-xfer</emphasis> will look for
                the <filename>$PILOTPORT</filename> environment variable. If neither are found,
                <emphasis>pilot-xfer</emphasis> will print the usage information.
             </para>
-         </blockquote>
-         <para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             <option>-v</option>, <option>--version</option>
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>
                Display version of <emphasis>pilot-xfer</emphasis> and exit without connecting.
             </para>
-         </blockquote>
+         </listitem>
+	</varlistentry>
+	</variablelist>
       </refsect2>
       <refsect2>
          <title>Help Options</title>
-         <para>
+	<variablelist>
+	<varlistentry>
+		<term>
             <option>-h</option>, <option>--help</option>
-         </para>
-         <blockquote>
+		</term>
+         <listitem>
             <para>
                Display the help synopsis for <emphasis>pilot-xfer</emphasis> and exit without
                connecting.
             </para>
-         </blockquote>
-         <para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             <option>--usage</option> 
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>
                Display a brief usage message and exit without connecting.
             </para>
-         </blockquote>
+         </listitem>
+	</varlistentry>
+	</variablelist>
       </refsect2>
    </refsect1>
    <refsect1>

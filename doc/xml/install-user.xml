@@ -20,7 +20,8 @@
          <emphasis>install-user</emphasis>
          [<option>-p</option>|<option>--port</option> &lt;<userinput>port</userinput>&gt;]
          [<option>--version</option>] [<option>-?</option>|<option>--help</option>]
-         [<option>--usage</option>] [<option>-u</option>|<option>--user</option> <userinput>username</userinput>]
+         [<option>--usage</option>] [<option>-q</option>|<option>--quiet</option>] 
+	 [<option>-u</option>|<option>--user</option> <userinput>username</userinput>]
          [<option>-i</option>|<option>--id</option> <userinput>userid</userinput>]
          [<option>-l</option>|<option>--list</option>]
       </para>
@@ -36,72 +37,101 @@
       <title>Options</title>
       <refsect2>
          <title>install-user options</title>
-         <para>
+	<variablelist>
+	<varlistentry>
+		<term>
             <option>-u</option>,
             <option>--user</option> <userinput>username</userinput>
-         </para>
-         <blockquote>
+		</term>
+         <listitem>
             <para>
                Set the username, use quotes for spaces in the username, as in "John Q. Public".
             </para>
-         </blockquote>
-         <para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             <option>-i</option>,
             <option>--id</option> <userinput>userid</userinput>
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>
                Set the 5-digit numeric UserID on the device (used for many Palm application
                registration methods).
             </para>
-         </blockquote>
-         <para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             <option>-l</option>, <option>--list</option>
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>List the current username and ID (default)</para>
-         </blockquote>
+         </listitem>
+	</varlistentry>
+	</variablelist>
       </refsect2>
       <refsect2>
          <title>Conduit Options</title>
-         <para>
+	<variablelist>
+	<varlistentry>
+		<term>
             <option>-p</option>, <option>--port</option>
             &lt;<userinput>port</userinput>&gt;
-         </para>
-         <blockquote>
+		</term>
+         <listitem>
             <para>
                Use device file &lt;<filename>port</filename>&gt; to communicate with the Palm
                handheld. If this is not specified, <emphasis>install-user</emphasis> will look for
                the <filename>$PILOTPORT</filename> environment variable. If neither are found or
                supplied, <emphasis>install-user</emphasis> will print the usage information.
             </para>
-         </blockquote>
-         <para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+		<term>
+		<option>-q</option>, 
+		<option>--quiet</option>
+		</term>
+		<listitem>
+		<para>Suppress 'Hit HotSync button' message</para>
+		</listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             <option>-v</option>, <option>--version</option>
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>
                Display version of <emphasis>install-user</emphasis> and exit without connecting.
             </para>
-         </blockquote>
+         </listitem>
+	</varlistentry>
+	</variablelist>
       </refsect2>
       <refsect2>
          <title>Help Options</title>
-         <para>
+	<variablelist>
+	<varlistentry>
+		<term>
             <option>-h</option>, <option>--help</option>
-         </para>
-         <blockquote>
+		</term>
+         <listitem>
             <para>
                Display the help synopsis for <emphasis>install-user</emphasis> and exit without
                connecting.
             </para>
-         </blockquote>
-         <para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             <option>--usage</option> 
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>Display a brief usage message and exit without connecting.</para>
-         </blockquote>
+         </listitem>
+	</varlistentry>
+	</variablelist>
       </refsect2>
    </refsect1>
    <refsect1>

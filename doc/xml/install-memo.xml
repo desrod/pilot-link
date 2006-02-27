@@ -19,12 +19,13 @@
       <para>
          <emphasis>install-memo</emphasis>
          [<option>-p</option>|<option>--port</option> &lt;<userinput>port</userinput>&gt;]
-         [<option>--version</option>]
+         [<option>--version</option>] [<option>-q</option>|<option>--quiet</option>] 
          [<option>-?</option>|<option>--help</option>] [<option>--usage</option>]
          [<option>-c</option>|<option>--category</option> <userinput>name</userinput>]
          [<option>-r</option>|<option>--replace</option>]
          [<option>-t</option>|<option>--title</option>]
-         [<option>-f</option>|<option>--file</option> <userinput>STRING</userinput>]
+         [<option>-f</option>|<option>--file</option> <userinput>STRING</userinput>
+	 ...]
       </para>
    </refsect1>
    <refsect1>
@@ -38,92 +39,124 @@
       <title>Options</title>
       <refsect2>
          <title>install-memo options</title>
-         <para>
-            <emphasis>-c</emphasis>,
+	<variablelist>
+	<varlistentry>
+		<term>
+            <option>-c</option>,
             <option>--category</option> <userinput>category</userinput>
-         </para>
-         <blockquote>
-            <para>
-               Install memo(s) to category defined by <userinput>category</userinput> by default.
-               Normally <emphasis>install-memo</emphasis> uses the <userinput>Unfiled</userinput>
-               category as the default category if no category is chosen.
-            </para>
-         </blockquote>
+		</term>
+         <listitem>
          <para>
+               Install memo(s) to category defined by <userinput>category</userinput>.
+               <emphasis>install-memo</emphasis> uses the <userinput>Unfiled</userinput>
+               category as the default category if no category is chosen or if the specified
+	       category does not already exist on the Palm.
+            </para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             <option>-f</option>,
             <option>--file</option> <filename>STRING</filename>
-         </para>
-         <blockquote>
-            <para>File containing the target memo entry</para>
-         </blockquote>
-         <para>
+         </term>
+         <listitem>
+            <para>File containing the target memo entry. Append other filenames
+		to install one memo per file.</para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             <option>-r</option>, <option>--replace</option>
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>
                Replace all memos in the category specified by the <option>-c</option>
                <filename>category</filename> option.
             </para>
-         </blockquote>
-         <para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             <option>-t</option> <option>--title</option>
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>
                Use the filename as the title for the memo. (Normally, the first line of a memo is
                used as the title if one is not supplied with the <option>-t</option> option).
             </para>
-         </blockquote>
+         </listitem>
+	</varlistentry>
+	</variablelist>
       </refsect2>
       <refsect2>
          <title>Conduit Options</title>
-         <para>
+	<variablelist>
+	<varlistentry>
+		<term>
             <option>-p</option>, <option>--port</option><userinput>port</userinput>
-         </para>
-         <blockquote>
+		</term>
+         <listitem>
             <para>
                Use device file &lt;<userinput>port</userinput>&gt; to communicate with the Palm
                handheld. If this is not specified, <emphasis>install-memo</emphasis> will look for
                the <filename>$PILOTPORT</filename> environment variable. If neither are found or
                supplied, <emphasis>install-memo</emphasis> will print the usage information.
             </para>
-         </blockquote>
-         <para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+		<term>
+		<option>-q</option>, 
+		<option>--quiet</option>
+		</term>
+		<listitem>
+		<para>Suppress 'Hit HotSync button' message</para>
+		</listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             <option>-v</option>, <option>--version</option>
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>
                Display version of <emphasis>install-memo</emphasis> and exit
                without connecting.
             </para>
-         </blockquote>
+         </listitem>
+	</varlistentry>
+	</variablelist>
       </refsect2>
       <refsect2>
          <title>Help Options</title>
-         <para>
+	<variablelist>
+	<varlistentry>
+		<term>
             <option>-h</option>, <option>--help</option>
-         </para>
-         <blockquote>
+		</term>
+         <listitem>
             <para>
                Display the help synopsis for <emphasis>install-memo</emphasis>
-               and
-               exit without connecting.
+               and exit without connecting.
             </para>
-         </blockquote>
-         <para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             <option>--usage</option> 
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>
             Display a brief usage message and exit without connecting.</para>
-         </blockquote>
+         </listitem>
+	</varlistentry>
+	</variablelist>
       </refsect2>
    </refsect1>
    <refsect1>
       <title>Usage</title>
       <para>
-         The program will connect to the Palm handheld, and create memo entries for each file(s)
-         given on the commandline into the Memo Pad application on the Palm.
+         The program will connect to the Palm handheld, and create memo entries for each 
+	 file(s) given on the commandline into the Memo Pad application on the Palm.
       </para>
    </refsect1>
    <refsect1>

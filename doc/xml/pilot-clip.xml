@@ -19,7 +19,7 @@
       <para>
          <emphasis>pilot-clip</emphasis>
          [<option>-p</option>|<option>--port</option> &lt;<userinput>port</userinput>&gt;]
-         [<option>--version</option>]
+         [<option>--version</option>] [<option>-q</option>|<option>--quiet</option>]
          [<option>-?</option>|<option>--help</option>] [<option>--usage</option>]
          [<option>-g</option>|<option>--get</option>]
          [<option>-s</option>|<option>--set</option>]
@@ -38,64 +38,91 @@
          You must provide one of <option>-g</option> or
          <option>-s</option>.
       </para>
-      <para>
+	<variablelist>
+	<varlistentry>
+		<term>
          <option>-g</option>, <option>--get</option>
-      </para>
-      <blockquote>
+		</term>
+      <listitem>
          <para>
             Get the contents of the clipboard and pass to STDOUT.</para>
-      </blockquote>
-      <para>
+      </listitem>
+	</varlistentry>
+	<varlistentry>
+		<term>
          <option>-s</option>,
          <option>--set</option> 
-      </para>
-      <blockquote>
+      </term>
+      <listitem>
          <para>
             Set the clipboard to STDIN.</para>
-      </blockquote>
+      </listitem>
+	</varlistentry>
+	</variablelist>
    </refsect1>
    <refsect1>
       <title>Options</title>
       <refsect2>
          <title>Conduit Options</title>
-         <para>
+	<variablelist>
+	<varlistentry>
+		<term>
             <option>-p</option>, <option>--port</option>
             &lt;<userinput>port</userinput>&gt;
-         </para>
-         <blockquote>
+		</term>
+         <listitem>
             <para>
                Use device file &lt;<filename>port</filename>&gt; to communicate with the Palm
                handheld. If this is not specified, <emphasis>pilot-clip</emphasis> will look for
                the <filename>$PILOTPORT</filename> environment variable. If neither are found or
                supplied, <emphasis>pilot-clip</emphasis> will print the usage information.
             </para>
-         </blockquote>
-         <para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+		<term>
+		<option>-q</option>, 
+		<option>--quiet</option>
+		</term>
+		<listitem>
+		<para>Suppress 'Hit HotSync button' message</para>
+		</listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             <option>-v</option>, <option>--version</option>
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>
                Display version of <emphasis>pilot-clip</emphasis> and exit without connecting.
             </para>
-         </blockquote>
+         </listitem>
+	</varlistentry>
+	</variablelist>
       </refsect2>
       <refsect2>
          <title>Help Options</title>
-         <para>
+	<variablelist>
+	<varlistentry>
+		<term>
             <option>-h</option>, <option>--help</option>
-         </para>
-         <blockquote>
+		</term>
+         <listitem>
             <para>
                Display the help synopsis for <emphasis>pilot-clip</emphasis> and exit without
                connecting.
             </para>
-         </blockquote>
-         <para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             <option>--usage</option> 
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>Display a brief usage message and exit without connecting.</para>
-         </blockquote>
+         </listitem>
+	</varlistentry>
+	</variablelist>
       </refsect2>
    </refsect1>
    <refsect1>

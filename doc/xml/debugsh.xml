@@ -32,42 +32,54 @@
    </refsect1>
    <refsect1>
       <title>Shell Commands</title>
-      <para>
+	<variablelist>
+	<varlistentry>
+		<term>
          <userinput>coldboot</userinput>
-      </para>
-      <blockquote>
+		</term>
+		<listitem>
          <para>Restart your Palm</para>
-      </blockquote>
-      <para>
+		</listitem>
+	</varlistentry>
+	<varlistentry>
+		<term>
          <userinput>reboot</userinput>
-      </para>
-      <blockquote>
+		</term>
+		<listitem>
          <para>Restart your Palm</para>
-      </blockquote>
-      <para>
+		</listitem>
+	</varlistentry>
+	<varlistentry>
+		<term>
          <userinput>numdb</userinput>
-      </para>
-      <blockquote>
+		</term>
+		<listitem>
          <para>Returns the number of databases on the PDA card.</para>
-      </blockquote>
-      <para>
+		</listitem>
+	</varlistentry>
+	<varlistentry>
+		<term>
          <userinput>dbinfo</userinput>
-      </para>
-      <blockquote>
+		</term>
+		<listitem>
          <para>Returns the names of databases on the Palm.</para>
-      </blockquote>
-      <para>
+		</listitem>
+	</varlistentry>
+	<varlistentry>
+		<term>
          <userinput>quit</userinput>
-      </para>
-      <blockquote>
+		</term>
+		<listitem>
          <para>Quits the debug shell.</para>
-      </blockquote>
+		</listitem>
+	</varlistentry>
+	</variablelist>
    </refsect1>
    <refsect1>
       <title>Usage</title>
       <para>
-         The program will connect to your Palm handheld and give the user an interactive prompt (a
-         "shell") for executing debugging commands.
+         The program will connect to your Palm handheld and give the user an 
+	interactive prompt (a "shell") for executing debugging commands.
       </para>
    </refsect1>
    <refsect1>

@@ -19,9 +19,19 @@
       <para>
          <emphasis>read-todos</emphasis>
          [<option>-p</option>|<option>--port</option> &lt;<userinput>port</userinput>&gt;]
-         [<option>--version</option>] [<option>-?</option>|<option>--help</option>]
-         [<option>--usage</option>] [<option>-f</option>|<option>--file</option>
+	 [<option>-q</option>|<option>--quiet</option>]
+	 [<option>-A</option>|<option>--archived</option>]
+	 [<option>-w</option>|<option>--write</option>] 
+	</para>
+	<para>
+         <emphasis>read-todos</emphasis> [<option>-f</option>|<option>--file</option>
          <filename>file</filename>] [<option>-A</option>|<option>--archived</option>]
+	 [<option>-w</option>|<option>--write</option>] 
+      </para>
+	<para>
+         <emphasis>read-todos</emphasis>
+         [<option>--version</option>] [<option>-?</option>|<option>--help</option>]
+         [<option>--usage</option>]
       </para>
    </refsect1>
    <refsect1>
@@ -31,66 +41,102 @@
          the ToDoDB.pdb file directly from disk on your desktop machine, and print the contents to
          STDOUT (generally the screen).
       </para>
+	<para>Use only one of <option>--port</option> or <option>--file</option>.</para>
    </refsect1>
    <refsect1>
       <title>Options</title>
       <refsect2>
          <title>read-todos option</title>
-         <para>
+	<variablelist>
+	<varlistentry>
+		<term>
             <option>-f</option>, <option>--file</option> <filename>file</filename>
-         </para>
-         <blockquote>
+		</term>
+         <listitem>
             <para>
-               Save ToDO entries in <filename>file</filename> instead of STDOUT
+		Read a local todo database file from disk for printing. Excludes --port.
             </para>
-         </blockquote>
-         <para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             <option>-A</option>, <option>--archived</option>
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>Write archived entries only, in human-readable format</para>
-         </blockquote>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+		<term>
+		<option>-w</option>, <option>--write</option>
+		</term>
+		<listitem>
+		<para>Write output - every operation must include a write command.</para>
+		</listitem>
+	</varlistentry>
+	</variablelist>
       </refsect2>
       <refsect2>
          <title>Conduit Options</title>
-         <para>
-            <option>-p</option>, <option>--port</option>
-            &lt;<userinput>port</userinput>&gt;
-         </para>
-         <blockquote>
+	<variablelist>
+	<varlistentry>
+		<term>
+            <option>-p</option>, <option>--port</option> <filename>port</filename>
+		</term>
+         <listitem>
             <para>
                Use device file &lt;<filename>port</filename>&gt; to communicate with the Palm
                handheld device. If this is not specified, <emphasis>read-todos</emphasis> will look
                for the <filename>$PILOTPORT</filename> environment variable. If neither are found
                or supplied, <emphasis>read-todos</emphasis> will print the usage information.
             </para>
-         </blockquote>
-         <para>
+	    <para>Excludes --file.</para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+		<term>
+		<option>-q</option>, 
+		<option>--quiet</option>
+		</term>
+		<listitem>
+		<para>Suppress 'Hit HotSync button' message</para>
+		</listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             <option>-v</option>, <option>--version</option>
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>
                Display version of <emphasis>read-todos</emphasis> and exit without connecting.
             </para>
-         </blockquote>
+         </listitem>
+	</varlistentry>
+	</variablelist>
       </refsect2>
       <refsect2>
          <title>Help Options</title>
-         <para>
+	<variablelist>
+	<varlistentry>
+		<term>
             <option>-h</option>, <option>--help</option>
-         </para>
-         <blockquote>
+		</term>
+         <listitem>
             <para>
                Display the help synopsis for <emphasis>read-todos</emphasis> and exit without
                connecting.
             </para>
-         </blockquote>
-         <para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             <option>--usage</option> 
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>Display a brief usage message and exit without connecting.</para>
-         </blockquote>
+         </listitem>
+	</varlistentry>
+	</variablelist>
       </refsect2>
    </refsect1>
    <refsect1>
@@ -105,13 +151,15 @@
       <para>
          Read the on-Palm ToDo database, and dump to STDOUT.</para>
       <para>
-         <emphasis>read-todos</emphasis> <option>-p</option> <filename>/dev/pilot</filename>
+         <emphasis>read-todos</emphasis> <option>-w</option>
+		<option>-p</option> <filename>/dev/pilot</filename>
       </para>
       <para>
          Read the ToDoDB.pdb file on disk, and dump to STDOUT
       </para>
       <para>
-         <emphasis>read-todos</emphasis> <option>-f</option> <filename>ToDoDB.pdb</filename>
+         <emphasis>read-todos</emphasis> <option>-w</option>
+		<option>-f</option> <filename>ToDoDB.pdb</filename>
       </para>
    </refsect1>
    <refsect1>

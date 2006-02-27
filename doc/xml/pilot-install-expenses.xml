@@ -7,9 +7,7 @@
    <refnamediv>
       <refname>install-expenses</refname>
       <refpurpose>
-         Install an expense record from various parameters and
-         arguments
-         passed at connection time.
+         Install an expense record entries onto your Palm handheld device.
       </refpurpose>
    </refnamediv>
    <refsect1>
@@ -21,7 +19,7 @@
       <para>
          <emphasis>install-expenses</emphasis>
          [<option>-p</option>|<option>--port</option> &lt;<userinput>port</userinput>&gt;]
-         [<option>--version</option>] 
+         [<option>--version</option>] [<option>-q</option>|<option>--quiet</option>]
          [<option>-?</option>|<option>--help</option>] [<option>--usage</option>]
          [<option>-t</option>|<option>--ptype</option> <userinput>STRING</userinput>]
          [<option>-e</option>|<option>--etype</option> <userinput>STRING</userinput>]
@@ -47,11 +45,13 @@
       <title>Options</title>
       <refsect2>
          <title>install-expenses options</title>
-         <para>
+	<variablelist>
+	<varlistentry>
+		<term>
             <option>-t</option>,
             <option>--ptype</option> <userinput>STRING</userinput>
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>
                Add entries to the "Payment Type" field. These can be in the form of "Cash",
                "Cheque" and others. See the Expense application on your Palm device for full
@@ -60,85 +60,101 @@
             <para>
                Note that the long name for this option has been renamed since 0.11.8.
             </para>
-         </blockquote>
-         <para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             <option>-e</option>,
             <option>--etype</option> <userinput>STRING</userinput>
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>
                Add entries to the "Expense Type" field. These can be in the form of Airfare, Meals,
                and Others. See the Expense application on your Palm device for full details on
                expense types.
             </para>
-         </blockquote>
-         <para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             <option>-a</option>,
             <option>--amount</option> <userinput>STRING</userinput>
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>
                Add currency amount entries to the "Amount" field. These can be in the form of 1.00
                or "$10.00" and so on. See the Expense application on your Palm device for full
                details on amount types.
             </para>
-         </blockquote>
-         <para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             <option>-V</option>,
             <option>--vendor</option> <userinput>STRING</userinput>
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>
                Add entries to the "Vendor" field. These are free-form values, and can be the name
                of a restaurant, an airline, or any other text value you wish to use.
             </para>
-         </blockquote>
-         <para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             <option>-g</option>,
             <option>--guests</option> <userinput>DIGIT</userinput>
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>
                Add the number of attendees to the expense record, identified by
                <userinput>DIGIT</userinput>. If you ate lunch with four (4) additional people, you
                would put five (5) here, a numeric value.
             </para>
-         </blockquote>
-         <para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             <option>-i</option>,
             <option>--city</option> <userinput>STRING</userinput>
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>
                Add entries to the "City" field in the expense record. These are free-form values,
                and can be the name of the location, city, or town that the expense record occured
                in.
             </para>
-         </blockquote>
-         <para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             <option>-n</option>,
             <option>--note</option> <userinput>STRING</userinput>
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>
                Add a "Note" entry to the expense record. These are free-form values, and can be
                some notes related to the expense entry.
             </para>
-         </blockquote>
-         <para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             <option>-c</option>,
             <option>--category</option> <userinput>STRING</userinput>
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>
                Install entries into the named category defined here. See the Expense application on
                your Palm device for full details on using these categories.
             </para>
-         </blockquote>
-         <para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             <option>--replace</option>
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>
                Replace the entry found in the named category identified by the
                <option>--category</option> option
@@ -146,49 +162,72 @@
             <para>
                Note that the short name for this option has been removed since 0.11.8
             </para>
-         </blockquote>
+         </listitem>
+	</varlistentry>
+	</variablelist>
       </refsect2>
       <refsect2>
          <title>Conduit Options</title>
-         <para>
+	<variablelist>
+	<varlistentry>
+		<term>
             <option>-p</option>, <option>--port</option>
             &lt;<userinput>port</userinput>&gt;
-         </para>
-         <blockquote>
+		</term>
+         <listitem>
             <para>
                Use device file &lt;<filename>port</filename>&gt; to communicate with the Palm
                handheld. If this is not specified, <emphasis>install-expenses</emphasis> will look
                for the <filename>$PILOTPORT</filename> environment variable. If neither are found
                or supplied, <emphasis>install-expenses</emphasis> will print the usage information.
             </para>
-         </blockquote>
-         <para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+		<term>
+		<option>-q</option>, 
+		<option>--quiet</option>
+		</term>
+		<listitem>
+		<para>Suppress 'Hit HotSync button' message.</para>
+		</listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             <option>--version</option>
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>
                Display version information for <emphasis>install-expenses</emphasis> and exit
                without connecting.
             </para>
-         </blockquote>
+         </listitem>
+	</varlistentry>
+	</variablelist>
       </refsect2>
       <refsect2>
          <title>Help options</title>
-         <para>
+	<variablelist>
+	<varlistentry>
+		<term>
             <option>-h</option>, <option>--help</option>
-         </para>
-         <blockquote>
+		</term>
+         <listitem>
             <para>
                Display the help synopsis for <emphasis>install-expenses</emphasis> and exit without
                connecting.
             </para>
-         </blockquote>
-         <para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             <option>--usage</option>
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>Display a brief usage message and exit without connecting.</para>
-         </blockquote>
+         </listitem>
+	</varlistentry>
+	</variablelist>
       </refsect2>
    </refsect1>
    <refsect1>

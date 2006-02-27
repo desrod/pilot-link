@@ -17,7 +17,7 @@
       <para>
          <emphasis>install-todo</emphasis>
          [<option>-p</option>|<option>--port</option> &lt;<userinput>port</userinput>&gt;]
-         [<option>--version</option>] 
+         [<option>-q</option>|<option>--quiet</option>] [<option>--version</option>] 
          [<option>-?</option>|<option>--help</option>] [<option>--usage</option>]
          [<option>-P</option>|<option>--priority</option>
          [<userinput>1|2|3|4|5</userinput>]]
@@ -41,104 +41,139 @@
       <title>Options</title>
       <refsect2>
          <title>install-todo options</title>
-         <para>
+	<variablelist>
+	<varlistentry>
+		<term>
             <option>-P</option>,
-            <option>--priority</option>=<userinput>priority</userinput>
-         </para>
-         <blockquote>
+            <option>--priority</option> <userinput>priority</userinput>
+		</term>
+         <listitem>
             <para>
-               Specify the priority of the ToDo entry (defaults to a priority of 1).
+               Specify the priority of the ToDo entry - 1|2|3|4|5 (defaults to a priority of 1).
             </para>
             <para>
                <emphasis>NOTE:</emphasis> this value has changed from the default of 4 to the
                default of 1, just as a new ToDo entry on the Palm would set it.
             </para>
-         </blockquote>
-         <para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             <option>-d</option>,
             <option>--due</option> <userinput>duedate</userinput>
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>
                The due Date MM/DD/YYYY (defaults to blank, no due date if this is not specified).
             </para>
-         </blockquote>
-         <para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             <option>-c</option>, <option>--completed</option>
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>
                Mark the item complete (the default is to mark the item as incomplete, as the Palm
                would do it).
             </para>
-         </blockquote>
-         <para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             <option>-D</option>,
             <option>--description</option> <userinput>title</userinput>
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>
             The title of the ToDo entry</para>
-         </blockquote>
-         <para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             <option>-n</option>, <option>--note</option>
             <userinput>note</userinput>
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>
             The Note text you wish to add to this ToDo entry, if any.</para>
-         </blockquote>
-         <para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             <option>-f</option>,
             <option>--file</option> <filename>filename</filename>
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>
             A local filename containing the Note text.</para>
-         </blockquote>
+         </listitem>
+	</varlistentry>
+	</variablelist>
       </refsect2>
       <refsect2>
          <title>Conduit Options</title>
-         <para>
+	<variablelist>
+	<varlistentry>
+		<term>
             <option>-p</option>, <option>--port</option>
             &lt;<userinput>port</userinput>&gt;
-         </para>
-         <blockquote>
+		</term>
+         <listitem>
             <para>
                Use device file &lt;<filename>port</filename>&gt; to communicate with the Palm
                handheld. If this is not specified, <emphasis>install-todo</emphasis> will look for
                the <filename>$PILOTPORT</filename> environment variable. If neither are found or
                supplied, <emphasis>install-todo</emphasis> will print the usage information.
             </para>
-         </blockquote>
-         <para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+		<term>
+		<option>-q</option>, 
+		<option>--quiet</option>
+		</term>
+		<listitem>
+		<para>Suppress 'Hit HotSync button' message</para>
+		</listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             <option>-v</option>, <option>--version</option>
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>
                Display version of <emphasis>install-todo</emphasis> and exit
                without connecting.
             </para>
-         </blockquote>
+         </listitem>
+	</varlistentry>
+	</variablelist>
       </refsect2>
       <refsect2>
          <title>Help Options</title>
-         <para>
+	<variablelist>
+	<varlistentry>
+		<term>
             <option>-h</option>, <option>--help</option>
-         </para>
-         <blockquote>
+		</term>
+         <listitem>
             <para>
                Display the help synopsis for <emphasis>install-todo</emphasis>
                and exit without connecting.
             </para>
-         </blockquote>
-         <para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             <option>--usage</option> 
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>
             Display a brief usage message and exit without connecting.</para>
-         </blockquote>
+         </listitem>
+	</varlistentry>
+	</variablelist>
       </refsect2>
    </refsect1>
    <refsect1>

@@ -20,7 +20,8 @@
          <emphasis>pilot-schlep</emphasis>
          [<option>-p</option>|<option>--port</option> &lt;<userinput>port</userinput>&gt;]
          [<option>--version</option>] [<option>-?</option>|<option>--help</option>]
-         [<option>--usage</option>] [<option>-i</option>|<option>--install</option> <filename>file</filename>]
+         [<option>--usage</option>] [<option>-q</option>|<option>--quiet</option>]
+	 [<option>-i</option>|<option>--install</option> <filename>file</filename>]
          [<option>-f</option>|<option>--fetch</option> <filename>file</filename>]
          [<option>-d</option>|<option>--delete</option>]
       </para>
@@ -28,7 +29,7 @@
    <refsect1>
       <title>Description</title>
       <para>
-         Currently the stored name and file type is not queried so you can potentially Install a
+         Currently the stored name and file type is not queried so you can potentially install a
          PDF file, and retrieve it as a ZIP file.
       </para>
       <para>
@@ -41,97 +42,118 @@
       <title>Options</title>
       <refsect2>
          <title>pilot-schlep options</title>
-         <para>
+	<variablelist>
+	<varlistentry>
+		<term>
             <option>-i</option>, <option>--install</option> <filename>file</filename>
-         </para>
-         <blockquote>
+		</term>
+         <listitem>
             <para>Pack and install <filename>file</filename> to your Palm
             </para>
-         </blockquote>
-         <para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             <option>-f</option>, <option>--fetch</option> <filename>file</filename>
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>Unpack the file from your Palm device</para>
-         </blockquote>
-         <para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             <option>-d</option>, <option>--delete</option>
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>Delete the packaged file from your Palm device</para>
-         </blockquote>
+         </listitem>
+	</varlistentry>
+	</variablelist>
       </refsect2>
       <refsect2>
          <title>Conduit Options</title>
-         <para>
-            <option>-p</option>, <option>--port</option><filename>port</filename>
-         </para>
-         <blockquote>
+	<variablelist>
+	<varlistentry>
+		<term>
+            <option>-p</option>, <option>--port</option> <filename>port</filename>
+		</term>
+         <listitem>
             <para>
                Use device file <filename>port</filename> to communicate with the Palm handheld. If
                this is not specified, <emphasis>pilot-schlep</emphasis> will look for the
                <filename>$PILOTPORT</filename> environment variable. If neither are found or
                supplied, <emphasis>pilot-schlep</emphasis> will print the usage information.
             </para>
-         </blockquote>
-         <para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+		<term>
+		<option>-q</option>, 
+		<option>--quiet</option>
+		</term>
+		<listitem>
+		<para>Suppress 'Hit HotSync button' message</para>
+		</listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             <option>-v</option>, <option>--version</option>
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>
                Display version of <emphasis>pilot-schlep</emphasis>.
             </para>
-         </blockquote>
+         </listitem>
+	</varlistentry>
+	</variablelist>
       </refsect2>
       <refsect2>
          <title>Help Options</title>
-         <para>
+	<variablelist>
+	<varlistentry>
+		<term>
             <option>-h</option>, <option>--help</option>
-         </para>
-         <blockquote>
+		</term>
+         <listitem>
             <para>
                Display the help synopsis for <emphasis>pilot-schlep</emphasis>.
             </para>
-         </blockquote>
-         <para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             <option>--usage</option> 
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>Display a brief usage message and exit without connecting.</para>
-         </blockquote>
+         </listitem>
+	</varlistentry>
+	</variablelist>
       </refsect2>
    </refsect1>
    <refsect1>
       <title>Examples</title>
-
       <para>To package up and store a file for later retrieval on your Palm:</para>
-
       <programlisting>
          <userinput>pilot-schlep</userinput> -p /dev/pilot -i InstallThis.zip
       </programlisting>
-      
       <para>To unpack a file that has been stored on your Palm with pilot-schlep:</para>
-
       <programlisting>
          <userinput>pilot-schlep</userinput> -p /dev/pilot -f RetrieveThis.pdf
       </programlisting>
-      
       <para>
          Please notice that you must use redirection to Install or Fetch files using pilot-schlep.
       </para>
-      
       <para>
          Currently the stored name and file type is not queried so you can potentially Install a
          PDF file, and retrieve it as a ZIP file.
       </para>
-      
       <para>
          You must take care to remember what type of file you are installing and fetching.  This
          will be updated in a later release to handle this type of capability, as well as handle
          multiple 'Schlep' files.
       </para>
    </refsect1>
-   
    <refsect1>
       <title>Author</title>
       <para>

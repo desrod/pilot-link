@@ -20,7 +20,7 @@
       <para>
          <emphasis>pilot-file</emphasis>
          [<option>-p</option>|<option>--port</option> &lt;<userinput>port</userinput>&gt;]
-         [<option>--version</option>]
+         [<option>--version</option>] [<option>-q</option>|<option>--quiet</option>] 
          [<option>-?</option>|<option>--help</option>] [<option>--usage</option>]
          [<option>-H</option>|<option>--header</option>]
          [<option>-a</option>|<option>--appinfo</option>]
@@ -46,89 +46,137 @@
       <title>Options</title>
       <refsect2>
          <title>pilot-file options</title>
-         <para>
+	<variablelist>
+	<varlistentry>
+		<term>
             <option>-H</option>, <option>--header</option>
-         </para>
-         <blockquote>
+		</term>
+         <listitem>
             <para>Dump the header of the database(s)</para>
-         </blockquote>
-         <para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             <option>-a</option>, <option>--appinfo</option>
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>Dump app_info segment of the database(s)</para>
-         </blockquote>
-         <para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             <option>-s</option>, <option>--sortinfo</option>
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>Dump sort_info block of database(s)</para>
-         </blockquote>
-         <para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             <option>-l</option>, <option>--list</option>
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>List all records in the database(s)</para>
-         </blockquote>
-         <para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             <option>-r</option>, <option>--record</option> <userinput>STRING</userinput>
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>Dump a record by index ('code0') or uid ('1234')</para>
-         </blockquote>
-         <para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             <option>-f</option>, <option>--to-file</option>
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>Same as above but also dump records to files</para>
-         </blockquote>
-         <para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             <option>-d</option>, <option>--dump</option>
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>Dump all data and all records, very verbose</para>
-         </blockquote>
+         </listitem>
+	</varlistentry>
+	</variablelist>
       </refsect2>
       <refsect2>
          <title>Conduit Options</title>
-         <para>
+	<variablelist>
+	<varlistentry>
+		<term>
             <option>-p</option>, <option>--port</option> lt;<userinput>port</userinput>&gt;
-         </para>
-         <blockquote>
+		</term>
+         <listitem>
             <para>
                Use device file &lt;<filename>port</filename>&gt; to communicate with the Palm
                handheld. If this is not specified, <emphasis>pilot-file</emphasis> will look for
                the <filename>$PILOTPORT</filename> environment variable. If neither are found or
                supplied, <emphasis>pilot-file</emphasis> will print the usage information.
             </para>
-         </blockquote>
-         <para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+		<term>
+		<option>-q</option>, 
+		<option>--quiet</option>
+		</term>
+		<listitem>
+		<para>Suppress 'Hit HotSync button' message</para>
+		</listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             <option>-v</option>, <option>--version</option>
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>
                Display version of <emphasis>pilot-file</emphasis> and exit without connecting.
             </para>
-         </blockquote>
+         </listitem>
+	</varlistentry>
+	</variablelist>
       </refsect2>
       <refsect2>
          <title>Help Options</title>
-         <para>
+	<variablelist>
+	<varlistentry>
+		<term>
             <option>-h</option>, <option>--help</option>
-         </para>
-         <blockquote>
+		</term>
+         <listitem>
             <para>
                Display the help synopsis for <emphasis>pilot-file</emphasis> and exit without
                connecting.
             </para>
-         </blockquote>
-         <para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             <option>--usage</option> 
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>Display a brief usage message and exit without connecting.</para>
-         </blockquote>
+         </listitem>
+	</varlistentry>
+	</variablelist>
       </refsect2>
+   </refsect1>
+   <refsect1>
+      <title>Examples</title>
+	<para>To list all records in the Foo database:</para>
+	<blockquote>
+	<para><emphasis>pilot-file</emphasis> -l Foo.prc</para>
+	</blockquote>
+	<para>To dump the header and appinfo segment of the Bar database:</para>
+	<blockquote>
+	<para><emphasis>pilot-file</emphasis> -H -a Bar.pdb</para>
+	</blockquote>
    </refsect1>
    <refsect1>
       <title>Author</title>

@@ -19,7 +19,8 @@
       <para>
          <emphasis>read-palmpix</emphasis>
          [<option>-p</option>|<option>--port</option> &lt;<userinput>port</userinput>&gt;]
-         [<option>--version</option>] [<option>-?</option>|<option>--help</option>] [<option>--usage</option>]
+         [<option>--version</option>] [<option>-?</option>|<option>--help</option>] 
+	 [<option>--usage</option>] [<option>-q</option>|<option>--quiet</option>]
          [<option>-s</option>|<option>--stretch</option>]
          [<option>-c</option>|<option>--colour</option>]
          [<option>-t</option>|<option>--type</option> [<userinput>ppm|png</userinput>]]
@@ -40,108 +41,145 @@
          from their Palm handheld and convert them to Portable Network Graphic (.png) or Portable
          Pixmap (.ppm) files on their system. The default output type is Portable Pixmap (.ppm).
       </para>
+	<para><emphasis>read-palmpix</emphasis> converts all pictures in the files given, or 
+	 if no files are given, on a Palm handheld, to Portable Pixmap files.
+	</para>
    </refsect1>
    <refsect1>
       <title>Options</title>
       <refsect2>
          <title>read-palmpix options</title>
-         <para>
+	<variablelist>
+	<varlistentry>
+		<term>
             <option>-b</option>,
             <option>--bias</option> <userinput>bias</userinput>
-         </para>
-         <blockquote>
+		</term>
+         <listitem>
             <para>lighten or darken the image (0..49 darken, 51..100 lighten)</para>
-         </blockquote>
-         <para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             <option>-c</option>, <option>--colour</option>
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>
                Do a simple colour correction. The colour correction code makes a histogram from the
                image. Using the histogram it then makes up a couple of colour tables to try and
                balance the colours. It also clips the top and bottom colours to produce better
                perceived contrast.
             </para>
-         </blockquote>
-         <para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             <option>-l</option>, <option>--list</option>
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>
                List picture information found on the Palm handheld instead of converting the
                entries found to image files.
             </para>
-         </blockquote>
-         <para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             <option>-n</option>, <option>--name</option>
             &lt;<filename>pixname</filename>&gt;
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>
                Convert only <filename>pixname</filename> to STDOUT, and output as
                <option>type</option>: .ppm or .png.
             </para>
-         </blockquote>
-         <para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             <option>-s</option>, <option>--stretch</option>
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>
                Do a histogram stretch on the colour planes
             </para>
-         </blockquote>
-         <para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             <option>-t</option>,
             <option>--type</option> <userinput>[ppm|png]</userinput>
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>
                Specify the output picture type. Can be either "png" or "ppm".
             </para>
-         </blockquote>
+         </listitem>
+	</varlistentry>
+	</variablelist>
       </refsect2>
       <refsect2>
          <title>Conduit Options</title>
-         <para>
-            <option>-p</option>, <option>--port</option>
-            &lt;<userinput>port</userinput>&gt;
-         </para>
-         <blockquote>
+	<variablelist>
+	<varlistentry>
+		<term>
+            <option>-p</option>, <option>--port</option> <filename>port</filename>
+		</term>
+         <listitem>
             <para>
                Use device file &lt;<filename>port</filename>&gt; to communicate with the Palm
                handheld. If this is not specified, <emphasis>read-palmpix</emphasis> will look for
                the <filename>$PILOTPORT</filename> environment variable. If neither are found or
                supplied, <emphasis>read-palmpix</emphasis> will print the usage information.
             </para>
-         </blockquote>
-         <para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+		<term>
+		<option>-q</option>, 
+		<option>--quiet</option>
+		</term>
+		<listitem>
+		<para>Suppress 'Hit HotSync button' message</para>
+		</listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             <option>-v</option>, <option>--version</option>
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>
                Display version of <emphasis>read-palmpix</emphasis> and exit without connecting.
             </para>
-         </blockquote>
+         </listitem>
+	</varlistentry>
+	</variablelist>
       </refsect2>
       <refsect2>
          <title>Help Options</title>
-         <para>
+	<variablelist>
+	<varlistentry>
+		<term>
             <option>-h</option>, <option>--help</option>
-         </para>
-         <blockquote>
+		</term>
+         <listitem>
             <para>
                Display the help synopsis for <emphasis>read-palmpix</emphasis> and exit without
                connecting.
             </para>
-         </blockquote>
-         <para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             <option>--usage</option> 
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>
                Display a brief usage message and exit without connecting.
              </para>
-         </blockquote>
+         </listitem>
+	</varlistentry>
+	</variablelist>
       </refsect2>
    </refsect1>
    <refsect1>

@@ -18,7 +18,7 @@
          <emphasis>read-screenshot</emphasis>
          [<option>-p</option>|<option>--port</option> &lt;<userinput>port</userinput>&gt;]
          [<option>--version</option>] [<option>-?</option>|<option>--help</option>]
-         [<option>--usage</option>]
+         [<option>--usage</option>] [<option>-q</option>|<option>--quiet</option>]
          [<option>-t</option>|<option>--type</option> [<userinput>ppm|png</userinput>]]
       </para>
    </refsect1>
@@ -39,58 +39,81 @@
       <title>Options</title>
       <refsect2>
          <title>read-screenshot option</title>
-         <para>
+	<variablelist>
+	<varlistentry>
+		<term>
             <option>-t</option>,
-            <option>--type</option> [<userinput>ppm</userinput>|<userinput>
-               png
-            </userinput>
-            ]
-         </para>
-         <blockquote>
+            <option>--type</option> 
+		[<userinput>ppm</userinput>|<userinput>png</userinput>]
+		</term>
+         <listitem>
             <para>
             Specify picture output type (ppm or png)</para>
-         </blockquote>
+         </listitem>	
+	</varlistentry>
+	</variablelist>
       </refsect2>
       <refsect2>
          <title>Conduit Options</title>
-         <para>
-            <option>-p</option>, <option>--port</option><filename>port</filename>
-         </para>
-         <blockquote>
+	<variablelist>
+	<varlistentry>
+		<term>
+            <option>-p</option>, <option>--port</option> <filename>port</filename>
+		</term>
+         <listitem>
             <para>
                Use device file <filename>port</filename> to communicate with the Palm handheld. If
                this is not specified, <emphasis>read-screenshot</emphasis> will look for the
                <filename>$PILOTPORT</filename> environment variable. If neither are found or
                supplied, <emphasis>read-screenshot</emphasis> will print the usage information.
             </para>
-         </blockquote>
-         <para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+		<term>
+		<option>-q</option>, 
+		<option>--quiet</option>
+		</term>
+		<listitem>
+		<para>Suppress 'Hit HotSync button' message</para>
+		</listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             <option>-v</option>, <option>--version</option>
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>
                Display version of <emphasis>read-screenshot </emphasis> and exit without
                connecting.
             </para>
-         </blockquote>
+         </listitem>
+	</varlistentry>
+	</variablelist>
       </refsect2>
       <refsect2>
          <title>Help Options</title>
-         <para>
+	<variablelist>
+	<varlistentry>
+		<term>
             <option>-h</option>, <option>--help</option>
-         </para>
-         <blockquote>
+		</term>
+         <listitem>
             <para>
                Display the help synopsis for <emphasis>read-screenshot</emphasis> and exit without
                connecting.
             </para>
-         </blockquote>
-         <para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             <option>--usage</option> 
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>Display a brief usage message and exit without connecting.</para>
-         </blockquote>
+         </listitem>
+	</varlistentry>
+	</variablelist>
       </refsect2>
    </refsect1>
    <refsect1>

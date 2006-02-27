@@ -19,7 +19,8 @@
       <para>
          <emphasis>pilot-addresses</emphasis>
          [<option>-p</option>|<option>--port</option> &lt;<userinput>port</userinput>&gt;]
-         [<option>--version</option>] [<option>-?</option>|<option>--help</option>] [<option>--usage</option>]
+         [<option>--version</option>] [<option>-?</option>|<option>--help</option>] 
+	 [<option>--usage</option>] [<option>-q</option>|<option>--quiet</option>] 
          [<option>--delete-all</option>]
          [<option>-t</option>|<option>--delimiter</option> <userinput>INT</userinput>]
          [<option>-d</option>|<option>--delete-category</option> <userinput>
@@ -49,37 +50,46 @@
    <refsect1>
       <title>commands</title>
       <para>
-            Provide exactly one of --read or --write.</para>
-      <para>
+            Provide exactly one of --read or --write.
+      </para>
+	<variablelist>
+	<varlistentry>
+		<term>
          <option>-r</option>,
          <option>--read</option>=&lt;<filename>file</filename>&gt;
-      </para>
-      <blockquote>
+		</term>
+      <listitem>
          <para>
             Reads records from &lt;<filename>file</filename>&gt; and install them to the Palm
             Address Book application. (Use the <option>-w</option>
             &lt;<filename>file</filename>&gt; option to get a sample "template file" for input
             records to see how the fields are laid out).
          </para>
-      </blockquote>
-      <para>
+      </listitem>
+	</varlistentry>
+	<varlistentry>
+      <term>
          <option>-w</option>, --write=<filename>file</filename>
-      </para>
-      <blockquote>
+      </term>
+      <listitem>
          <para>
             Reads all address book records from the Palm Address Book application and writes them
             into <filename>file</filename>
          </para>
-      </blockquote>
+      </listitem>
+	</varlistentry>
+     </variablelist>
    </refsect1>
    <refsect1>
       <title>Options</title>
       <refsect2>
          <title>pilot-addresses options</title>
-         <para>
+	<variablelist>
+	<varlistentry>
+		<term>
             <option>-a</option>, <option>--augment</option>
-         </para>
-         <blockquote>
+		</term>
+         <listitem>
             <para>
                Augments fields in address book records with additional information.  The augmented
                information is placed before and separated from the field with a semi-colon, (;).
@@ -98,23 +108,27 @@
             </para>
             <para>
             Empty fields are not augmented.</para>
-         </blockquote>
-         <para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             <option>-c</option>,
             <option>--category</option>=<userinput>category</userinput>
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>
                Install records to category <userinput>category</userinput> by default. Normally
                <emphasis>pilot-addresses</emphasis> uses the <filename>Unfiled</filename> category
                by default. This option is overridden by the category specified in the record with
                the <option>-a</option> option.
             </para>
-         </blockquote>
-         <para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             <option>-d</option>, <option>--delete-category</option>
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>
                Delete all records in the specified category <userinput>category</userinput> before
                installing new records.
@@ -122,11 +136,13 @@
             <para>
                Note that the long name of this option has changed since 0.11.8
             </para>
-         </blockquote>
-         <para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             <option>-D</option>, <option>--delete-all</option>
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>
                Delete all address book records in all categories. Obviously, be
                <emphasis>very</emphasis> careful with this one.
@@ -134,12 +150,14 @@
             <para>
                Note that the long name of this option has changed since 0.11.8
             </para>
-         </blockquote>
-         <para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             <option>-t</option>,
             <option>--delimiter</option> <userinput>INT</userinput>
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>
                Include category in each record, use the delimiter specified to separate all fields
                of a record. Delimiters are specified as follows: 3=tab, 2=;, 1=,. This overrides
@@ -151,64 +169,91 @@
             Note that the long name of this option has changed since
                0.11.8
             </para>
-         </blockquote>
-         <para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             <option>-T</option>, <option>--titles</option>
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>
             Obsolete. This option has been removed since 0.11.8</para>
-         </blockquote>
-         <para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             <option>-C</option>|<option>--human-readable</option>
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>
                Write generic human-readable output instead of CSV.
             </para>
-         </blockquote>
+         </listitem>
+	</varlistentry>
+	</variablelist>
       </refsect2>
       <refsect2>
          <title>Conduit Options</title>
-         <para>
+	<variablelist>
+	<varlistentry>
+		<term>
             <option>-p</option>,
             <option>--port</option> &lt;<filename>port</filename>&gt;
-         </para>
-         <blockquote>
+		</term>
+         <listitem>
             <para>
                Use device file &lt;<filename>port</filename>&gt; to communicate with the Palm
                handheld. If this is not specified, <emphasis>pilot-addresses</emphasis> will look
                for the <filename>$PILOTPORT</filename> environment variable. If neither are found
                or supplied, <emphasis>pilot-addresses</emphasis> will print the usage information.
             </para>
-         </blockquote>
-         <para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+		<term>
+		<option>-q</option>, 
+		<option>--quiet</option>
+		</term>
+		<listitem>
+		<para>Suppress 'Hit HotSync button' message</para>
+		</listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             <option>-v</option>, <option>--version</option>
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>
                Display version of <emphasis>pilot-addresses</emphasis> and
                exit without connecting.
             </para>
-         </blockquote>
+         </listitem>
+	</varlistentry>
+	</variablelist>
       </refsect2>
       <refsect2>
          <title>Help Options</title>
-         <para>
+	<variablelist>
+	<varlistentry>
+		<term>
             <option>-h</option>, <option>--help</option>
-         </para>
-         <blockquote>
+		</term>
+         <listitem>
             <para>
                Display the help synopsis for <emphasis>pilot-addresses</emphasis> and exit without
                connecting.
             </para>
-         </blockquote>
-         <para>
+         </listitem>
+	</varlistentry>
+	<varlistentry>
+         <term>
             <option>--usage</option> 
-         </para>
-         <blockquote>
+         </term>
+         <listitem>
             <para>Display a brief usage message and exit without connecting.</para>
-         </blockquote>
+         </listitem>
+	</varlistentry>
+	</variablelist>
       </refsect2>
    </refsect1>
    <refsect1>
