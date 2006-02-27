@@ -197,7 +197,7 @@
       <xsl:value-of select="$reftitle"/>
       <xsl:text>" </xsl:text>
       <xsl:value-of select="$section"/>
-      <xsl:text> "Copyright 1996-2005 FSF" "@VERSION@" "PILOT-LINK"</xsl:text>
+      <xsl:text> "Copyright 1996-2005 FSF" "@VERSION@" "PILOT-LINK"&#10;</xsl:text>
       <xsl:apply-templates/>
       <xsl:text>&#10;</xsl:text>
 
