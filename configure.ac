@@ -320,7 +320,7 @@ else
 			usb_type=freebsd
 			msg_usb="yes, FreeBSD"
 		;;
-		*darwin*)
+	    *darwin*)
 		    AC_DEFINE(HAVE_USB, 1, [Define if we have USB support])
 		    usb_type=darwin
 		    msg_usb="yes, Darwin"
@@ -675,14 +675,16 @@ AC_ARG_ENABLE(profile,
 dnl *************************************
 dnl Check for xsltproc
 dnl *************************************
-AM_CONDITIONAL(BUILD_XML,[test ! -d "${srcdir}/doc/man/pilot-link.7"])
-if test ! -d "${srcdir}/doc/man/pilot-link.7" ; then
+AM_CONDITIONAL(BUILD_XML,[test ! -f "${srcdir}/doc/man/pilot-link.7"])
+if test ! -f "${srcdir}/doc/man/pilot-link.7" ; then
 
 # It's just rude to go over the net to build
 XSLTPROC_FLAGS=--nonet
 DOCBOOK_ROOT=
 if test ! -f /etc/xml/catalog; then
-for i in /usr/share/sgml/docbook/stylesheet/xsl/nwalsh /usr/share/sgml/docbook/xsl-stylesheets/;
+for i in /usr/share/sgml/docbook/stylesheet/xsl/nwalsh \
+ /usr/share/sgml/docbook/xsl-stylesheets/ \
+ /sw/share/xml/xsl/docbook-xsl/manpages/;
 	do
 		if test -d "$i"; then
 		DOCBOOK_ROOT=$i
