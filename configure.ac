@@ -78,7 +78,7 @@ dnl ******************************
 AC_PROG_CC
 AC_PROG_INSTALL
 AC_PROG_F77(g77 g77-3.2 g77-3.3 fl32 f77 fort77 xlf f90 xlf90)
-AM_PROG_LIBTOOL
+AC_PROG_LIBTOOL
 AC_PROG_YACC
 
 
@@ -204,13 +204,13 @@ AC_CHECK_SOCKLEN_T
 dnl ******************************
 dnl pilot-link conduits
 dnl ******************************
-
+AC_MSG_CHECKING(whether to enable userland conduits)
 AC_ARG_ENABLE(conduits,
-		[  --enable-conduits       Build the userland conduits],,
-		enable_conduits="yes"
+	[  --enable-conduits       Build the userland conduits],
+		[enable_conduits="yes"], [enable_conduits="no"],
 )
 AM_CONDITIONAL(ENABLE_CONDUITS,[test "x$enable_conduits" != "xno"])
-
+AC_MSG_RESULT($enable_conduits)
 
 dnl ******************************
 dnl PNG Support
@@ -339,7 +339,6 @@ AC_SUBST(usb_libs)
 dnl *********************************
 dnl Check for popt (use internal if needed)
 dnl *********************************
-
 AC_ARG_WITH(included-popt,
 [  --with-included-popt    use bundled popt library, not from system],,
 		[with_included_popt="auto"]
@@ -675,62 +674,26 @@ AC_ARG_ENABLE(profile,
 dnl *************************************
 dnl Check for xsltproc
 dnl *************************************
-AM_CONDITIONAL(BUILD_XML,[test ! -f "${srcdir}/doc/man/pilot-link.7"])
-if test ! -f "${srcdir}/doc/man/pilot-link.7" ; then
+AM_CONDITIONAL(BUILD_XML,[test ! -f "${srcdir}/doc/xml/pilot-link.7"])
+if test ! -f "${srcdir}/doc/xml/pilot-link.7" ; then
 
-# It's just rude to go over the net to build
+AC_CHECK_PROG(XSLTPROC,xsltproc,xsltproc)
+
+AC_MSG_CHECKING([if xsltproc is recent enough])
+if test "$($XSLTPROC --version | awk '/^libxslt/{print $2}')" -lt 10024 ; then 
+	AC_MSG_RESULT([version 1.0.24 or newer required])
+	exit 1
+fi
+fi
+AC_MSG_RESULT(yes)
+
+# now let's test to see if we can find the docbook-xsl stuff
 XSLTPROC_FLAGS=--nonet
-DOCBOOK_ROOT=
-if test ! -f /etc/xml/catalog; then
-for i in /usr/share/sgml/docbook/stylesheet/xsl/nwalsh \
- /usr/share/sgml/docbook/xsl-stylesheets/ \
- /sw/share/xml/xsl/docbook-xsl/manpages/;
-	do
-		if test -d "$i"; then
-		DOCBOOK_ROOT=$i
-        fi
-	done
-# Last resort - try net
-if test -z "$DOCBOOK_ROOT"; then
-   XSLTPROC_FLAGS=
-fi
-else
-   XML_CATALOG=/etc/xml/catalog
-   CAT_ENTRY_START='<!--'
-   CAT_ENTRY_END='-->'
-fi
-
-AC_CHECK_PROG(XSLTPROC,xsltproc,xsltproc,)
-XSLTPROC_WORKS=no
-if test -n "$XSLTPROC"; then
-    AC_MSG_CHECKING([whether xsltproc works])
-
-    if test -n "$XML_CATALOG"; then
-       DB_FILE="http://docbook.sourceforge.net/release/xsl/current/xhtml/docbook.xsl"
-    else
-       DB_FILE="$DOCBOOK_ROOT/docbook.xsl"
-    fi
-
-   $XSLTPROC $XSLTPROC_FLAGS $DB_FILE << END
-<?xml version="1.0" encoding='ISO-8859-1'?>
-<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN"
-"http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd">
-<book id="test">
-</book>
-END
-        if test "$?" = 0; then
-           XSLTPROC_WORKS=yes
-        fi
-        AC_MSG_RESULT($XSLTPROC_WORKS)
-fi
-fi
-AM_CONDITIONAL(have_xsltproc, test "$XSLTPROC_WORKS" = "yes")
-
 AC_SUBST(XML_CATALOG)
 AC_SUBST(XSLTPROC_FLAGS)
-AC_SUBST(DOCBOOK_ROOT)
+AC_SUBST(DOCBOOK_ROOT)  
 AC_SUBST(CAT_ENTRY_START)
-AC_SUBST(CAT_ENTRY_END)
+AC_SUBST(CAT_ENTRY_END)  
 AC_SUBST(XSLTPROC)
 
 dnl *************************************
