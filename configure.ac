@@ -674,8 +674,8 @@ AC_ARG_ENABLE(profile,
 dnl *************************************
 dnl Check for xsltproc
 dnl *************************************
-AM_CONDITIONAL(BUILD_XML,[test ! -f "${srcdir}/doc/xml/pilot-link.7"])
-if test ! -f "${srcdir}/doc/xml/pilot-link.7" ; then
+AM_CONDITIONAL(BUILD_XML,[test ! -d "{$srcdir}/CVS"])
+if test -d "${srcdir}/CVS" ; then
 
 AC_CHECK_PROG(XSLTPROC,xsltproc,xsltproc)
 

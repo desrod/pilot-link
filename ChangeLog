@@ -1,3 +1,10 @@
+2006-03-14 16:33  neilw
+
+	* configure.ac : Replace the check for pilot-link.7 with
+	a check on the presence or absence of the CVS directory
+	to build XML only from CVS and check xsltproc only when
+	building XML.
+
 2006-02-27 23:04  neilw
 
 	* configure.ac : Fix test to look for a file, not directory.
