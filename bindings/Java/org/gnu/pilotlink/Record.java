@@ -404,19 +404,19 @@ public abstract class Record {
 		str = s.getBytes();
 
 		for (int i = 0; i < str.length; i++) {
-			if (s.charAt(i) == 'ü') {
+			if (s.charAt(i) == '\ufffd') {
 				buffer[idx + i] = (byte) 252;
-			} else if (s.charAt(i) == 'ö') {
+			} else if (s.charAt(i) == '\ufffd') {
 				buffer[idx + i] = (byte) 246;
-			} else if (s.charAt(i) == 'ä') {
+			} else if (s.charAt(i) == '\ufffd') {
 				buffer[idx + i] = (byte) 228;
-			} else if (s.charAt(i) == 'ß') {
+			} else if (s.charAt(i) == '\ufffd') {
 				buffer[idx + i] = (byte) 223;
-			} else if (s.charAt(i) == 'Ä') {
+			} else if (s.charAt(i) == '\ufffd') {
 				buffer[idx + i] = (byte) 196;
-			} else if (s.charAt(i) == 'Ü') {
+			} else if (s.charAt(i) == '\ufffd') {
 				buffer[idx + i] = (byte) 220;
-			} else if (s.charAt(i) == 'Ö') {
+			} else if (s.charAt(i) == '\ufffd') {
 				buffer[idx + i] = (byte) 214;
 			} else {
 				buffer[idx + i] = str[i];
@@ -450,19 +450,19 @@ public abstract class Record {
 		String str = "";
 		while (idx < buffer.length && buffer[idx] != 0) {
 			if (buffer[idx] + 256 == 252) {
-				str += "ü";
+				str += "\ufffd";
 			} else if (buffer[idx] + 256 == 246) {
-				str += "ö";
+				str += "\ufffd";
 			} else if (buffer[idx] + 256 == 228) {
-				str += "ä";
+				str += "\ufffd";
 			} else if (buffer[idx] + 256 == 223) {
-				str += "ß";
+				str += "\ufffd";
 			} else if (buffer[idx] + 256 == 196) {
-				str += "Ä";
+				str += "\ufffd";
 			} else if (buffer[idx] + 256 == 220) {
-				str += "Ü";
+				str += "\ufffd";
 			} else if (buffer[idx] + 256 == 214) {
-				str += "Ö";
+				str += "\ufffd";
 			} else {
 				str += (char) buffer[idx];
 			}

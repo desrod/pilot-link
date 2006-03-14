@@ -143,7 +143,7 @@ public class test {
 				r.setDirty(false);
 				hexdump(r.getBuffer());
 				if (r.isDirty()) {
-					System.out.println("Hï¿½ï¿½ï¿½ï¿½?!");
+					System.out.println("H\ufffd\ufffd\ufffd\ufffd?!");
 				}
 				//pl.writeRecord(dbh,r);
 			}
@@ -241,20 +241,8 @@ public class test {
 				System.out.print(l + " ");
 				if ((arr[i] >= '0' && arr[i] <= 'z') || (arr[i] == ' ')) {
 					chars += (char) arr[i];
-				} else if (arr[i] == (byte) 'ü') {
-					chars += "ü";
-				} else if (arr[i] == (byte) 'Ü') {
-					chars += "Ü";
-				} else if (arr[i] == (byte) 'ö') {
-					chars += "ö";
-				} else if (arr[i] == (byte) 'Ö') {
-					chars += "Ö";
-				} else if (arr[i] == (byte) 'ä') {
-					chars += "ä";
-				} else if (arr[i] == (byte) 'Ä') {
-					chars += "Ä";
-				} else if (arr[i] == (byte) 'ß') {
-					chars += "ß";
+				} else if (arr[i] == (byte) '\ufffd') {
+					chars += "\ufffd";
 				} else {
 					chars += ".";
 				}

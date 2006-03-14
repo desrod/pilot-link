@@ -246,19 +246,11 @@ public class MidiMgr {
 				if ((arr[i] >= '0' && arr[i] <= 'z') || (arr[i] == ' ')) {
 					chars += (char) arr[i];
 				} else if (arr[i] == 252) {
-					chars += "ü";
+					chars += "\ufffd";
 				} else if (arr[i] ==246) {
-					chars += "ö";
-				} else if (arr[i] == (byte) 'ä') {
-					chars += "ä";
-				} else if (arr[i] == (byte) 'ß') {
-					chars += "ß";
-				} else if (arr[i] == (byte) 'Ö') {
-					chars += "Ö";
-				} else if (arr[i] == (byte) 'Ä') {
-					chars += "Ä";
-				} else if (arr[i] == (byte) 'Ü') {
-					chars += "Ü";
+					chars += "\ufffd";
+				} else if (arr[i] == (byte) '\ufffd') {
+					chars += "\ufffd";
 				} else {
 					chars += ".";
 				}
