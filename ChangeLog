@@ -1,19 +1,203 @@
-2006-03-14 16:33  neilw
+2006-03-14 12:19  desrod
 
-	* configure.ac : Replace the check for pilot-link.7 with
-	a check on the presence or absence of the CVS directory
-	to build XML only from CVS and check xsltproc only when
-	building XML.
+	* bindings/Java/: MidiMgr.java, test.java,
+	  org/gnu/pilotlink/Record.java: Some minor Java fixes. This needs
+	  a revisit, there are quite a few places in here where some OOP
+	  constructs could keep things much cleaner.
 
-2006-02-27 23:04  neilw
+2006-03-14 11:34  neilw
 
-	* configure.ac : Fix test to look for a file, not directory.
-	Fix the xsltproc check to find Mac OSX stylesheets. 
-	* doc/xml/Makefile.am : Remove recursive loop.
-	* doc/xml/docbook.xsl.in : Fix error reported by doclifter
-	by Eric Raymond.
-	* doc/xml/*.xml : Update options list handling to a more
-	consistent formatting.
+	* ChangeLog, configure.ac: Use CVS check instead of file check for
+	  manpage build
+
+2006-03-14 10:58  desrod
+
+	* configure.ac, bindings/Perl/h2xs-pilot-link, m4/xslt.m4: Fixes
+	  for userland conduits, xsltproc checks, and a big Perl commit
+	  (thanks Aaron!)
+
+2006-02-27 18:22  neilw
+
+	* ChangeLog: ChangeLog
+
+2006-02-27 18:13  neilw
+
+	* doc/xml/: README, debugsh.xml, dlpsh.xml, hinotes.xml,
+	  install-datebook.xml, install-expenses.xml, install-hinote.xml,
+	  install-memo.xml, install-netsync.xml, install-todo.xml,
+	  install-todos.xml, install-user.xml, memos.xml, pi-csd.xml,
+	  pi-getram.xml, pi-getrom.xml, pi-getromtoken.xml, pi-nredir.xml,
+	  pilot-addresses.xml, pilot-archive.xml, pilot-clip.xml,
+	  pilot-dedupe.xml, pilot-file.xml, pilot-foto.xml,
+	  pilot-schlep.xml, pilot-treofoto.xml, pilot-wav.xml,
+	  pilot-xfer.xml, read-expenses.xml, read-ical.xml,
+	  read-notepad.xml, read-palmpix.xml, read-screenshot.xml,
+	  read-todos.xml, read-veo.xml, reminders.xml: Update options list
+	  handling in each manpage to a more consistent formatting.
+
+2006-02-27 18:10  neilw
+
+	* doc/xml/docbook.xsl.in: Fix error reported by doclifter by Eric
+	  Raymond.  %r/%p %s
+
+2006-02-27 18:09  neilw
+
+	* doc/xml/Makefile.am: Remove recursive loop.
+
+2006-02-27 18:08  neilw
+
+	* configure.ac: Fix test to look for a file, not directory.
+	  Fix the xsltproc check to find Mac OSX stylesheets.
+
+2006-02-25 10:44  fpillet
+
+	* libpisock/darwinusb.c: removed debug extended USB debug flag for
+	  release
+
+2006-02-25 10:34  fpillet
+
+	* include/pi-dlp.h: doc typo fixed
+
+2006-02-23 04:05  fpillet
+
+	* libpisock/pi-file.c: Flags was modified before being initialized,
+	  rendering the code useless
+
+2006-02-13 09:52  fpillet
+
+	* libpisock/darwinusb.c: tweaks for universal binary (intel /
+	  powerpc) compilation
+
+2006-02-13 09:51  fpillet
+
+	* libpisock/pi-header.c: updated copyright date range (who knows,
+	  we may release 0.12 before 2007)
+
+2006-02-13 09:50  fpillet
+
+	* libpisock/cmp.c: removed unused variable cmp_version
+
+2006-01-26 07:34  fpillet
+
+	* include/pi-userland.h, src/plu_args.c, src/userland.c: Patch
+	  coming from bug #1585: add new timeout option to userland tools
+	  so serial connection timeout issues can be investigated (matt
+	  Davey)
+
+2006-01-26 06:06  fpillet
+
+	* libpisock/serial.c: Patch for bug #1591 provided by Matt davey
+
+2006-01-21 16:20  adridg
+
+	* libpisock/: debug.c, memo.c: Reduce warnings: don't assign NULL
+	  to the bytes in a pi_buffer_t, and use the non-deprecated
+	  dumpline() function.
+
+2006-01-13 09:20  warp
+
+	* libpisock/libusb.c: Work around a change in behavior in the
+	  /proc/bus/usb to /dev/bus/usb change.
+
+2006-01-02 05:18  fpillet
+
+	* libpisock/darwinusb.c: big scary update: added support for TX and
+	  LifeDrive, initial support for KLSI (not complete yet but
+	  infrastructure is there), reworked the way a connection is
+	  declared live to better cope with clunky PalmOne devices like the
+	  LD
+
+2005-12-28 03:39  warp
+
+	* libpisock/libusb.c: Fix the index/control_index goof.  Deals with
+	  #1577.
+
+2005-10-19 20:43  warp
+
+	* libpisock/libusb.c: Do this a little more portably.
+
+2005-10-19 17:37  adridg
+
+	* libpisock/datebook.c: Make documentation match reality. Some time
+	  back, we argued about whether these documentation bits should be
+	  in the header files -- which users of the p-l API can see -- or
+	  hidden in the C files. Was there ever a resolution of that?
+
+2005-10-17 20:40  warp
+
+	* libpisock/libusb.c: Fix a rare buffer leak in the libusb code.
+
+	  Put in an evil kluge for the case where we have a close, but the
+	  read call is wedged.
+
+2005-10-17 17:53  warp
+
+	* libpisock/usb.c: Er, try this.
+
+2005-10-17 17:47  warp
+
+	* libpisock/usb.c: Try to make the connect interface actually
+	  function with the usb backend.  No promises that it actually
+	  _does_ though.
+
+2005-10-17 16:14  adridg
+
+	* include/pi-args.h, include/pi-buffer.h, include/pi-cmp.h,
+	  include/pi-contact.h, include/pi-debug.h, include/pi-dlp.h,
+	  include/pi-error.h, include/pi-file.h, include/pi-header.h,
+	  include/pi-inet.h, include/pi-macros.h, include/pi-net.h,
+	  include/pi-padp.h, include/pi-serial.h, include/pi-slp.h,
+	  include/pi-sockaddr.h, include/pi-socket.h, include/pi-source.h,
+	  include/pi-sync.h, include/pi-sys.h, include/pi-syspkt.h,
+	  include/pi-threadsafe.h, include/pi-usb.h, include/pi-userland.h,
+	  include/pi-util.h, libpisock/address.c, libpisock/appinfo.c,
+	  libpisock/cmp.c, libpisock/connect.c, libpisock/contact.c,
+	  libpisock/darwinusb.c, libpisock/datebook.c, libpisock/debug.c,
+	  libpisock/dlp.c, libpisock/expense.c, libpisock/freebsdusb.c,
+	  libpisock/hinote.c, libpisock/inet.c, libpisock/libusb.c,
+	  libpisock/linuxusb.c, libpisock/mail.c, libpisock/md5.c,
+	  libpisock/memo.c, libpisock/money.c, libpisock/net.c,
+	  libpisock/notepad.c, libpisock/os2serial.c, libpisock/padp.c,
+	  libpisock/palmpix.c, libpisock/pi-buffer.c, libpisock/pi-file.c,
+	  libpisock/pi-header.c, libpisock/serial.c, libpisock/slp.c,
+	  libpisock/socket.c, libpisock/sys.c, libpisock/syspkt.c,
+	  libpisock/threadsafe.c, libpisock/todo.c, libpisock/unixserial.c,
+	  libpisock/usb.c, libpisock/utils.c, libpisock/veo.c,
+	  libpisock/versamail.c: Fix the address of the FSF in lots (but
+	  surely not all) places.
+
+2005-10-10 17:06  adridg
+
+	* libpisock/dlp.c: Also #define TraceX to empty when no debug
+
+2005-10-10 16:58  adridg
+
+	* libpisock/dlp.c: Typo - what's a ; doing there?
+
+2005-10-10 16:57  adridg
+
+	* libpisock/freebsdusb.c: CONBK is deprecated and gone
+
+2005-10-10 16:52  adridg
+
+	* include/pi-sys.h: Fix include guard for cases where you want
+	  syspkt and sys.h
+
+2005-08-27 05:17  fpillet
+
+	* libpisock/padp.c: Integrated fix provided by Marcelo Jimenez:
+	  padp's freeze_txid was not initialized
+
+2005-08-17 11:12  desrod
+
+	* ChangeLog, configure.ac, bindings/Java/Makefile.am,
+	  bindings/Java/libjpisock.c, libpisock/usb.c: Fixing up some java
+	  compilation problems on gcj (Bernhard Rosenkraenzer)
+
+2005-08-16 12:57  desrod
+
+	* src/pilot-xfer.c: Clean out an extra double-free that crashes on
+	  merge() (resolves #1529 from 'than')
 
 2005-07-20 18:13  fpillet
 
