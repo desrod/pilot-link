@@ -23,6 +23,7 @@ package PDA::Pilot;
 require Exporter;
 require DynaLoader;
 require AutoLoader;
+use Carp;
 
 @ISA = qw(Exporter DynaLoader);
 # Items to export into callers namespace by default. Note: do not export
@@ -76,30 +77,29 @@ require AutoLoader;
 # function.  If a constant is not found then control is passed to the
 # AUTOLOAD in AutoLoader.
 
-# NOTE: THIS AUTOLOAD FUNCTION IS FLAWED (but is the best we can do for
-# now). Avoid old-style ``&CONST'' usage. Either remove the ``&'' or add
-# ``()''.
 sub AUTOLOAD {
-    if (@_ > 0) {
-	$AutoLoader::AUTOLOAD = $AUTOLOAD;
-	goto &AutoLoader::AUTOLOAD;
-    }
-    local($constname);
+    # This AUTOLOAD is used to 'autoload' constants from the constant()
+    # XS function.
+
+    my $constname;
+    our $AUTOLOAD;
     ($constname = $AUTOLOAD) =~ s/.*:://;
-    $val = constant($constname, @_ ? $_[0] : 0);
-    if ($! != 0) {
-	if ($! =~ /Invalid/) {
-	    $AutoLoader::AUTOLOAD = $AUTOLOAD;
-	    goto &AutoLoader::AUTOLOAD;
-	}
-	else {
-	    ($pack,$file,$line) = caller;
-	    die "Your vendor has not defined PDA::Pilot macro $constname, used at $file line $line.";
-	}
+    croak "&PDA::Pilot::constant not defined" if $constname eq 'constant';
+    my ($error, $val) = constant($constname);
+    if ($error) { croak $error; }
+    {
+        no strict 'refs';
+        # Fixed between 5.005_53 and 5.005_61
+#XXX    if ($] >= 5.00561) {
+#XXX        *$AUTOLOAD = sub () { $val };
+#XXX    }
+#XXX    else {
+            *$AUTOLOAD = sub { $val };
+#XXX    }
     }
-    eval "sub $AUTOLOAD { $val }";
     goto &$AUTOLOAD;
 }
+
 
 bootstrap PDA::Pilot;
 package PDA::Pilot::Block;

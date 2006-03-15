@@ -43,373 +43,14 @@
 #include "pi-dlp.h"
 #include "pi-syspkt.h"
 #include "pi-error.h"
+#include "pi-version.h"
+
+#include "const-c.inc"
 
 
 typedef unsigned char * CPTR;
 
-static int
-not_here(s)
-char *s;
-{
-    croak("%s not implemented on this architecture", s);
-    return -1;
-}
-
-static double
-constant(name, arg)
-char *name;
-int arg;
-{
-    errno = 0;
-    switch (*name) {
-    case 'A':
-	break;
-    case 'B':
-	break;
-    case 'C':
-	break;
-    case 'D':
-	break;
-    case 'E':
-	break;
-    case 'F':
-	break;
-    case 'G':
-	break;
-    case 'H':
-	break;
-    case 'I':
-	break;
-    case 'J':
-	break;
-    case 'K':
-	break;
-    case 'L':
-	break;
-    case 'M':
-	break;
-    case 'N':
-	break;
-    case 'O':
-	break;
-    case 'P':
-	if (strEQ(name, "PI_ERR_PROT_ABORTED"))
-#ifdef PI_ERR_PROT_ABORTED
-	    return PI_ERR_PROT_ABORTED;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PI_ERR_PROT_INCOMPATIBLE"))
-#ifdef PI_ERR_PROT_INCOMPATIBLE
-	    return PI_ERR_PROT_INCOMPATIBLE;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PI_ERR_PROT_BADPACKET"))
-#ifdef PI_ERR_PROT_BADPACKET
-	    return PI_ERR_PROT_BADPACKET;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PI_ERR_SOCK_DISCONNECTED"))
-#ifdef PI_ERR_SOCK_DISCONNECTED
-	    return PI_ERR_SOCK_DISCONNECTED;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PI_ERR_SOCK_INVALID"))
-#ifdef PI_ERR_SOCK_INVALID
-	    return PI_ERR_SOCK_INVALID;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PI_ERR_SOCK_TIMEOUT"))
-#ifdef PI_ERR_SOCK_TIMEOUT
-	    return PI_ERR_SOCK_TIMEOUT;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PI_ERR_SOCK_CANCELED"))
-#ifdef PI_ERR_SOCK_CANCELED
-	    return PI_ERR_SOCK_CANCELED;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PI_ERR_SOCK_IO"))
-#ifdef PI_ERR_SOCK_IO
-	    return PI_ERR_SOCK_IO;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PI_ERR_SOCK_LISTENER"))
-#ifdef PI_ERR_SOCK_LISTENER
-	    return PI_ERR_SOCK_LISTENER;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PI_ERR_DLP_BUFSIZE"))
-#ifdef PI_ERR_DLP_BUFSIZE
-	    return PI_ERR_DLP_BUFSIZE;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PI_ERR_DLP_PALMOS"))
-#ifdef PI_ERR_DLP_PALMOS
-	    return PI_ERR_DLP_PALMOS;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PI_ERR_DLP_UNSUPPORTED"))
-#ifdef PI_ERR_DLP_UNSUPPORTED
-	    return PI_ERR_DLP_UNSUPPORTED;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PI_ERR_DLP_SOCKET"))
-#ifdef PI_ERR_DLP_SOCKET
-	    return PI_ERR_DLP_SOCKET;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PI_ERR_DLP_DATASIZE"))
-#ifdef PI_ERR_DLP_DATASIZE
-	    return PI_ERR_DLP_DATASIZE;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PI_ERR_DLP_COMMAND"))
-#ifdef PI_ERR_DLP_COMMAND
-	    return PI_ERR_DLP_COMMAND;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PI_ERR_FILE_INVALID"))
-#ifdef PI_ERR_FILE_INVALID
-	    return PI_ERR_FILE_INVALID;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PI_ERR_FILE_ERROR"))
-#ifdef PI_ERR_FILE_ERROR
-	    return PI_ERR_FILE_ERROR;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PI_ERR_FILE_ABORTED"))
-#ifdef PI_ERR_FILE_ABORTED
-	    return PI_ERR_FILE_ABORTED;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PI_ERR_FILE_NOT_FOUND"))
-#ifdef PI_ERR_FILE_NOT_FOUND
-	    return PI_ERR_FILE_NOT_FOUND;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PI_ERR_GENERIC_MEMORY"))
-#ifdef PI_ERR_GENERIC_MEMORY
-	    return PI_ERR_GENERIC_MEMORY;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PI_ERR_GENERIC_ARGUMENT"))
-#ifdef PI_ERR_GENERIC_ARGUMENT
-	    return PI_ERR_GENERIC_ARGUMENT;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PI_ERR_GENERIC_SYSTEM"))
-#ifdef PI_ERR_GENERIC_SYSTEM
-	    return PI_ERR_GENERIC_SYSTEM;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PI_AF_SLP"))
-#ifdef PI_AF_SLP
-	    return PI_AF_SLP;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PI_PF_LOOP"))
-#ifdef PI_PF_LOOP
-	    return PI_PF_LOOP;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PI_PF_PADP"))
-#ifdef PI_PF_PADP
-	    return PI_PF_PADP;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PI_PF_SLP"))
-#ifdef PI_PF_SLP
-	    return PI_PF_SLP;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PI_PilotSocketConsole"))
-#ifdef PI_PilotSocketConsole
-	    return PI_PilotSocketConsole;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PI_PilotSocketDLP"))
-#ifdef PI_PilotSocketDLP
-	    return PI_PilotSocketDLP;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PI_PilotSocketDebugger"))
-#ifdef PI_PilotSocketDebugger
-	    return PI_PilotSocketDebugger;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PI_PilotSocketRemoteUI"))
-#ifdef PI_PilotSocketRemoteUI
-	    return PI_PilotSocketRemoteUI;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PI_SOCK_DGRAM"))
-#ifdef PI_SOCK_DGRAM
-	    return PI_SOCK_DGRAM;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PI_SOCK_RAW"))
-#ifdef PI_SOCK_RAW
-	    return PI_SOCK_RAW;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PI_SOCK_SEQPACKET"))
-#ifdef PI_SOCK_SEQPACKET
-	    return PI_SOCK_SEQPACKET;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PI_SOCK_STREAM"))
-#ifdef PI_SOCK_STREAM
-	    return PI_SOCK_STREAM;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PILOT_LINK_VERSION"))
-#ifdef PILOT_LINK_VERSION
-	    return PILOT_LINK_VERSION;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PILOT_LINK_MAJOR"))
-#ifdef PILOT_LINK_MAJOR
-	    return PILOT_LINK_MAJOR;
-#else
-	    goto not_there;
-#endif
-	if (strEQ(name, "PILOT_LINK_MINOR"))
-#ifdef PILOT_LINK_MINOR
-	    return PILOT_LINK_MINOR;
-#else
-	    goto not_there;
-#endif
-	break;
-    case 'Q':
-	break;
-    case 'R':
-	break;
-    case 'S':
-	break;
-    case 'T':
-	break;
-    case 'U':
-	break;
-    case 'V':
-	break;
-    case 'W':
-	break;
-    case 'X':
-	break;
-    case 'Y':
-	break;
-    case 'Z':
-	break;
-	case 'd': 
-#define DoName(x) if (strEQ(name, STRINGIFY(x))) return x
-
-		if (strlen(name)>3) {
-			switch (name[3]) {
-			case 'O':
-				DoName(dlpOpenRead);
-				DoName(dlpOpenWrite);
-				DoName(dlpOpenExclusive);
-				DoName(dlpOpenSecret);
-				DoName(dlpOpenReadWrite);
-				break;
-			case 'E':
-				DoName(dlpEndCodeNormal);
-				DoName(dlpEndCodeOutOfMemory);
-				DoName(dlpEndCodeUserCan);
-				DoName(dlpEndCodeOther);
-				DoName(dlpErrNoError);
-				DoName(dlpErrSystem);
-				DoName(dlpErrIllegalReq);
-				DoName(dlpErrMemory);
-				DoName(dlpErrParam);
-				DoName(dlpErrNotFound);
-				DoName(dlpErrNoneOpen);
-				DoName(dlpErrAlreadyOpen);
-				DoName(dlpErrTooManyOpen);
-				DoName(dlpErrExists);
-				DoName(dlpErrOpen);
-				DoName(dlpErrDeleted);
-				DoName(dlpErrBusy);
-				DoName(dlpErrNotSupp);
-				DoName(dlpErrUnused1);
-				DoName(dlpErrReadOnly);
-				DoName(dlpErrSpace);
-				DoName(dlpErrLimit);
-				DoName(dlpErrSync);
-				DoName(dlpErrWrapper);
-				DoName(dlpErrArgument);
-				DoName(dlpErrSize);
-				break;
-			case 'R':
-				DoName(dlpRecAttrDeleted);
-				DoName(dlpRecAttrDirty);
-				DoName(dlpRecAttrBusy);
-				DoName(dlpRecAttrSecret);
-				DoName(dlpRecAttrArchived);
-				break;
-   			case 'D':
-				DoName(dlpDBFlagResource);
-				DoName(dlpDBFlagReadOnly);
-				DoName(dlpDBFlagAppInfoDirty);
-				DoName(dlpDBFlagBackup);
-				DoName(dlpDBFlagOpen);
-				DoName(dlpDBFlagNewer);
-				DoName(dlpDBFlagReset);
-            DoName(dlpDBFlagCopyPrevention);
-            DoName(dlpDBFlagStream);
-				
-				DoName(dlpDBListRAM);
-				DoName(dlpDBListROM);
-				break;
-			}
-		}
-		break;
-    }
-    errno = EINVAL;
-    return 0;
-
-not_there:
-    errno = ENOENT;
-    return 0;
-}
-
-static char mybuf[0xffff];
+static unsigned char mybuf[0xffff];
 static pi_buffer_t pibuf = {NULL, 0, 0};
 
 static AV * tmtoav (struct tm * t) {
@@ -635,7 +276,7 @@ SvChar4(arg)
 			int count;\
 	    		PUSHMARK(sp);\
 	    		XPUSHs(self->Class);\
-	    		XPUSHs(newSVpv(buf, size));\
+	    		XPUSHs(newSVpv((char *) buf, size));	\
 		    	PUTBACK;\
 		    	count = perl_call_method("appblock", G_SCALAR);\
 		    	SPAGAIN;\
@@ -676,7 +317,7 @@ SvChar4(arg)
 	    		int count;\
 	    		PUSHMARK(sp);\
 	    		XPUSHs(self->Class);\
-	    		XPUSHs(newSVpv(buf, size));\
+	    		XPUSHs(newSVpv((char *) buf, size));	\
 		    	PUTBACK;\
 		    	count = perl_call_method("sortblock", G_SCALAR);\
 		    	SPAGAIN;\
@@ -761,7 +402,7 @@ SvChar4(arg)
 	    		SV * ret;\
 	    		PUSHMARK(sp);\
 	    		XPUSHs(self->Class);\
-	    		XPUSHs(newSVpv(buf, size));\
+	    		XPUSHs(newSVpv((char *) buf, size));	\
 		    	XPUSHs(sv_2mortal(newSViv(id)));\
 		    	XPUSHs(sv_2mortal(newSViv(attr)));\
 		    	XPUSHs(sv_2mortal(newSViv(category)));\
@@ -817,7 +458,7 @@ SvChar4(arg)
 	    		int count;\
 	    		PUSHMARK(sp);\
 	    		XPUSHs(self->Class);\
-	    		XPUSHs(newSVpv(buf, size));\
+	    		XPUSHs(newSVpv((char *) buf, size));	\
 		    	XPUSHs(sv_2mortal(newSVChar4(type)));\
 		    	XPUSHs(sv_2mortal(newSViv(id)));\
 		    	XPUSHs(sv_2mortal(newSViv(index)));\
@@ -883,7 +524,7 @@ SvChar4(arg)
 				croak("Default PrefClass not defined");\
     		PUSHMARK(sp);\
     		XPUSHs(newSVsv(*s));\
-    		XPUSHs(newSVpv(buf, size));\
+    		XPUSHs(newSVpv((char *) buf, size));		\
 	    	XPUSHs(sv_2mortal(newSVChar4(creator)));\
 	    	XPUSHs(sv_2mortal(newSViv(id)));\
 	    	XPUSHs(sv_2mortal(newSViv(version)));\
@@ -984,10 +625,8 @@ SV * newSVlist(int value, char **list)
 
 MODULE = PDA::Pilot		PACKAGE = PDA::Pilot
 
-double
-constant(name,arg)
-	char *		name
-	int		arg
+INCLUDE: const-xs.inc
+
 
 MODULE = PDA::Pilot		PACKAGE = PDA::Pilot::Appointment
 
@@ -1001,6 +640,7 @@ Unpack(record)
     AV * e;
     HV * ret, *h;
     struct Appointment a;
+    char *str;
     
     if (SvOK(record) && SvRV(record) && (SvTYPE(SvRV(record)) == SVt_PVHV)) {
     	SV ** raw;
@@ -1016,65 +656,75 @@ Unpack(record)
     	RETVAL = newRV_noinc((SV*)ret);
     }
     
-    SvPV(record,len);
-    if (unpack_Appointment(&a, (CPTR)SvPV(record, na), len)>0) {
-
-	    hv_store(ret, "event", 5, newSViv(a.event), 0);
-	    hv_store(ret, "begin", 5, newRV_noinc((SV*)tmtoav(&a.begin)), 0);
-    
-	    if (!a.event) {
-		    hv_store(ret, "end", 3, newRV_noinc((SV*)tmtoav(&a.end)), 0);
-	    }
-    
-	    if (a.alarm) {
-	        HV * alarm = newHV();
-	        hv_store(ret, "alarm", 5, newRV_noinc((SV*)alarm), 0);
-        
-	   		hv_store(alarm, "advance", 7, newSViv(a.advance), 0);
-		    hv_store(alarm, "units", 5, newSVpv((
-		    	(a.advanceUnits == 0) ? "minutes" :        /* Minutes */
-		    	(a.advanceUnits == 1) ? "hours" :     /* Hours */
-		    	(a.advanceUnits == 2) ? "days" :  /* Days */
-		    	0), 0), 0);
-		    if (a.advanceUnits > 2) {
-		    	warn("Invalid advance unit %d encountered", a.advanceUnits);
-		    }
-	    }
-	    if (a.repeatType) {
-	        HV * repeat = newHV();
-	        hv_store(ret, "repeat", 6, newRV_noinc((SV*)repeat), 0);
-	        
-	   		hv_store(repeat, "type", 4, newSVpv(DatebookRepeatTypeNames[a.repeatType],0), 0);
-	   		hv_store(repeat, "frequency", 9, newSViv(a.repeatFrequency), 0);
-	   		if (a.repeatType == repeatMonthlyByDay)
-	   			hv_store(repeat, "day", 3, newSViv(a.repeatDay), 0);
-	   		else if (a.repeatType == repeatWeekly) {
-			    e = newAV();
-			    hv_store(repeat, "days", 4, newRV_noinc((SV*)e), 0);
-			    for (i=0;i<7;i++)
-			    	av_push(e,newSViv(a.repeatDays[i]));
-	   		}
-	   		hv_store(repeat, "weekstart", 9, newSViv(a.repeatWeekstart), 0);
-	   		if (!a.repeatForever)
-	   			hv_store(repeat, "end", 3, newRV_noinc((SV*)tmtoav(&a.repeatEnd)),0);
-	    }
-	    
-	    if (a.exceptions) {
-		    e = newAV();
-		    hv_store(ret, "exceptions", 10, newRV_noinc((SV*)e), 0);
-		    for (i=0;i<a.exceptions;i++) {
-		    	av_push(e,newRV_noinc((SV*)tmtoav(&a.exception[i])));
-		    }
-		}
-    
-	    if (a.description)
-	    	hv_store(ret, "description", 11, newSVpv((char*)a.description,0), 0);
-
-	    if (a.note)
-	    	hv_store(ret, "note", 4, newSVpv((char*)a.note,0), 0);
-    
-		free_Appointment(&a);
+    if (!SvPOK(record)) {
+        croak("Not a string!?");
+    }
+    str = SvPV(record,len);
+    if (len > 0)  { /* len == 0 when the record has the deleted flag set */
+	pi_buffer_clear(&pibuf);
+	if (!pi_buffer_append(&pibuf, str, len)) {
+	    croak("Unable to reallocate buffer");
 	}
+	if (unpack_Appointment(&a, &pibuf, datebook_v1) < 0) {
+	    croak("unpack_Appointment failed");
+	}
+
+	hv_store(ret, "event", 5, newSViv(a.event), 0);
+	hv_store(ret, "begin", 5, newRV_noinc((SV*)tmtoav(&a.begin)), 0);
+    
+	if (!a.event) {
+	    hv_store(ret, "end", 3, newRV_noinc((SV*)tmtoav(&a.end)), 0);
+	}
+    
+	if (a.alarm) {
+	    HV * alarm = newHV();
+	    hv_store(ret, "alarm", 5, newRV_noinc((SV*)alarm), 0);
+	    
+	    hv_store(alarm, "advance", 7, newSViv(a.advance), 0);
+	    hv_store(alarm, "units", 5, newSVpv((
+						 (a.advanceUnits == 0) ? "minutes" :        /* Minutes */
+						 (a.advanceUnits == 1) ? "hours" :     /* Hours */
+						 (a.advanceUnits == 2) ? "days" :  /* Days */
+						 0), 0), 0);
+	    if (a.advanceUnits > 2) {
+		warn("Invalid advance unit %d encountered", a.advanceUnits);
+	    }
+	}
+	if (a.repeatType) {
+	    HV * repeat = newHV();
+	    hv_store(ret, "repeat", 6, newRV_noinc((SV*)repeat), 0);
+	        
+	    hv_store(repeat, "type", 4, newSVpv(DatebookRepeatTypeNames[a.repeatType],0), 0);
+	    hv_store(repeat, "frequency", 9, newSViv(a.repeatFrequency), 0);
+	    if (a.repeatType == repeatMonthlyByDay)
+		hv_store(repeat, "day", 3, newSViv(a.repeatDay), 0);
+	    else if (a.repeatType == repeatWeekly) {
+		e = newAV();
+		hv_store(repeat, "days", 4, newRV_noinc((SV*)e), 0);
+		for (i=0;i<7;i++)
+		    av_push(e,newSViv(a.repeatDays[i]));
+	    }
+	    hv_store(repeat, "weekstart", 9, newSViv(a.repeatWeekstart), 0);
+	    if (!a.repeatForever)
+		hv_store(repeat, "end", 3, newRV_noinc((SV*)tmtoav(&a.repeatEnd)),0);
+	}
+	    
+	if (a.exceptions) {
+	    e = newAV();
+	    hv_store(ret, "exceptions", 10, newRV_noinc((SV*)e), 0);
+	    for (i=0;i<a.exceptions;i++) {
+		av_push(e,newRV_noinc((SV*)tmtoav(&a.exception[i])));
+	    }
+	}
+    
+	if (a.description)
+	    hv_store(ret, "description", 11, newSVpv((char*)a.description,0), 0);
+
+	if (a.note)
+	    hv_store(ret, "note", 4, newSVpv((char*)a.note,0), 0);
+    
+	free_Appointment(&a);
+    }
     }
     OUTPUT:
     RETVAL
@@ -1084,7 +734,6 @@ Pack(record)
     SV * record
     CODE:
     {
-    int len;
     SV ** s;
     HV * h;
     long advance;
@@ -1115,26 +764,31 @@ Pack(record)
 		HV * h2 = (HV*)SvRV(*s);
 		I32 u;
 	    a.advance = (s = hv_fetch(h2, "advance", 7, 0)) ? SvIV(*s) : 0;
-	    u = (s = hv_fetch(h2, "units", 5, 0)) ? SvIV(*s) : 0;
-	    switch (u) {
-	    case 60:
-	    	u = 0;
-	    	break;
-	    case 60*60:
-	    	u = 1;
-	    	break;
-	    case 60*60*24:
-	    	u = 2;
-	    	break;
-	    default:
+	    s = hv_fetch(h2, "units", 5, 0);
+	    if SvIOK(*s) {
+		u = SvIV(*s);
+		switch (u) {
+		case 60:
+		    u = 0;
+		    break;
+		case 60*60:
+		    u = 1;
+		    break;
+		case 60*60*24:
+		    u = 2;
+		    break;
+		default:
+		    croak("Invalid advance unit %d encountered", u);
+		}
+	    } else {
 	    	if (strEQ(SvPV(*s, na), "minutes"))
-	    		u = 0;
+		    u = 0;
 	    	else if (strEQ(SvPV(*s, na), "hours"))
-	    		u = 1;
+		    u = 1;
 	    	else if (strEQ(SvPV(*s, na), "days"))
-	    		u = 2;
+		    u = 2;
 	    	else
-		    	croak("Invalid advance unit %d encountered", u);
+		    croak("Invalid advance unit %d encountered", u);
 	    }
 	    a.advanceUnits = u;
 	    if (a.advance > 254)
@@ -1198,15 +852,17 @@ Pack(record)
 
     a.description = (s = hv_fetch(h, "description", 11, 0)) ? SvPV(*s,na) : 0;
     if (!a.description)
-      croak("appointments must contain a description");
+        croak("appointments must contain a description");
     a.note = (s = hv_fetch(h, "note", 4, 0)) ? SvPV(*s,na) : 0;
 
-    len = pack_Appointment(&a, mybuf, 0xffff);
-    
+    if (pack_Appointment(&a, &pibuf, datebook_v1) < 0) {
+	croak("pack_Appointment failed");
+    }
+
     if (a.exception)
 		free(a.exception);
     
-    RETVAL = newSVpv(mybuf, len);
+    RETVAL = newSVpv((char *) pibuf.data, pibuf.used);
 
     hv_store(h, "raw", 3, SvREFCNT_inc(RETVAL), 0);
     }
@@ -1275,9 +931,9 @@ PackAppBlock(record)
 	else
 		a.startOfWeek = 0;
 
-    len = pack_AppointmentAppInfo(&a, mybuf, 0xffff);
+    len = pack_AppointmentAppInfo(&a, (unsigned char *) mybuf, 0xffff);
 
-    RETVAL = newSVpv(mybuf, len);
+    RETVAL = newSVpv((char *) mybuf, len);
 
     hv_store(h, "raw", 3, SvREFCNT_inc(RETVAL), 0);
     }
@@ -1297,6 +953,7 @@ Unpack(record)
     AV * e;
     HV * ret;
     struct ToDo a;
+    char *str;
 
     if (SvOK(record) && SvRV(record) && (SvTYPE(SvRV(record)) == SVt_PVHV)) {
     	SV ** raw;
@@ -1312,19 +969,26 @@ Unpack(record)
     	RETVAL = newRV_noinc((SV*)ret);
     }
     
-    SvPV(record,len);
-    if (unpack_ToDo(&a, (CPTR)SvPV(record, na), len)>0) {
+    str = SvPV(record,len);
+    if (len > 0) { /* len == 0 if deleted flag is set */
+	pi_buffer_clear(&pibuf);
+	if (!pi_buffer_append(&pibuf, str, len)) {
+	    croak("Unable to reallocate buffer");
+	}
+	if (unpack_ToDo(&a, &pibuf, todo_v1) < 0) {
+	    croak("unpack_ToDo failed");
+	}
 
-	    if (!a.indefinite)
-			hv_store(ret, "due", 3, newRV_noinc((SV*)tmtoav(&a.due)), 0);  
-	    hv_store(ret, "priority", 8, newSViv(a.priority), 0);
-		hv_store(ret, "complete", 8, newSViv(a.complete), 0);
-	    if (a.description)
-			hv_store(ret, "description", 11, newSVpv((char*)a.description,0), 0);
-	    if (a.note)
-			hv_store(ret, "note", 4, newSVpv((char*)a.note,0), 0);
+	if (!a.indefinite)
+	    hv_store(ret, "due", 3, newRV_noinc((SV*)tmtoav(&a.due)), 0);  
+	hv_store(ret, "priority", 8, newSViv(a.priority), 0);
+	hv_store(ret, "complete", 8, newSViv(a.complete), 0);
+	if (a.description)
+	    hv_store(ret, "description", 11, newSVpv((char*)a.description,0), 0);
+	if (a.note)
+	    hv_store(ret, "note", 4, newSVpv((char*)a.note,0), 0);
 		
-	    free_ToDo(&a);
+	free_ToDo(&a);
     }
     }
     OUTPUT:
@@ -1335,7 +999,6 @@ Pack(record)
     SV * record
     CODE:
     {
-    int len;
     SV ** s;
     HV * h;
     struct ToDo a;
@@ -1363,9 +1026,11 @@ Pack(record)
     a.description = (s = hv_fetch(h, "description", 11, 0)) ? SvPV(*s,na) : 0;
     a.note = (s = hv_fetch(h, "note", 4, 0)) ? SvPV(*s,na) : 0;
 
-    len = pack_ToDo(&a, mybuf, 0xffff);
+    if (pack_ToDo(&a, &pibuf, todo_v1) < 0) {
+	croak("pack_ToDo failed");
+    }
     
-    RETVAL = newSVpv(mybuf, len);
+    RETVAL = newSVpv((char *) pibuf.data, pibuf.used);
 
     hv_store(h, "raw", 3, SvREFCNT_inc(RETVAL), 0);
     }
@@ -1438,7 +1103,7 @@ PackAppBlock(record)
 
     len = pack_ToDoAppInfo(&a, mybuf, 0xffff);
 
-    RETVAL = newSVpv(mybuf, len);
+    RETVAL = newSVpv((char *) mybuf, len);
 
     hv_store(h, "raw", 3, SvREFCNT_inc(RETVAL), 0);
     }
@@ -1458,6 +1123,7 @@ Unpack(record)
     AV * e;
     HV * ret;
     struct Address a;
+    char *str;
 
     if (SvOK(record) && SvRV(record) && (SvTYPE(SvRV(record)) == SVt_PVHV)) {
     	SV ** raw;
@@ -1473,26 +1139,33 @@ Unpack(record)
     	RETVAL = newRV_noinc((SV*)ret);
     }
     
-    SvPV(record,len);
-    if (unpack_Address(&a, (CPTR)SvPV(record, na), len)>0) {
+    str = SvPV(record,len);
+    if (len > 0) { /* len == 0 when deleted flag is set */
+	pi_buffer_clear(&pibuf);
+	if (!pi_buffer_append(&pibuf, str, len)) {
+	    croak("Unable to reallocate buffer");
+	}
+	if (unpack_Address(&a, &pibuf, address_v1) < 0) {
+	    croak("unpack_Address failed");
+	}
 
-	    e = newAV();
-	    hv_store(ret, "phoneLabel", 10, newRV_noinc((SV*)e), 0);
+	e = newAV();
+	hv_store(ret, "phoneLabel", 10, newRV_noinc((SV*)e), 0);
     
-	    for (i=0;i<5;i++) {
-	    	av_push(e, newSViv(a.phoneLabel[i]));
-	    }
+	for (i=0;i<5;i++) {
+	    av_push(e, newSViv(a.phoneLabel[i]));
+	}
 	
-	    e = newAV();
-	    hv_store(ret, "entry", 5, newRV_noinc((SV*)e), 0);
+	e = newAV();
+	hv_store(ret, "entry", 5, newRV_noinc((SV*)e), 0);
 	
-	    for (i=0;i<19;i++) {
-	    	av_push(e, a.entry[i] ? newSVpv(a.entry[i],0) : &sv_undef);
-	    }
+	for (i=0;i<19;i++) {
+	    av_push(e, a.entry[i] ? newSVpv(a.entry[i],0) : &sv_undef);
+	}
 	    
-	    hv_store(ret, "showPhone", 9, newSViv(a.showPhone), 0);
+	hv_store(ret, "showPhone", 9, newSViv(a.showPhone), 0);
     
-	    free_Address(&a);
+	free_Address(&a);
     }
     }
     OUTPUT:
@@ -1503,7 +1176,6 @@ Pack(record)
     SV * record
     CODE:
     {
-    int len;
     SV ** s;
     HV * h;
     AV * av;
@@ -1538,9 +1210,11 @@ Pack(record)
 	else
 	  a.showPhone = 0;
 
-    len = pack_Address(&a, mybuf, 0xffff);
+    if (pack_Address(&a, &pibuf, address_v1) < 0) {
+	croak("pack_Address failed");
+    }
     
-    RETVAL = newSVpv(mybuf, len);
+    RETVAL = newSVpv((char *) pibuf.data, pibuf.used);
 
     hv_store(h, "raw", 3, SvREFCNT_inc(RETVAL), 0);
     }
@@ -1648,7 +1322,7 @@ PackAppBlock(record)
 
     len = pack_AddressAppInfo(&a, mybuf, 0xffff);
 
-    RETVAL = newSVpv(mybuf, len);
+    RETVAL = newSVpv((char *) mybuf, len);
 
     hv_store(h, "raw", 3, SvREFCNT_inc(RETVAL), 0);
     }
@@ -1668,6 +1342,7 @@ Unpack(record)
     AV * e;
     HV * ret;
     struct Memo a;
+    char *str;
 
     if (SvOK(record) && SvRV(record) && (SvTYPE(SvRV(record)) == SVt_PVHV)) {
     	SV ** raw;
@@ -1683,13 +1358,21 @@ Unpack(record)
     	RETVAL = newRV_noinc((SV*)ret);
     }
     
-    SvPV(record,len);
-    if (unpack_Memo(&a, (CPTR)SvPV(record, na), len)>0) {
-
-	    hv_store(ret, "text", 4, newSVpv(a.text,0), 0);
-
-	    free_Memo(&a);
+    str = SvPV(record,len);
+    if (len > 0) { /* len == 0 if deleted flag is set */
+	pi_buffer_clear(&pibuf);
+	if (!pi_buffer_append(&pibuf, str, len)) {
+	    croak("Unable to reallocate buffer");
 	}
+	if (unpack_Memo(&a, &pibuf, memo_v1) < 0) {
+	    croak("unpack_Memo failed");
+	}
+
+
+	hv_store(ret, "text", 4, newSVpv(a.text,0), 0);
+
+	free_Memo(&a);
+    }
     }
     OUTPUT:
     RETVAL
@@ -1699,7 +1382,6 @@ Pack(record)
     SV * record
     CODE:
     {
-    STRLEN len;
     SV ** s;
     HV * h;
     struct Memo a;
@@ -1718,9 +1400,11 @@ Pack(record)
 	else
 		a.text = 0;
     
-    len = pack_Memo(&a, mybuf, 0xffff);
+    if (pack_Memo(&a, &pibuf, memo_v1) < 0) {
+	croak("pack_Memo failed");
+    }
     
-    RETVAL = newSVpv(mybuf, len);
+    RETVAL = newSVpv((char *) pibuf.data, pibuf.used);
     
     hv_store(h, "raw", 3, SvREFCNT_inc(RETVAL), 0);
     }
@@ -1790,7 +1474,7 @@ PackAppBlock(record)
     
     len = pack_MemoAppInfo(&a, mybuf, 0xffff);
 
-    RETVAL = newSVpv(mybuf, len);
+    RETVAL = newSVpv((char *) mybuf, len);
 
     hv_store(h, "raw", 3, SvREFCNT_inc(RETVAL), 0);
     }
@@ -1825,25 +1509,27 @@ Unpack(record)
     }
     
     SvPV(record,len);
-    if (unpack_Expense(&e, (CPTR)SvPV(record, na), len)>0) {
+    if (len > 0) { /* len == 0 if deleted flag is set */
+	if (unpack_Expense(&e, (CPTR)SvPV(record, na), len)>0) {
 
-		hv_store(ret, "date", 4, newRV_noinc((SV*)tmtoav(&e.date)), 0);
-		hv_store(ret, "type", 4, newSVlist(e.type,ExpenseTypeNames),0);
-		hv_store(ret, "payment", 7, newSVlist(e.payment,ExpensePaymentNames),0);
-		hv_store(ret, "currency", 8, newSViv(e.currency),0);
-		if (e.amount)
-		    hv_store(ret, "amount", 6, newSVpv(e.amount,0), 0);
+	    hv_store(ret, "date", 4, newRV_noinc((SV*)tmtoav(&e.date)), 0);
+	    hv_store(ret, "type", 4, newSVlist(e.type,ExpenseTypeNames),0);
+	    hv_store(ret, "payment", 7, newSVlist(e.payment,ExpensePaymentNames),0);
+	    hv_store(ret, "currency", 8, newSViv(e.currency),0);
+	    if (e.amount)
+		hv_store(ret, "amount", 6, newSVpv(e.amount,0), 0);
 	    if (e.vendor)
-		    hv_store(ret, "vendor", 6, newSVpv(e.vendor,0), 0);
+		hv_store(ret, "vendor", 6, newSVpv(e.vendor,0), 0);
 	    if (e.city)
-		    hv_store(ret, "city", 4, newSVpv(e.city,0), 0);
+		hv_store(ret, "city", 4, newSVpv(e.city,0), 0);
 	    if (e.note)
-		    hv_store(ret, "note", 4, newSVpv(e.note,0), 0);
+		hv_store(ret, "note", 4, newSVpv(e.note,0), 0);
 	    if (e.attendees)
 	    	hv_store(ret, "attendees", 9, newSVpv(e.attendees,0), 0);
 
 	    free_Expense(&e);
 	}
+    }
     }
     OUTPUT:
     RETVAL
@@ -1897,7 +1583,7 @@ Pack(record)
     
     len = pack_Expense(&e, mybuf, 0xffff);
     
-    RETVAL = newSVpv(mybuf, len);
+    RETVAL = newSVpv((char *) mybuf, len);
     
     hv_store(h, "raw", 3, SvREFCNT_inc(RETVAL), 0);
 
@@ -1998,7 +1684,7 @@ PackAppBlock(record)
 	
     len = pack_ExpenseAppInfo(&e, mybuf, 0xffff);
 
-    RETVAL = newSVpv(mybuf, len);
+    RETVAL = newSVpv((char *) mybuf, len);
 
     hv_store(h, "raw", 3, SvREFCNT_inc(RETVAL), 0);
     }
@@ -2088,7 +1774,7 @@ PackPref(record, id)
 		
     len = pack_ExpensePref(&a, mybuf, 0xffff);
 
-    RETVAL = newSVpv(mybuf, len);
+    RETVAL = newSVpv((char *) mybuf, len);
 
     hv_store(h, "raw", 3, SvREFCNT_inc(RETVAL), 0);
     }
@@ -2124,7 +1810,8 @@ Unpack(record)
     }
     
     SvPV(record,len);
-    if (unpack_Mail(&a, (CPTR)SvPV(record, na), len)>0) {
+    if (len > 0) { /* len == 0 if deleted flag is set */
+	if (unpack_Mail(&a, (CPTR)SvPV(record, na), len)>0) {
     
 	    if (a.subject) hv_store(ret, "subject", 7, newSVpv(a.subject,0), 0);
 	    if (a.from) hv_store(ret, "from", 4, newSVpv(a.from,0), 0);
@@ -2142,10 +1829,11 @@ Unpack(record)
 	    hv_store(ret, "priority", 8, newSViv(a.priority), 0);
 	    hv_store(ret, "addressing", 10, newSViv(a.addressing), 0);
 
-		if (a.dated)
-			hv_store(ret, "date", 4, newRV_noinc((SV*)tmtoav(&a.date)), 0);
+	    if (a.dated)
+		hv_store(ret, "date", 4, newRV_noinc((SV*)tmtoav(&a.date)), 0);
 
 	    free_Mail(&a);
+	}
     }
     }
     OUTPUT:
@@ -2191,7 +1879,7 @@ Pack(record)
 
     len = pack_Mail(&a, mybuf, 0xffff);
     
-    RETVAL = newSVpv(mybuf, len);
+    RETVAL = newSVpv((char *) mybuf, len);
 
     hv_store(h, "raw", 3, SvREFCNT_inc(RETVAL), 0);
     }
@@ -2267,7 +1955,7 @@ PackAppBlock(record)
 
     len = pack_MailAppInfo(&a, mybuf, 0xffff);
 
-    RETVAL = newSVpv(mybuf, len);
+    RETVAL = newSVpv((char *) mybuf, len);
 
     hv_store(h, "raw", 3, SvREFCNT_inc(RETVAL), 0);
     }
@@ -2351,7 +2039,7 @@ PackSyncPref(record, id)
 
     len = pack_MailSyncPref(&a, mybuf, 0xffff);
 
-    RETVAL = newSVpv(mybuf, len);
+    RETVAL = newSVpv((char *) mybuf, len);
 
     hv_store(h, "raw", 3, SvREFCNT_inc(RETVAL), 0);
     }
@@ -2415,7 +2103,7 @@ PackSignaturePref(record, id)
 
     len = pack_MailSignaturePref(&a, mybuf, 0xffff);
 
-    RETVAL = newSVpv(mybuf, len);
+    RETVAL = newSVpv((char *) mybuf, len);
 
     hv_store(h, "raw", 3, SvREFCNT_inc(RETVAL), 0);
     }
@@ -2456,7 +2144,7 @@ read(socket, len)
 
 	    result = pi_read(socket, &pibuf, len);
 	    if (result >=0) 
-	    	RETVAL = newSVpv(pibuf.data, result);
+	    	RETVAL = newSVpv((char *) pibuf.data, result);
 	    else
 	    	RETVAL = &sv_undef;
 	}
@@ -3717,7 +3405,7 @@ callApplication(self, creator, type, action, data=&sv_undef)
 		                    &retcode, &pibuf);
 		EXTEND(sp, 2);
 		if (result >= 0) {
-			PUSHs(sv_2mortal(newSVpv(pibuf.data, pibuf.used)));
+		        PUSHs(sv_2mortal(newSVpv((char *) pibuf.data, pibuf.used)));
 			if (GIMME != G_SCALAR) {
 				PUSHs(sv_2mortal(newSViv(retcode)));
 			}

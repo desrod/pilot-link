@@ -8,13 +8,41 @@ $libdir = "../../libpisock/.libs";
 
 $lib = "-L$libdir -lpisock";
 
+$plincdir = "../../include";
+$h2xsheaders = join(' ', map { "$plincdir/$_" } qw(
+					      pi-macros.h
+					      pi-buffer.h
+					      pi-file.h
+					      pi-datebook.h
+					      pi-memo.h
+					      pi-expense.h
+					      pi-address.h
+					      pi-todo.h
+					      pi-mail.h
+					      pi-socket.h
+					      pi-dlp.h
+					      pi-syspkt.h
+					      pi-error.h
+					      pi-version.h
+					     ));
+
+sub MY::postamble {
+    "%.inc:
+	./h2xs-pilot-link -n PDA::Pilot $h2xsheaders
+	cp PDA-Pilot/fallback/*.inc .
+	rm -rf PDA-Pilot
+";
+}	
+
 WriteMakefile(
     'NAME'       => 'PDA::Pilot',
-    'VERSION'    => '@PILOT_LINK_VERS@.@PILOT_LINK_MAJOR@.@PILOT_LINK_MINOR@',
+    'VERSION'    => '@PILOT_LINK_VERS@.@PILOT_LINK_MAJOR@.@PILOT_LINK_MINOR@@PILOT_LINK_PATCH@',
     'XSPROTOARG' => '-noprototypes',
-    'INC'        => '-I../../include',
+    'INC'        => "-I$plincdir",
     'DEFINE'     => '-DPERL_POLLUTE',
     'PREFIX'     => "$prefix",
-    'MANDIR'     => "$prefix/man",
-    dynamic_lib  => {'OTHERLDFLAGS' => $lib}
+    'INSTALLDIRS'=> 'vendor',
+    'dynamic_lib'=> {'OTHERLDFLAGS' => $lib},
+    'depend'     => {'Pilot.c' => 'const-c.inc const-xs.inc'},
+    'clean'      => {'FILES'   => 'const-c.inc const-xs.inc'},
 );
