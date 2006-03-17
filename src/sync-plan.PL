@@ -21,8 +21,19 @@ my $PREFS = {
 	     Debug       => 1,
 	    };
 
-# msg is here to localize the differences between the standalone
-# sync-plan.PL and the SyncPlan.pm module for PilotManager.
+my @plversion;          # pilot-link version (version, major, minor, patch)
+
+# any or alll of these may be undefined, depending on the
+# pilot-link version.
+eval {
+    $plversion[0] = PDA::Pilot::PILOT_LINK_VERSION();
+    $plversion[1] = PDA::Pilot::PILOT_LINK_MAJOR();
+    $plversion[2] = PDA::Pilot::PILOT_LINK_MINOR();
+    $plversion[3] = PDA::Pilot::PILOT_LINK_PATCH();
+};
+
+# msg and status are here to localize the differences between the
+# standalone sync-plan.PL and the SyncPlan.pm module for PilotManager.
 
 ############################################################
 #
@@ -31,13 +42,15 @@ sub msg {
   print @_;
 }
 
+sub status {
+}
+
 ############################################################
-# Hopefully this is temporary, until the pilot-link perl bindings
-# provide a more convenient way of checking.  Argument is a
-# PDA::Pilot::DLP or a PDA::Pilot::DLP::DB.  It's in its own package
-# so that croak will give more useful information.  I'm not using the
-# equivalent function from the PilotMgr package because I'm working
-# towards making this function as a stand-alone conduit.
+# CheckErrNotFound: Argument is a PDA::Pilot::DLP or a
+# PDA::Pilot::DLP::DB.  It's in its own package so that croak will
+# give more useful information.  I'm not using the equivalent function
+# from the PilotMgr package because there is a stand-alone version of
+# this conduit in the pilot-link distribution.
 ############################################################
 BEGIN {
   package ErrorCheck;
@@ -46,8 +59,7 @@ BEGIN {
     {
       my($obj) = @_;
       my $errno = $obj->errno();
-      PDA::Pilot::constant("PILOT_LINK_VERSION",0);
-      if ($! == 0) {		# P_L_V is defined, so the version is >= 0.12.0
+      if (defined $plversion[0]) { # pilot-link version is >= 0.12.0-pre2
         if ($errno != PDA::Pilot::PI_ERR_DLP_PALMOS()) {
 	  croak "Error $errno";
         }
@@ -337,6 +349,7 @@ sub RecordPilotToPlan {
 	if (exists $pilot->{'exceptions'}) {
 		# Plan records can only deal with four exceptions, 
 		if (@{$pilot->{'exceptions'}} > 4) {
+			msg("Too many exceptions.");
 			return undef;
 		}
 		foreach (@{$pilot->{'exceptions'}}) {
@@ -363,8 +376,19 @@ sub RecordPilotToPlan {
 			}
 			$plan->{'repeat'}->[2] = $r;
 		} elsif ($pilot->{'repeat'}->{'type'} eq "Weekly" and ($pilot->{'repeat'}->{'frequency'}>1)) {
-			$plan->{'repeat'}->[0] = (60*60*24) * $pilot->{'repeat'}->{'frequency'} * 7;
-			$plan->{'repeat'}->[4] = 0;
+		        # Weekly repeat, not every week.  If it repeats only once per week, convert it to a daily
+		        # repeat with frequency a multiple of 7.  If it repeats more than once a week, bail.
+			my $count = 0;
+			foreach my $i (0..6) {
+				$count ++ if ($pilot->{repeat}->{days}[$i]);
+			}
+			if ($count == 1) {
+				$plan->{'repeat'}->[0] = (60*60*24) * $pilot->{'repeat'}->{'frequency'} * 7;
+				$plan->{'repeat'}->[4] = 0;
+			} else {
+				msg("Repeat pattern too complex.");
+				return undef;
+			}
 		} elsif ($pilot->{'repeat'}->{'type'} eq "MonthlyByDate" and ($pilot->{'repeat'}->{'frequency'}==1)) {
 			$plan->{'repeat'}->[3] = 1 << $pilot->{'begin'}[3];
 		} elsif ($pilot->{'repeat'}->{'type'} eq "MonthlyByDay" and ($pilot->{'repeat'}->{'frequency'}==1)) {
@@ -373,6 +397,7 @@ sub RecordPilotToPlan {
 			$week = 5 if $week == 4;
 			$plan->{'repeat'}->[2] = (1 << $day) | (256 << $week);
 		} else {
+			msg("Repeat pattern too complex.");
 			return undef;
 		}
 		if (defined $pilot->{'repeat'}->{'end'}) {
@@ -462,10 +487,20 @@ sub PrintPlanRecord {
 	my ($rec) = @_;
 	my ($output);
 	
-	$output = DatePerlToPlan($rec->{'date'});
+	my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) =
+	    localtime($rec->{'date'});
+	$year += 1900;
+	$mon++;
+	$output = "$year/$mon/$mday";
+
 	if ($rec->{'time'}) {
-		$output .= " ".TimePerlToPlan($rec->{'time'})."-".
-				TimePerlToPlan($rec->{'time'}+$rec->{'length'});
+		my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = 
+		  localtime($rec->{'time'});
+		$output .= sprintf(" %02d:%02d-", $hour, $min);
+
+		($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) =
+		  localtime($rec->{'time'}+$rec->{'length'});
+		$output .= sprintf("%02d:%02d", $hour, $min);
 	}
 	$output .= " '".join("\\n",@{$rec->{'note'}})."'" if defined $rec->{'note'};
 	$output .= " (".join("\\n",@{$rec->{'message'}}).")" if defined $rec->{'message'};
@@ -496,13 +531,13 @@ sub PrintPlanRecord {
 		}
 	}
 	
-	$output .= " {ID:$rec->{'pilotid'}, Except:";
-	$output .= $rec->{'pilotexcept'} if (defined $rec->{'pilotexcept'});
-	$output .= ", Changed:";
-	$output .= $rec->{'modified'} if (defined $rec->{'modified'});
-	$output .= ", Deleted:";
-	$output .= $rec->{'deleted'} if (defined $rec->{'deleted'});
-	$output .= "}";
+# 	$output .= " {ID:$rec->{'pilotid'}, Except:";
+# 	$output .= $rec->{'pilotexcept'} if (defined $rec->{'pilotexcept'});
+# 	$output .= ", Changed:";
+# 	$output .= $rec->{'modified'} if (defined $rec->{'modified'});
+# 	$output .= ", Deleted:";
+# 	$output .= $rec->{'deleted'} if (defined $rec->{'deleted'});
+# 	$output .= "}";
 	
 	$output;
 }
@@ -518,21 +553,23 @@ sub PrintPilotRecord {
 	
 	if (!$rec->{'event'}) {
 		$output .= " ";
-		$output .= ($rec->{'begin'}[2]).":".($rec->{'begin'}[1]).":".$rec->{'begin'}[0];
-		$output .= "-";
-		$output .= ($rec->{'end'}[2]).":".($rec->{'end'}[1]).":".$rec->{'end'}[0];
+		$output .= sprintf("%02d:%02d-%02d:%02d",
+				   $rec->{'begin'}[2],
+				   $rec->{'begin'}[1],
+				   $rec->{'end'}[2],
+				   $rec->{'end'}[1]);
 	}
 	
 	$output .= " '$rec->{'description'}'";
 	$output .= " ($rec->{'message'})" if (defined $rec->{'message'});
 	
-	$output .= " {ID:$rec->{'id'}, Except:";
-	$output .= $exceptID{$rec->{'id'}} if (defined $exceptID{$rec->{'id'}});
-	$output .= ", Changed:";
-	$output .= $rec->{'modified'} if (defined $rec->{'modified'});
-	$output .= ", Deleted:";
-	$output .= $rec->{'deleted'} if (defined $rec->{'deleted'});
-	$output .= "}";
+# 	$output .= " {ID:$rec->{'id'}, Except:";
+# 	$output .= $exceptID{$rec->{'id'}} if (defined $exceptID{$rec->{'id'}});
+# 	$output .= ", Changed:";
+# 	$output .= $rec->{'modified'} if (defined $rec->{'modified'});
+# 	$output .= ", Deleted:";
+# 	$output .= $rec->{'deleted'} if (defined $rec->{'deleted'});
+# 	$output .= "}";
 
 	$output =~ s/\r/\\r/g;
 	$output =~ s/\n/\\n/g;
@@ -607,6 +644,7 @@ sub WritePilotRecord {
 	my ($db, $control, $record) = @_; 
 	
 	$record->{'id'} ||= 0;
+	$record->{'category'} ||= 0;
 	
 	#print "Installing record in Palm: ",Dumper($record);
 	
@@ -694,7 +732,8 @@ sub dorecord {
 	}
 	$hash = $hash->hexdigest;
 	#print "Old hash: $hash, New hash: $rec->{'pilothash'}\n";
-	$rec->{'modified'} 	= ($rec->{'pilothash'} ne $hash);
+	$rec->{'modified'} 	= (!defined($rec->{'pilothash'}) ||
+				   ($rec->{'pilothash'} ne $hash));
 	$rec->{'note'} 		= \@N if @N;
 	$rec->{'script'} 		= \@S if @S;
 	$rec->{'unhashedscript'} 	= \@US if @US;
@@ -1363,11 +1402,14 @@ sub loadpilotrecords {
 
 	my ($r, $i);
 	$i=0;
+	my $max = $db->getRecords();
+	$max ||= 1;
+	status("Reading Palm Appointments", 0);
 	while(defined($r = LoadPilotRecord($db,$i++))) {
-#		push @pilotRecord, $r;
-		#print "Palm Record: ",Dumper($r),"\n";
-#		$pilotID{$r->{'id'}} = $r;
+		status("Reading Palm Appointments", int(100*$i/$max))
+		    if ($i % (int($max/20)+1) == 0);
 	}
+	status("Reading Palm Appointments", 100);
 	msg( "Done reading records\n" ) if ($PREFS->{'Debug'} > 1);
 
 	$slowsync = 1;
@@ -1708,3 +1750,6 @@ if (!$psocket) {
 ($tempinfo = $tempdlp->getUserInfo) || croak "Lost connection to Palm";
 
 conduitSync(undef, $tempdlp, $tempinfo);
+
+$dlp->close();
+PDA::Pilot::close($psocket);
