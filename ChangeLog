@@ -1,6 +1,7 @@
 2006-03-24 19:24  neilw
 
 	* src/memos.c : Fix typo.
+	* doc/xml/pilot-schlep.xml : Fix bug 1545.
 
 2006-03-17 00:10  desrod
 
