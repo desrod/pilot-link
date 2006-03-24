@@ -1,3 +1,7 @@
+2006-03-24 19:24  neilw
+
+	* src/memos.c : Fix typo.
+
 2006-03-17 00:10  desrod
 
 	* src/sync-plan.PL, bindings/Makefile.am: These slipped through the

@@ -233,7 +233,7 @@ int main(int argc, const char *argv[])
 		"  will be saved in subdirectories of <dir>. Each subdirectory will be the\n"
 		"  name of a category on the Palm, and will contain the memos in that\n"
 		"  category. Each memo's filename will be the first line (up to the first 40\n"
-		"  characters) of the memo. Control chcters, slashes, and equal signs that\n"
+		"  characters) of the memo. Control characters, slashes, and equal signs that\n"
 		"  would otherwise appear in filenames are converted after the fashion of\n"
 		"  MIME's quoted-printable encoding. Note that if you have two memos in the\n"
 		"  same category whose first lines are identical, one of them will be\n"
