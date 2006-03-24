@@ -1,5 +1,5 @@
 Python bindings for libpisock (the pilot-link core)
-
+------------------------------------------------------------------------
 The C code for the interface is generated using SWIG, but SWIG is not
 required for building/installing it.  To regenerate the wrapper from the
 SWIG source, do this:
@@ -37,8 +37,8 @@ directory.  To use the module, simply 'import pisock'.
 
 You can also build a standalone version that doesn't require the libpisock
 shared library to be installed on the system. This is particularly useful
-if you need to build a packaged application that doesn't depend on additional
-installs. To build the standalone verison, run the command
+if you need to build a packaged application that doesn't depend on
+additional installs. To build the standalone verison, run the command
 
 	python setup-standalone.py build
 
@@ -58,13 +58,13 @@ versions of Python, just repeat the above steps for each one.
 
 This library is free software; you can redistribute it and/or modify it
 under the terms of the GNU Library General Public License as published by
-the Free Software Foundation; either version 2 of the License, or (at
-your option) any later version.
+the Free Software Foundation; either version 2 of the License, or (at your
+option) any later version.
 
-This library is distributed in the hope that it will be useful, but
-WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Library
-General Public License for more details.
+This library is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Library General Public
+License for more details.
 
 You should have received a copy of the GNU Library General Public License
 along with this library; if not, write to the Free Software Foundation,

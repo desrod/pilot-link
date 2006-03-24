@@ -1,9 +1,9 @@
-# This file was created automatically by SWIG.
+# This file was created automatically by SWIG 1.3.27.
 # Don't modify this file, modify the SWIG interface instead.
-# This file is compatible with both classic and new-style classes.
 
 import _pisock
 
+# This file is compatible with both classic and new-style classes.
 def _swig_setattr_nondynamic(self,class_type,name,value,static=1):
     if (name == "this"):
         if isinstance(value, class_type):
@@ -99,6 +99,7 @@ PI_SLP_LASTTXID = _pisock.PI_SLP_LASTTXID
 PI_PADP_TYPE = _pisock.PI_PADP_TYPE
 PI_PADP_LASTTYPE = _pisock.PI_PADP_LASTTYPE
 PI_PADP_FREEZE_TXID = _pisock.PI_PADP_FREEZE_TXID
+PI_PADP_USE_LONG_FORMAT = _pisock.PI_PADP_USE_LONG_FORMAT
 PI_CMP_TYPE = _pisock.PI_CMP_TYPE
 PI_CMP_FLAGS = _pisock.PI_CMP_FLAGS
 PI_CMP_VERS = _pisock.PI_CMP_VERS
@@ -194,7 +195,7 @@ class pi_socket_tPtr(pi_socket_t):
     def __init__(self, this):
         _swig_setattr(self, pi_socket_t, 'this', this)
         if not hasattr(self,"thisown"): _swig_setattr(self, pi_socket_t, 'thisown', 0)
-        _swig_setattr(self, pi_socket_t,self.__class__,pi_socket_t)
+        self.__class__ = pi_socket_t
 _pisock.pi_socket_t_swigregister(pi_socket_tPtr)
 dlp_ReadRecordIDList = _pisock.dlp_ReadRecordIDList
 
@@ -229,7 +230,7 @@ class pi_socket_list_tPtr(pi_socket_list_t):
     def __init__(self, this):
         _swig_setattr(self, pi_socket_list_t, 'this', this)
         if not hasattr(self,"thisown"): _swig_setattr(self, pi_socket_list_t, 'thisown', 0)
-        _swig_setattr(self, pi_socket_list_t,self.__class__,pi_socket_list_t)
+        self.__class__ = pi_socket_list_t
 _pisock.pi_socket_list_t_swigregister(pi_socket_list_tPtr)
 
 
@@ -292,19 +293,6 @@ pi_tickle = _pisock.pi_tickle
 pi_watchdog = _pisock.pi_watchdog
 PI_DLP_VERSION_MAJOR = _pisock.PI_DLP_VERSION_MAJOR
 PI_DLP_VERSION_MINOR = _pisock.PI_DLP_VERSION_MINOR
-DLP_BUF_SIZE = _pisock.DLP_BUF_SIZE
-sysFileTSlotDriver = _pisock.sysFileTSlotDriver
-PI_DLP_OFFSET_CMD = _pisock.PI_DLP_OFFSET_CMD
-PI_DLP_OFFSET_ARGC = _pisock.PI_DLP_OFFSET_ARGC
-PI_DLP_OFFSET_ARGV = _pisock.PI_DLP_OFFSET_ARGV
-PI_DLP_ARG_TINY_LEN = _pisock.PI_DLP_ARG_TINY_LEN
-PI_DLP_ARG_SHORT_LEN = _pisock.PI_DLP_ARG_SHORT_LEN
-PI_DLP_ARG_LONG_LEN = _pisock.PI_DLP_ARG_LONG_LEN
-PI_DLP_ARG_FLAG_TINY = _pisock.PI_DLP_ARG_FLAG_TINY
-PI_DLP_ARG_FLAG_SHORT = _pisock.PI_DLP_ARG_FLAG_SHORT
-PI_DLP_ARG_FLAG_LONG = _pisock.PI_DLP_ARG_FLAG_LONG
-PI_DLP_ARG_FLAG_MASK = _pisock.PI_DLP_ARG_FLAG_MASK
-PI_DLP_ARG_FIRST_ID = _pisock.PI_DLP_ARG_FIRST_ID
 vfsMountFlagsUseThisFileSystem = _pisock.vfsMountFlagsUseThisFileSystem
 vfsMAXFILENAME = _pisock.vfsMAXFILENAME
 vfsInvalidVolRef = _pisock.vfsInvalidVolRef
@@ -335,7 +323,7 @@ class VFSDirInfoPtr(VFSDirInfo):
     def __init__(self, this):
         _swig_setattr(self, VFSDirInfo, 'this', this)
         if not hasattr(self,"thisown"): _swig_setattr(self, VFSDirInfo, 'thisown', 0)
-        _swig_setattr(self, VFSDirInfo,self.__class__,VFSDirInfo)
+        self.__class__ = VFSDirInfo
 _pisock.VFSDirInfo_swigregister(VFSDirInfoPtr)
 
 class VFSAnyMountParam(_object):
@@ -367,7 +355,7 @@ class VFSAnyMountParamPtr(VFSAnyMountParam):
     def __init__(self, this):
         _swig_setattr(self, VFSAnyMountParam, 'this', this)
         if not hasattr(self,"thisown"): _swig_setattr(self, VFSAnyMountParam, 'thisown', 0)
-        _swig_setattr(self, VFSAnyMountParam,self.__class__,VFSAnyMountParam)
+        self.__class__ = VFSAnyMountParam
 _pisock.VFSAnyMountParam_swigregister(VFSAnyMountParamPtr)
 
 class VFSSlotMountParam(_object):
@@ -399,7 +387,7 @@ class VFSSlotMountParamPtr(VFSSlotMountParam):
     def __init__(self, this):
         _swig_setattr(self, VFSSlotMountParam, 'this', this)
         if not hasattr(self,"thisown"): _swig_setattr(self, VFSSlotMountParam, 'thisown', 0)
-        _swig_setattr(self, VFSSlotMountParam,self.__class__,VFSSlotMountParam)
+        self.__class__ = VFSSlotMountParam
 _pisock.VFSSlotMountParam_swigregister(VFSSlotMountParamPtr)
 
 class VFSInfo(_object):
@@ -446,7 +434,7 @@ class VFSInfoPtr(VFSInfo):
     def __init__(self, this):
         _swig_setattr(self, VFSInfo, 'this', this)
         if not hasattr(self,"thisown"): _swig_setattr(self, VFSInfo, 'thisown', 0)
-        _swig_setattr(self, VFSInfo,self.__class__,VFSInfo)
+        self.__class__ = VFSInfo
 _pisock.VFSInfo_swigregister(VFSInfoPtr)
 
 class PilotUser(_object):
@@ -493,7 +481,7 @@ class PilotUserPtr(PilotUser):
     def __init__(self, this):
         _swig_setattr(self, PilotUser, 'this', this)
         if not hasattr(self,"thisown"): _swig_setattr(self, PilotUser, 'thisown', 0)
-        _swig_setattr(self, PilotUser,self.__class__,PilotUser)
+        self.__class__ = PilotUser
 _pisock.PilotUser_swigregister(PilotUserPtr)
 
 class SysInfo(_object):
@@ -543,7 +531,7 @@ class SysInfoPtr(SysInfo):
     def __init__(self, this):
         _swig_setattr(self, SysInfo, 'this', this)
         if not hasattr(self,"thisown"): _swig_setattr(self, SysInfo, 'thisown', 0)
-        _swig_setattr(self, SysInfo,self.__class__,SysInfo)
+        self.__class__ = SysInfo
 _pisock.SysInfo_swigregister(SysInfoPtr)
 
 class DBInfo(_object):
@@ -602,7 +590,7 @@ class DBInfoPtr(DBInfo):
     def __init__(self, this):
         _swig_setattr(self, DBInfo, 'this', this)
         if not hasattr(self,"thisown"): _swig_setattr(self, DBInfo, 'thisown', 0)
-        _swig_setattr(self, DBInfo,self.__class__,DBInfo)
+        self.__class__ = DBInfo
 _pisock.DBInfo_swigregister(DBInfoPtr)
 
 class DBSizeInfo(_object):
@@ -643,7 +631,7 @@ class DBSizeInfoPtr(DBSizeInfo):
     def __init__(self, this):
         _swig_setattr(self, DBSizeInfo, 'this', this)
         if not hasattr(self,"thisown"): _swig_setattr(self, DBSizeInfo, 'thisown', 0)
-        _swig_setattr(self, DBSizeInfo,self.__class__,DBSizeInfo)
+        self.__class__ = DBSizeInfo
 _pisock.DBSizeInfo_swigregister(DBSizeInfoPtr)
 
 class CardInfo(_object):
@@ -693,7 +681,7 @@ class CardInfoPtr(CardInfo):
     def __init__(self, this):
         _swig_setattr(self, CardInfo, 'this', this)
         if not hasattr(self,"thisown"): _swig_setattr(self, CardInfo, 'thisown', 0)
-        _swig_setattr(self, CardInfo,self.__class__,CardInfo)
+        self.__class__ = CardInfo
 _pisock.CardInfo_swigregister(CardInfoPtr)
 
 class NetSyncInfo(_object):
@@ -728,7 +716,7 @@ class NetSyncInfoPtr(NetSyncInfo):
     def __init__(self, this):
         _swig_setattr(self, NetSyncInfo, 'this', this)
         if not hasattr(self,"thisown"): _swig_setattr(self, NetSyncInfo, 'thisown', 0)
-        _swig_setattr(self, NetSyncInfo,self.__class__,NetSyncInfo)
+        self.__class__ = NetSyncInfo
 _pisock.NetSyncInfo_swigregister(NetSyncInfoPtr)
 
 dlpDBFlagResource = _pisock.dlpDBFlagResource
@@ -997,4 +985,5 @@ dlp_VFSFileSeek = _pisock.dlp_VFSFileSeek
 dlp_VFSFileResize = _pisock.dlp_VFSFileResize
 
 dlp_VFSFileSize = _pisock.dlp_VFSFileSize
+
 
