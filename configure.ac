@@ -76,7 +76,7 @@ dnl ******************************
 dnl Checks for basic programs.
 dnl ******************************
 AC_PROG_CC
-AC_PROG_INSTALL
+AC_PROG_INSTALL(install ginstall)
 AC_PROG_F77(g77 g77-3.2 g77-3.3 fl32 f77 fort77 xlf f90 xlf90)
 AC_PROG_LIBTOOL
 AC_PROG_YACC
@@ -578,38 +578,27 @@ fi
 dnl ******************************
 dnl Python
 dnl ******************************
-use_python=false
 msg_python=no
 
 AC_ARG_WITH(python,   [  --with-python=pybase    use Python,                 [[default=no]]],
-	, with_python=no)
+        , with_python=no)
 
 if test "x$with_python" != "xno"; then
         AC_PATH_PROGS(PYTHON, [python2 python])
-	if test "x$PYTHON" != "x"; then
-		use_python=true
-	fi
+        if test "x$PYTHON" != "x"; then
+		AC_PYTHON_DEVEL
+		AC_SUBST(PYTHON_VERSION)
+		AC_SUBST(PYTHON_CPPFLAGS)
+		AC_SUBST(PYTHON_LDFLAGS)
+		AC_SUBST(PYTHON_EXTRA_LIBS)
+                use_python=true
+        fi
 fi
-if $use_python; then
-	AC_MSG_CHECKING(python development kit)
 
-	# sys.stdout = StringIO.StringIO(); sends all strings to memory,
-	# more portable than the previous '>/dev/null' call
-	PYTHONVER=[`$PYTHON -c "import sys, string; print string.split(sys.version)[0]"`]
-	if `$PYTHON -c "from distutils.core import setup, Extension;"`; then
-		use_python=true
-		AC_MSG_RESULT(looks good)
-	else
-		use_python=false
-		AC_MSG_RESULT(not usable)
-	fi
-fi
 AM_CONDITIONAL(WITH_PYTHON, $use_python)
 if $use_python; then
-	msg_python=yes
+        msg_python=yes
 fi
-AC_SUBST(PYTHON)
-
 
 dnl *************************************
 dnl ElectricFence (optional)
@@ -762,7 +751,8 @@ AC_OUTPUT([
 	doc/xml/catalog.xml
 	doc/xml/docbook.xsl
 	doc/man/Makefile
-	tests/Makefile
+	
+tests/Makefile
 	darwin/Makefile
 ])
 
@@ -795,7 +785,7 @@ AC_MSG_RESULT([
   -------------------------.
   TCL support............. : $msg_tcl	$TCL_VERSION
   Java support............ : $msg_java	$JAVA_VERSION
-  Python support.......... : $msg_python	$PYTHONVER
+  Python support.......... : $msg_python $PYTHON_VERSION $PYTHON_LDFLAGS $PYTHON_CPPFLAGS
   Perl support............ : $msg_perl	$PERL_VERSION
 ])
 
