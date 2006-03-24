@@ -1,3 +1,19 @@
+2006-03-17 00:10  desrod
+
+	* src/sync-plan.PL, bindings/Makefile.am: These slipped through the
+	  cracks.. (thanks Aaron for catching me asleep at the wheel again
+	  =)
+
+2006-03-15 07:44  desrod
+
+	* bindings/Perl/: Makefile.PL.in, Pilot.pm, Pilot.xs: Forgot that
+	  these needed to go with the others. DOH!
+
+2006-03-14 12:43  desrod
+
+	* ChangeLog, configure.ac: Rolling up ChangeLog and configure.ac in
+	  prep for a 0.12.0 final release
+
 2006-03-14 12:19  desrod
 
 	* bindings/Java/: MidiMgr.java, test.java,
