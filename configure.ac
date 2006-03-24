@@ -578,21 +578,29 @@ fi
 dnl ******************************
 dnl Python
 dnl ******************************
+use_python=false
 msg_python=no
 
 AC_ARG_WITH(python,   [  --with-python=pybase    use Python,                 [[default=no]]],
         , with_python=no)
 
 if test "x$with_python" != "xno"; then
-        AC_PATH_PROGS(PYTHON, [python2 python])
+        AC_PATH_PROGS(PYTHON, [python])
         if test "x$PYTHON" != "x"; then
-		AC_PYTHON_DEVEL
+		AM_CHECK_PYTHON
+	fi
+
+	if test "x$PYTHON_H" = "x"; then
 		AC_SUBST(PYTHON_VERSION)
-		AC_SUBST(PYTHON_CPPFLAGS)
-		AC_SUBST(PYTHON_LDFLAGS)
-		AC_SUBST(PYTHON_EXTRA_LIBS)
-                use_python=true
-        fi
+		AC_SUBST(PYTHON_CFLAGS)
+		AC_SUBST(PYTHON_LIBS)
+		AC_SUBST(PYTHON_H)
+
+		msg_python=yes
+	else
+		msg_python=no
+		PYTHON_VERSION=''
+	fi
 fi
 
 AM_CONDITIONAL(WITH_PYTHON, $use_python)
@@ -644,11 +652,13 @@ if test "${enable_debug+set}" = set; then
 		set_debug=yes
 	fi
 fi
+
+echo -n "Runtime debugging is "
 if test "$set_debug" = "yes"; then
-	echo "Activating runtime debugging code"
+	echo "enabled"
 	AC_DEFINE(PI_DEBUG, 1, [Define if we have debugging enabled])
 else
-	echo "Disabling runtime debugging"
+	echo "disabled"
 	CFLAGS=`echo "$CFLAGS" | sed -e "s/-g //"`
 fi
 
@@ -785,7 +795,7 @@ AC_MSG_RESULT([
   -------------------------.
   TCL support............. : $msg_tcl	$TCL_VERSION
   Java support............ : $msg_java	$JAVA_VERSION
-  Python support.......... : $msg_python $PYTHON_VERSION $PYTHON_LDFLAGS $PYTHON_CPPFLAGS
+  Python support.......... : $msg_python $PYTHON_VERSION
   Perl support............ : $msg_perl	$PERL_VERSION
 ])
 
