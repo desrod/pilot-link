@@ -658,7 +658,7 @@ struct dlpResponse {
 	 * If the local date is @c 0x83DAC000 (Fri Jan  1 00:00:00 1904 GMT) the Palm OS date
 	 * is set to undefined. Otherwise the date is converted from local time to Palm OS
 	 *
-	 * @param time The date to convert
+	 * @param palm_time The date to convert
 	 * @param timeDateData Ptr to an 8 byte buffer to hold the Palm OS date
 	 */
 	extern void dlp_htopdate PI_ARGS((time_t palm_time, unsigned char *timeDateData));
@@ -669,7 +669,7 @@ struct dlpResponse {
 	/** @brief Get the time from the device and return it as a local time_t value
 	 *
 	 * @param sd Socket number
-	 * @param time Pointer to a time_t to fill
+	 * @param palm_time Pointer to a time_t to fill
 	 * @return A negative value if an error occured (see pi-error.h)
 	 */
 	extern PI_ERR dlp_GetSysDateTime PI_ARGS((int sd, time_t *palm_time));
@@ -677,7 +677,7 @@ struct dlpResponse {
 	/** @brief Set the time on the Palm using a local time_t value.
 	 *
 	 * @param sd Socket number
-	 * @param time New time to set the device to (expressed using the computer's timezone)
+	 * @param palm_time New time to set the device to (expressed using the computer's timezone)
 	 * @return A negative value if an error occured (see pi-error.h)
 	 */
 	extern PI_ERR dlp_SetSysDateTime PI_ARGS((int sd, time_t palm_time));
