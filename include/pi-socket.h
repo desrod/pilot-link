@@ -445,7 +445,7 @@ typedef struct pi_socket_list
 	 * are synchronous.
 	 *
 	 * @param pi_sd Socket descriptor
-	 * @param flags Mask with valus #PI_FLUSH_INPUT, #PI_FLUSH_OUTUT.
+	 * @param flags Mask with valus #PI_FLUSH_INPUT, #PI_FLUSH_OUTPUT.
 	 * @return Negative on error
 	 */
 	extern void pi_flush PI_ARGS((int pi_sd, int flags));
