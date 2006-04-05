@@ -682,9 +682,11 @@ AC_MSG_CHECKING([if xsltproc is recent enough])
 if test "$($XSLTPROC --version | awk '/^libxslt/{print $2}')" -lt 10024 ; then 
 	AC_MSG_RESULT([version 1.0.24 or newer required])
 	exit 1
+else
+	AC_MSG_RESULT(yes)
 fi
 fi
-AC_MSG_RESULT(yes)
+
 
 # now let's test to see if we can find the docbook-xsl stuff
 XSLTPROC_FLAGS=--nonet
