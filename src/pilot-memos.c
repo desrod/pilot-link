@@ -20,13 +20,9 @@
  */
 
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
 #include <sys/stat.h>
 #include <regex.h>
 
-#include "pi-source.h"
 #include "pi-memo.h"
 #include "pi-file.h"
 #include "pi-header.h"
@@ -107,7 +103,7 @@ write_memo_in_directory(char *dirname, struct Memo m,
 			struct MemoAppInfo mai, int category, int verbose, const char *progname)
 {
 	int 	j;
-	char 	pathbuffer[MAXDIRNAMELEN + (128 * 3)] = "",
+	char 	pathbuffer[MAXDIRNAMELEN] = "",
 		tmp[5] = "";
 	FILE *fd;
 
@@ -176,9 +172,9 @@ int main(int argc, const char *argv[])
 		c,		/* switch */
 		category,
 		db,
-		index,
+		idx,
 		ret,
-		sd 		= -1,
+		sd 	        = -1,
 		verbose 	= 0,
 		delete 		= 0,
 		mode 		= MEMO_MBOX_STDOUT,
@@ -186,7 +182,7 @@ int main(int argc, const char *argv[])
 		match_category 	= -1,
 		title_matching 	= 0;
 
-	ssize_t	len;
+	size_t	len;
 
 	pi_buffer_t	*buffer,
 		*appblock;
@@ -206,22 +202,24 @@ int main(int argc, const char *argv[])
 	struct 	Memo m;
 
 	regex_t title_pattern;
-	recordid_t id_;
+	recordid_t id;
 
 	poptContext po;
 
 	struct poptOption options[] = {
 		USERLAND_RESERVED_OPTIONS
-		{"verbose",	'v', POPT_ARG_VAL, &verbose, 1, "Verbose, with -s, print each filename when written"},
-		{"delete",	'd', POPT_ARG_VAL, &delete,  1, "Delete memo named by number <num>"},
-		{"file",	'f', POPT_ARG_STRING, &filename, 0, "Use <file> as input file (instead of MemoDB.pdb)"},
-		{"save",	's', POPT_ARG_STRING, &dirname, 0, "Save memos in <dir> instead of writing to STDOUT"},
-		{"category",	'c', POPT_ARG_STRING, &category_name, 0, "Only upload memos in this category"},
-		{"regex",	'r', POPT_ARG_STRING, &regex, 0, "Select memos saved by regular expression on title"},
-		POPT_TABLEEND
+		{"verbose",	'v', POPT_ARG_VAL, &verbose, 1, "Verbose, with -s, print each filename when written", NULL},
+		{"delete",	'd', POPT_ARG_VAL, &delete,  1, "Delete memo named by number <num>", "<num>"},
+		{"file",	'f', POPT_ARG_STRING, &filename, 0, "Use <file> as input file (instead of MemoDB.pdb)", "<file>"},
+		{"save",	's', POPT_ARG_STRING, &dirname, 0, "Save memos in <dir> instead of writing to STDOUT", "<dir>"},
+		{"category",	'c', POPT_ARG_STRING, &category_name, 0, "Only upload memos in this category", "<category>"},
+		{"regex",	'r', POPT_ARG_STRING, &regex, 0, "Select memos saved by regular expression on title", "<regex>"},
+        POPT_AUTOHELP
+        POPT_TABLEEND
 	};
 
 	po = poptGetContext("memos", argc, argv, options, 0);
+
 	poptSetOtherOptionHelp(po,"\n\n"
 		"  Manipulate Memo entries from a file or your Palm device\n\n"
 		"  By default, the contents of your Palm's memo database will be written to\n"
@@ -233,7 +231,7 @@ int main(int argc, const char *argv[])
 		"  will be saved in subdirectories of <dir>. Each subdirectory will be the\n"
 		"  name of a category on the Palm, and will contain the memos in that\n"
 		"  category. Each memo's filename will be the first line (up to the first 40\n"
-		"  characters) of the memo. Control characters, slashes, and equal signs that\n"
+		"  characters) of the memo. Control chcters, slashes, and equal signs that\n"
 		"  would otherwise appear in filenames are converted after the fashion of\n"
 		"  MIME's quoted-printable encoding. Note that if you have two memos in the\n"
 		"  same category whose first lines are identical, one of them will be\n"
@@ -313,26 +311,28 @@ int main(int argc, const char *argv[])
 
 	buffer = pi_buffer_new (0xffff);
 
-	for (index = 0;; index++) {
+	for (idx = 0;; idx++) {
 
 		if (!filename) {
-			if (match_category >= 0) {
-				len = dlp_ReadNextRecInCategory(sd, db,
-							        match_category,
-							        buffer, &id_,
-							        0, &attr);
-				category = match_category;
-			} else {
-				len = dlp_ReadRecordByIndex(sd, db, index,
-							    buffer, &id_,
-							    &attr,
-							    &category);
-			}
-			if (len < 0)
-				break;
+                        if (match_category >= 0) {
+                                ret = dlp_ReadNextRecInCategory(sd, db,
+                                                                match_category,
+                                                                buffer, &id,
+                                                                0, &attr);
+                                category = match_category;
+                        } else {
+                                ret = dlp_ReadRecordByIndex(sd, db, idx,
+                                                            buffer, &id,
+                                                            &attr,
+                                                            &category);
+                        }
+                        if (ret < 0)
+                                break;
+
+                        len = (size_t)ret;
 		} else {
 			if (pi_file_read_record
-			    (pif, index, (void **) &ptr, &len, &attr, &category,
+			    (pif, idx, (void **) &ptr, &len, &attr, &category,
 			     0) < 0)
 				break;
 			memcpy(buffer->data, ptr, len);
@@ -380,8 +380,8 @@ int main(int argc, const char *argv[])
 
 	if (delete && !filename) {
 		if (verbose)
-			printf("Deleting record %d.\n", (int) id_);
-		dlp_DeleteRecord(sd, db, 0, id_);
+			printf("Deleting record %d.\n", (int) id);
+                dlp_DeleteRecord(sd, db, 0, id);
 	}
 
 	if (title_matching) {

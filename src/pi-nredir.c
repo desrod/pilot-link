@@ -20,22 +20,17 @@
  */
 
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
-#include "pi-source.h"
 #include "pi-dlp.h"
 #include "pi-header.h"
 #include "pi-userland.h"
-
-
 
 int main(int argc, const char *argv[])
 {
 	int 	c,		/* switch */
 		len,
 		sd 		= -1,
-		sd2 		= -1, /* This is the network socket */
+		netsd 		= -1, /* This is the network socket */
 		state;
 
 	size_t	size;
@@ -55,11 +50,11 @@ int main(int argc, const char *argv[])
 	enum { mode_none=0, mode_net=257 }
 		run_mode = mode_none;
 
-
 	struct poptOption options[] = {
 		USERLAND_RESERVED_OPTIONS
-		{"net", 'n', POPT_ARG_NONE, NULL, mode_net, "Redirect to net:"},
-	        POPT_TABLEEND
+		{"net", 'n', POPT_ARG_NONE, NULL, mode_net, "Redirect to net:", NULL},
+	    POPT_AUTOHELP    
+		POPT_TABLEEND
 	};
 
 	po = poptGetContext(progname, argc, argv, options, 0);
@@ -95,11 +90,6 @@ int main(int argc, const char *argv[])
 	if (c < -1) {
 		plu_badoption(po,c);
 	}
-	if (mode_none == run_mode) {
-		fprintf(stderr,"   ERROR: Must specify a mode (-n)\n");
-		return 1;
-	}
-
 	sd = plu_connect();
 	if (sd < 0)
 		goto error;
@@ -116,8 +106,8 @@ int main(int argc, const char *argv[])
 		goto error_close;
 	}
 
-	sd2 = pi_socket(PI_AF_PILOT, PI_SOCK_STREAM, PI_PF_NET);
-	if (sd2 < 0)
+	netsd = pi_socket(PI_AF_PILOT, PI_SOCK_STREAM, PI_PF_NET);
+	if (netsd < 0)
 		goto error_close;
 
 	strncat(port2, Net.hostAddress, 251 - strlen(Net.hostAddress));
@@ -126,7 +116,7 @@ int main(int argc, const char *argv[])
 		printf("\tTrying %s... ", Net.hostAddress);
 		fflush(stdout);
 	}
-	if (pi_connect(sd2, port2) < 0) {
+	if (pi_connect(netsd, port2) < 0) {
 		fprintf(stderr,"   ERROR: Failed to connect to network.\n");
 		goto error_close;
 	}
@@ -138,13 +128,13 @@ int main(int argc, const char *argv[])
 
 	buffer = pi_buffer_new (0xffff);
 
-	while ((len = pi_read(sd2, buffer, 0xffff)) > 0) {
+	while ((len = pi_read(netsd, buffer, 0xffff)) > 0) {
 		pi_write(sd, buffer->data, len);
 		buffer->used = 0;
 		len = pi_read(sd, buffer, 0xffff);
 		if (len < 0)
 			break;
-		pi_write(sd2, buffer->data, len);
+		pi_write(netsd, buffer->data, len);
 		buffer->used = 0;
 	}
 
@@ -153,16 +143,16 @@ int main(int argc, const char *argv[])
 	state = PI_SOCK_CONN_END;
 	size = sizeof (state);
 	pi_setsockopt (sd, PI_LEVEL_SOCK, PI_SOCK_STATE, &state, &size);
-	pi_setsockopt (sd2, PI_LEVEL_SOCK, PI_SOCK_STATE, &state, &size);
+	pi_setsockopt (netsd, PI_LEVEL_SOCK, PI_SOCK_STATE, &state, &size);
 
 	pi_close(sd);
-	pi_close(sd2);
+	pi_close(netsd);
 
 	return 0;
 
  error_close:
- 	if (sd2 >=0) {
-		pi_close(sd2);
+ 	if (netsd >=0) {
+		pi_close(netsd);
 	}
 	pi_close(sd);
 

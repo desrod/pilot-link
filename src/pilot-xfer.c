@@ -25,7 +25,6 @@
 #include <sys/time.h>
 #include <time.h>
 #include <locale.h>
-#include <unistd.h>
 #include <sys/types.h>
 #include <netinet/in.h>
 #include <utime.h>
@@ -39,8 +38,6 @@
 #include "pi-file.h"
 #include "pi-header.h"
 #include "pi-util.h"
-#include "pi-error.h"
-
 #include "pi-userland.h"
 
 /* unsigned char typedef byte; */
@@ -101,21 +98,15 @@ typedef enum {
 #define MIXIN_MASK  (0xf000)
 #define PURGE       (0x1000)
 
-
-
-
-int		sd	= -1;
+int	sd	= -1;
 char    *vfsdir = NULL;
 
 #define MAXEXCLUDE 100
 char	*exclude[MAXEXCLUDE];
 int		numexclude = 0;
 
-
-
 static int findVFSPath(const char *path, long *volume, char *rpath,
 		int *rpathlen);
-
 
 const char
 *media_name(int m)
@@ -283,7 +274,7 @@ static int palm_creator(unsigned long creator)
 	} buf;
 
 	union		buf;
-	int			n;
+	int		n;
 	static long	special_cases[] = {
 		pi_mktag('p', 'p', 'p', '_'),
 		pi_mktag('u', '8', 'E', 'Z'),
@@ -516,7 +507,7 @@ palm_backup(const char *dirname, unsigned long int flags, int unsaved,
 			pi_file_close(f);		/* writes the file to disk so we can stat() it */
 			stat(name, &sbuf);
 			totalsize += sbuf.st_size;
-			printf(", %'ld bytes, %'ld KiB... ",
+			printf(", %ld bytes, %ld KiB... ",
 					(long)sbuf.st_size, (long)totalsize/1024);
 			fflush(NULL);
 		}
@@ -1390,6 +1381,7 @@ static void palm_install_internal(const char *filename)
 	struct stat		sbuf;
 	struct CardInfo	Card;
 	const char *basename = strrchr(filename,'/');
+
 	if (basename) {
 		basename = basename+1;
 	} else {

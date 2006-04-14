@@ -97,7 +97,7 @@ void plu_set_badoption_help(const char *help);
  * marginally cleaner.
  */
 
-extern int plu_connect();
+extern int plu_connect(void);
 
 
 /***********************************************************************
