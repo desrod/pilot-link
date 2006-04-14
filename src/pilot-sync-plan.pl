@@ -88,7 +88,7 @@ sub DatePlanToPerl {
 	}
 	$m--;
 
-	timelocal(0,0,0,$d,$m,$y);
+	timegm(0,0,0,$d,$m,$y);
 }
 
 ############################################################
@@ -111,7 +111,7 @@ sub TimePerlToPlan {
 	return "99:99:99" if not defined $PerlDT;
 
 	my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) =
-	    localtime($PerlDT);
+	    gmtime($PerlDT);
 	
 	"$hour:$min:$sec";
 }
@@ -149,7 +149,7 @@ sub DatePilotToPerl {
 	my ($date, $time);
 
 	if ($year >= 70 and $year <= 138) {
-	    $date = eval { timelocal($s,$m,$h,$mday,$mon,$year) };
+	    $date = eval { timegm($s,$m,$h,$mday,$mon,$year) };
 	    msg("Trouble converting date: $mon/$mday/$year $h:$m$s")
 	      if $@;
 	    $time = $s + 60 * ($m + 60 * $h);
@@ -167,7 +167,7 @@ sub DatePilotToPerl {
 sub DatePerlToPlan {
 	my ($PerlDT) = @_;
 	my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) =
-	    localtime($PerlDT);
+	    gmtime($PerlDT);
 	
 	$year += 1900;
 	$mon++;
@@ -190,11 +190,11 @@ sub RecordPlanToPilot {
 	$pilot->{'description'} ||= "";
 
 	if (defined $plan->{'time'}) {
-		$pilot->{'begin'} = [localtime($plan->{'date'}+$plan->{'time'})];
-		$pilot->{'end'} = [localtime($plan->{'date'}+$plan->{'time'}+$plan->{'length'})];
+		$pilot->{'begin'} = [gmtime($plan->{'date'}+$plan->{'time'})];
+		$pilot->{'end'} = [gmtime($plan->{'date'}+$plan->{'time'}+$plan->{'length'})];
 		$pilot->{'event'}=0;
 	} else {
-		$pilot->{'begin'} = [localtime($plan->{'date'})];
+		$pilot->{'begin'} = [gmtime($plan->{'date'})];
 		$pilot->{'event'}	= 1;
 		$plan->{'early'} 	= 0;
 		$plan->{'late'} 	= 0;
@@ -220,7 +220,7 @@ sub RecordPlanToPilot {
 	
 	if (defined $plan->{'exceptions'}) {
 		foreach (@{$plan->{'exceptions'}}) {
-			push @{$pilot->{'exceptions'}}, [localtime($_)];
+			push @{$pilot->{'exceptions'}}, [gmtime($_)];
 		}
 	} else {
 		delete $pilot->{'exceptions'};
@@ -230,12 +230,6 @@ sub RecordPlanToPilot {
 		msg( "Converting repetition...\n" ) if ($PREFS->{'Debug'} > 2);
 		delete $pilot->{'repeat'};
 		if ($plan->{'repeat'}->[1]) {
-			# It seems $plan->{'repeat'}->[1] contains seconds
-			# since 0:00 1/1/1970 *local time*, not UTC.
-			# (see comments in time.c in the plan source)
-			# So we convert here with the gmtime function
-			# instead of localtime so that no timezone converting
-			# is done, but we still end up with a local time.
 			$pilot->{'repeat'}->{'end'} = [gmtime($plan->{'repeat'}->[1])];
 		}
 		my ($days,$end,$weekday,$mday,$yearly) = @{$plan->{'repeat'}};
@@ -325,7 +319,6 @@ sub RecordPilotToPlan {
 	
 	if (exists $pilot->{'alarm'}) {
 		my($alarm) = 0;
-		$plan->{'noalarm'} = 0;
 		if ($pilot->{'alarm'}{'units'} eq "days") {
 			$alarm = $pilot->{'alarm'}->{'advance'} * (60*60*24);
 		} elsif ($pilot->{'alarm'}{'units'} eq "hours") {
@@ -341,7 +334,6 @@ sub RecordPilotToPlan {
 			$plan->{'early'} = $alarm;
 		}
 	} else {
-		$plan->{'noalarm'} = 1;
 		$plan->{'late'}=0;
 		$plan->{'early'}=0;
 	}
@@ -353,7 +345,7 @@ sub RecordPilotToPlan {
 			return undef;
 		}
 		foreach (@{$pilot->{'exceptions'}}) {
-			push @{$plan->{'exceptions'}}, timelocal(@{$_});
+			push @{$plan->{'exceptions'}}, timegm(@{$_});
 		}
 	}
 
@@ -401,7 +393,7 @@ sub RecordPilotToPlan {
 			return undef;
 		}
 		if (defined $pilot->{'repeat'}->{'end'}) {
-			$plan->{'repeat'}->[1] = timelocal(@{$pilot->{'repeat'}->{'end'}});
+			$plan->{'repeat'}->[1] = timegm(@{$pilot->{'repeat'}->{'end'}});
 		}
 	}
 	
@@ -488,18 +480,18 @@ sub PrintPlanRecord {
 	my ($output);
 	
 	my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) =
-	    localtime($rec->{'date'});
+	    gmtime($rec->{'date'});
 	$year += 1900;
 	$mon++;
 	$output = "$year/$mon/$mday";
 
 	if ($rec->{'time'}) {
 		my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = 
-		  localtime($rec->{'time'});
+		  gmtime($rec->{'time'});
 		$output .= sprintf(" %02d:%02d-", $hour, $min);
 
 		($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) =
-		  localtime($rec->{'time'}+$rec->{'length'});
+		  gmtime($rec->{'time'}+$rec->{'length'});
 		$output .= sprintf("%02d:%02d", $hour, $min);
 	}
 	$output .= " '".join("\\n",@{$rec->{'note'}})."'" if defined $rec->{'note'};
@@ -524,7 +516,7 @@ sub PrintPlanRecord {
 			}
 		}
 		if ($rec->{'repeat'}[2]) {
-			push @r, "until ".scalar(localtime($rec->{'repeat'}[2]));
+			push @r, "until ".scalar(gmtime($rec->{'repeat'}[2]));
 		}
 		if (@r) {
 			$output .= " repeat ".join(", ", @r);
