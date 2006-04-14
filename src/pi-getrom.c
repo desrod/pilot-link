@@ -366,7 +366,7 @@ int do_sysinfo(int sd)
 	char buf[256];
 
 	if (dlp_ReadSysInfo(sd,&info) < 0) {
-		fprintf(stderr,"   ERROR: Could not read sysinfo.\n");
+		fprintf(stderr,"   ERROR: Could not read Palm System Information.\n");
 		return -1;
 	}
 
@@ -374,12 +374,12 @@ int do_sysinfo(int sd)
 	memset(buf,0,sizeof(buf));
 	strncpy(buf,info.prodID,info.prodIDLength < sizeof(buf)-1 ? info.prodIDLength : sizeof(buf)-1);
 
-	fprintf(stdout,"ProdId:%s\n",buf);
-	fprintf(stdout,"ROM   :%ld\n",info.romVersion);
-	fprintf(stdout,"DLP   :%d.%d\n",info.dlpMajorVersion,info.dlpMinorVersion);
-	fprintf(stdout,"Compat:%d.%d\n",info.compatMajorVersion,info.compatMinorVersion);
-	fprintf(stdout,"Locale:%ld\n",info.locale);
-	fprintf(stdout,"MaxRec:%ld\n",info.maxRecSize);
+        fprintf(stdout,"ProdId..:%s\n", buf);
+        fprintf(stdout,"ROM.....:%ld\n", info.romVersion);
+        fprintf(stdout,"DLP.....:%d.%d\n", info.dlpMajorVersion,info.dlpMinorVersion);
+        fprintf(stdout,"Compat..:%d.%d\n", info.compatMajorVersion,info.compatMinorVersion);
+        fprintf(stdout,"Locale..:%ld\n", info.locale);
+        fprintf(stdout,"MaxRec..:%ld\n", info.maxRecSize);
 
 	return 0;
 }
