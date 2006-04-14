@@ -22,7 +22,6 @@
 #include <string.h>
 #include <strings.h>
 #include <errno.h>
-#include <unistd.h>
 
 #include "pi-socket.h"
 #include "pi-dlp.h"
@@ -525,7 +524,7 @@ void write_record_CSV(FILE *out, const struct AddressAppInfo *aai, const struct 
 		term_newline);
 }
 
-void write_record_human(FILE *out, struct AddressAppInfo *aai, struct Address *addr, const int attribute, const int category)
+void write_record_human(struct AddressAppInfo *aai, struct Address *addr, const int category)
 {
 	int i;
 
@@ -548,7 +547,7 @@ void write_record_human(FILE *out, struct AddressAppInfo *aai, struct Address *a
 	printf("\n");
 }
 
-int write_file(FILE * out, int sd, int db, struct AddressAppInfo *aai, int human)
+int write_file(FILE *out, int sd, int db, struct AddressAppInfo *aai, int human)
 {
 	int 	i,
 		j,
@@ -594,7 +593,7 @@ int write_file(FILE * out, int sd, int db, struct AddressAppInfo *aai, int human
 		if (!human) {
 			write_record_CSV(out,aai,&addr,attribute,category);
 		} else {
-			write_record_human(out,aai,&addr,attribute,category);
+			write_record_human(aai,&addr,category);
 		}
 
 
@@ -633,25 +632,27 @@ int main(int argc, const char *argv[])
 		*wrFilename		= NULL,
 		*rdFilename		= NULL,
 		buf[0xffff];
+
 	int writehuman = 0;
 
 	pi_buffer_t *appblock;
 
 	struct 	AddressAppInfo 	aai;
 	struct 	PilotUser 	User;
+        struct  SysInfo         info;
 
 	poptContext po;
 
 	struct poptOption options[] = {
 		USERLAND_RESERVED_OPTIONS
-	        {"delete-all",	 0 , POPT_ARG_NONE, NULL,  mode_delete_all, "Delete all Palm records in all categories"},
-	        {"delimiter",	't', POPT_ARG_INT,  &tabledelim,          0, "Include category, use delimiter (3=tab, 2=;, 1=,)"},
+	        {"delete-all",	 0 , POPT_ARG_NONE, NULL,  mode_delete_all, "Delete all Palm records in all categories", NULL},
+	        {"delimiter",	't', POPT_ARG_INT,  &tabledelim,          0, "Include category, use delimiter (3=tab, 2=;, 1=,)", "<delimeter>"},
         	{"delete-category",	'd', POPT_ARG_STRING, &deletecategory,'d', "Delete old Palm records in <category>", "category"},
 	        {"category",	'c', POPT_ARG_STRING, &defaultcategoryname, 0, "Category to install to", "category"},
-        	{"augment",	'a', POPT_ARG_NONE, &augment,             0, "Augment records with additional information"},
+        	{"augment",	'a', POPT_ARG_NONE, &augment,             0, "Augment records with additional information", NULL},
 	        {"read",	'r', POPT_ARG_STRING, &rdFilename, 'r', "Read records from <file> and install them to Palm", "file"},
         	{"write",	'w', POPT_ARG_STRING, &wrFilename, 'w', "Get records from Palm and write them to <file>", "file"},
-		{"human-readable",'C', POPT_ARG_NONE, &writehuman, 0, "Write generic human-readable output instead of CSV"},
+		{"human-readable",'C', POPT_ARG_NONE, &writehuman, 0, "Write generic human-readable output instead of CSV", NULL},
 	        POPT_TABLEEND
 	};
 
@@ -738,6 +739,23 @@ int main(int argc, const char *argv[])
 
         if (dlp_ReadUserInfo(sd, &User) < 0)
                 goto error_close;
+
+        if (dlp_ReadSysInfo(sd,&info) < 0) {
+                fprintf(stderr,"   ERROR: Could not read Palm System Information.\n");
+                return -1;
+        }
+
+        if (info.romVersion > 0x0500) {
+                printf("PalmOS 5.x (Garnet) and later devices are not currently supported by this\n"
+                       "tool. The data format of the AddressBook has changed. The legacy format is\n"
+                       "called \"Classic\" and PalmOS 5.x and later uses \"Extended\" databases with a\n"
+                       "different structure. Your Palm has \"Contacts\", and this tool reads the\n"
+                       "\"AddressBook\" database.\n\n"
+
+                       "Due to this chnage, pilot-addresses and other tools must be rewritten to\n"
+                       "compensate. Sorry about the inconvenience.\n\n");
+                return -1;
+        }
 
 	/* Open the AddressDB.pdb database, store access handle in db */
 	if (dlp_OpenDB(sd, 0, 0x80 | 0x40, "AddressDB", &db) < 0) {
