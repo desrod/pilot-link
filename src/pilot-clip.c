@@ -18,8 +18,6 @@
  */
 
 #include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
 #include <netinet/in.h>
 
 #include "pi-source.h"
@@ -28,18 +26,18 @@
 #include "pi-header.h"
 #include "pi-userland.h"
 
-static void *GetClip(int socket, int type, int *length)
+static void *GetClip(int sock, int type, int *length)
 {
-	int 	l,
+	int 	len,
 		err;
 	struct 	RPC_params p;
 	unsigned long handle, ptr;
 	void 	*buffer;
 
 	/* ClipboardGetItem */
-	PackRPC(&p, 0xA10C, RPC_PtrReply, RPC_Byte(type), RPC_ShortPtr(&l),
+	PackRPC(&p, 0xA10C, RPC_PtrReply, RPC_Byte(type), RPC_ShortPtr(&len),
 		RPC_End);
-	err = dlp_RPC(socket, &p, &handle);
+	err = dlp_RPC(sock, &p, &handle);
 	if (err)
 		return 0;
 
@@ -48,29 +46,29 @@ static void *GetClip(int socket, int type, int *length)
 
 	/* MemHandleLock */
 	PackRPC(&p, 0xA021, RPC_PtrReply, RPC_Long(handle), RPC_End);
-	err = dlp_RPC(socket, &p, &ptr);
+	err = dlp_RPC(sock, &p, &ptr);
 
 	if (err)
 		return 0;
 
-	buffer = malloc(l);
+	buffer = malloc(len);
 
 	/* MemMove */
-	PackRPC(&p, 0xA026, RPC_IntReply, RPC_Ptr(buffer, l),
-		RPC_Long(ptr), RPC_Long(l), RPC_End);
-	err = dlp_RPC(socket, &p, 0);
+	PackRPC(&p, 0xA026, RPC_IntReply, RPC_Ptr(buffer, len),
+		RPC_Long(ptr), RPC_Long(len), RPC_End);
+	err = dlp_RPC(sock, &p, 0);
 
 	/* MemHandleUnlock */
 	PackRPC(&p, 0xA022, RPC_IntReply, RPC_Long(handle), RPC_End);
-	err = dlp_RPC(socket, &p, 0);
+	err = dlp_RPC(sock, &p, 0);
 
 	if (length)
-		*length = l;
+		*length = len;
 
 	return buffer;
 }
 
-static int SetClip(int socket, int type, void *data, int length)
+static int SetClip(int sock, int type, void *data, int length)
 {
 	int 	err;
 	char 	*b = data;
@@ -79,7 +77,7 @@ static int SetClip(int socket, int type, void *data, int length)
 
 	/* MemHandleNew */
 	PackRPC(&p, 0xA01E, RPC_PtrReply, RPC_Long(length), RPC_End);
-	err = dlp_RPC(socket, &p, &handle);
+	err = dlp_RPC(sock, &p, &handle);
 	if (err)
 		return 0;
 
@@ -88,7 +86,7 @@ static int SetClip(int socket, int type, void *data, int length)
 
 	/* MemHandleLock */
 	PackRPC(&p, 0xA021, RPC_PtrReply, RPC_Long(handle), RPC_End);
-	err = dlp_RPC(socket, &p, &ptr);
+	err = dlp_RPC(sock, &p, &ptr);
 
 	if (err)
 		return 0;
@@ -96,18 +94,18 @@ static int SetClip(int socket, int type, void *data, int length)
 	/* MemMove */
 	PackRPC(&p, 0xA026, RPC_IntReply, RPC_Long(ptr),
 		RPC_Ptr(b, length), RPC_Long(length), RPC_End);
-	err = dlp_RPC(socket, &p, 0);
+	err = dlp_RPC(sock, &p, 0);
 
 	length--;
 
 	/* ClipboardAddItem */
 	PackRPC(&p, 0xA10A, RPC_IntReply, RPC_Byte(type), RPC_Long(ptr),
 		RPC_Short(length), RPC_End);
-	err = dlp_RPC(socket, &p, 0);
+	err = dlp_RPC(sock, &p, 0);
 
 	/* MemPtrFree */
 	PackRPC(&p, 0xA012, RPC_IntReply, RPC_Long(ptr), RPC_End);
-	err = dlp_RPC(socket, &p, 0);
+	err = dlp_RPC(sock, &p, 0);
 	return 1;
 }
 
@@ -126,10 +124,12 @@ int main(int argc, const char *argv[])
 
 	struct poptOption options[] = {
 		USERLAND_RESERVED_OPTIONS
-	        {"get",		'g', POPT_ARG_NONE, NULL,   'g', "Print the contents of the clipboard on STDOUT"},
-        	{"set",		's', POPT_ARG_NONE, NULL,   's', "Set the value in the clipboard from STDIN"},
-	         POPT_AUTOHELP
-                { NULL, 0, 0, NULL, 0 }
+	        {"get",		'g', POPT_ARG_NONE, NULL,   'g', 
+			"Print the contents of the clipboard on STDOUT", NULL},
+        	{"set",		's', POPT_ARG_NONE, NULL,   's', 
+			"Set the value in the clipboard from STDIN", NULL},
+                POPT_AUTOHELP
+                POPT_TABLEEND
 	};
 
 	po = poptGetContext("pilot-clip", argc, argv, options, 0);
@@ -147,7 +147,8 @@ int main(int argc, const char *argv[])
 		case 's':
 		case 'g':
 			if (mode != mode_none) {
-				fprintf(stderr,"   ERROR: Use only one of --get or --set.\n");
+				fprintf(stderr,
+					"   ERROR: --get or --set, not both.\n");
 				return 1;
 			}
 			mode = c;
