@@ -50,7 +50,6 @@
 
 #include <usb.h>
 
-
 static int u_open(struct pi_socket *ps, struct pi_sockaddr *addr, size_t addrlen);
 static int u_close(struct pi_socket *ps);
 static ssize_t u_write(struct pi_socket *ps, const unsigned char *buf, size_t len, int flags);
@@ -73,7 +72,6 @@ void pi_usb_impl_init (struct pi_usb_impl *impl)
 	impl->changebaud	= NULL;		/* we don't need this one for libusb (yet) */
 	impl->control_request	= u_control_request;
 }
-
 
 
 /***********************************************************************
@@ -233,15 +231,15 @@ USB_close (void)
 
 #define MAX_READ_SIZE	16384
 #define AUTO_READ_SIZE	64
-static char				*RD_buffer = NULL;
-static size_t			RD_buffer_size;
-static size_t			RD_buffer_used;
+static char		*RD_buffer = NULL;
+static size_t		RD_buffer_size;
+static size_t		RD_buffer_used;
 static pthread_mutex_t	RD_buffer_mutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t	RD_buffer_available_cond = PTHREAD_COND_INITIALIZER;
-static int				RD_wanted;
-static int				RD_running = 0;
-static char				RD_usb_buffer[MAX_READ_SIZE];
-static pthread_t		RD_thread = 0;
+static int		RD_wanted;
+static int		RD_running = 0;
+static char		RD_usb_buffer[MAX_READ_SIZE];
+static pthread_t	RD_thread = 0;
 
 static void
 RD_do_read (int timeout)
@@ -323,36 +321,19 @@ RD_start (void)
 static int
 RD_stop (void)
 {
-	int start, now;
-
-	if (!RD_thread || !RD_running)
+	if (!RD_thread && !RD_running)
 		return 0;
 
-	RD_running = -1;
+	if (RD_running)
+		RD_running = 0;
 
-	/*
-	 * FIXME: Evil kluge.
-	 * Handles the case where the app wants to close,
-	 * and the PDA stays put and quiet.
-	 */
-	start = time(NULL);
-	while (RD_running) {
-		now = time(NULL);
-		if ((now - start) >= 5) {
-			LOG((PI_DBG_DEV, PI_DBG_LVL_WARN, "libusb: Killing read thread.\n"));
-			pthread_cancel (RD_thread);
-			RD_running = 0;
-			return 1;
-		}
-		sleep (1);
+	if (RD_thread) {
+		pthread_cancel(RD_thread);
+		RD_thread = 0;
 	}
 
-	pthread_join (RD_thread, NULL);
-
-	/* Clean up the buffers. */
-	free (RD_buffer);
-	RD_buffer = NULL;
-	RD_buffer_size = 0;
+	if (RD_thread || RD_running)
+		return 0;
 
 	return 1;
 }
