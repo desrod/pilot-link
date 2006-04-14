@@ -540,9 +540,6 @@ protocol_queue_build (pi_socket_t *ps, int autodetect)
 
 	} else if (protocol == PI_PF_DLP) {
 		protocol = PI_PF_PADP;
-	} else {
-                /* Testing a net_rx_handshake buglet
-		dev_prot->flush(ps, PI_FLUSH_INPUT); */
 	}
 
 	/* The connected protocol queue */
