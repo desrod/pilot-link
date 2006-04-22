@@ -17,6 +17,10 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  *
+ * TODO: 
+ * - More verbose help output with examples for each function
+ * - palm_backup() enabled for MEDIA_VFS
+ *
  */
 
 #include <stdio.h>
@@ -315,19 +319,21 @@ palm_backup(const char *dirname, unsigned long int flags, int unsaved,
 		const char *archive_dir)
 {
 
-	int			i			= 0,
-				ofile_len	= 0,
-				ofile_total	= 0,
-				filecount	= 1,	/* File counts start at 1, of course */
-				failed		= 0,
-				skipped		= 0;
+	int		i		= 0,
+			ofile_len	= 0,
+			ofile_total	= 0,
+			filecount	= 1,	/* File counts start at 1, of course */
+			failed		= 0,
+			skipped		= 0;
+
 	static int	totalsize;
-	char		**orig_files = NULL,
+
+	char		**orig_files    = NULL,
 				*name,
 				synclog[70];
 
-	const char	*synctext = (flags & UPDATE) ? "Synchronizing" : "Backing up";
-	DIR			*dir;
+	const char	*synctext       = (flags & UPDATE) ? "Synchronizing" : "Backing up";
+	DIR		*dir;
 	pi_buffer_t	*buffer;
 
 	/* Check if the directory exists before writing to it. If it doesn't
@@ -2363,7 +2369,6 @@ main(int argc, const char *argv[])
 		switch (optc)
 		{
 			/* Actions with a dir argument */
-
 			case palm_op_backup:
 			case palm_op_update:
 			case palm_op_sync:
@@ -2454,7 +2459,8 @@ main(int argc, const char *argv[])
 				fprintf(stderr,"   ERROR: Cannot combine -burs with VFS (-D).\n\n");
 				return 1;
 			}
-			if (stat (dirname, &sbuf) == 0)
+
+                        if (stat (dirname, &sbuf) == 0)
 			{
 				if (!S_ISDIR (sbuf.st_mode))
 				{
