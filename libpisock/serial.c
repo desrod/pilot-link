@@ -479,7 +479,7 @@ pi_serial_accept(pi_socket_t *ps, struct sockaddr *addr,
 		int result = data->impl.poll(ps, 1000);
 		LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s: %d, poll result: %d.\n", __FILE__, __LINE__, result));
 
-		if (result <= 0) {
+		if (result < 0) {
 			char buf[] = { 0x01, 0x00, 0x00, 0x00, 0x00, 0x00 };
 			data->impl.write(ps, buf, sizeof (buf), 1000);
 		}
