@@ -67,6 +67,12 @@
 #define max(a,b) (( a > b ) ? a : b )
 #define min(a,b) (( a < b ) ? a : b )
 
+int ColourCorrect (const struct PalmPixHeader *picHdr, uint8_t *r, uint8_t *gr, uint8_t *gb,
+        uint8_t *b);
+
+int Histogram(const struct PalmPixHeader *picHdr, uint8_t *r, uint8_t *gr, uint8_t *gb, 
+        uint8_t *b);
+
 void DecodeRow(uint8_t *compData, uint8_t *lastRow, uint8_t *unCompData,
                uint32_t *offset, int32_t *firstWord, uint16_t *PPLutsW,
                uint8_t *PPLuts, uint16_t halfWidth);
@@ -1129,7 +1135,7 @@ static void Bias( double bias, int width, int height, uint8_t *data )
 /***********************************************************************
  * Odd green rows and even green rows have a different histogram
  ***********************************************************************/
-int ColourCorrect ( const struct PalmPixHeader *picHdr, uint8_t *r, uint8_t *gr, uint8_t *gb, uint8_t *b )
+int ColourCorrect (const struct PalmPixHeader *picHdr, uint8_t *r, uint8_t *gr, uint8_t *gb, uint8_t *b)
 {
 	/* uint8_t *tmpRow; */
 	uint8_t gbMin, gbMax, grMin, grMax, rMin, rMax, bMin, bMax;
@@ -1714,20 +1720,19 @@ int unpack_PalmPix (struct PalmPixState *s,
 	
 	for (k = 0; k < 4; k++) 
 	  {
-	     long nbytes, offset;
+	     long num_bytes, offset;
 	     int32_t lastWord = 0;
 	     int j;
 	     
-	     for (nbytes = 0; nbytes < h->chansize[k]; recno++) 
+	     for (num_bytes = 0; num_bytes < h->chansize[k]; recno++)
 	       {
 		  void *buffer;
 		  size_t bufsize;
-		  if (s->getrecord (s, recno, &buffer, &bufsize) == 0) 
-		    {
-		       if (bufsize > h->chansize[k] - nbytes)
-			 bufsize = h->chansize[k] - nbytes;
-		       memcpy (&raw[nbytes], buffer, (size_t)bufsize);
-		       nbytes += bufsize;
+		  if (s->getrecord (s, recno, &buffer, &bufsize) == 0)  {
+		       if (bufsize > h->chansize[k] - num_bytes)
+			 bufsize = h->chansize[k] - num_bytes;
+		       memcpy (&raw[num_bytes], buffer, (size_t)bufsize);
+		       num_bytes += bufsize;
 		       
 		    }
 		  else

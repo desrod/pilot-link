@@ -102,7 +102,7 @@ int pi_sock_installedexit = 0;
  * Returns:     void
  *
  ***********************************************************************/
-#if DEBUG
+#ifdef DEBUG
 static void
 ps_list_dump (pi_socket_list_t *list)
 {

@@ -186,7 +186,7 @@ pi_file_t
 
 	/* record list header */
 	pf->next_record_list_id = get_long(p + 72);
-	pf->nentries 		= get_short(p + 76);
+	pf->num_entries 	= get_short(p + 76);
 
 	LOG ((PI_DBG_API, PI_DBG_LVL_INFO,
 	     "FILE OPEN Name: '%s' Flags: 0x%4.4X Version: %d\n",
@@ -220,7 +220,7 @@ pi_file_t
 		pf->ent_hdr_size = PI_RECORD_ENT_SIZE;
 	}
 
-	if (pf->nentries < 0) {
+	if (pf->num_entries < 0) {
 		LOG ((PI_DBG_API, PI_DBG_LVL_ERR,
  		     "FILE OPEN %s: bad header\n", name));
 		goto bad;
@@ -228,13 +228,13 @@ pi_file_t
 
 	offset = file_size;
 
-	if (pf->nentries) {
+	if (pf->num_entries) {
 		if ((pf->entries =
-		     calloc((size_t)pf->nentries,
+		     calloc((size_t)pf->num_entries,
 				sizeof *pf->entries)) == NULL)
 			goto bad;
 
-		for (i = 0, entp = pf->entries; i < pf->nentries;
+		for (i = 0, entp = pf->entries; i < pf->num_entries;
 		     i++, entp++) {
 			if (fread(buf, (size_t) pf->ent_hdr_size, 1, pf->f)
 				!= (size_t) 1)
@@ -243,12 +243,12 @@ pi_file_t
 			p = buf;
 			if (pf->resource_flag) {
 				entp->type 	= get_long(p);
-				entp->id_ 	= get_short(p + 4);
+				entp->resource_id    = get_short(p + 4);
 				entp->offset 	= get_long(p + 6);
 
 				LOG ((PI_DBG_API, PI_DBG_LVL_DEBUG,
 				     "FILE OPEN Entry %d '%s' #%d @%X\n", i,
-				       printlong(entp->type), entp->id_,
+				       printlong(entp->type), entp->resource_id,
 				       entp->offset));
 			} else {
 				entp->offset 	= get_long(p);
@@ -263,21 +263,21 @@ pi_file_t
 			}
 		}
 
-		for (i = 0, entp = pf->entries + pf->nentries - 1;
-		     i < pf->nentries; i++, entp--) {
+		for (i = 0, entp = pf->entries + pf->num_entries - 1;
+		     i < pf->num_entries; i++, entp--) {
 			entp->size 	= offset - entp->offset;
 			offset 		= entp->offset;
 
 			LOG ((PI_DBG_API, PI_DBG_LVL_DEBUG,
 			     "FILE OPEN Entry: %d Size: %d\n",
-			     pf->nentries - i - 1, entp->size));
+			     pf->num_entries - i - 1, entp->size));
 
 			if (entp->size < 0 ||
 				(entp->offset + entp->size) > file_size) {
 				LOG ((PI_DBG_API, PI_DBG_LVL_DEBUG,
 				 "FILE OPEN %s: Entry %d corrupt,"
 				 " giving up\n",
-					name, pf->nentries - i - 1));
+					name, pf->num_entries - i - 1));
 				goto bad;
 			}
 		}
@@ -408,7 +408,7 @@ pi_file_read_resource(pi_file_t *pf, int i,
 	if (pf->for_writing || !pf->resource_flag)
 		return PI_ERR_FILE_INVALID;
 
-	if (i < 0 || i >= pf->nentries)
+	if (i < 0 || i >= pf->num_entries)
 		return PI_ERR_GENERIC_ARGUMENT;
 
 	entp = &pf->entries[i];
@@ -428,7 +428,7 @@ pi_file_read_resource(pi_file_t *pf, int i,
 	if (type)
 		*type = entp->type;
 	if (idp)
-		*idp = entp->id_;
+		*idp = entp->resource_id;
 
 	return 0;
 }
@@ -444,7 +444,7 @@ pi_file_read_record(pi_file_t *pf, int recindex,
 	if (pf->for_writing || pf->resource_flag)
 		return PI_ERR_FILE_INVALID;
 
-	if (recindex < 0 || recindex >= pf->nentries)
+	if (recindex < 0 || recindex >= pf->num_entries)
 		return PI_ERR_GENERIC_ARGUMENT;
 
 	entp = &pf->entries[recindex];
@@ -491,7 +491,7 @@ pi_file_read_record_by_id(pi_file_t *pf, recordid_t uid,
 	int 	i;
 	struct 	pi_file_entry *entp;
 
-	for (i = 0, entp = pf->entries; i < pf->nentries;
+	for (i = 0, entp = pf->entries; i < pf->num_entries;
 	     i++, entp++) {
 		if (entp->uid == uid) {
 			if (idxp)
@@ -510,7 +510,7 @@ pi_file_id_used(const pi_file_t *pf, recordid_t uid)
 	int 	i;
 	struct 	pi_file_entry *entp;
 
-	for (i = 0, entp = pf->entries; i < pf->nentries; i++, entp++) {
+	for (i = 0, entp = pf->entries; i < pf->num_entries; i++, entp++) {
 		if (entp->uid == uid)
 			return 1;
 	}
@@ -639,7 +639,7 @@ pi_file_append_resource(pi_file_t *pf, void *data, size_t size,
 
 	entp->size 	= size;
 	entp->type 	= restype;
-	entp->id_ 	= resid;
+	entp->resource_id 	= resid;
 
 	return size;
 }
@@ -674,7 +674,7 @@ pi_file_append_record(pi_file_t *pf, void *data, size_t size,
 void
 pi_file_get_entries(pi_file_t *pf, int *entries)
 {
-	*entries = pf->nentries;
+	*entries = pf->num_entries;
 }
 
 int
@@ -682,11 +682,14 @@ pi_file_retrieve(pi_file_t *pf, int socket, int cardno,
 	progress_func report_progress)
 {
 	int 	db = -1,
-		j,
 		result,
 		old_device = 0;
+
+        unsigned int j;
+
 	struct DBInfo dbi;
 	struct DBSizeInfo size_info;
+
 	pi_buffer_t *buffer = NULL;
 	pi_progress_t progress;
 
@@ -697,8 +700,8 @@ pi_file_retrieve(pi_file_t *pf, int socket, int cardno,
 	/* Try to get more info on the database to retrieve. Note that
 	 * with some devices like the Tungsten T3 and shadowed databases
 	 * like AddressDB, the size_info is -wrong-. It doesn't reflect
-	 * the actual contents of the database except for the number of records.
-	 * Also, this call doesn't work pre-OS 3.
+	 * the actual contents of the database except for the number of
+	 * records.  Also, this call doesn't work pre-OS 3.
 	 */
 	if ((result = dlp_FindDBByName(socket, cardno, pf->info.name,
 			NULL, NULL, &dbi, &size_info)) < 0)
@@ -719,10 +722,10 @@ pi_file_retrieve(pi_file_t *pf, int socket, int cardno,
 	}
 
 	if (old_device) {
-		int nrec;
-		if ((result = dlp_ReadOpenDBInfo(socket, db, &nrec)) < 0)
+		int num_records;
+		if ((result = dlp_ReadOpenDBInfo(socket, db, &num_records)) < 0)
 				goto fail;
-		size_info.numRecords = nrec;
+		size_info.numRecords = num_records;
 	}
 
 	memset(&progress, 0, sizeof(progress));
@@ -765,15 +768,15 @@ pi_file_retrieve(pi_file_t *pf, int socket, int cardno,
 
 	if (pf->info.flags & dlpDBFlagResource) {
 		for (j = 0; j < size_info.numRecords; j++) {
-			int 	id_;
+			int 	resource_id;
 			unsigned long type;
 
 			if ((result = dlp_ReadResourceByIndex(socket, db, j, buffer,
-					&type, &id_)) < 0)
+					&type, &resource_id)) < 0)
 				goto fail;
 
 			if ((result = pi_file_append_resource (pf, buffer->data, buffer->used,
-					type, id_)) < 0) {
+					type, resource_id)) < 0) {
 				pi_set_error(socket, result);
 				goto fail;
 			}
@@ -790,9 +793,9 @@ pi_file_retrieve(pi_file_t *pf, int socket, int cardno,
 	} else for (j = 0; j < size_info.numRecords; j++) {
 		int 	attr,
 			category;
-		unsigned long id_;
+		unsigned long resource_id;
 
-		if ((result = dlp_ReadRecordByIndex(socket, db, j, buffer, &id_, &attr,
+		if ((result = dlp_ReadRecordByIndex(socket, db, j, buffer, &resource_id, &attr,
 				&category)) < 0)
 			goto fail;
 
@@ -813,7 +816,7 @@ pi_file_retrieve(pi_file_t *pf, int socket, int cardno,
 		    (dlpRecAttrArchived | dlpRecAttrDeleted))
 			continue;
 		if ((result = pi_file_append_record(pf, buffer->data, buffer->used,
-				attr, category, id_)) < 0) {
+				attr, category, resource_id)) < 0) {
 			pi_set_error(socket, result);
 			goto fail;
 		}
@@ -867,7 +870,7 @@ pi_file_install(pi_file_t *pf, int socket, int cardno,
 	memset(&progress, 0, sizeof(progress));
 	progress.type = PI_PROGRESS_SEND_DB;
 	progress.data.db.pf = pf;
-	progress.data.db.size.numRecords = pf->nentries;
+	progress.data.db.size.numRecords = pf->num_entries;
 	progress.data.db.size.dataBytes = pf->app_info_size;
 	progress.data.db.size.appBlockSize = pf->app_info_size;
 	progress.data.db.size.maxRecSize = pi_maxrecsize(socket);
@@ -876,7 +879,7 @@ pi_file_install(pi_file_t *pf, int socket, int cardno,
 	   either records are 64k or less, or the handheld can accept
 	   large records. we do this prior to starting the install,
 	   to avoid messing the device up if we have to fail. */
-	for (j = 0; j < pf->nentries; j++) {
+	for (j = 0; j < pf->num_entries; j++) {
 		result =  (pf->info.flags & dlpDBFlagResource) ?
 			pi_file_read_resource(pf, j, 0, &size, 0, 0) :
 			pi_file_read_record(pf, j, 0, &size, 0, 0, 0);
@@ -896,7 +899,7 @@ pi_file_install(pi_file_t *pf, int socket, int cardno,
 
 	progress.data.db.size.totalBytes =
 		progress.data.db.size.dataBytes +
-		pf->ent_hdr_size * pf->nentries +
+		pf->ent_hdr_size * pf->num_entries +
 		PI_HDR_SIZE + 2;
 
 	/* Delete DB if it already exists */
@@ -1012,19 +1015,19 @@ pi_file_install(pi_file_t *pf, int socket, int cardno,
 
 	/* Upload resources / records */
 	if (pf->info.flags & dlpDBFlagResource) {
-		for (j = 0; j < pf->nentries; j++) {
-			int 	id_;
+		for (j = 0; j < pf->num_entries; j++) {
+			int 	resource_id;
 			unsigned long type;
 
 			if ((result = pi_file_read_resource(pf, j, &buffer, &size,
-					&type,	&id_)) < 0)
+					&type,	&resource_id)) < 0)
 				goto fail;
 
 			/* Skip empty resource, it cannot be installed */
 			if (size == 0)
 				continue;
 
-			if ((result = dlp_WriteResource(socket, db, type, id_, buffer,
+			if ((result = dlp_WriteResource(socket, db, type, resource_id, buffer,
 					size)) < 0)
 				goto fail;
 
@@ -1043,13 +1046,13 @@ pi_file_install(pi_file_t *pf, int socket, int cardno,
 				reset = 1;
 		}
 	} else {
-		for (j = 0; j < pf->nentries; j++) {
+		for (j = 0; j < pf->num_entries; j++) {
 			int 	attr,
 				category;
-			unsigned long id_;
+			unsigned long resource_id;
 
 			if ((result = pi_file_read_record(pf, j, &buffer, &size, &attr,
-					&category, &id_)) < 0)
+					&category, &resource_id)) < 0)
 				goto fail;
 
 			/* Old OS version cannot install deleted records, so
@@ -1058,7 +1061,7 @@ pi_file_install(pi_file_t *pf, int socket, int cardno,
 			    && version < 0x0101)
 				continue;
 
-			if ((result = dlp_WriteRecord(socket, db, attr, id_, category,
+			if ((result = dlp_WriteRecord(socket, db, attr, resource_id, category,
 					buffer, size, 0)) < 0)
 				goto fail;
 
@@ -1118,7 +1121,7 @@ pi_file_merge(pi_file_t *pf, int socket, int cardno,
 	memset(&progress, 0, sizeof(progress));
 	progress.type = PI_PROGRESS_SEND_DB;
 	progress.data.db.pf = pf;
-	progress.data.db.size.numRecords = pf->nentries;
+	progress.data.db.size.numRecords = pf->num_entries;
 	progress.data.db.size.dataBytes = pf->app_info_size;
 	progress.data.db.size.appBlockSize = pf->app_info_size;
 	progress.data.db.size.maxRecSize = pi_maxrecsize(socket);
@@ -1131,7 +1134,7 @@ pi_file_merge(pi_file_t *pf, int socket, int cardno,
 	   either records are 64k or less, or the handheld can accept
 	   large records. we do this prior to starting the install,
 	   to avoid messing the device up if we have to fail. */
-	for (j = 0; j < pf->nentries; j++) {
+	for (j = 0; j < pf->num_entries; j++) {
 		result =  (pf->info.flags & dlpDBFlagResource) ?
 			pi_file_read_resource(pf, j, 0, &size, 0, 0) :
 			pi_file_read_record(pf, j, 0, &size, 0, 0, 0);
@@ -1152,7 +1155,7 @@ pi_file_merge(pi_file_t *pf, int socket, int cardno,
 
 	progress.data.db.size.totalBytes =
 		progress.data.db.size.dataBytes +
-		pf->ent_hdr_size * pf->nentries +
+		pf->ent_hdr_size * pf->num_entries +
 		PI_HDR_SIZE + 2;
 
 	/* All system updates seen to have the 'ptch' type, so trigger a
@@ -1165,19 +1168,19 @@ pi_file_merge(pi_file_t *pf, int socket, int cardno,
 
 	/* Upload resources / records */
 	if (pf->info.flags & dlpDBFlagResource) {
-		for (j = 0; j < pf->nentries; j++) {
-			int 	id_;
+		for (j = 0; j < pf->num_entries; j++) {
+			int 	resource_id;
 			unsigned long type;
 
 			if ((result = pi_file_read_resource
-			    (pf, j, &buffer, &size, &type, &id_)) < 0)
+			    (pf, j, &buffer, &size, &type, &resource_id)) < 0)
 				goto fail;
 
 			if (size == 0)
 				continue;
 
 			if ((result = dlp_WriteResource
-			    (socket, db, type, id_, buffer, size)) < 0)
+			    (socket, db, type, resource_id, buffer, size)) < 0)
 				goto fail;
 
 			progress.transferred_bytes += size;
@@ -1195,13 +1198,13 @@ pi_file_merge(pi_file_t *pf, int socket, int cardno,
 				reset = 1;
 		}
 	} else {
-		for (j = 0; j < pf->nentries; j++) {
+		for (j = 0; j < pf->num_entries; j++) {
 			int	attr,
 				category;
-			unsigned long id_;
+			unsigned long resource_id;
 
 			if ((result = pi_file_read_record(pf, j, &buffer, &size,
-					&attr, &category, &id_)) < 0)
+					&attr, &category, &resource_id)) < 0)
 				goto fail;
 
 			/* Old OS version cannot install deleted records, so
@@ -1277,11 +1280,11 @@ pi_file_close_for_write(pi_file_t *pf)
 	unsigned char *p;
 
 	ip = &pf->info;
-	if (pf->nentries >= 64 * 1024) {
+	if (pf->num_entries >= 64 * 1024) {
 		LOG((PI_DBG_API, PI_DBG_LVL_ERR,
 			 "pi_file_close_for_write: too many entries "
 			 "for this implentation of pi-file: %d\n",
-			 pf->nentries));
+			 pf->num_entries));
 		return PI_ERR_FILE_INVALID;
 	}
 
@@ -1302,7 +1305,7 @@ pi_file_close_for_write(pi_file_t *pf)
 
 	ip = &pf->info;
 
-	offset = PI_HDR_SIZE + pf->nentries * pf->ent_hdr_size + 2;
+	offset = PI_HDR_SIZE + pf->num_entries * pf->ent_hdr_size + 2;
 
 	p = buf;
 	memcpy(p, ip->name, 32);
@@ -1320,18 +1323,18 @@ pi_file_close_for_write(pi_file_t *pf)
 	set_long(p + 64, ip->creator);
 	set_long(p + 68, pf->unique_id_seed);
 	set_long(p + 72, pf->next_record_list_id);
-	set_short(p + 76, pf->nentries);
+	set_short(p + 76, pf->num_entries);
 
 	if (fwrite(buf, PI_HDR_SIZE, 1, f) != 1)
 		goto bad;
 
-	for (i = 0, entp = pf->entries; i < pf->nentries; i++, entp++) {
+	for (i = 0, entp = pf->entries; i < pf->num_entries; i++, entp++) {
 		entp->offset = offset;
 
 		p = buf;
 		if (pf->resource_flag) {
 			set_long(p, entp->type);
-			set_short(p + 4, entp->id_);
+			set_short(p + 4, entp->resource_id);
 			set_long(p + 6, entp->offset);
 		} else {
 			set_long(p, entp->offset);
@@ -1472,11 +1475,11 @@ static pi_file_entry_t
 	struct 	pi_file_entry *new_entries;
 	struct 	pi_file_entry *entp;
 
-	if (pf->nentries >= pf->nentries_allocated) {
-		if (pf->nentries_allocated == 0)
+	if (pf->num_entries >= pf->num_entries_allocated) {
+		if (pf->num_entries_allocated == 0)
 			new_count = 100;
 		else
-			new_count = pf->nentries_allocated * 3 / 2;
+			new_count = pf->num_entries_allocated * 3 / 2;
 		new_size = new_count * sizeof *pf->entries;
 
 		if (pf->entries == NULL)
@@ -1487,11 +1490,11 @@ static pi_file_entry_t
 		if (new_entries == NULL)
 			return NULL;
 
-		pf->nentries_allocated = new_count;
+		pf->num_entries_allocated = new_count;
 		pf->entries = new_entries;
 	}
 
-	entp = &pf->entries[pf->nentries++];
+	entp = &pf->entries[pf->num_entries++];
 	memset(entp, 0, sizeof *entp);
 	return entp;
 }
@@ -1506,8 +1509,8 @@ pi_file_find_resource_by_type_id(const pi_file_t *pf,
 	if (!pf->resource_flag)
 		return PI_ERR_FILE_INVALID;
 
-	for (i = 0, entp = pf->entries; i < pf->nentries; i++, entp++) {
-		if (entp->type == restype && entp->id_ == resid) {
+	for (i = 0, entp = pf->entries; i < pf->num_entries; i++, entp++) {
+		if (entp->type == restype && entp->resource_id == resid) {
 			if (resindex)
 				*resindex = i;
 			return 1;

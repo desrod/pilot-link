@@ -36,6 +36,13 @@
 #include "pi-debug.h"
 #include "pi-source.h"
 
+void pi_timeout_to_timespec(int timeout, struct timespec *ts);
+void get_pilot_rate(int *establishrate, int *establishhighrate);
+int pi_timespec_to_timeout(const struct timespec *ts);
+int pi_timeout_expired(const struct timespec *ts);
+size_t palm_strftime(char *s, size_t max, const char *fmt, 
+        const struct tm *tm);
+
 /* this routine ruthlessly stolen verbatim from Brian J. Swetland */
 
 /***********************************************************************
@@ -301,16 +308,18 @@ unsigned long makelong(char *c)
 double get_float(void *buffer)
 {
 	unsigned char *buf = buffer;
-	int 	exp 	= get_sshort(buf + 4),
-		sign 	= get_byte(buf + 6);
 	unsigned long frac = get_long(buf);
 
-	return ldexp(sign ? (double) frac : -(double) frac, exp);
+	int 	expr	= get_sshort(buf + 4),
+		sign 	= get_byte(buf + 6);
+
+        /* if (sign) f = frac; else f = -frac; return ldexp(f, exp); */
+        return ldexp(sign ? (double) frac : -(double) frac, expr);
 }
 
 void set_float(void *buffer, double value)
 {
-	int 	exp, 
+	int 	expr, 
 		sign;
 	unsigned char *buf = buffer;
 	unsigned long frac;
@@ -324,13 +333,13 @@ void set_float(void *buffer, double value)
 		sign 	= 0xFF;
 
 	/* Convert mantissa to 32-bit integer, and take exponent */
-	r = ldexp(frexp(value, &exp), 32);
+	r = ldexp(frexp(value, &expr), 32);
 	frac = (unsigned long)r;
-	exp -= 32;
+	expr -= 32;
 
 	/* Store values in buffer */
 	set_long(buf, frac);
-	set_sshort(buf + 4, exp);
+	set_sshort(buf + 4, expr);
 	set_byte(buf + 6, sign);
 	set_byte(buf + 7, 0);
 }

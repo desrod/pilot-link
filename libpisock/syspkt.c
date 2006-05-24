@@ -663,7 +663,7 @@ sys_RemoteEvent(int sd, int penDown, int x, int y, int keypressed,
  *
  ***********************************************************************/
 int
-sys_RPC(int sd, int socket, int trap, long *D0, long *A0, int params,
+sys_RPC(int sd, int sockaddr, int trap, long *D0, long *A0, int params,
 	struct RPC_param *param, int reply)
 {
 	int 	idx;
@@ -676,8 +676,8 @@ sys_RPC(int sd, int socket, int trap, long *D0, long *A0, int params,
 		return pi_set_error(sd, PI_ERR_GENERIC_MEMORY);
 	}
 
-	buf->data[0] = socket;	/* 0 for debug, 1 for console */
-	buf->data[1] = socket;
+	buf->data[0] = sockaddr;	/* 0 for debug, 1 for console */
+	buf->data[1] = sockaddr;
 	buf->data[2] = 0;
 	buf->data[4] = 0x0a;
 	buf->data[5] = 0;
@@ -700,7 +700,7 @@ sys_RPC(int sd, int socket, int trap, long *D0, long *A0, int params,
 			*c++ = 0;
 	}
 
-	if (socket == 3)
+	if (sockaddr == 3)
 		set_short(buf->data + 4, c - buf->data - 6);
 
 	pi_write(sd, buf->data + 4,(size_t)(c - buf->data - 4));
@@ -746,7 +746,7 @@ sys_RPC(int sd, int socket, int trap, long *D0, long *A0, int params,
  *
  ***********************************************************************/
 int
-RPC(int sd, int socket, int trap, int reply, ...)
+RPC(int sd, int sockaddr, int trap, int reply, ...)
 {
 	int 	idx 	= 0,
 		j,
@@ -781,11 +781,11 @@ RPC(int sd, int socket, int trap, int reply, ...)
 				if (p[idx].size == 2) {
 					int *s = c;
 
-					*s = htons((short) *s);
+					*s = htons(*s);
 				} else {
 					int *l = c;
 
-					*l = htonl((unsigned) *l);
+					*l = htonl(*l);
 				}
 			}
 		}
@@ -793,7 +793,7 @@ RPC(int sd, int socket, int trap, int reply, ...)
 	}
 	va_end(ap);
 
-	if (sys_RPC(sd, socket, trap, &D0, &A0, idx, p, reply != 2) < 0)
+	if (sys_RPC(sd, sockaddr, trap, &D0, &A0, idx, p, reply != 2) < 0)
 	    return pi_error(sd);
 
 	for (j = 0; j < idx; j++) {
@@ -803,11 +803,11 @@ RPC(int sd, int socket, int trap, int reply, ...)
 			if (p[j].size == 2) {
 				int *s = c;
 
-				*s = htons((short) *s);
+				*s = htons(*s);
 			} else {
 				int *l = c;
 
-				*l = htonl((unsigned) *l);
+				*l = htonl(*l);
 			}
 		}
 	}
@@ -892,15 +892,15 @@ UninvertRPC(struct RPC_params *p)
 			    && (p->param[j].size == 2)) {
 				int *s = c;
 
-				*s = htons((short) *s) >> 8;
+				*s = htons(*s) >> 8;
 			} else if (p->param[j].size == 2) {
 				int *s = c;
 
-				*s = htons((short) *s);
+				*s = htons(*s);
 			} else {
 				long *l = c;
 
-				*l = htonl((unsigned) *l);
+				*l = htonl(*l);
 			}
 		}
 	}
@@ -958,7 +958,7 @@ InvertRPC(struct RPC_params *p)
  *
  ***********************************************************************/
 unsigned long
-DoRPC(int sd, int socket, struct RPC_params *p, int *error)
+DoRPC(int sd, int sockaddr, struct RPC_params *p, int *error)
 {
 	int 	err;
 	long 	D0 = 0,
@@ -967,7 +967,7 @@ DoRPC(int sd, int socket, struct RPC_params *p, int *error)
 	InvertRPC(p);
 
 	err =
-	    sys_RPC(sd, socket, p->trap, &D0, &A0, p->args, &p->param[0],
+	    sys_RPC(sd, sockaddr, p->trap, &D0, &A0, p->args, &p->param[0],
 		    p->reply);
 
 	UninvertRPC(p);

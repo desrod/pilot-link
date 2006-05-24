@@ -493,7 +493,7 @@ dlp_response_read (struct dlpResponse **res, int sd)
 	}
 	if (bytes < 4) {
 		/* packet is probably incomplete */
-#if DEBUG
+#ifdef DEBUG
 		LOG((PI_DBG_DLP, PI_DBG_LVL_ERR,
 			"dlp_response_read: response too short (%d bytes)\n",
 			bytes));
@@ -820,18 +820,20 @@ dlp_ptohdate(const unsigned char *data)
 }
 
 void
-dlp_htopdate(time_t ti, unsigned char *data)
+dlp_htopdate(time_t time_interval, unsigned char *data)
 {				/* @+ptrnegate@ */
 	int 	year;
 	const struct tm *t;
 
-	if (ti == 0x83DAC000)	/* Fri Jan  1 00:00:00 1904 GMT */
-	{
+	/* Fri Jan  1 00:00:00 1904 GMT */
+        time_t palm_epoch = 0x83DAC000;
+
+	if (time_interval == palm_epoch) {
 		memset(data, 0, 8);
 		return;
 	}
 
-	 t = localtime(&ti);
+        t = localtime(&time_interval);
 	ASSERT(t != NULL);
 
 	year = t->tm_year + 1900;
@@ -847,7 +849,7 @@ dlp_htopdate(time_t ti, unsigned char *data)
 }
 
 int
-dlp_GetSysDateTime(int sd, time_t * t)
+dlp_GetSysDateTime(int sd, time_t *t)
 {
 	int 	result;
 	struct dlpRequest *req;
@@ -2260,10 +2262,7 @@ dlp_ReadFeature(int sd, unsigned long creator, int num,
 
 		*feature = 0x12345678;
 
-		PackRPC(&p, 0xA27B, RPC_IntReply,
-			RPC_Long(creator),
-			RPC_Short((short) num),
-			RPC_LongPtr(feature), RPC_End);
+		PackRPC(&p, 0xA27B, RPC_IntReply, RPC_Long(creator), RPC_Short(num), RPC_LongPtr(feature), RPC_End);
 
 		val = dlp_RPC(sd, &p, &errCode);
 
@@ -2707,7 +2706,7 @@ dlp_ReadResourceByType(int sd, int dbhandle, unsigned long type, int resID,
 }
 
 int
-dlp_ReadResourceByIndex(int sd, int dbhandle, int resindex, pi_buffer_t *buffer,
+dlp_ReadResourceByIndex(int sd, int dbhandle, unsigned int resindex, pi_buffer_t *buffer,
 			unsigned long *type, int *resID)
 {
 	int 	result,
@@ -4355,7 +4354,7 @@ int
 dlp_VFSDirEntryEnumerate(int sd, FileRef dirRefNum, 
 	unsigned long *dirIterator, int *maxDirItems, struct VFSDirInfo *data)
 {
-	int result,
+	unsigned int result,
 		entries,
 		from,
 		at,

@@ -311,7 +311,7 @@ unpack_ExpenseAppInfo(ExpenseAppInfo_t *appinfo, unsigned char *record,
 		return 0;
 	record += i;
 	len -= i;
-	if (len < 2 + (16 + 4 + 8) * 4);
+
 	appinfo->sortOrder = (enum ExpenseSort) get_byte(record);
 	record += 2;
 	for (i = 0; i < 4; i++) {
@@ -389,26 +389,29 @@ unpack_ExpensePref(ExpensePref_t *pref, unsigned char *record, int len)
 	record += 2;
 	pref->defaultCurrency 	= get_short(record);
 	record += 2;
-	pref->attendeeFont         = get_byte(record);
+	pref->attendeeFont      = get_byte(record);
 	record++;
-	pref->showAllCategories 	= get_byte(record);
+	pref->showAllCategories = get_byte(record);
 	record++;
 	pref->showCurrency 	= get_byte(record);
 	record++;
-	pref->saveBackup 		= get_byte(record);
+	pref->saveBackup 	= get_byte(record);
 	record++;
 	pref->allowQuickFill 	= get_byte(record);
 	record++;
 	pref->unitOfDistance 	= (enum ExpenseDistance) get_byte(record);
 	record++;
+
 	for (i = 0; i < 5; i++) {
 		pref->currencies[i] = get_byte(record);
 		record++;
 	}
+
 	for (i = 0; i < 2; i++) {
 		pref->unknown[i] = get_byte(record);
 		record++;
 	}
+
 	pref->noteFont = get_byte(record);
 	record++;
 
