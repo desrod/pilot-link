@@ -1,6 +1,6 @@
-These manpages are generated automatically - do NOT edit them!
-Edit the XML in ../xml/ ONLY!
+These manpages are generated automatically - do NOT edit them! Edit the XML
+in ../xml/ ONLY!
 
-Pilot-link uses XML and a customised XSL to convert to their proper man(1) format via
-docbook transformation using xsltproc.
+Pilot-link uses XML and a customised XSL to convert to their proper man(1)
+format via docbook transformation using xsltproc.
 

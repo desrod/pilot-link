@@ -1,7 +1,90 @@
-2006-03-24 19:24  neilw
+2006-05-09 16:19  desrod
 
-	* src/memos.c : Fix typo.
-	* doc/xml/pilot-schlep.xml : Fix bug 1545.
+	* libpisock/serial.c: Minor fix where s_poll returns 0 on success,
+	  and the previous behavior would assume the packet was dropped.
+
+2006-04-22 11:47  desrod
+
+	* src/pilot-xfer.c: Just adding some notes, so I don't forget what
+	  needs to be added in the next point release.
+
+2006-04-14 14:52  desrod
+
+	* libpisock/libusb.c: Applied patch from Jijun Yu, fixes issue
+	  #1578
+
+2006-04-14 14:50  desrod
+
+	* libpisock/socket.c: Clean up empty else clause
+
+2006-04-14 14:47  desrod
+
+	* src/pilot-clip.c: Reformatting and some type renaming to avoid
+	  shadowing globals
+
+2006-04-14 14:46  desrod
+
+	* src/pi-getrom.c: Just some minor (very minor) reformatting of the
+	  output.
+
+2006-04-14 14:43  desrod
+
+	* src/pilot-addresses.c: Added code to exit (for now) when an OS5
+	  device is found.
+
+2006-04-14 14:42  desrod
+
+	* src/sync-plan.PL: Aaron's patch for bug 1535. Thanks Aaron!
+
+2006-04-14 13:16  desrod
+
+	* include/pi-userland.h, libpisock/socket.c, src/memos.c,
+	  src/pilot-schlep.c, src/pi-nredir.c, src/pilot-xfer.c: Minor
+	  cleanup to fix some small buglets and warnings. No Breakage++
+
+2006-04-05 14:18  desrod
+
+	* configure.ac: Minor fix when checking xslt in a CVS checked-out
+	  tree
+
+2006-03-30 14:38  desrod
+
+	* include/pi-socket.h: Minor typo fixed up
+
+2006-03-30 14:26  desrod
+
+	* include/pi-dlp.h: Minor doc cleanup, fixes doxygen output buglet
+
+2006-03-24 15:11  desrod
+
+	* bindings/Python/: NEWS, README, src/pisock.py, src/pisock_wrap.c:
+	  Some cleanup in the Python tree
+
+2006-03-24 15:02  desrod
+
+	* configure.ac, m4/python.m4: A better, cleaner, smaller Python
+	  check. This time we check if the user passes --with-python, THEN
+	  check for Python.h, so we can build the extension. If Python.h is
+	  NOT found, we disable python, even if the user passes the option
+	  to flag it on.
+
+2006-03-24 14:45  neilw
+
+	* ChangeLog, doc/xml/pilot-schlep.xml: Fix bug 1545, pilot-schlep
+	  summary
+
+2006-03-24 14:24  neilw
+
+	* ChangeLog, src/memos.c: fix typo
+
+2006-03-24 13:11  desrod
+
+	* ChangeLog: Updated ChangeLog
+
+2006-03-24 12:58  desrod
+
+	* configure.ac, m4/python.m4: Minor fix for python to check for
+	  Python.h when python is flagged on
 
 2006-03-17 00:10  desrod
 
