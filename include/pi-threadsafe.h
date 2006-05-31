@@ -56,6 +56,6 @@ extern int pi_mutex_trylock(pi_mutex_t *mutex);
 
 extern int pi_mutex_unlock(pi_mutex_t *mutex);
 
-extern unsigned long pi_thread_id();
+extern unsigned long pi_thread_id(void);
 
 #endif

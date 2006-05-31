@@ -105,7 +105,7 @@ extern "C" {
 		     int keymod, int keyasc, int keycode));
 
 	extern int sys_RPC
-	    PI_ARGS((int sd, int socket, int trap, long *D0, long *A0,
+	    PI_ARGS((int sd, int sock, int trap, long *D0, long *A0,
 		     int params, struct RPC_param * param, int rep));
 
 #define RPC_Byte(data) (-2),((unsigned int)htons((data)<<8))
@@ -126,7 +126,7 @@ extern "C" {
 #define RPC_NoReply 0
 
 	extern int RPC
-	    PI_ARGS((int sd, int socket, int trap, int ret, ...));
+	    PI_ARGS((int sd, int sock, int trap, int ret, ...));
 
 	extern void InvertRPC PI_ARGS((struct RPC_params * p));
 	extern void UninvertRPC PI_ARGS((struct RPC_params * p));
@@ -135,7 +135,7 @@ extern "C" {
 	    PI_ARGS((struct RPC_params * p, int trap, int reply, ...));
 
 	extern unsigned long DoRPC
-	    PI_ARGS((int sd, int socket, struct RPC_params * p,
+	    PI_ARGS((int sd, int sock, struct RPC_params * p,
 		     int *error));
 
 	extern int dlp_ProcessRPC

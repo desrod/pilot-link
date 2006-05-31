@@ -1375,7 +1375,7 @@ struct dlpResponse {
 	 * @return A negative value if an error occured (see pi-error.h)
 	 */
 	extern PI_ERR dlp_ReadResourceByIndex
-		PI_ARGS((int sd, int dbhandle, int resindex, pi_buffer_t *retbuf,
+		PI_ARGS((int sd, int dbhandle, unsigned int resindex, pi_buffer_t *retbuf,
 			unsigned long *restype, int *resid));
 
 	/** @brief Create a new resource of overwrite an existing one

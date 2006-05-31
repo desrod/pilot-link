@@ -52,7 +52,7 @@ extern "C" {
 typedef struct pi_file_entry {
 	int 	offset;			/**< Offset in the on-disk file */
 	int	size;			/**< Size of the resource or record */
-	int	id_;			/**< For resources, resource ID */
+	int	resource_id;		/**< For resources, resource ID */
 	int	attrs;			/**< Record attributes */
 	unsigned long type;		/**< For resdources, resource type */
 	recordid_t uid;			/**< For records, record unique ID */
@@ -66,8 +66,8 @@ typedef struct pi_file {
 	int	next_record_list_id;
 	int	resource_flag;
 	int	ent_hdr_size;	/**< Size of the header for each resource/record (depends on whether the file is a resource or record file) */
-	int	nentries;		/**< Number of actual entries in the entries memory block */
-	int	nentries_allocated;	/**< Number of entries allocated in the entries memory block */
+	int	num_entries;		/**< Number of actual entries in the entries memory block */
+	int	num_entries_allocated;	/**< Number of entries allocated in the entries memory block */
 	int	rbuf_size;		/**< Size of the internal read buffer */
 	FILE 	*f;			/**< Actual on-disk file */
 	pi_buffer_t *tmpbuf;		/**< Temporary buffer for databases opened with pi_file_create() */
