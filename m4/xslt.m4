@@ -7,7 +7,7 @@ if test "$($XSLTPROC --version | awk '/^libxslt/{print $2}')" -lt 10024 ; then
 fi
 AC_MSG_RESULT(yes)
 
-XSLTPROC_FLAGS=--nonet
+XSLTPROC_FLAGS=""--nonet""
 __USE_SYSTEM_CATALOG=yes
 
 AC_ARG_WITH(xslroot, [  --with-xslroot=DIR      Specify DocBook XSL location])

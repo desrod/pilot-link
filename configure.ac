@@ -689,7 +689,7 @@ fi
 
 
 # now let's test to see if we can find the docbook-xsl stuff
-XSLTPROC_FLAGS=--nonet
+XSLTPROC_FLAGS="--nonet"
 AC_SUBST(XML_CATALOG)
 AC_SUBST(XSLTPROC_FLAGS)
 AC_SUBST(DOCBOOK_ROOT)  
@@ -792,6 +792,7 @@ AC_MSG_RESULT([
   Internal Language Support
   -------------------------.
   Iconv support........... : $msg_iconv
+  XSLT processor.......... : $XSLTPROC
 
   External Language Support
   -------------------------.

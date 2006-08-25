@@ -4,12 +4,13 @@ else
 SUBDIRS = man
 endif
 
-EXTRA_DIST = 		 \
-	CodingGuidelines \
-	README.debugging \
-	README.usb	 \
-	TODO		 \
-	syncabs.sgml	 \
+EXTRA_DIST = 		 	\
+	CodingGuidelines 	\
+	README.debugging 	\
+	README.usb	 	\
+	TODO		 	\
+	syncabs.sgml	 	\
+	60-libpisock.rules	\
 	doxygen.cfg.in
 
 udevdir = /etc/udev/rules.d

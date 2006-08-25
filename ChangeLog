@@ -1,3 +1,32 @@
+2006-08-25 11:56  desrod
+
+	* doc/Makefile.am: Remove extra terminating slash
+
+2006-08-25 11:52  desrod
+
+	* doc/: Makefile.am, libpisock.rules: CVS surgery to rename the
+	  libpisock.rules file to its proper 60-libpisock name per the udev
+	  documentation
+
+2006-08-25 11:11  desrod
+
+	* src/pilot-xfer.c: Oops, that wasn't supposed to go through, just
+	  a quick test of something new
+
+2006-08-25 11:09  desrod
+
+	* doc/60-libpisock.rules, doc/Makefile.am, doc/libpisock.rules,
+	  src/pilot-xfer.c: Adding libpisock.rules for the udev/libusb
+	  users who wish to try that
+
+2006-08-25 10:54  desrod
+
+	* ChangeLog, doc/xml/pilot-dlpsh.xml, include/pi-util.h,
+	  libpisync/util.c, src/pilot-dlpsh.c, src/pilot-xfer.c,
+	  tests/contactsdb-test.c: Some last minute tweaks, and the changes
+	  to facilitate the PILOT_CHARSET to be changed with an environment
+	  variable from the shell at runtime.
+
 2006-08-25 10:29  desrod
 
 	* doc/xml/: ietf2datebook.xml, install-datebook.xml,
