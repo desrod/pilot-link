@@ -12,7 +12,7 @@ EXTRA_DIST = 		 \
 	syncabs.sgml	 \
 	doxygen.cfg.in
 
-udevdir = /etc/udev/rules.d/
+udevdir = /etc/udev/rules.d
 udev_DATA =		 \
 	60-libpisock.rules
 
