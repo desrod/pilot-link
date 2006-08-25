@@ -2286,19 +2286,19 @@ palm_purge(void)
 int
 main(int argc, const char *argv[])
 {
-	int					optc,			/* switch */
-						unsaved			= 0;
-	const char			*archive_dir    = NULL,
+	int			optc,		/* switch */
+				unsaved		= 0;
+	const char		*archive_dir    = NULL,
 		                *dirname        = NULL;
-	unsigned long int	sync_flags		= 0;
-	palm_op_t			palm_operation	= palm_op_noop;
-	const char			*gracias		= "\n   Thank you for using pilot-link.\n";
+	unsigned long int	sync_flags	= 0;
+	palm_op_t		palm_operation	= palm_op_noop;
+	const char		*gracias	= "\n   Thank you for using pilot-link.\n";
 
-	const char			**rargv;		/* for scanning remaining arguments */
-	int					rargc;
-	poptContext			pc;
+	const char		**rargv;	/* for scanning remaining arguments */
+	int			rargc;
+	poptContext		pc;
 
-	struct poptOption	options[]		=
+	struct poptOption	options[]	=
 	{
 		USERLAND_RESERVED_OPTIONS
 

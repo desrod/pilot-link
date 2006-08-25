@@ -60,9 +60,17 @@ extern "C" {
 	extern void get_pilot_rate
 		PI_ARGS((int *establishrate, int *establishhighrate));
 
+	extern int convert_ToPilotChar_WithCharset
+		PI_ARGS((const char *charset, const char *text, int bytes,
+		     char **ptext, const char *pi_charset));
+
 	extern int convert_ToPilotChar
 		PI_ARGS((const char *charset, const char *text, int bytes,
 		     char **ptext));
+
+	extern int convert_FromPilotChar_WithCharset
+		PI_ARGS((const char *charset, const char *ptext, int bytes,
+		     char **text, const char *pi_charset));
 
 	extern int convert_FromPilotChar
 		PI_ARGS((const char *charset, const char *ptext, int bytes,

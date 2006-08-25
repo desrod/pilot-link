@@ -101,13 +101,21 @@ struct Command command_list[] = {
 	{"help", help_fn},
 	{"ls",   ls_fn},
 	{"reopen", reopen_fn},
-	{"exit", exit_fn},
-	{"quit", exit_fn},
-	{"bye",  exit_fn},
-	{"rm",   rm_fn},
-	{"time", time_fn},
-	{"dtp",  time_fn},
-	{"user", user_fn},
+
+	{"exit",        exit_fn},
+	{"quit",        exit_fn},
+        {"q",           exit_fn},
+	{"bye",         exit_fn},
+
+	{"rm",          rm_fn},
+        {"del",         rm_fn},
+
+        {"ntp",         time_fn},
+	{"time",        time_fn},
+	{"dtp",         time_fn},
+
+	{"user",        user_fn},
+        {"u",           user_fn},
 	{NULL, NULL}
 };
 
@@ -167,14 +175,14 @@ int df_fn(int sd, int argc, const char *argv[])
 int help_fn(int sd, int argc, const char *argv[])
 {
 	printf("The current built-in commands are:\n\n");
-	printf("   user           print the currently set User information\n");
-	printf("   ls             used with -l and -r to provide long and ROM file lists\n");
-	printf("   df             display how much RAM and ROM is free on your device\n");
-	printf("   time,dtp       Desktop-to-Palm, set the time on the Palm from the desktop\n");
-	printf("   rm             remove a file, delete it entirely from the Palm device\n");
-	printf("   help           You Are Here(tm)\n");
-	printf("   quit,exit      exit the DLP Protocol Shell\n\n");
-	printf("Use '<command> -help' for more granular syntax and switches\n\n");
+	printf("   user,u            print the currently set User information\n");
+	printf("   ls                used with -l and -r to provide long and ROM file lists\n");
+	printf("   df                display how much RAM and ROM is free on your device\n");
+	printf("   ntp,time,dtp      Desktop-to-Palm, set the time on the Palm from the desktop\n");
+	printf("   rm,del            remove a file, delete it entirely from the Palm device\n");
+	printf("   help              You Are Here\n");
+	printf("   quit,q, exit,bye  exit the DLP Protocol Shell\n\n");
+	printf("Use '<command> -help' for more detailed syntax and other switches\n\n");
 
 	return 0;
 }

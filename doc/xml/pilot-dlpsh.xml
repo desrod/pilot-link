@@ -167,8 +167,10 @@
    <refsect1>
       <title>options</title>
       <para>
-         While in <userinput>pilot-dlpsh</userinput>, you can always invoke 'help' or <option>
-         --help</option> to get further information on that option.
+         Passing commandline options to <userinput>pilot-dlpsh</userinput> will allow you to
+         interact with it in unattended mode, for example: '<userinput>pilot-dlpsh</userinput> -p
+         usb: -c user' will connect and display the user information, just as if you had connected
+         interactively and typed 'user' at the DLP shell prompt.
       </para>
    </refsect1>
    <refsect1>

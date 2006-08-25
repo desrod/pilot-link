@@ -32,7 +32,7 @@
 #include <iconv.h>
 #endif
 
-#define PILOT_CHARSET "CP1252"
+#define PILOT_CHARSET "CP1252" 
 
 /***********************************************************************
  *
@@ -41,7 +41,20 @@
  * Summary:     Convert any supported desktop text encoding to the Palm
  *		supported encoding
  *
- * Parameters:  None
+ * Summary:     Convert from Palm supported encoding to a supported 
+ *		desktop text encoding.  The Palm charset is assumed to
+ *		be CP1252.  This default can be overridden by the
+ *		'PILOT_CHARSET' environment variable.
+ *		It is more efficient to use 'convert_ToPilotCharWithCharset'
+ *		if the pilot charset is known.
+ *
+ * Parameters:
+ *		charset		iconv-recognised destination charset
+ *		text		multibyte sequence in desktop charset
+ *		bytes		maximum number of bytes from 'text' to convert
+ *		ptext (output)	on success, 'ptext' will point to newly
+ *				allocated null-terminated array of converted
+ *				string.
  *
  * Returns:     0 on success, -1 on failure
  *
@@ -51,12 +64,56 @@ convert_ToPilotChar(const char *charset, const char *text,
 		    int bytes, char **ptext)
 {
 #ifdef HAVE_ICONV
+	char*   pcharset;
+
+	if ((pcharset = getenv("PILOT_CHARSET")) == NULL)
+		pcharset = PILOT_CHARSET;
+	return convert_ToPilotChar_WithCharset(charset, text, bytes,
+	    ptext, pcharset);
+#else
+	return -1;
+#endif
+}
+
+
+/***********************************************************************
+ *
+ * Function:    convert_ToPilotChar_WithCharset
+ *
+ * Summary:     Convert any supported desktop text encoding to the
+ *		specified Palm supported encoding
+ *
+ * Summary:     Convert from Palm supported encoding to a supported 
+ *		desktop text encoding.  The Palm charset is explicity
+ *		specified.
+ *
+ * Parameters:
+ *		charset		iconv-recognised destination charset
+ *		text		multibyte sequence in desktop charset
+ *		bytes		maximum number of bytes from 'text' to convert
+ *		ptext (output)	on success, 'ptext' will point to newly
+ *				allocated null-terminated array of converted
+ *				string.
+ *		pi_charset	iconv-recognised pilot-charset identifier
+ *
+ * Returns:     0 on success, -1 on failure
+ *
+ ***********************************************************************/
+int
+convert_ToPilotChar_WithCharset(const char *charset, const char *text,
+		    int bytes, char **ptext, const char * pi_charset)
+{
+#ifdef HAVE_ICONV
 	char*	ob;
 	iconv_t cd;
 	size_t 	ibl, obl;
 
-	cd = iconv_open(PILOT_CHARSET, charset);
-	if (!cd)
+	if(NULL==pi_charset){
+		pi_charset = PILOT_CHARSET;
+	}
+
+	cd = iconv_open(pi_charset, charset);
+	if (cd==(iconv_t)-1)
 		return -1;
 
 	ibl 	= bytes;
@@ -75,15 +132,24 @@ convert_ToPilotChar(const char *charset, const char *text,
 #endif
 }
 
-
 /***********************************************************************
  *
  * Function:    convert_FromPilotChar
  *
  * Summary:     Convert from Palm supported encoding to a supported 
- *		desktop text encoding
+ *		desktop text encoding.  The Palm charset is assumed to
+ *		be CP1252.  This default can be overridden by the
+ *		'PILOT_CHARSET' environment variable.
+ *		It is more efficient to use 'convert_FromPilotCharWithCharset'
+ *		if the pilot charset is known.
  *
- * Parameters:  None
+ * Parameters:
+ *		charset		iconv-recognised destination charset
+ *		ptext		multibyte sequence in pilot's charset
+ *		bytes		maximum number of bytes from ptext to convert
+ *		text (output)	on success, 'text' will point to newly
+ *				allocated null-terminated array of converted
+ *				string.
  *
  * Returns:     0 on success, -1 on failure
  *
@@ -93,12 +159,52 @@ convert_FromPilotChar(const char *charset, const char *ptext,
 		      int bytes, char **text)
 {
 #ifdef HAVE_ICONV
+	char*   pcharset;
+
+	if ((pcharset = getenv("PILOT_CHARSET")) == NULL)
+		pcharset = PILOT_CHARSET;
+	return convert_FromPilotChar_WithCharset(charset, ptext, bytes,
+	    text, pcharset);
+#else
+	return -1;
+#endif
+}
+
+
+/***********************************************************************
+ *
+ * Function:    convert_FromPilotChar_WithCharset
+ *
+ * Summary:     Convert from specified Palm supported encoding to a supported 
+ *		desktop text encoding
+ *
+ * Parameters:
+ *		charset		iconv-recognised destination charset
+ *		ptext		multibyte sequence in pilot's charset
+ *		bytes		maximum number of bytes from ptext to convert
+ *		text (output)	on success, 'text' will point to newly
+ *				allocated null-terminated array of converted
+ *				string.
+ *		pi_charset	iconv-recognised pilot-charset identifier
+ *
+ * Returns:     0 on success, -1 on failure
+ *
+ ***********************************************************************/
+int
+convert_FromPilotChar_WithCharset(const char *charset, const char *ptext,
+		      int bytes, char **text, const char * pi_charset)
+{
+#ifdef HAVE_ICONV
 	char*	ob;
 	iconv_t cd;
 	size_t 	ibl, obl;
 
-	cd = iconv_open(charset, PILOT_CHARSET);
-	if (!cd)
+	if(NULL==pi_charset){
+		pi_charset = PILOT_CHARSET;
+	}
+
+	cd = iconv_open(charset, pi_charset);
+	if (cd==(iconv_t)-1)
 		return -1;
 
 	ibl 	= bytes;
@@ -116,7 +222,6 @@ convert_FromPilotChar(const char *charset, const char *ptext,
 	return -1;
 #endif
 }
-
 /* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */
 /* Local Variables: */
 /* indent-tabs-mode: t */

@@ -32,7 +32,7 @@
 #include "pi-appinfo.h"
 #include "pi-contact.h"
 
-#undef PRINT_USELESS_CRAP
+#undef PRINT_USELESS_INFO
 #undef SAVE_PICTURES
 
 #define hi(x) (((x) >> 4) & 0x0f)
@@ -256,7 +256,7 @@ print_records (int sd, int db, struct ContactAppInfo *cai)
 			continue;
 		}
 
-#if PRINT_USELESS_CRAP	
+#if PRINT_USELESS_INFO	
 		printf (" Phone labels: { %i, %i, %i, %i, %i, %i, %i }"
 				" (showing [%i])\n",
 				c.phoneLabel[0],
@@ -274,7 +274,7 @@ print_records (int sd, int db, struct ContactAppInfo *cai)
 		printf (" IM labels: { %i, %i }\n",
 				c.IMLabel[0],
 				c.IMLabel[1]);
-#endif /* PRINT_USELESS_CRAP */
+#endif /* PRINT_USELESS_INFO */
 
 		for (i = 0; i < NUM_CONTACT_ENTRIES; i++) {
 			if (c.entry[i] != NULL) {
