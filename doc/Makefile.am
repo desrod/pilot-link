@@ -10,8 +10,11 @@ EXTRA_DIST = 		 \
 	README.usb	 \
 	TODO		 \
 	syncabs.sgml	 \
-	libpisock.rules	 \
 	doxygen.cfg.in
+
+udevdir = /etc/udev/rules.d/
+udev_DATA =		 \
+	60-libpisock.rules
 
 DIST_CLEAN_FILES=doxygen.cfg
 
