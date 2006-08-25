@@ -2496,14 +2496,6 @@ main(int argc, const char *argv[])
 			/* FALLTHRU */
 		case palm_op_fetch:
 		case palm_op_install:
-
-                        f = pi_file_open(filename);
-
-                        if (f == NULL) {
-                                fprintf(stderr,"   ERROR: Unable to open '%s'!\n", filename);
-                                return;
-                        }
-
 			if (rargc < 1)
 			{
 				fprintf(stderr,"   ERROR: -imfd require additional arguments.\n");
