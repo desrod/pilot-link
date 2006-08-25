@@ -1,11 +1,11 @@
-<refentry id="pi-csd">
+<refentry id="pilot-csd">
    <refmeta>
-      <refentrytitle>pi-csd</refentrytitle>
+      <refentrytitle>pilot-csd</refentrytitle>
       <manvolnum>1</manvolnum>
       <refmiscinfo>pilot-link: Conduits</refmiscinfo>
    </refmeta>
    <refnamediv>
-      <refname>pi-csd</refname>
+      <refname>pilot-csd</refname>
       <refpurpose>
          Connection Service Daemon for Palm Devices</refpurpose>
    </refnamediv>
@@ -18,7 +18,7 @@
       <para>
             Required for accepting logons via NetSync(tm)</para>
       <para>
-         <emphasis>pi-csd</emphasis> [<option>-q</option>|<option>--quiet</option>]
+         <emphasis>pilot-csd</emphasis> [<option>-q</option>|<option>--quiet</option>]
          <option>-H</option>
          <userinput>"localhost"</userinput>
          <option>-a</option>
@@ -30,14 +30,14 @@
    <refsect1>
       <title>Options</title>
       <refsect2>
-         <title>pi-csd options</title>
+         <title>pilot-csd options</title>
 	<variablelist>
 	<varlistentry>
 		<term>
             <option>--version</option>
 		</term>
          <listitem>
-            <para>Display version of <emphasis>pi-csd</emphasis> and exit.
+            <para>Display version of <emphasis>pilot-csd</emphasis> and exit.
             </para>
          </listitem>
 	</varlistentry>
@@ -85,7 +85,7 @@
 		</term>
          <listitem>
             <para>
-               Display the help synopsis for <emphasis>pi-csd</emphasis> and exit.
+               Display the help synopsis for <emphasis>pilot-csd</emphasis> and exit.
             </para>
          </listitem>
 	</varlistentry>
@@ -103,7 +103,7 @@
    <refsect1>
       <title>Author</title>
       <para>
-         <emphasis>pi-csd</emphasis> was written by Kenneth Albanowski.
+         <emphasis>pilot-csd</emphasis> was written by Kenneth Albanowski.
       </para>
       <para>
          This manual page was written by Neil Williams <email>linux@codehelp.co.uk</email>

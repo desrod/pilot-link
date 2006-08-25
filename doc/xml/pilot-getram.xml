@@ -1,11 +1,11 @@
-<refentry id="pi-getram">
+<refentry id="pilot-getram">
    <refmeta>
-      <refentrytitle>pi-getram</refentrytitle>
+      <refentrytitle>pilot-getram</refentrytitle>
       <manvolnum>1</manvolnum>
       <refmiscinfo>Copyright FSF 1996-2005</refmiscinfo>
    </refmeta>
    <refnamediv>
-      <refname>pi-getram</refname>
+      <refname>pilot-getram</refname>
       <refpurpose>
          Retrieves the RAM image from your Palm device for use in debugging.
       </refpurpose>
@@ -18,7 +18,7 @@
    <refsect1>
       <title>Synopsis</title>
       <para>
-         <emphasis>pi-getram</emphasis>
+         <emphasis>pilot-getram</emphasis>
          [<option>-p</option>|<option>--port</option> &lt;<userinput>port</userinput>&gt;]
          [<option>--version</option>] [<option>-q</option>|<option>--quiet</option>] 
          [<option>-?</option>|<option>--help</option>] [<option>--usage</option>]
@@ -30,18 +30,18 @@
    <refsect1>
       <title>Description</title>
       <para>
-         <emphasis>pi-getram</emphasis> is used to fetch the current RAM image
+         <emphasis>pilot-getram</emphasis> is used to fetch the current RAM image
          from your Palm handheld for use in debugging.
       </para>
       <para>
-         <emphasis>pi-getromtoken</emphasis>, <emphasis>pi-getrom</emphasis> and
-         <emphasis>pi-getram</emphasis> are inter-related. All relevant code is implemented in
-         <emphasis>pi-getrom</emphasis>, and you can do
-         <emphasis>pi-getromtoken</emphasis> <option>--ram</option> <filename>filename</filename> to
+         <emphasis>pilot-getromtoken</emphasis>, <emphasis>pilot-getrom</emphasis> and
+         <emphasis>pilot-getram</emphasis> are inter-related. All relevant code is implemented in
+         <emphasis>pilot-getrom</emphasis>, and you can do
+         <emphasis>pilot-getromtoken</emphasis> <option>--ram</option> <filename>filename</filename> to
          get the RAM dump if you like.
       </para> 
       <para>
-         Note, because <emphasis>pi-getrom</emphasis> uses the low-level RPC protocol to fetch the
+         Note, because <emphasis>pilot-getrom</emphasis> uses the low-level RPC protocol to fetch the
          ROM image, and the new OS5 devices do not use this protocol, you currently cannot fetch an
          OS5 ROM image using this utility.  This will be updated in a future release to handle
          fetching OS5 ROM images, using the debugger protocol.
@@ -50,7 +50,7 @@
    <refsect1>
       <title>Options</title>
       <refsect2>
-         <title>pi-getram options</title>
+         <title>pilot-getram options</title>
 	<variablelist>
 	<varlistentry>
 		<term>
@@ -115,9 +115,9 @@
          <listitem>
             <para>
                Use device file &lt;<filename>port</filename>&gt; to communicate with the Palm
-               handheld. If this is not specified, <emphasis>pi-getram</emphasis> will look for the
+               handheld. If this is not specified, <emphasis>pilot-getram</emphasis> will look for the
                <filename>$PILOTPORT</filename> environment variable. If neither are found or
-               supplied, <emphasis>pi-getram</emphasis> will print the usage information.
+               supplied, <emphasis>pilot-getram</emphasis> will print the usage information.
             </para>
          </listitem>
 	</varlistentry>
@@ -136,7 +136,7 @@
          </term>
          <listitem>
             <para>
-               Display version of <emphasis>pi-getram</emphasis> and exit
+               Display version of <emphasis>pilot-getram</emphasis> and exit
                without connecting.
             </para>
          </listitem>
@@ -152,7 +152,7 @@
 	        </term>
          <listitem>
             <para>
-               Display the help synopsis for <emphasis>pi-getram</emphasis> and exit without
+               Display the help synopsis for <emphasis>pilot-getram</emphasis> and exit without
                connecting.
             </para>
          </listitem>
@@ -177,7 +177,7 @@
    <refsect1>
       <title>Author</title>
       <para>
-         <emphasis>pi-getram</emphasis> was originally written by
+         <emphasis>pilot-getram</emphasis> was originally written by
          Kenneth Albanowski.
       </para>
       <para>
@@ -211,7 +211,7 @@
    <refsect1>
       <title>See Also</title>
       <para>
-         <emphasis>pi-getrom</emphasis> (1),
+         <emphasis>pilot-getrom</emphasis> (1),
          <emphasis>pilot-link</emphasis>(7).
       </para>
    </refsect1>

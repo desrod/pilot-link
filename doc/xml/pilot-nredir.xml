@@ -1,10 +1,10 @@
-<refentry id="pi-nredir">
+<refentry id="pilot-nredir">
    <refmeta>
-      <refentrytitle>pi-nredir</refentrytitle>
+      <refentrytitle>pilot-nredir</refentrytitle>
       <manvolnum>1</manvolnum>
    </refmeta>
    <refnamediv>
-      <refname>pi-nredir </refname>
+      <refname>pilot-nredir </refname>
       <refpurpose>Accept connection and redirect via Network Hotsync Protocol.</refpurpose>
    </refnamediv>
    <refsect1>
@@ -14,7 +14,7 @@
    <refsect1>
       <title>synopsis</title>
       <para>
-         <emphasis>pi-nredir</emphasis>
+         <emphasis>pilot-nredir</emphasis>
          [<option>-p</option>|<option>--port</option> &lt;<userinput>port</userinput>&gt;]
          [<option>--version</option>] [<option>-q</option>|<option>--quiet</option>]
 	 [<option>-?</option>|<option>--help</option>] [<option>--usage</option>]
@@ -30,7 +30,7 @@
       </para>
    </refsect1>
    <refsect1>
-      <title>pi-nredir command</title>
+      <title>pilot-nredir command</title>
       <para>-n, --net</para>
       <blockquote>
          <para>
@@ -60,9 +60,9 @@
          <listitem>
             <para>
                Use device file <filename>port</filename> to communicate with the Palm handheld. If
-               this is not specified, <emphasis>pi-nredir </emphasis> will look for the
+               this is not specified, <emphasis>pilot-nredir </emphasis> will look for the
                <filename>$PILOTPORT</filename> environment variable. If neither are found or
-               supplied, <emphasis>pi-nredir </emphasis> will print the usage information.
+               supplied, <emphasis>pilot-nredir </emphasis> will print the usage information.
             </para>
          </listitem>
 	</varlistentry>
@@ -81,7 +81,7 @@
          </term>
          <listitem>
             <para>
-               Display version of <emphasis>pi-nredir</emphasis> and exit without connecting.
+               Display version of <emphasis>pilot-nredir</emphasis> and exit without connecting.
             </para>
          </listitem>
 	</varlistentry>
@@ -96,7 +96,7 @@
 		</term>
          <listitem>
             <para>
-               Display the help synopsis for <emphasis>pi-nredir </emphasis> and exit without
+               Display the help synopsis for <emphasis>pilot-nredir </emphasis> and exit without
                connecting.
             </para>
          </listitem>
@@ -114,7 +114,7 @@
    </refsect1>
    <refsect1>
       <title>Examples</title>
-      <para><emphasis>pi-nredir</emphasis> <option>-n</option> 
+      <para><emphasis>pilot-nredir</emphasis> <option>-n</option> 
 	<option>-p</option> <filename>/dev/pilot</filename>
       </para>
    </refsect1>

@@ -59,7 +59,7 @@
             DEPRECATED: Use pilot-addresses --write|--human-readable instead.</para>
     </refsect2>
     <refsect2>
-      <title>hinotes</title>
+      <title>pilot-hinotes</title>
       <para>
             Syncronize your Hi-Notes database with your desktop machine.</para>
     </refsect2>
@@ -110,14 +110,9 @@
       </para>
     </refsect2>
     <refsect2>
-      <title>memos</title>
+      <title>pilot-memos</title>
       <para>
          Manipulate Memo entries from a file or your Palm device.</para>
-    </refsect2>
-    <refsect2>
-      <title>money2qif</title>
-      <para>
-         Convert and sync your MicroMoney account data Quicken QIF format.</para>
     </refsect2>
     <refsect2>
       <title>pilot-addresses</title>
@@ -209,7 +204,7 @@
          Synchronize your Veo Traveler databases </para>
     </refsect2>
     <refsect2>
-      <title>reminders</title>
+      <title>pilot-reminders</title>
       <para>
          Exports your Palm Datebook database into a 'remind' data file format. </para>
     </refsect2>
@@ -217,12 +212,12 @@
   <refsect1>
     <title>Tools</title>
     <refsect2>
-      <title>debugsh</title>
+      <title>pilot-debugsh</title>
       <para>
          Simple debugging console for a Palm Handheld device (deprecated).</para>
     </refsect2>
     <refsect2>
-      <title>dlpsh</title>
+      <title>pilot-dlpsh</title>
       <para>
          An interactive Desktop Link Protocol (DLP) Shell for your Palm device.  This is very
          useful for debugging potential problems with your serial port. Query the RAM/ROM, list
@@ -231,27 +226,27 @@
       </para>
     </refsect2>
     <refsect2>
-      <title>pi-csd</title>
+      <title>pilot-csd</title>
       <para>
             Connection Service Daemon for Palm Devices</para>
     </refsect2>
     <refsect2>
-      <title>pi-getram</title>
+      <title>pilot-getram</title>
       <para>
             Retrieves the RAM image from your Palm device for use in debugging.</para>
     </refsect2>
     <refsect2>
-      <title>pi-getrom</title>
+      <title>pilot-getrom</title>
       <para>
             Retrieves the ROM image from your Palm device for use in debugging. </para>
     </refsect2>
     <refsect2>
-      <title>pi-getromtoken</title>
+      <title>pilot-getromtoken</title>
       <para>
             Reads a ROM token from a Palm Handheld device. </para>
     </refsect2>
     <refsect2>
-      <title>pi-nredir</title>
+      <title>pilot-nredir</title>
       <para>
             Accept connection and redirect via Network Hotsync Protocol. </para>
     </refsect2>
@@ -362,13 +357,13 @@ the application itself.</para>
   </refsect1>
   <refsect1>
     <title>see also</title>
-    <para><filename>addresses</filename>(1), <filename>dlpsh</filename>(1),
-<filename>hinotes</filename>(1), <filename>ietf2datebook</filename>(1),
+    <para><filename>pilot-addresses</filename>(1), <filename>pilot-dlpsh</filename>(1),
+<filename>pilot-hinotes</filename>(1), <filename>ietf2datebook</filename>(1),
 <filename>install-datebook</filename>(1),
 <filename>install-expenses</filename>(1),
 <filename>install-hinote</filename>(1), <filename>install-memo</filename>(1),
 <filename>install-netsync</filename>(1), <filename>install-user</filename>(1),
-<filename>pi-getrom</filename>(1), <filename>pi-getram</filename>(1),
+<filename>pilot-getrom</filename>(1), <filename>pilot-getram</filename>(1),
 <filename>pilot-addresses</filename>(1), <filename>pilot-xfer</filename>(1),
 <filename>read-ical</filename>(1), <filename>read-notepad</filename>(1),
 <filename>read-palmpix</filename>(1)

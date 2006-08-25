@@ -1,34 +1,35 @@
 <?xml version="1.0"?>
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook V4.1//EN"
  "http://www.oasis-open.org/docbook/xml/4.1/docbookx.dtd" [
-<!ENTITY pilotlink SYSTEM "pilot-link.xml">
-<!ENTITY debugsh SYSTEM "debugsh.xml">
-<!ENTITY dlpsh SYSTEM "dlpsh.xml">
-<!ENTITY hinotes SYSTEM "hinotes.xml">
-<!ENTITY ietf2 SYSTEM "ietf2datebook.xml">
-<!ENTITY datebook SYSTEM "install-datebook.xml">
+<!ENTITY datebook SYSTEM "install-datebook.xml">   
 <!ENTITY expenses SYSTEM "install-expenses.xml">
-<!ENTITY installhinote SYSTEM "install-hinote.xml">
+<!ENTITY ietf2 SYSTEM "ietf2datebook.xml">
+<!ENTITY installhinote SYSTEM "install-hinote.xml">  
 <!ENTITY installmemo SYSTEM "install-memo.xml">
 <!ENTITY installnetsync SYSTEM "install-netsync.xml">
-<!ENTITY installtodo SYSTEM "install-todo.xml">
 <!ENTITY installtodos SYSTEM "install-todos.xml">
+<!ENTITY installtodo SYSTEM "install-todo.xml">  
 <!ENTITY installuser SYSTEM "install-user.xml">
-<!ENTITY memos SYSTEM "memos.xml">
-<!ENTITY picsd SYSTEM "pi-csd.xml">
-<!ENTITY pigetram SYSTEM "pi-getram.xml">
-<!ENTITY pigetrom SYSTEM "pi-getrom.xml">
-<!ENTITY pigetromtoken SYSTEM "pi-getromtoken.xml">
 <!ENTITY pilotaddresses SYSTEM "pilot-addresses.xml">
 <!ENTITY pilotclip SYSTEM "pilot-clip.xml">
+<!ENTITY pilotcsd SYSTEM "pilot-csd.xml">
+<!ENTITY pilotdebugsh SYSTEM "pilot-debugsh.xml">
 <!ENTITY pilotdedupe SYSTEM "pilot-dedupe.xml">
+<!ENTITY pilotdlpsh SYSTEM "pilot-dlpsh.xml">
 <!ENTITY pilotfile SYSTEM "pilot-file.xml">
 <!ENTITY pilotfoto SYSTEM "pilot-foto.xml">
+<!ENTITY pilotgetram SYSTEM "pilot-getram.xml">
+<!ENTITY pilotgetrom SYSTEM "pilot-getrom.xml">
+<!ENTITY pilotgetromtoken SYSTEM "pilot-getromtoken.xml">
+<!ENTITY pilothinotes SYSTEM "pilot-hinotes.xml">
+<!ENTITY pilotlink SYSTEM "pilot-link.xml">
+<!ENTITY pilotmemos SYSTEM "pilot-memos.xml">
+<!ENTITY pilotnredir SYSTEM "pilot-nredir.xml">
+<!ENTITY pilotreminders SYSTEM "pilot-reminders.xml">
 <!ENTITY pilotschlep SYSTEM "pilot-schlep.xml">
 <!ENTITY pilottreofoto SYSTEM "pilot-treofoto.xml">
-<!ENTITY pilotwav SYSTEM "pilot-wav.xml">
+<!ENTITY pilotwav SYSTEM "pilot-wav.xml">   
 <!ENTITY pilotxfer SYSTEM "pilot-xfer.xml">
-<!ENTITY pinredir SYSTEM "pi-nredir.xml">
 <!ENTITY readexpenses SYSTEM "read-expenses.xml">
 <!ENTITY readical SYSTEM "read-ical.xml">
 <!ENTITY readnotepad SYSTEM "read-notepad.xml">
@@ -36,46 +37,45 @@
 <!ENTITY readscreenshot SYSTEM "read-screenshot.xml">
 <!ENTITY readtodos SYSTEM "read-todos.xml">
 <!ENTITY readveo SYSTEM "read-veo.xml">
-<!ENTITY reminders SYSTEM "reminders.xml">
  ]>
 <book label="pilot-link" status="0.12">
 <chapter label="1" id="manpages">
 <title>manpages</title>
-&pilotlink;
-&debugsh;
-&dlpsh;
-&hinotes;
-&ietf2;
 &datebook;
 &expenses;
+&ietf2;
 &installhinote;
 &installmemo;
 &installnetsync;
 &installtodo;
-&installtodos;
+&installtodos;  
 &installuser;
-&memos;
-&picsd;
-&pigetram;
-&pigetrom;
-&pigetromtoken;
 &pilotaddresses;
 &pilotclip;
-&pilotdedupe;
+&pilotcsd;   
+&pilotdebugsh;
+&pilotdedupe;   
+&pilotdlpsh;
 &pilotfile;
-&pilotfoto;
+&pilotfoto;  
+&pilotgetram;
+&pilotgetrom;
+&pilotgetromtoken;
+&pilothinotes;
+&pilotlink;
+&pilotmemos;  
+&pilotnredir;
+&pilotreminders;
 &pilotschlep;
 &pilottreofoto;
-&pilotwav;
+&pilotwav;   
 &pilotxfer;
-&pinredir;
 &readexpenses;
 &readical;
-&readnotepad;
+&readnotepad; 
 &readpalmpix;
 &readscreenshot;
-&readtodos;
+&readtodos;  
 &readveo;
-&reminders;
 </chapter>
 </book>

@@ -1,11 +1,11 @@
-<refentry id="pi-getrom">
+<refentry id="pilot-getrom">
    <refmeta>
-      <refentrytitle>pi-getrom</refentrytitle>
+      <refentrytitle>pilot-getrom</refentrytitle>
       <manvolnum>1</manvolnum>
       <refmiscinfo>Copyright FSF 1996-2005</refmiscinfo>
    </refmeta>
    <refnamediv>
-      <refname>pi-getrom</refname>
+      <refname>pilot-getrom</refname>
       <refpurpose>
          Retrieves the ROM image from your Palm device for use in debugging.
       </refpurpose>
@@ -18,7 +18,7 @@
    <refsect1>
       <title>Synopsis</title>
       <para>
-         <emphasis>pi-getrom</emphasis>
+         <emphasis>pilot-getrom</emphasis>
          [<option>-p</option>|<option>--port</option> &lt;<userinput>port</userinput>&gt;]
          [<option>--version</option>] [<option>-?</option>|<option>--help</option>] 
 	 [<option>--usage</option>] [<option>-q</option>|<option>--quiet</option>] 
@@ -30,12 +30,12 @@
    <refsect1>
       <title>Description</title>
       <para>
-         <emphasis>pi-getrom</emphasis> is used to fetch the ROM from your Palm handheld for use in
+         <emphasis>pilot-getrom</emphasis> is used to fetch the ROM from your Palm handheld for use in
          debugging Palm applications through the use of POSE, the <filename>Palm OS Emulator
          application</filename>.
       </para>
       <para>
-         Note, because <emphasis>pi-getrom</emphasis> uses the low-level RPC protocol to fetch the
+         Note, because <emphasis>pilot-getrom</emphasis> uses the low-level RPC protocol to fetch the
          ROM image, and the new OS5 devices do not use this protocol, you currently cannot fetch an
          OS5 ROM image using this utility.  This will be updated in a future release to handle
          fetching OS5 ROM images, using the debugger protocol.
@@ -44,7 +44,7 @@
    <refsect1>
       <title>Options</title>
       <refsect2>
-         <title>pi-getrom options</title>
+         <title>pilot-getrom options</title>
 	<variablelist>
 	<varlistentry>
 		<term>
@@ -103,9 +103,9 @@
          <listitem>
             <para>
                Use device file &lt;<filename>port</filename>&gt; to communicate with the Palm
-               handheld. If this is not specified, <emphasis>pi-getrom</emphasis> will look for the
+               handheld. If this is not specified, <emphasis>pilot-getrom</emphasis> will look for the
                <filename>$PILOTPORT</filename> environment variable. If neither are found or
-               supplied, <emphasis>pi-getrom</emphasis> will print the usage information.
+               supplied, <emphasis>pilot-getrom</emphasis> will print the usage information.
             </para>
          </listitem>
 	</varlistentry>
@@ -124,7 +124,7 @@
          </term>
          <listitem>
             <para>
-               Display version of <emphasis>pi-getrom</emphasis> and exit without connecting.
+               Display version of <emphasis>pilot-getrom</emphasis> and exit without connecting.
             </para>
          </listitem>
 	</varlistentry>
@@ -139,7 +139,7 @@
 		</term>
          <listitem>
             <para>
-               Display the help synopsis for <emphasis>pi-getrom</emphasis> and
+               Display the help synopsis for <emphasis>pilot-getrom</emphasis> and
                exit without connecting.
             </para>
          </listitem>
@@ -179,7 +179,7 @@
    <refsect1>
       <title>Author</title>
       <para>
-         <emphasis>pi-getrom</emphasis> was originally written by Kenneth Albanowski.
+         <emphasis>pilot-getrom</emphasis> was originally written by Kenneth Albanowski.
       </para>
       <para>
             This manual page was converted to XML by Neil Williams <email>linux@codehelp.co.uk</email>
@@ -190,9 +190,9 @@
       <refsect2>
          <title>Known Bugs</title>
          <para>
-            <emphasis>pi-getrom</emphasis> does not work with OS5 devices as yet, due to changes in
+            <emphasis>pilot-getrom</emphasis> does not work with OS5 devices as yet, due to changes in
             the architecture and design of the Palm HotSync protocol and file type changes from
-            m68k to ARM. Other than that, <emphasis>pi-getrom</emphasis> has no known bugs at this
+            m68k to ARM. Other than that, <emphasis>pilot-getrom</emphasis> has no known bugs at this
             time.
          </para>
       </refsect2>
@@ -224,7 +224,7 @@
    <refsect1>
       <title>See Also</title>
       <para>
-         <emphasis>pi-getram</emphasis> (1),
+         <emphasis>pilot-getram</emphasis> (1),
          <emphasis>pilot-link</emphasis>(7).
       </para>
    </refsect1>
