@@ -9,7 +9,8 @@ EXTRA_DIST = 		 \
 	README.debugging \
 	README.usb	 \
 	TODO		 \
-	syncabs.sgml  \
+	syncabs.sgml	 \
+	libpisock.rules	 \
 	doxygen.cfg.in
 
 DIST_CLEAN_FILES=doxygen.cfg
