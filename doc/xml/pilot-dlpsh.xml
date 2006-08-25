@@ -1,11 +1,11 @@
-<refentry id="dlpsh">
+<refentry id="pilot-dlpsh">
    <refmeta>
-      <refentrytitle>dlpsh</refentrytitle>
+      <refentrytitle>pilot-dlpsh</refentrytitle>
       <manvolnum>1</manvolnum>
       <refmiscinfo>Copyright 1996-2005 FSF - pilot-link @VERSION@</refmiscinfo>
    </refmeta>
    <refnamediv>
-      <refname>dlpsh</refname>
+      <refname>pilot-dlpsh</refname>
       <refpurpose>
 	 An interactive Desktop Link Protocol (DLP) Shell for your Palm device.
       </refpurpose>
@@ -17,7 +17,7 @@
    <refsect1>
       <title>Synopsis</title>
       <para>
-         <emphasis>dlpsh</emphasis>
+         <emphasis>pilot-dlpsh</emphasis>
          [<option>-p</option>|<option>--port</option> &lt;<userinput>port</userinput>&gt;]
          [<option>-c</option>|<option>--command</option> <userinput>STRING</userinput>]
          [<option>-i</option>|<option>--interactive</option>]
@@ -27,7 +27,7 @@
    <refsect1>
       <title>options</title>
       <refsect2>
-         <title>dlpsh options</title>
+         <title>pilot-dlpsh options</title>
 	<variablelist>
 	<varlistentry>
         	<term>
@@ -60,10 +60,10 @@
 		<listitem>
 		<para>
 		Use device file &lt;<filename>port</filename>&gt; to communicate with 
-		the Palm handheld. If this is not specified, <emphasis>dlpsh</emphasis> 
+		the Palm handheld. If this is not specified, <emphasis>pilot-dlpsh</emphasis> 
 		will look for the <filename>$PILOTPORT</filename> environment variable. 
 		If the port is missing and <filename>$PILOTPORT</filename> is not set,
-		<emphasis>dlpsh</emphasis> will print the usage information.
+		<emphasis>pilot-dlpsh</emphasis> will print the usage information.
 		</para>
 		</listitem>
         </varlistentry>
@@ -84,7 +84,7 @@
    <refsect1>
       <title>Description</title>
       <para>
-            <filename>dlpsh</filename> allows the user to connect to a Palm handheld and execute
+            <filename>pilot-dlpsh</filename> allows the user to connect to a Palm handheld and execute
             arbitrary DLP commands.
       </para>
       <para>
@@ -105,7 +105,7 @@
       <title>Built-in Commands</title>
       <para>
             There are many options available while connected to your Palm handheld via
-            <filename>dlpsh</filename>, including the following:
+            <filename>pilot-dlpsh</filename>, including the following:
       </para>
       <para>
          <option>user</option>
@@ -167,7 +167,7 @@
    <refsect1>
       <title>options</title>
       <para>
-         While in <userinput>dlpsh</userinput>, you can always invoke 'help' or <option>
+         While in <userinput>pilot-dlpsh</userinput>, you can always invoke 'help' or <option>
          --help</option> to get further information on that option.
       </para>
    </refsect1>
@@ -181,7 +181,7 @@
    <refsect1>
       <title>Author</title>
       <para>
-         <userinput>dlpsh</userinput> was originally written by Chris Stevens
+         <userinput>pilot-dlpsh</userinput> was originally written by Chris Stevens
          <email>stevens@rpi.edu</email> and Damien Neil <email>neild@rpi.edu</email>
       </para>
       <para>

@@ -1,10 +1,10 @@
-<refentry id="reminders">
+<refentry id="pilot-reminders">
    <refmeta>
-      <refentrytitle>reminders</refentrytitle>
+      <refentrytitle>pilot-reminders</refentrytitle>
       <manvolnum>1</manvolnum>
    </refmeta>
    <refnamediv>
-      <refname>reminders</refname>
+      <refname>pilot-reminders</refname>
       <refpurpose>
          Exports your Palm Datebook database into a remind(1) data file format.
       </refpurpose>
@@ -16,7 +16,7 @@
    <refsect1>
       <title>synopsis </title>
       <para>
-         <emphasis>reminders</emphasis>
+         <emphasis>pilot-reminders</emphasis>
          [<option>-p</option>|<option>--port</option> &lt;<userinput>port</userinput>&gt;]
 	 [<option>-q</option>|<option>--quiet</option>]
          [<option>--version</option>] [<option>-?</option>|<option>--help</option>]
@@ -56,9 +56,9 @@
          <listitem>
             <para>
                Use device file <filename>port</filename> to communicate with the Palm handheld. If
-               this is not specified, <emphasis>reminders </emphasis> will look for the
+               this is not specified, <emphasis>pilot-reminders </emphasis> will look for the
                <filename>$PILOTPORT</filename> environment variable. If neither are found or
-               supplied, <emphasis>reminders</emphasis> will print the usage information.
+               supplied, <emphasis>pilot-reminders</emphasis> will print the usage information.
             </para>
          </listitem>
 	</varlistentry>
@@ -77,7 +77,7 @@
          </term>
          <listitem>
             <para>
-               Display version information of <emphasis>reminders </emphasis>.
+               Display version information of <emphasis>pilot-reminders </emphasis>.
             </para>
          </listitem>
 	</varlistentry>
@@ -90,7 +90,7 @@
          </para>
          <blockquote>
             <para>
-               Display the help synopsis for <emphasis>reminders </emphasis> and exit without
+               Display the help synopsis for <emphasis>pilot-reminders </emphasis> and exit without
                connecting.
             </para>
          </blockquote>

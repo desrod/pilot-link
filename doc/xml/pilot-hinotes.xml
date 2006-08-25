@@ -1,11 +1,11 @@
-<refentry id="hinotes">
+<refentry id="pilot-hinotes">
    <refmeta>
-      <refentrytitle>hinotes</refentrytitle>
+      <refentrytitle>pilot-hinotes</refentrytitle>
       <manvolnum>1</manvolnum>
       <refmiscinfo>Copyright FSF 1996-2005</refmiscinfo>
    </refmeta>
    <refnamediv>
-      <refname>hinotes</refname>
+      <refname>pilot-hinotes</refname>
       <refpurpose>
          Syncronize your Hi-Notes database with your desktop machine.
       </refpurpose>
@@ -17,7 +17,7 @@
    <refsect1>
       <title>Synopsis</title>
       <para>
-         <emphasis>hinotes</emphasis>
+         <emphasis>pilot-hinotes</emphasis>
          [<option>-p</option>|<option>--port</option> &lt;<userinput>port</userinput>&gt;]
          [<option>--version</option>] [<option>-q</option>|<option>--quiet</option>] 
          [<option>-?</option>|<option>--help</option>] [<option>--usage</option>]
@@ -64,7 +64,7 @@
    <refsect1>
       <title>options</title>
       <refsect2>
-         <title>hinotes option</title>
+         <title>pilot-hinotes option</title>
 	<variablelist>
 	<varlistentry>
         	<term>
@@ -98,9 +98,9 @@
 		<listitem>
          <para>
 		Use device file &lt;<filename>port</filename>&gt; to communicate with the 
-		Palm handheld. If this is not specified, <emphasis>hinotes</emphasis> 
+		Palm handheld. If this is not specified, <emphasis>pilot-hinotes</emphasis> 
 		will look for the <filename>$PILOTPORT</filename> environment variable. 
-		If neither are found, <emphasis>hinotes</emphasis> will print the usage
+		If neither are found, <emphasis>pilot-hinotes</emphasis> will print the usage
 		information.
 		</para>
 		</listitem>
@@ -167,7 +167,7 @@
    <refsect1>
       <title>Author</title>
       <para>
-         <emphasis>hinotes</emphasis> was originally written by Kenneth Albanowski, 
+         <emphasis>pilot-hinotes</emphasis> was originally written by Kenneth Albanowski, 
 	based on code by Bill Goodman <email>bgoodman@cyclos.com</email> and modified 
 	by Michael Bravo <email>mbravo@kronverk.spb.su</email>
       </para>
