@@ -47,7 +47,10 @@ int main(int argc, char *argv[])
 	int  sd     = -1,
 	     po_err = -1;
 
+        char    *environment;
 	struct 	PilotUser 	User;
+
+        environment = getenv("PILOTPORT");
 
         po = poptGetContext("install-user", argc, (const char **) argv, options, 0);
 	poptSetOtherOptionHelp(po, "\n\n"
@@ -55,7 +58,7 @@ int main(int argc, char *argv[])
 		"   Example:\n"
 		"      -p /dev/pilot -u \"John Q. Public\" -i 12345\n");
 
-	if (argc < 2) {
+	if ((environment == NULL) && (argc < 2)) {
 		poptPrintUsage(po,stderr,0);
 		return 1;
 	}
