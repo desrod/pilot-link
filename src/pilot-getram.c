@@ -20,5 +20,5 @@
  */
 
 #define DEFAULT_MODE mode_getram
-#include "pi-getrom.c"
+#include "pilot-getrom.c"
 

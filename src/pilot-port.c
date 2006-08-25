@@ -1,5 +1,5 @@
 /*
- * pi-port.c:  Serial server
+ * pilot-port.c:  Serial server
  *
  * Copyright (c) 1997, Kenneth Albanowski
  *
@@ -100,7 +100,7 @@ int main(int argc, char *argv[])
 		POPT_TABLEEND
 	};
 
-	pc = poptGetContext("pi-port", argc, argv, options, 0);
+	pc = poptGetContext("pilot-port", argc, argv, options, 0);
 	poptSetOtherOptionHelp(pc,"\n\n"
 	"   Reads incoming remote Palm data during a Network HotSync\n\n");
 

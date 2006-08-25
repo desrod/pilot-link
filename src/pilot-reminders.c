@@ -1,5 +1,5 @@
 /*
- * reminders.c:  Translate Palm datebook into REMIND format
+ * pilot-reminders.c:  Translate Palm datebook into REMIND format
  *
  * Copyright (c) 1996, Kenneth Albanowski
  *

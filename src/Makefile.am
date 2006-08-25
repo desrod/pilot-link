@@ -18,41 +18,41 @@ INCLUDES = 			\
 
 noinst_LTLIBRARIES = libpiuserland.la
 
-bin_PROGRAMS = 		\
-	debugsh		\
-	dlpsh		\
-	hinotes		\
-	install-datebook\
-	install-expenses\
-	install-hinote	\
-	install-memo	\
-	install-netsync	\
-	install-todos	\
-	install-todo	\
-	install-user	\
-	memos		\
-	pi-csd		\
-	pi-getram	\
-	pi-getrom	\
-	pi-getromtoken	\
-	pi-nredir	\
-	pilot-addresses	\
-	pilot-clip	\
-	pilot-dedupe	\
-	pilot-file	\
-	pilot-foto	\
-	pilot-schlep	\
-	pilot-treofoto	\
-	pilot-wav	\
-	pilot-xfer	\
-	read-expenses	\
-	read-ical	\
-	read-notepad	\
-	read-palmpix	\
-	read-screenshot	\
-	read-todos	\
-	read-veo	\
-	reminders
+bin_PROGRAMS =			\
+	install-datebook	\
+	install-expenses	\
+	install-hinote		\
+	install-memo		\
+	install-netsync		\
+	install-todo		\
+	install-todos		\
+	install-user		\
+	pilot-addresses		\
+	pilot-clip		\
+	pilot-csd		\
+	pilot-debugsh		\
+	pilot-dedupe		\
+	pilot-dlpsh		\
+	pilot-file		\
+	pilot-foto		\
+	pilot-getram		\
+	pilot-getrom		\
+	pilot-getromtoken	\
+	pilot-hinotes		\
+	pilot-memos		\
+	pilot-nredir		\
+	pilot-reminders		\
+	pilot-schlep		\
+	pilot-treofoto		\
+	pilot-wav		\
+	pilot-xfer		\
+	read-expenses		\
+	read-ical		\
+	read-notepad		\
+	read-palmpix		\
+	read-screenshot		\
+	read-todos		\
+	read-veo
 
 if WITH_PERL
 PERLSCRIPTS = 		\
@@ -78,30 +78,10 @@ libpiuserland_la_SOURCES =	\
 libpiuserland_la_LDFLAGS =	\
 	-static
 
-debugsh_SOURCES = 		\
-	debugsh.c
-debugsh_LDADD = 		\
-	$(top_builddir)/libpisock/libpisock.la
-
-dlpsh_SOURCES = 		\
-	dlpsh.c
-dlpsh_LDADD = 			\
-	libpiuserland.la	\
-	$(POPT_LIBS)		\
-	$(RL_LIBS)		\
-	$(top_builddir)/libpisock/libpisock.la
-
 #getrom_SOURCES = 		\
 #	getrom.c
 #getrom_LDADD = 		\
 #	$(top_builddir)/libpisock/libpisock.la
-
-hinotes_SOURCES = 		\
-	hinotes.c
-hinotes_LDADD = 		\
-	libpiuserland.la	\
-	$(POPT_LIBS)		\
-	$(top_builddir)/libpisock/libpisock.la
 
 install_datebook_SOURCES = 	\
 	install-datebook.c 	\
@@ -160,44 +140,64 @@ install_user_LDADD = 		\
 	$(POPT_LIBS)		\
 	$(top_builddir)/libpisock/libpisock.la
 
-memos_SOURCES = 		\
-	memos.c
-memos_LDADD = 			\
+pilot_memos_SOURCES = 		\
+	pilot-memos.c
+pilot_memos_LDADD = 		\
 	libpiuserland.la	\
 	$(POPT_LIBS)		\
 	$(top_builddir)/libpisock/libpisock.la
 
-pi_csd_SOURCES = 		\
-	pi-csd.c
-pi_csd_LDADD = 			\
+pilot_csd_SOURCES = 		\
+	pilot-csd.c
+pilot_csd_LDADD = 		\
 	libpiuserland.la	\
 	$(POPT_LIBS)		\
 	$(top_builddir)/libpisock/libpisock.la
 
-pi_getram_SOURCES = 		\
-	pi-getram.c
-pi_getram_LDADD = 		\
+pilot_debugsh_SOURCES = 	\
+	pilot-debugsh.c
+pilot_debugsh_LDADD = 		\
+	$(top_builddir)/libpisock/libpisock.la
+
+pilot_dlpsh_SOURCES = 		\
+	pilot-dlpsh.c
+pilot_dlpsh_LDADD = 		\
+	libpiuserland.la	\
+	$(POPT_LIBS)		\
+	$(RL_LIBS)		\
+	$(top_builddir)/libpisock/libpisock.la
+
+pilot_getram_SOURCES = 		\
+	pilot-getram.c
+pilot_getram_LDADD = 		\
 	libpiuserland.la	\
 	$(POPT_LIBS)		\
 	$(top_builddir)/libpisock/libpisock.la
 
-pi_getrom_SOURCES = 		\
-	pi-getrom.c
-pi_getrom_LDADD = 		\
+pilot_getrom_SOURCES = 		\
+	pilot-getrom.c
+pilot_getrom_LDADD = 		\
 	libpiuserland.la	\
 	$(POPT_LIBS)		\
 	$(top_builddir)/libpisock/libpisock.la
 
-pi_getromtoken_SOURCES = 	\
-	pi-getromtoken.c
-pi_getromtoken_LDADD =		\
+pilot_getromtoken_SOURCES = 	\
+	pilot-getromtoken.c
+pilot_getromtoken_LDADD =	\
 	libpiuserland.la	\
 	$(POPT_LIBS)		\
 	$(top_builddir)/libpisock/libpisock.la
 
-pi_nredir_SOURCES = 		\
-	pi-nredir.c
-pi_nredir_LDADD = 		\
+pilot_hinotes_SOURCES = 	\
+	pilot-hinotes.c
+pilot_hinotes_LDADD = 		\
+	libpiuserland.la	\
+	$(POPT_LIBS)		\
+	$(top_builddir)/libpisock/libpisock.la
+
+pilot_nredir_SOURCES = 		\
+	pilot-nredir.c
+pilot_nredir_LDADD = 		\
 	libpiuserland.la	\
 	$(POPT_LIBS)		\
 	$(top_builddir)/libpisock/libpisock.la
@@ -233,6 +233,13 @@ pilot_file_LDADD = 		\
 pilot_foto_SOURCES = 		\
 	pilot-foto.c
 pilot_foto_LDADD = 		\
+	libpiuserland.la	\
+	$(POPT_LIBS)		\
+	$(top_builddir)/libpisock/libpisock.la
+
+pilot_reminders_SOURCES =	\
+	pilot-reminders.c
+pilot_reminders_LDADD = 	\
 	libpiuserland.la	\
 	$(POPT_LIBS)		\
 	$(top_builddir)/libpisock/libpisock.la
@@ -318,13 +325,6 @@ read_veo_LDADD = 		\
 	$(PNG_LIBS) 		\
 	$(top_builddir)/libpisock/libpisock.la
 
-reminders_SOURCES = 		\
-	reminders.c
-reminders_LDADD = 		\
-	libpiuserland.la	\
-	$(POPT_LIBS)		\
-	$(top_builddir)/libpisock/libpisock.la
-
 ietf2datebook: ietf2datebook.PL
 	$(PERL) $< > $@
 	chmod +x $@
@@ -345,9 +345,9 @@ EXTRA_DIST = 			\
 	pilot-undelete.PL	\
 	sync-plan.PL		\
 	ccexample.cc		\
-	debugsh.c		\
-	dlpsh.c			\
-	hinotes.c		\
+	pilot-debugsh.c		\
+	pilot-dlpsh.c		\
+	pilot-hinotes.c		\
 	install-datebook.c	\
 	install-expenses.c	\
 	install-hinote.c	\
@@ -357,21 +357,21 @@ EXTRA_DIST = 			\
 	install-todos.c		\
 	install-user.c		\
 	kittykiller.c		\
-	memos.c			\
+	pilot-memos.c		\
 	parsedate.y		\
 	pd-tty.c		\
-	pi-csd.c		\
-	pi-getram.c		\
-	pi-getrom.c		\
-	pi-getromtoken.c	\
-	pi-nredir.c		\
-	pi-port.c		\
+	pilot-csd.c		\
+	pilot-getram.c		\
+	pilot-getrom.c		\
+	pilot-getromtoken.c	\
+	pilot-nredir.c		\
 	pilot-addresses.c	\
 	pilot-clip.c		\
 	pilot-debug.c		\
 	pilot-dedupe.c		\
 	pilot-file.c		\
 	pilot-foto.c		\
+	pilot-port.c		\
 	pilot-schlep.c		\
 	pilot-treofoto.c	\
 	pilot-wav.c		\
@@ -383,7 +383,7 @@ EXTRA_DIST = 			\
 	read-screenshot.c	\
 	read-todos.c		\
 	read-veo.c		\
-	reminders.c		\
+	pilot-reminders.c	\
 	validate.cc
 
 # Magic to update Makefile from Makefile.am

@@ -1,5 +1,5 @@
 /*
- * memos.c:  Translate Palm Memos into e-mail format
+ * pilot-memos.c:  Translate Palm Memos into e-mail format
  *
  * Copyright (c) 1996, Kenneth Albanowski
  *

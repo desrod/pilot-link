@@ -1,5 +1,5 @@
 /*
- * pi-getrom:  Fetch ROM image from Palm, without using getrom.prc.
+ * pilot-getrom:  Fetch ROM image from Palm, without using getrom.prc.
  *             Contains all functional code from getram and getromtoken,
  *             too, with additional copyrights.
  *
@@ -179,7 +179,7 @@ int do_get_rom(int sd,const char *filename)
 		if (cancel || !(i++ % 8))
 			if (cancel || (dlp_OpenConduit(sd) < 0)) {
 				printf("\n   Operation cancelled!\n");
-				dlp_AddSyncLogEntry(sd, "\npi-getrom ended unexpectedly.\n"
+				dlp_AddSyncLogEntry(sd, "\npilot-getrom ended unexpectedly.\n"
 							"Entire ROM was not fetched.\n");
 				goto cancel;
 			}
@@ -308,7 +308,7 @@ int do_get_ram(int sd, const char *filename)
 		if (cancel || !(i++ % 4))
 			if (cancel || (dlp_OpenConduit(sd) < 0)) {
 				printf("\n   Operation cancelled!\n");
-				dlp_AddSyncLogEntry(sd, "\npi-getrom ended unexpectedly.\n"
+				dlp_AddSyncLogEntry(sd, "\npilot-getrom ended unexpectedly.\n"
 							"Entire RAM was not fetched.\n");
 				goto cancel;
 			}
@@ -413,12 +413,12 @@ int main(int argc, const char *argv[])
 
 	/* These are optimized away compile-time */
 	if (DEFAULT_MODE == mode_getrom) {
-		progname = "pi-getrom";
+		progname = "pilot-getrom";
 		opthelp=
 		"[filename]\n\n"
 		"   Retrieves the ROM image from your Palm device.\n\n";
 	} else if (DEFAULT_MODE == mode_gettoken) {
-		progname="pi-getromtoken";
+		progname="pilot-getromtoken";
 		opthelp=
 		"\n\n"
 		"   Reads a ROM token from a Palm Handheld device.\n"
@@ -429,7 +429,7 @@ int main(int argc, const char *argv[])
 		"   Example arguments:\n"
 		"      -p /dev/pilot -t snum\n\n";
 	} else if (DEFAULT_MODE == mode_getram) {
-		progname="pi-getram";
+		progname="pilot-getram";
 		opthelp=
 		"[filename]\n\n"
 		"   Retrieves the RAM image from your Palm device\n\n";

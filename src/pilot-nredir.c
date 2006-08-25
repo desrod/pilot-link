@@ -1,5 +1,5 @@
 /*
- * pi-nredir.c: Redirect a connection over the network
+ * pilot-nredir.c: Redirect a connection over the network
  *
  * Copyright (C) 1997, Kenneth Albanowski
  *

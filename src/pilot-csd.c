@@ -1,5 +1,5 @@
 /*
- * pi-csd.c: Connection Service Daemon, required for accepting logons via
+ * pilot-csd.c: Connection Service Daemon, required for accepting logons via
  *           NetSync(tm)
  *
  * Copyright (c) 1997, Kenneth Albanowski

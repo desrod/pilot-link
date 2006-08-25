@@ -1,5 +1,5 @@
 /*
- * pi-getromtoken.c:  Retrieve a rom token from a device.
+ * pilot-getromtoken.c:  Retrieve a rom token from a device.
  *
  * Copyright (C) 2002, Owen Stenseth
  *
@@ -20,5 +20,5 @@
  */
 
 #define DEFAULT_MODE mode_gettoken
-#include "pi-getrom.c"
+#include "pilot-getrom.c"
 

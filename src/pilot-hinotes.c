@@ -1,5 +1,5 @@
 /*
- * hinotes.c:  Translate Palm Hi-Note Text Memos into e-mail format
+ * pilot-hinotes.c:  Translate Palm Hi-Note Text Memos into e-mail format
  *
  * Copyright (c) 1996, Kenneth Albanowski
  * Based on code by Bill Goodman, modified by Michael Bravo
