@@ -88,7 +88,7 @@
             arbitrary DLP commands.
       </para>
       <para>
-            dlpsh can query many different types of information from your Palm device, such as
+            pilot-dlpsh can query many different types of information from your Palm device, such as
             username, memory capacity, set the time, as well as other useful functions.
       </para>
       <para>
@@ -108,13 +108,13 @@
             <filename>pilot-dlpsh</filename>, including the following:
       </para>
       <para>
-         <option>user</option>
+         <option>user, u</option>
       </para>
       <blockquote>
          <para>
             Print the currently set User information, including Username, UserID, PCid, and
-            ViewerID. You may also set these values from this command as well. Use 'user --help'
-            while connected to see details on how to set or change these values.
+            ViewerID. You may also set these values from this command as well. To set these values,
+            simply pass the value to the option, such as 'user John Q. Public' for example.
          </para>
       </blockquote>
       <para>
@@ -123,9 +123,9 @@
       <blockquote>
          <para>
             Used with <option>-l</option> and <option>-r</option> to provide long and RAM and ROM
-            file lists, similar to the Unix '<systemitem>ls</systemitem>' command. This does not
-            yet allow you to narrow your listing to a certain range of files. It will simply list
-            them all.
+            file lists, similar to (but slightly different from) the Unix
+            '<systemitem>ls</systemitem>' command. This does not yet allow you to narrow your
+            listing to a certain range of files. It will simply list them all.
          </para>
       </blockquote>
       <para>
@@ -138,7 +138,7 @@
          </para>
       </blockquote>
       <para>
-         <option>time</option>
+         <option>ntp, time, dtp</option>
       </para>
       <blockquote>
          <para>
@@ -147,7 +147,7 @@
          </para>
       </blockquote>
       <para>
-         <option>rm</option>
+         <option>rm, del</option>
       </para>
       <blockquote>
          <para>
@@ -156,7 +156,7 @@
          </para>
       </blockquote>
       <para>
-         <option>quit</option>
+         <option>quit, q, exit, bye</option>
       </para>
       <blockquote>
          <para>

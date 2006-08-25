@@ -152,7 +152,7 @@
    <refsect1>
       <title>Author</title>
       <para>
-         <emphasis>install-datebook</emphasis> was written by Tero Kivinen
+         <emphasis>install-datebook</emphasis> was originally written by Tero Kivinen
          <email>kivinen@iki.fi</email>. This program was based on
          <emphasis>install-todos</emphasis> program written by Robert A. Kaplan
          <email>kaplan@openmarket.com</email>.
