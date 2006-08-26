@@ -1,4 +1,4 @@
-pilot-link -- Palm Handheld Glue
+pilot-link -- Palm Handheld Glue - http://www.pilot-link.org
 
 The code and other related files in this distribution are licensed under the
 GNU General Public License or "GPL", and the GNU Lesser Public License, or
@@ -6,181 +6,205 @@ GNU General Public License or "GPL", and the GNU Lesser Public License, or
 
 We will only accept changes into pilot-link if they comply with the proper
 licensing. There are many companies using pilot-link in their core products
-and are complying with the license. There are also others companies who
-don't believe that adhering to the licensing is that important, and violate
-the license instead. Please do not be one of these companies.
+and are complying with the license. There are also others companies who don't
+believe that adhering to the licensing is that important, and violate the
+license instead. Please do not be one of these companies.
 
-This code is under active development. If you would like to contribute to
-the project, you can contact me, David A. Desrosiers, via email by sending
-aan email to desrod@gnu-designs.com. 
+This code is under active development. If you would like to contribute to the
+project, you can contact me, David A. Desrosiers, via email by sending an
+email to desrod@gnu-designs.com.
 
 We can also be reached on Internet Relay Chat, "irc", at irc.pilot-link.org
-in the channel #pilot-link. I go by the name "setuid" there.
+in the channel #pilot-link. I go by the name "setuid" there, and there are a
+dozen or more helpful users and other developers that hang out there on a
+regular basis.
 
-The pilot-link project has a webpage at http://www.pilot-link.org. From
-there, you will find many links to documents, complementary projects that
-use pilot-link, and other resources to help you get the best use ouf ot your
-Palm device on your platform.
+From the main pilot-link website, you will find many links to helpful
+documents, HOWTOs, complementary projects that use pilot-link, and other
+resources to help you get the best use out of your Palm device on your
+platform of choice; Linux, BSD or Mac OS X.
 
-We also have a mailing list that you can join by pointing your browser to
-http://lists.pilot-link.org/ and picking the list you wish to subscribe to.
+	Main website........: http://www.pilot-link.org/
+	HOWTO Documents.....: http://howto.pilot-link.org/
+	Code documentation..: http://doxygen.pilot-link.org/
+	Reporting bugs......: http://bugs.pilot-link.org/
+	Mailing lists.......: http://lists.pilot-link.org/
+
+We also have several mailing list that you can join. There are mailing lists
+for development-specific talk, general talk, announcements and commits. On
+the mailing list webpage, you will have the ability to subscribe and read the
+past lists archives and posts from thousands of other users.
 
 The architecture of pilot-link
 ------------------------------
 There are several core parts of pilot-link: 
 
-
 	the libraries
 	-------------
-	pilot-link communicates with Palm handhelds using several methods
-	and functions specific to these devices.  In order to facilitate
-	these communications, the functions are stored in a library, which
-	other applications can link to and gain access to those functions. 
-	J-Pilot is one example of an application that does exactly this.
+	pilot-link communicates with Palm handhelds using several methods and
+	functions specific to these devices.  In order to facilitate these
+	communications, the functions are stored in a library, which other
+	applications can link to and gain access to those functions.  J-Pilot
+	is one example of an application that does exactly this.
 
-	The core pilot-link library is in the 'libpisock' subdirectory of
-	this project tree.
+	The core pilot-link libraries are in the 'libpisock' and 'libpisync'
+	subdirectories of the project tree.
 
-	The standard library for pilot-link is written in the C language,
-	and is very easy to understand and extend if you need to do so. 
-	There is also a secondary library written in C++ that can be used
-	for applications that are written in C++.
-
-	This library is found in the 'libpisock++' subdirectory of this
-	project tree.
+	The standard library for pilot-link is written in the C language, and
+	is very easy to understand and extend if you need to do so.
 
 
 	the conduits
 	------------
 	In pilot-link, there is also the notion of "conduits", that can be
 	used to communicate directly with your Palm handheld.  These
-	"conduits" are the actual applications that you run directly.
+	"conduits" are the actual applications that you run directly. These
+	are the "userspace" programs.
 
-	These "conduits" are found in the 'src' subdirectory of this project
+	These "conduits" are found in the 'src' subdirectory of the project
 	tree.
 
 
 	the language bindings
 	---------------------
+
 	Along with the powerful libraries and conduits, pilot-link also
 	provides the ability to communicate with your Palm handheld using
-	your favorite language.  Currently, pilot-link includes "bindings"
-	in Perl, Python, Java, and Tcl.  This means you can use those
-	languages, instead of C directly, to talk to your Palm handheld
-	device and communicate with it.
+	your favorite language of choice.  Currently, pilot-link includes
+	language "bindings" in Perl, Python, Java, and Tcl.  This means you
+	can use those languages, instead of C directly, to talk to your Palm
+	handheld device and communicate with it. 
+
+	Want to write a Java application that uses pilot-link's libraries?
+	Simple! Just use the Java bindings.
+
+	Want to talk to your Palm device using Perl code? Simply use the Perl
+	bindings.
+
+	Our hope is that more bindings will be added in the future, such as
+	Ruby or Objective C.
 
 
 	the tests
 	---------
 	In order to make sure the code in pilot-link does what it should, we
-	also include quite a bit of tests to check to make sure each
-	function we use, is operating properly. These tests will check each
-	of these functions.
+	also include quite a bit of regression tests to check to make sure
+	each function we use is operating properly. These tests will check
+	each of these functions and report any errors or success as they are
+	run.
 
 
 Building the project
 --------------------
-pilot-link is developed primarily on Debian GNU/Linux and FreeBSD. It is
-expected to build cleanly on any POSIX-compliant platform. Some users have
-reported success building it under Cygwin on Windows. It will also build
-cleanly under Apple OSX, if you have the proper development environment
-installed and configured on your machine. Each of these will be explained in
-detail below.
+	pilot-link is developed primarily on Debian GNU/Linux and FreeBSD. It
+	is expected to build cleanly on any POSIX-compliant platform. Some
+	users have reported success building it under Cygwin on Windows. It
+	will also build cleanly under Apple OSX, if you have the proper
+	development environment installed and configured on your machine.
+	Each of these will be explained in detail below.
 
 
 Building pilot-link on Linux/Unix systems
 -----------------------------------------
-PLEASE READ THIS CAREFULLY! The worst thing you can do is the overly-common
-misuse of "configure, make, make install" to build and install pilot-link.
-There are so many customizations you can make to pilot-link, that you should
-almost never build pilot-link without options. Please make sure you use the
---help option to "./configure" to make sure you're enabling all of the
-options you wish to use.
+	PLEASE READ THIS CAREFULLY! The worst thing you can do is the
+	overly-common misuse of "configure, make, make install" to build and
+	install pilot-link.  There are so many customizations you can make to
+	pilot-link, that you should almost never build pilot-link without
+	options. Please make sure you use the --help option to "./configure"
+	to make sure you're enabling all of the options you wish to use.
 
-If you have downloaded this code from the website, or as a tarball, simply
-unpack the tarball and run "./configure" in the top-level directory with
-your specific arguments. "./configure --help" will describe all of them.
+	If you have downloaded this code from the website, or as a tarball,
+	simply unpack the tarball and run "./configure" in the top-level
+	directory with your specific arguments. "./configure --help" will
+	describe all of them.
 
-If you want to install in some place other than the default location of
-/usr/local, pass configure an argument such as:
+	If you want to install in some place other than the default location of
+	/usr/local, pass configure an argument such as:
 
-	$ ./configure --prefix=/home/fred/pilot
+		$ ./configure --prefix=/home/fred/pilot
 
-If configure ran successfully, you should run 'make' to build the software.
+	If configure ran successfully, you should run 'make' to build the
+	software.
 
-	$ make
+		$ make
 	
-After the source builds, feel free to play around in the 'src' subdirectory,
-CAREFULLY. 'dlpsh' and 'pilot-xfer' are probably the most useful programs
-for you, and also the safest to use non-destructively.
+	After the source builds, feel free to play around in the 'src'
+	subdirectory, CAREFULLY. 'dlpsh' and 'pilot-xfer' are probably the
+	most useful programs for you, and also the safest to use
+	non-destructively.
 	
-Once you have determined that pilot-link works and suits your needs by
-testing with these programs, switch to the super user, typically "root", to
-install the conduits, libraries, docs, and headers required for proper
-operation and development of pilot-link.
+	Once you have determined that pilot-link works and suits your needs
+	by testing with these programs, switch to the super user, typically
+	"root", to install the conduits, libraries, docs, and headers
+	required for proper operation and development of pilot-link.
 
-	$ su - root
+		$ su - root
 
-If you wish to include root's environment when you install (STRONGLY
-recommended), be sure to pass the '-' option when you su to root, as above.
+	If you wish to include root's environment when you install (STRONGLY
+	recommended), be sure to pass the '-' option when you su to root, as
+	above.
 
-AFTER you test that the code works properly, run 'make install' to install
-the code into your specified prefix, or the default of /usr/local will be
-used.
+	AFTER you test that the code works properly, run 'make install' to
+	install the code into your specified prefix, or the default of
+	/usr/local will be used.
 
-	# make install
+		# make install
 
-If you are using a CVS version of pilot-link, you will have to run 'sh
-./autogen.sh' instead, from the top-level directory, which will create and
-bootstrap the "./configure" script for you. 
+	If you are using a CVS version of pilot-link, you will have to run
+	'sh ./autogen.sh' instead, from the top-level directory, which will
+	create and bootstrap the "./configure" script for you.
 
-You will also need to have your development environment set up, which will
-require such tools as automake, autoconf, libtool, some system headers, and
-others to be properly installed and configured on your machine first. If you
-are running a current Linux or Unix system, these common tools are probably
-packaged for you.
+	You will also need to have your development environment set up, which
+	will require such tools as automake, autoconf, libtool, some system
+	headers, and others to be properly installed and configured on your
+	machine first. If you are running a current Linux or Unix system,
+	these common tools are probably packaged for you.
 
 
 Building pilot-link on OS/2 
 ---------------------------
-pilot-link on OS/2 only supports serial devices. USB is unsupported at this
-time. We would like volunteers to help us out porting pilot-link to work
-with USB on that platform. If you are skilled and interested in helping,
-please contact me directly.
+	pilot-link on OS/2 only supports serial devices. USB is unsupported
+	at this time. We would like volunteers to help us out porting
+	pilot-link to work with USB on that platform. If you are skilled and
+	interested in helping, please contact me directly. I can't seem to
+	get the OS to run correctly on any hardware I have, so I need some
+	help there.
 
-The steps are fairly straightforward.
+	The steps are fairly straightforward.
 
-Run the os2configure.cmd script in the top-level directory. 
+	Run the os2configure.cmd script in the top-level directory. 
 	
-Run make -f Makefile.os2
+	Run make -f Makefile.os2
 	
-Play around, CAREFULLY. pilot-xfer is probably the most useful program for
-you, and also the safest of all to use non-destructively. Also dlpsh is a
-good app to use to poke around in your Palm device.
+	Play around, CAREFULLY. pilot-xfer is probably the most useful
+	program for you, and also the safest of all to use non-destructively.
+	Also dlpsh is a good app to use to poke around in your Palm device.
 	
-Run 'make install' if you you have tested thoroughly and are sure pilot-link
-works well for you.
+	Run 'make install' if you you have tested thoroughly and are sure
+	pilot-link works well for you.
 	
-Note on pilot-debug: This program is a work-in-progress, and requires Tcl
-7.5 (or greater) and optionally Tk 4.1 (or greater) and/or Readline 2.0. 
-You'll need to modify Makefile to to use Readline 2.0, and if your Tcl or Tk
-aren't in standard places, you'll need to wiggle configure or the Makefile. 
-You must have installed pilot-link or else run pilot-debug in the pilot-link
-source directory if you want the fancy images for the Remote UI window.
+	Note on pilot-debug: This program is a work-in-progress, and requires
+	Tcl 7.5 (or greater) and optionally Tk 4.1 (or greater) and/or
+	Readline 2.0.  You'll need to modify Makefile to to use Readline 2.0,
+	and if your Tcl or Tk aren't in standard places, you'll need to
+	wiggle configure or the Makefile.  You must have installed pilot-link
+	or else run pilot-debug in the pilot-link source directory if you
+	want the fancy images for the Remote UI window.
 
 
 Building pilot-link on Apple OSX/Darwin
 ---------------------------------------
-To build pilot-link on Apple OSX ("Darwin") systems, you will need to make
-sure you have some development tools installed first. These can all be found
-in the "Fink" package repository hosted on SourceForge. 
+	To build pilot-link on Apple OSX ("Darwin") systems, you will need to
+	make sure you have some development tools installed first. These can
+	all be found in the "Fink" package repository hosted on SourceForge.
 
-	http://fink.sourceforge.net/
+		http://fink.sourceforge.net/
 
-Download and install the latest Fink from there onto your OSX system. These
-will install into the $PREFIX of /sw on your machine. To gain access to the
-binaries it places in /sw/bin, export the proper /sw/bin path to the
-_beginning_ of your $PATH environment variable. Do NOT put it at the end: 
+	Download and install the latest Fink from there onto your OSX system.
+	These will install into the $PREFIX of /sw on your machine. To gain
+	access to the binaries it places in /sw/bin, export the proper
+	/sw/bin path to the BEGINNING of your $PATH environment variable. Do
+	NOT put it at the end:
 
 	Correct method (for bash)
 	-------------------------
@@ -190,182 +214,197 @@ _beginning_ of your $PATH environment variable. Do NOT put it at the end:
 	---------------------------
 	export PATH=$PATH:/sw/bin
 
-The reason we need it at the beginning, is so that we can make sure the GNU
-tools that Fink uses, are chosen first, and not the OSX tools which may
-carry the same name (libtool is one example). 
+	The reason we need it at the beginning, is so that we can make sure
+	the GNU tools that Fink uses, are chosen first, and not the OSX tools
+	which may carry the same name (libtool is one example).
 
-Now that you have Fink installed, and the $PATH exported properly, execute
-the following command (as root): 
+	Now that you have Fink installed, and the $PATH exported properly,
+	execute the following command (as root):
 
-	# fink selfupdate
+		# fink selfupdate
 
-This will update your newly-installed Fink to the latest version available
-for download. In many cases, the latest version for download may not be the
-latest version available. 'selfupdate' ensures that it is. 
+	This will update your newly-installed Fink to the latest version
+	available for download. In many cases, the latest version for
+	download may not be the latest version available. 'selfupdate'
+	ensures that it is.
 
-From there, you will need to install some GNU tools. Please install the
-following packages, using the 'fink install <packagename>' syntax: 
+	From there, you will need to install some GNU tools. Please install
+	the following packages, using the 'fink install <packagename>'
+	syntax:
 
-	automake
-	autoconf
-	libtool
-	libtool-shlibs
-	m4
-	readline
-	readline-shlibs
-	make
+		automake
+		autoconf
+		libtool
+		libtool-shlibs
+		m4
+		readline
+		readline-shlibs
+		make
 
-When these are installed, you can then unpack pilot-link, and run the
-./configure found inside with your custom arguments and parameters.
+	When these are installed, you can then unpack pilot-link, and run the
+	./configure found inside with your custom arguments and parameters.
 
-REMEMBER: It is almost always incorrect to run ./configure without passing
-it any parameters. Please use './configure --help' first to see descriptions
-of the parameters you will need to use to customize pilot-link for your
-needs. 
+	REMEMBER: It is almost always incorrect to run ./configure without
+	passing it any parameters. Please use './configure --help' first to
+	see descriptions of the parameters you will need to use to customize
+	pilot-link for your needs.
 
-After running ./configure, you should then be able to build it with the
-'make' command. If it builds clean, PLEASE remember to test it first. The
-syntax to test pilot-link on OSX for USB devices is as follows: 
+	After running ./configure, you should then be able to build it with
+	the 'make' command. If it builds clean, PLEASE remember to test it
+	first. The syntax to test pilot-link on OSX for USB devices is as
+	follows:
 
-	<pilot-link-command> -p usb: [arguments..] 
+		<pilot-link-command> -p usb: [arguments..] 
 
 	One example of this is as follows: 
 
-	pilot-xfer --port usb: --list
+		pilot-xfer --port usb: --list
 
-This should list the record and resource databases found on your Palm
-handheld device.
+	This should list the record and resource databases found on your Palm
+	handheld device.
 
 	
 Building pilot-link on Cygwin under Windows
 -------------------------------------------
-FIXME
+	FIXME: Unsupported at this time, but may run under Cygwin talking to
+	COM1 through the Cygwin virtual serial port bridging.
 
 
 Some usage notes about pilot-link
 ---------------------------------
-read-ical and sync-ical will only run if you have ical-2.x installed and in
-the path.
+	read-ical and sync-ical will only run if you have ical-2.x installed
+	and in the path.
 	
-sync-plan is a full syncronization program, though it has some interesting
-quirks and requirements. You must running netplan from plan-1.6.1 (probably
-available at <http://www.in-berlin.de/User/bitrot>). Future or later
-versions may work, but I cannot gaurantee this. Sync-plan does _not_ check
-the Palm's user name, so be very careful not to sync two Palms to the same
-Plan database. This will not work in a useful manner, at the moment.
-Sync-plan leaves a file, that has a name starting with "pilothash", in the
-current directory. This file must be present for all future syncs between
-that plan database and that Palm.
+	sync-plan is a full syncronization program, though it has some
+	interesting quirks and requirements. You must running netplan from
+	plan-1.6.1 (probably available at
+	<http://www.in-berlin.de/User/bitrot>). Future or later versions may
+	work, but I cannot gaurantee this. Sync-plan does _not_ check the
+	Palm's user name, so be very careful not to sync two Palms to the
+	same Plan database. This will not work in a useful manner, at the
+	moment.  Sync-plan leaves a file, that has a name starting with
+	"pilothash", in the current directory. This file must be present for
+	all future syncs between that plan database and that Palm.
 	
-As sync-plan is a work in progress, please contact me with any problems.
+	As sync-plan is a work in progress, please contact me with any
+	problems.
 	
-The default connection rate is 9600 baud. You are welcome to try higher baud
-rates (19200, 38400, or 57600) by setting the PILOTRATE environment
-variable, but various machines have various limitations. (Be careful about
-38400 on a Linux box if you've been using setserial to change the
-multiplier.)
+	The default connection rate is 9600 baud. You are welcome to try
+	higher baud rates (19200, 38400, or 57600) by setting the PILOTRATE
+	environment variable, but various machines have various limitations.
+	(Be careful about 38400 on a Linux box if you've been using setserial
+	to change the multiplier.)
 	
-pilot-mail (which requires a Palm with the new Mail application, as well as
-sendmail and/or a POP3 server) is still in the experimental stage.  Run with
-an argument of '-H' for help. While I don't expect it to lose data, (and by
-default mail is kept on both sides, not deleted) I can not and will not
-guarantee that you won't. Please back up your UNIX mailbox and Palm mailbox
-(via pilot-xfer) before experimenting.
+	pilot-mail (which requires a Palm with the new Mail application, as
+	well as sendmail and/or a POP3 server) is still in the experimental
+	stage.  Run with an argument of '-H' for help. While I don't expect
+	it to lose data, (and by default mail is kept on both sides, not
+	deleted) I can not and will not guarantee that you won't. Please back
+	up your UNIX mailbox and Palm mailbox (via pilot-xfer) before
+	experimenting.
 
-If you wish, you may easily change the default settings (pop host, password,
-etc.) for pilot-mail by editing the top of pilot-mail.c, as well as by
-setting the environment variables indicated in its help.
+	If you wish, you may easily change the default settings (pop host,
+	password, etc.) for pilot-mail by editing the top of pilot-mail.c, as
+	well as by setting the environment variables indicated in its help.
 	
-Scott Grosch's "validate" program is included, and can be made via 'make
-validate', but it may not be of use to anyone but Scott.
+	Scott Grosch's "validate" program is included, and can be made via
+	'make validate', but it may not be of use to anyone but Scott.
 
 
 Debugging notes
 ---------------
-Please see doc/README.debugging for more detailed information describing how
-to debug pilot-link's core protocols and interfaces. Debugging pilot-link
-will allow us to make pilot-link work better on new devices and with new
-applications. 
+	Please see doc/README.debugging for more detailed information
+	describing how to debug pilot-link's core protocols and interfaces.
+	Debugging pilot-link will allow us to make pilot-link work better on
+	new devices and with new applications.
 
 
 USB Notes
 ---------
-Please see doc/README.usb for more detailed information on configuring your
-system to use USB-enabled Palm handheld devices. 
+	Please see doc/README.usb for more detailed information on
+	configuring your system to use USB-enabled Palm handheld devices
+	using the standard Linux "visor" kernel module.
+
+	If you would like to try the new libusb code, please see
+	doc/README.libusb for details on how to get that working properly.
 	
 
 FreeBSD Notes
 -------------
-Please see doc/README.freebsd for more detailed information on setting up
-pilot-link to work with FreeBSD systems. In FreeBSD, you may have to set
-your ACLOCAL_FLAGS="-I /usr/local/share/aclocal/" before running autogen.sh.
+	Please see doc/README.freebsd for more detailed information on
+	setting up pilot-link to work with FreeBSD systems. In FreeBSD, you
+	may have to set your ACLOCAL_FLAGS="-I /usr/local/share/aclocal/"
+	before running autogen.sh.
 
-To use libusb, install the libusb port first and run configure. You will
-need to set LDFLAGS, CFLAGS and CPPFLAGS to let configure find the library,
-though. Something like this:
+	To use libusb, install the libusb port first and run configure. You
+	will need to set LDFLAGS, CFLAGS and CPPFLAGS to let configure find
+	the library, though. Something like this:
 
-	$ ACLOCAL_FLAGS="-I /usr/local/share/aclocal/"
-	$ LDFLAGS="-L/usr/local/lib"
-	$ CFLAGS="-I/usr/local/include"
-	$ CPPFLAGS="-I/usr/local/include"
-	$ export ACLOCAL_FLAGS LDFLAGS CFLAGS CPPFLAGS
+		$ ACLOCAL_FLAGS="-I /usr/local/share/aclocal/"
+		$ LDFLAGS="-L/usr/local/lib"
+		$ CFLAGS="-I/usr/local/include"
+		$ CPPFLAGS="-I/usr/local/include"
+		$ export ACLOCAL_FLAGS LDFLAGS CFLAGS CPPFLAGS
 
 
 Embedding information
 ---------------------
-As of 0.5.0, the headers in pilot-link have been rearranged slightly so that
-it should be easier and more reliable to use the libpisock.a library in
-external applications.
+	As of 0.5.0, the headers in pilot-link have been rearranged slightly
+	so that it should be easier and more reliable to use the libpisock.a
+	library in external applications.
 	
-If you want to use the pilot-link portability layer (configured via
-autoconf), then include pi-source.h. Otherwise, do not touch this file, as
-it sets up a mildly complex environment.
+	If you want to use the pilot-link portability layer (configured via
+	autoconf), then include pi-source.h. Otherwise, do not touch this
+	file, as it sets up a mildly complex environment.
 	
-For all normal operations, simply include the obvious files (pi-file for pdb
-and .prc file access, pi-dlp for DLP sync functions, etc.).  pi-macros
-contains the portable byte-access routines.
+	For all normal operations, simply include the obvious files (pi-file
+	for pdb and .prc file access, pi-dlp for DLP sync functions, etc.). 
+	pi-macros contains the portable byte-access routines.
 
 
 Reporting Bugs
 --------------
-Any bugs you find with pilot-link can be easily reported in the online
-bug-tracking system found at http://bugs.pilot-link.org. From there, any
-issues reported can be updated, audited, commented on, and resolved. You can
-also attach files and patches any other relevant items to each bug report,
-to help our team solve the issues or add the features you report.
+	Any bugs you find with pilot-link can be easily reported in the
+	online bug-tracking system found at http://bugs.pilot-link.org. From
+	there, any issues reported can be updated, audited, commented on, and
+	resolved. You can also attach files and patches any other relevant
+	items to each bug report, to help our team solve the issues or add
+	the features you report.
 	
 	PLEASE NOTE 
 	-----------
-	Please check the existing bugs in the system FIRST before reporting
-	your bug. There may be an identical report from another user that
-	matches your bug. If you find one that is similar, please add your
-	notes and details to that existing report. Please try to be as
-	specific as possible.
+		Please check the existing bugs in the system FIRST
+		before reporting your bug. There may be an identical
+		report from another user that matches your bug. If
+		you find one that is similar, please add your notes
+		and details to that existing report. Please try to be
+		as specific as possible.
 
-If your bug is unique, and does not appear in the system, please fill out a
-new bug report and remember to be as detailed as possible when filling it
-out. Make sure to include your operating system, version of pilot-link, Palm
-handheld type and the PalmOS version running on the device, and any steps
-required to reproduce the bug. 
+	If your bug is unique, and does not appear in the system, please fill
+	out a new bug report and remember to be as detailed as possible when
+	filling it out. Make sure to include your operating system, version
+	of pilot-link, Palm handheld type and the PalmOS version running on
+	the device, and any steps required to reproduce the bug.
 
-With this information, the developers can be well-informed with the
-information they'll need to help try to track down and fix your bug.
+	With this information, the developers can be well-informed with the
+	information they'll need to help try to track down and fix your bug.
 
 
 License notes
 -------------
-The utility programs, otherwise known collectively as "conduits"
-(pilot-xfer, dlpsh, sync-plan, etc.) are licensed for use under the GPL. For
-more information, please see the file COPYING included in this source tree.
+	The utility programs, otherwise known collectively as "conduits"
+	(pilot-xfer, dlpsh, sync-plan, etc.) are licensed for use under the
+	GPL. For more information, please see the file COPYING included in
+	this source tree.
 
-The libraries (libpisock, libpisync, libpisock++, and libcc) and the
-language bindings (Perl, Python, Java, and Tcl) are licensed for use under
-the LGPL. For more information, please see COPYING.LIB included in this
-source tree.
+	The libraries (libpisock, libpisync, libpisock++, and libcc) and the
+	language bindings (Perl, Python, Java, and Tcl) are licensed for use
+	under the LGPL. For more information, please see COPYING.LIB included
+	in this source tree.
 	
-All contained source is the copyright of its author(s). Please see the
-copyright notices in the individual files for more information on their
-individual copyrights.
+	All contained source is the copyright of its author(s). Please see
+	the copyright notices in the individual files for more information on
+	their individual copyrights.
 
 ---------------------
 Happy Hacking,

@@ -1,0 +1,323 @@
+======================================================================
+README.libusb
+Author: David A. Desrosiers
+Date: Sat Aug 26 18:42:25 EDT 2006
+======================================================================
+This README will describe in detail, the process and programs necessary
+to get pilot-link 0.12.0 and later working with libusb on Linux and Mac
+OS X machines.
+
+Why do I want to use libusb?
+--------------------------------------------------------------------------
+	libusb is an alternative way of communicating with USB devices
+	on Linux, Unix, Mac OS X and Windows machines. 
+
+	In the Linux world, Palm devices using USB would require the
+	Linux kernel's "visor" driver, written and maintained by Greg
+	Kroah-Hartman. A lot of work and testing has been put into the
+	visor driver over the years and it is very solid, but making
+	sure that it remains current with released Palm devices can be
+	problematic.
+
+	The current version of the visor driver allows you to insert it
+	into the kernel namespace with the proper Palm product and
+	vendor values, so modifying the driver's source code and
+	rebuilding it is no longer necessary as it was early on.
+
+	Using libusb, you no longer have to use the visor driver, and
+	you can talk directly to the device. In short, libusb requires
+	less maintenance overhead, and is MUCH faster to use with
+	current Palm devices.
+
+
+Why is visor so slow? Why is libusb so much faster?
+--------------------------------------------------------------------------
+	In testing, syncronizing a Palm device with libusb has been
+	shown to be anywhere from 200% to 600% faster vs. using the
+	kernel visor driver. The kernel visor driver itself is not
+	"slow", there are just more kernel interfaces to pass through,
+	which slows down the communication between kernel and Palm. 
+
+	It has never been optimized for speed, and certainly could be,
+	if someone was interested in doing so.
+
+
+Does it work with every device?
+--------------------------------------------------------------------------
+	It works with every device I've personally tested it with. Some
+	devices behave very differently with respect to the "timing"
+	between the point where you hit HotSync and the time libusb
+	recognizes it on the bus, but everything I've used with it
+	seems to work. 
+
+	Does that mean it will work with every device?  No. We need
+	testers to make sure it works reliably.
+
+
+How do I use libusb, assuming I have all the pieces?
+--------------------------------------------------------------------------
+	Simply pass the port of 'usb:' (without the quotes) as the port
+	designation when using any userland conduit found in
+	pilot-link.  Some examples of that are:
+
+	   pilot-xfer -p usb: -b $HOME/Palm/backups
+
+	   pilot-dlpsh -p usb:
+
+	   pilot-nredir -e -p usb:
+
+	The same syntax applies when running pilot-link on Mac OS X
+	machines.
+
+
+What are these "pieces" I need?
+--------------------------------------------------------------------------
+	Now things get really interesting. 
+
+	Below are the necessary programs and versions you'll need.
+	These are the MINIMUM versions you can use.  
+
+	Anything earlier than these versions WILL NOT work.
+
+	- pilot-link....: 0.12.0
+	- libusb........: 0.1
+	- libusb-dev....: 0.1 headers
+	- udev..........: 0.70
+	- Linux kernel..: 2.4.21 or 2.6.10
+
+	You'll also need the 60-libpisock.rules file included in the
+	latest pilot-link release. A copy of the current file can be
+	found at the following URL:
+
+		http://code.pilot-link.org/60-libpisock.rules
+
+	Let's go through each program and see what we need here:
+
+	pilot-link
+	---------------------------------------------------
+		First, you'll need to grab a copy of the latest release
+		of pilot-link 0.12.0 or later. libusb does not work
+		with pilot-link v0.11.8, and there's no code in
+		pilot-link 0.11.8 to use libusb, so you can't use that
+		version or anything earlier than that.  
+
+		You MUST use 0.12.0 or later to use libusb.
+
+	libusb
+	---------------------------------------------------
+		libusb should be a part of your current Linux or
+		FreeBSD distribution. If it isn't, you can install it
+		with the standard Linux package management tools for
+		your distribution.
+
+		On Debian, this is as simple as: 
+
+		   apt-get update && apt-get install libusb libusb-dev
+
+		This should get you the pieces you'll need.
+
+		On Fedora/Red Hat, you can use yum or urpmi or similar
+		tools, as in:
+
+		   yum update
+		   yum install libusb libusb libusb-devel
+
+		Other distributions may vary, but the package names
+		should be similar.
+
+	udev
+	---------------------------------------------------
+		Your distribution should have this already, there is no
+		need to install it, but you may need to update it to
+		the latest, current version if you are behind in
+		updates.
+
+		The important thing is that you have a version of AT
+		LEAST 0.70 or later. Anything earlier will cause
+		problems, and we cannot support it.
+
+
+How do I configure these pieces on Linux?
+--------------------------------------------------------------------------
+	Easy!
+
+	Assuming you have all of the prerequisites above, and have
+	compiled (but NOT installed) pilot-link 0.12.0 against libusb,
+	and that it reported a successful libusb implementation at
+	configure time, you can proceed.
+
+	setting up the rules file for udev
+	---------------------------------------------------
+		We need to configure and restart udev first, and since
+		its the easiest of the pieces, we'll start there.
+
+		Put the 60-libpisock.rules file in
+		/etc/udev/rules.d/ and restart udev.
+
+		Check that the file was read by udev by looking at the
+		udev logs in /var/log (if you log, if not, enable
+		logging in /etc/udev/udev.conf and restart udev to
+		verify), or use the following to enable logging at
+		runtime:
+
+			udevcontrol log_priority="debug"
+
+	mount the kernel's usbfs
+	---------------------------------------------------
+		Make sure you have usbfs mounted, which can be found in
+		fstab, by adding the following line:
+
+		   # <file system> <mount point>   <type>  <options>
+		   none            /proc/bus/usb   usbfs   defaults
+
+		Then 'mount -a' to make sure its mounted. You should
+		now have a /proc/bus/usb directory heirarchy. The "new"
+		udev and libusb will be using /dev/bus/usb, but many
+		applications still use /proc/bus/usb, so we'll mount it
+		until that gets deprecated.
+
+	blacklist the kernel visor driver
+	---------------------------------
+		In order to use libusb, you'll want to make sure the
+		kernel "visor" driver does NOT load when it sees a Palm
+		device connecting to the USB root hub on your system.
+
+		udev method (for newer udev versions, no hotplug)
+		-------------------------------------------------
+		If your udev is new enough and you no longer use
+		hotplug, you can use the following process to blacklist
+		the visor driver:
+
+		Simply add 'blacklist visor' to
+		/etc/modprobe.d/blacklist-palm. If that file doesn't
+		exist, create it.
+
+		older method (for systems still using hotplug)
+		-------------------------------------------------
+		You can blacklist list by adding 'visor' to the
+		/etc/hotplug/blacklist file to stop hotplug from
+		loading it at connect time. Restart hotplug to re-read
+		the blacklist file.
+
+	pilot-link
+	---------------------------------------------------
+		You'll need to compile pilot-link by passing the
+		--enable-libusb option at configure time. When you
+		configure it with libusb support, you should see the
+		following output in the summary page:
+
+		  Direct USB support...... : yes, libusb
+
+		If you do not see that, you are missing some critical
+		build dependency. Check config.log, search for libusb
+		and see what went wrong. Remember, you'll need the
+		libusb headers to build the support into pilot-link for
+		it, not the runtime. This will be a libusb-dev or
+		libusb-devel package on most distributions.
+
+How do I configure these pieces on OS X?
+--------------------------------------------------------------------------
+	OSX is even easier, you don't have to do anything. Just
+	configure pilot-link *WITHOUT* passing the --enable-libusb
+	option, and use the same port designation ('usb:' without
+	quotes), and it will "Just Work(tm)". Many thanks go to Florent
+	Pillet for debugging this and making it work as quickly as it
+	does.
+
+	Florent's SyncBuddy product is based on libpisock, the core
+	library behind pilot-link. If you want a VERY fast
+	syncronization application for OSX which can read Photos,
+	external storage, backup, and do many other things, check it
+	out and support his efforts and contributions:
+
+		http://www.florentpillet.com/syncbuddy.html
+
+
+Ok, I have all the pieces, I've configured them, now what?
+--------------------------------------------------------------------------
+	If you're sure you've done everything above, and all services
+	and pieces are configured and restarted properly, you're almost
+	done.
+
+	The last step is to try it. To do that, just launch any of the
+	pilot-link conduits using the following syntax:
+
+		pilot-link -p usb: -l
+
+		pilot-dlpsh -p usb: 
+
+	You should see something like this: 
+
+		$ pilot-xfer -p usb: -l
+
+		   Listening for incoming connection on usb:... 
+
+	The port designation for libusb is simply 'usb:' (minus the
+	quotes). You can launch it at the desktop side first, and it
+	will wait for an incoming connection for as long as it takes to
+	receive one.
+
+	That's it. If you get any sort of error or other problem, make
+	sure the visor driver is truly unloaded (rmmod visor, as root),
+	make sure udev and hotplug are restarted, make sure your
+	pilot-link is the right version (built with libusb support),
+	and make sure your .rules file is in the right place for your
+	Palm device.
+
+
+None of this is working! Where do I go for help now? 
+--------------------------------------------------------------------------
+	There are mailing lists and an irc channel that can help. You
+	can find those at the following places:
+
+	General discussion, problems, configuration issues
+	------------------------------------------------------
+	http://www.pilot-link.org/mailman/listinfo/pilot-link-general
+
+	Development-related issues and discussion, i.e. "code"
+	------------------------------------------------------
+	http://www.pilot-link.org/mailman/listinfo/pilot-link-devel
+
+	pilot-link irc channel
+	------------------------------------------------------
+	We can also be found on irc, at irc.pilot-link.org in the
+	#channel pilot-link
+
+	If your irc client supports SSL, you can point to port 994 on
+	irc.pilot-link.org and have a secured session (no cleartext).
+	If you cannot, use port 6667 for "normal" irc.
+
+	Lastly, I can be reached directly at desrod@gnu-designs.com if
+	nothing else works for you. Try the mailing lists and irc first
+	though.
+
+
+Donating to pilot-link
+--------------------------------------------------------------------------
+	Do you like our work? Do you rely on the code we release for
+	your daily work or for your own commercial or OSS project?
+
+	Please consider donating to keep the project going. We're 100%
+	self-funded, and we see a LOT of traffic from users and
+	downloads. Every contribution helps, whether to pay for
+	bandwidth or to buy devices for testing.
+
+	You can help support us by visiting the pilot-link.org site and
+	clicking on the "Donate" button on the left side of the page.
+
+	We thank you for your contributions, whatever you can offer.
+
+
+Thanks go to...
+--------------------------------------------------------------------------
+	Justin Paulsen, "Petaris" on irc, for his tireless testing
+	efforts, mirroring pilot-link releases, helping out users on
+	irc, and keeping things lively in general.
+
+	Florent Pillet, "fpillet" on irc, for helping fix up libpisock
+	to work on OSX and doing testing on newer devices to work out
+	the various Heisenbergs found in there.
+
+	Zephania Hull, "Mercury" on irc for spending the time and
+	effort to get libusb worked out on the Linux side. Without his
+	effort, libusb wouldn't be where it is today.

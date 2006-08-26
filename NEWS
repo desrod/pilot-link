@@ -1,5 +1,31 @@
 --------------------------------------------------------------------------
-pilot-link 0.11.9, "Anoxia", 07-04-2003
+pilot-link 0.12.0, "Trois ans", 08-25-2006
+--------------------------------------------------------------------------
+Yes, 3 whole years since the last official release. There have been
+quite a few pre-releases in that time, but this is the first major
+point release in over 4 years.
+
+Major Features:
+	* Support for DLP v1.4, more devices supported out of the box
+	* Native support for OS X, no more Darwin ports needed
+	* Native libusb support (using a new port designation of usb: to
+	  use that port. See doc/README.libusb for details
+	* Most of the documentation and manpages migrated to DocBook XML
+	* Userland "conduits" have been renamed in places where namespace
+	  collision could be a factor
+	* Migration to popt() from getopt() which provides the groundwork
+	  for a global option changeover in an upcoming release.
+
+Other Features:
+	* Too many to mention, its been over 3 years ;)
+
+Bug Fixes: 
+	* Much of the code in the DLP subsystem has been reworked and many
+	  bugs have been squashed. Check the ChangeLog for details on
+	  those items.
+
+--------------------------------------------------------------------------
+pilot-link 0.11.9, "Anoxia", 07-04-2003 - NEVER RELEASED
 --------------------------------------------------------------------------
 Continuing with the theme of removing the unnecessary code and adding
 features, along comes "Anoxia" (no oxygen), the next release of pilot-link.

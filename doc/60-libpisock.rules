@@ -1,6 +1,6 @@
 # udev rules file for pilot-link's libpisock library, enabled for libusb
 #
-BUS!="usb", ACTION!="add", GOTO="libpisock9_rules_end"
+BUS!="usb", ACTION!="add", GOTO="libpisock_rules_end"
 
 # Sony handheld devices
 SYSFS{idVendor}=="054c", SYSFS{idProduct}=="0038", GROUP="dialout", MODE="0664"
@@ -42,4 +42,4 @@ SYSFS{idVendor}=="12ef", SYSFS{idProduct}=="0100", GROUP="dialout", MODE="0664"
 # Unknown device (can someone confirm?)
 SYSFS{idVendor}=="4766", SYSFS{idProduct}=="0001", GROUP="dialout", MODE="0664"
 
-LABEL="libpisock9_rules_end"
+LABEL="libpisock_rules_end"

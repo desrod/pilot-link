@@ -18,7 +18,7 @@ dnl Pilot Link Version
 dnl ******************************
 PILOT_LINK_VERS=0
 PILOT_LINK_MAJOR=12
-PILOT_LINK_MINOR=1
+PILOT_LINK_MINOR=0
 PILOT_LINK_PATCH=
 
 AC_SUBST(PILOT_LINK_VERS)
@@ -792,7 +792,6 @@ AC_MSG_RESULT([
   Internal Language Support
   -------------------------.
   Iconv support........... : $msg_iconv
-  XSLT processor.......... : $XSLTPROC
 
   External Language Support
   -------------------------.
