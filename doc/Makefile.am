@@ -7,15 +7,15 @@ endif
 EXTRA_DIST = 		 	\
 	CodingGuidelines 	\
 	README.debugging 	\
+	README.libusb		\
 	README.usb	 	\
 	TODO		 	\
 	syncabs.sgml	 	\
 	60-libpisock.rules	\
 	doxygen.cfg.in
 
-udevdir = /etc/udev/rules.d
-udev_DATA =		 \
-	60-libpisock.rules
+udevdir = $(datadir)/pilot-link/udev
+udev_DATA = 60-libpisock.rules
 
 DIST_CLEAN_FILES=doxygen.cfg
 

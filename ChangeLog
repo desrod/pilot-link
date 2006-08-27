@@ -1,3 +1,20 @@
+2006-08-26 18:53  desrod
+
+	* NEWS, README, configure.ac, doc/60-libpisock.rules,
+	  doc/README.libusb, doc/xml/Makefile.am: A few more last-minute
+	  tweaks to get 0.12.0 out the door!
+
+2006-08-25 13:57  desrod
+
+	* configure.ac: Rolling to a .1 in CVS, preparing for a 0.12.0
+	  release
+
+2006-08-25 13:52  desrod
+
+	* ChangeLog, configure.ac, doc/Makefile.am, doc/xml/Makefile.am,
+	  m4/xslt.m4, src/prc/Makefile.am: Updated a few things to get
+	  distcheck to function properly. Sigh.
+
 2006-08-25 11:56  desrod
 
 	* doc/Makefile.am: Remove extra terminating slash
