@@ -77,10 +77,7 @@
 
 #include <mach/mach.h>
 #include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
 #include <pthread.h>
-#include <errno.h>
 
 #include <IOKit/IOKitLib.h>
 #include <IOKit/IOMessage.h>
@@ -89,10 +86,8 @@
 #include <CoreFoundation/CFByteOrder.h>
 
 #include "pi-debug.h"
-#include "pi-socket.h"
 #include "pi-source.h"
 #include "pi-usb.h"
-#include "pi-error.h"
 #include "pi-util.h"
 
 /* Define this to make debug logs include USB debug info */

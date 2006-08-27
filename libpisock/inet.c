@@ -27,15 +27,9 @@
 #include <config.h>
 #endif
 
-#include <stdlib.h>
 #include <stdio.h>
-#include <string.h>
-#include <errno.h>
-
-#include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <sys/time.h>		/* Needed for Redhat 6.x machines */
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -44,11 +38,9 @@
 
 #include "pi-debug.h"
 #include "pi-source.h"
-#include "pi-socket.h"
 #include "pi-inet.h"
 #include "pi-cmp.h"
 #include "pi-net.h"
-#include "pi-error.h"
 
 /* Declare prototypes */
 static void pi_inet_device_free (pi_device_t *dev);

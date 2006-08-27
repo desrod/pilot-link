@@ -1,3 +1,9 @@
+2006-08-27 09:47  desrod
+
+	* ChangeLog, configure.ac, doc/Makefile.am, doc/xml/Makefile.am:
+	  Fix for building as a non-root user with udev rules. They now go
+	  into $datadir/pilot-link/udev by default.
+
 2006-08-26 18:53  desrod
 
 	* NEWS, README, configure.ac, doc/60-libpisock.rules,

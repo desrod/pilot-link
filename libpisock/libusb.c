@@ -23,20 +23,13 @@
 #endif
 
 #include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <errno.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <sys/time.h>		/* Needed for Redhat 6.x machines */
-#include <fcntl.h>
-#include <string.h>
 #include <pthread.h>
 #include <signal.h>
 
 #include "pi-debug.h"
 #include "pi-source.h"
-#include "pi-socket.h"
 #include "pi-usb.h"
 #include "pi-util.h"
 

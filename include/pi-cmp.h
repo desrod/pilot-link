@@ -1,5 +1,7 @@
 /*
- * pi-cmp.h
+ * pi-cmp.h - Palm Connection Management Protocol interface
+ *
+ * This latches early in the sync to determine serial sync speeds
  *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Library General Public License as published by
@@ -17,6 +19,11 @@
  */
 #ifndef _PILOT_CMP_H_
 #define _PILOT_CMP_H_
+
+/** @file pi-cmp.h
+ *  @brief Palm Connection Management Protocol definitions
+ *
+ */
 
 #include "pi-args.h"
 #include "pi-buffer.h"

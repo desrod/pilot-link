@@ -10,6 +10,11 @@
 #ifndef _PI_FOTO_H_
 #define _PI_FOTO_H_
 
+/** @file pi-foto.h
+ *  @brief Macros for the Palm Photo application's data
+ *
+ */
+
 /*
  * Offsets into the thumbnail record header.
  */

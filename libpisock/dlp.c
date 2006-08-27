@@ -1,8 +1,3 @@
-/* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */
-/* Local Variables: */
-/* indent-tabs-mode: t */
-/* c-basic-offset: 8 */
-/* End: */
 /*                              
  * dlp.c:  Palm DLP protocol
  *
@@ -28,7 +23,6 @@
 #ifdef HAVE_CONFIG_H
 	#include <config.h>
 #endif
-#include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
 #ifdef HAVE_ERRNO_H
@@ -37,16 +31,13 @@
 		#define ENOMSG EINVAL	/* For systems that don't provide ENOMSG. Use EINVAL instead. */
 	#endif
 #endif
-#include <string.h>
 #include <sys/types.h>
 #include <netinet/in.h>
 
 #include "pi-debug.h"
 #include "pi-source.h"
-#include "pi-socket.h"
 #include "pi-dlp.h"
 #include "pi-syspkt.h"
-#include "pi-error.h"
 
 #define DLP_REQUEST_DATA(req, arg, offset) &req->argv[arg]->data[offset]
 #define DLP_RESPONSE_DATA(res, arg, offset) &res->argv[arg]->data[offset]
@@ -4785,5 +4776,8 @@ dlp_ExpSlotMediaType(int sd, int slotNum, unsigned long *mediaType)
 	return result;
 }
 
-
-
+/* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */
+/* Local Variables: */
+/* indent-tabs-mode: t */
+/* c-basic-offset: 8 */
+/* End: */

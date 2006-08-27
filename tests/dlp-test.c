@@ -24,9 +24,7 @@
  *    dlp_ProcessRPC
  */
 
-#include <stdlib.h>
 #include <stdio.h>
-#include <string.h>
 
 #include "pi-debug.h"
 #include "pi-source.h"
