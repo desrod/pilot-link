@@ -20,16 +20,11 @@
  */
 
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
 #include "pi-source.h"
 #include "pi-dlp.h"
 #include "pi-expense.h"
 #include "pi-userland.h"
-
-
-
 
 int main(int argc, const char *argv[])
 {

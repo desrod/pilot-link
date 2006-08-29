@@ -25,14 +25,11 @@
 #endif
 
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
 #include "pi-source.h"
 #include "pi-dlp.h"
 #include "pi-datebook.h"
 #include "pi-userland.h"
-#include "pi-buffer.h"
 
 extern time_t parsedate(char *p);
 

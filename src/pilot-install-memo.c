@@ -18,17 +18,12 @@
  */
 
 #include <stdio.h>
-#include <stdlib.h>
 #include <strings.h>
 #include <sys/stat.h>
-#include <errno.h>
 
-#include "pi-source.h"
-#include "pi-socket.h"
 #include "pi-dlp.h"
 #include "pi-memo.h"
 #include "pi-header.h"
-
 #include "pi-userland.h"
 
 poptContext po;

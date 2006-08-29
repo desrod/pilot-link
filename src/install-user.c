@@ -18,13 +18,9 @@
  */
 
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
-#include "pi-source.h"
 #include "pi-dlp.h"
 #include "pi-header.h"
-
 #include "pi-userland.h"
 
 const char

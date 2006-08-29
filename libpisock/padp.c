@@ -26,10 +26,7 @@
 #include <config.h>
 #endif
 
-#include <stdlib.h>
 #include <stdio.h>
-#include <errno.h>
-#include <string.h>
 
 #include "pi-debug.h"
 #include "pi-source.h"

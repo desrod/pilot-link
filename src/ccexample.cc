@@ -1,12 +1,7 @@
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
 #include <iostream>
 using namespace std;
-
-#include <unistd.h>
-#include <errno.h>
 
 #include "pi-source.h"
 #include "pi-file.h"

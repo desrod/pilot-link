@@ -31,9 +31,11 @@ VERSION="$PILOT_LINK_VERS.$PILOT_LINK_MAJOR.$PILOT_LINK_MINOR$PILOT_LINK_PATCH"
 dnl ******************************
 dnl Pilot Link Library Version
 dnl libpisock.so.CURRENT.AGE.REVISION
+dnl Please see the following URL for details:
+dnl http://sources.redhat.com/autobook/autobook/autobook_91.html
 dnl ******************************
 PISOCK_CURRENT=9
-PISOCK_REVISION=0
+PISOCK_REVISION=1
 PISOCK_AGE=0
 
 AC_SUBST(PISOCK_CURRENT)

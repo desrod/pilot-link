@@ -1,5 +1,5 @@
 /*
- * cmp.c:  Pilot CMP protocol
+ * cmp.c:  Pilot Connection Management Protocol
  *
  * Copyright (c) 1996, Kenneth Albanowski.
  * Copyright (c) 1999, Tilo Christ
@@ -25,10 +25,7 @@
 #include <config.h>
 #endif
 
-#include <stdlib.h>
 #include <stdio.h>
-#include <errno.h>
-#include <string.h>
 
 #include "pi-debug.h"
 #include "pi-source.h"

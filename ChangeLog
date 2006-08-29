@@ -1,3 +1,11 @@
+2006-08-27 14:51  desrod
+
+	* ChangeLog, include/pi-cmp.h, include/pi-foto.h,
+	  libpisock/darwinusb.c, libpisock/dlp.c, libpisock/freebsdusb.c,
+	  libpisock/inet.c, libpisock/libusb.c, libpisock/linuxusb.c,
+	  tests/dlp-test.c: Minor code cleanup, removing redundant calls to
+	  headers, some minor code docs going into place here.
+
 2006-08-27 09:47  desrod
 
 	* ChangeLog, configure.ac, doc/Makefile.am, doc/xml/Makefile.am:
