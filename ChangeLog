@@ -1,3 +1,10 @@
+2006-08-28 20:57  desrod
+
+	* ChangeLog, configure.ac, libpisock/cmp.c, libpisock/padp.c,
+	  src/ccexample.cc, src/install-datebook.c, src/install-expenses.c,
+	  src/install-hinote.c, src/install-memo.c, src/install-netsync.c,
+	  src/install-user.c: More cleanup for 0.12.1
+
 2006-08-27 14:51  desrod
 
 	* ChangeLog, include/pi-cmp.h, include/pi-foto.h,
