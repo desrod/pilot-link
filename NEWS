@@ -1,4 +1,29 @@
 --------------------------------------------------------------------------
+pilot-link 0.12.1, "Fresh Air", 09-04-2006
+--------------------------------------------------------------------------
+3 years since the last release, then 1 week from that release until this
+one.
+
+WHEW! 
+
+There isn't much "new" in this release, just some rapid-fire bug fixes
+reported from users and a lot of code has been cleaned up in the tree to
+remove unnecessary includes (check doxygen for the results).
+
+I'm working on cleaning up more, documenting more and making it easier to
+use and work with.
+
+Major Features:
+        * Code cleanup in libpisock, libpisync, src and include
+
+Other Features:
+        * Nothing major in this release
+
+Bug Fixes: 
+        * Fixed the installation faux pas with udev rules, oops!
+
+
+--------------------------------------------------------------------------
 pilot-link 0.12.0, "Trois ans", 08-25-2006
 --------------------------------------------------------------------------
 Yes, 3 whole years since the last official release. There have been

@@ -2,7 +2,7 @@
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook V4.1//EN"
  "http://www.oasis-open.org/docbook/xml/4.1/docbookx.dtd" [
 <!ENTITY datebook SYSTEM "install-datebook.xml">   
-<!ENTITY expenses SYSTEM "install-expenses.xml">
+<!ENTITY expenses SYSTEM "pilot-install-expenses.xml">
 <!ENTITY ietf2 SYSTEM "ietf2datebook.xml">
 <!ENTITY installhinote SYSTEM "install-hinote.xml">  
 <!ENTITY installmemo SYSTEM "install-memo.xml">

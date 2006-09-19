@@ -1,5 +1,5 @@
 /*
- * install-expense.c: Palm expense installer
+ * pilot-install-expense.c: Palm expense installer
  *
  * Copyright (C) Boisy G. Pitre, year unknown - 2001 probably.
  *
@@ -71,7 +71,7 @@ int main(int argc, const char *argv[])
 	theExpense.amount=theExpense.vendor=theExpense.city=
 	theExpense.attendees=theExpense.note = NULL ;
 
-	po = poptGetContext("install-expenses", argc, argv, options, 0);
+	po = poptGetContext("pilot-install-expenses", argc, argv, options, 0);
 	poptSetOtherOptionHelp(po,"\n\n"
 		"   Install Expense application entries to your Palm device\n\n"
 		"   Example arguments:\n"

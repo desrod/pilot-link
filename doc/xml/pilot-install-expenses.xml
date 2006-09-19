@@ -1,11 +1,11 @@
-<refentry id="install-expenses">
+<refentry id="pilot-install-expenses">
    <refmeta>
-      <refentrytitle>install-expenses</refentrytitle>
+      <refentrytitle>pilot-install-expenses</refentrytitle>
       <manvolnum>1</manvolnum>
       <refmiscinfo>Copyright FSF 1996-2005</refmiscinfo>
    </refmeta>
    <refnamediv>
-      <refname>install-expenses</refname>
+      <refname>pilot-install-expenses</refname>
       <refpurpose>
          Install an expense record entries onto your Palm handheld device.
       </refpurpose>
@@ -17,7 +17,7 @@
    <refsect1>
       <title>Synopsis</title>
       <para>
-         <emphasis>install-expenses</emphasis>
+         <emphasis>pilot-install-expenses</emphasis>
          [<option>-p</option>|<option>--port</option> &lt;<userinput>port</userinput>&gt;]
          [<option>--version</option>] [<option>-q</option>|<option>--quiet</option>]
          [<option>-?</option>|<option>--help</option>] [<option>--usage</option>]
@@ -35,16 +35,16 @@
    <refsect1>
       <title>Description</title>
       <para>
-         <emphasis>install-expenses</emphasis> allows a Palm handheld with the Expense application
+         <emphasis>pilot-install-expenses</emphasis> allows a Palm handheld with the Expense application
          to have expense records synchronized to it from the commandline. You can pass any of the
-         fields (except categories, currently) to <emphasis>install-expenses</emphasis> and create
+         fields (except categories, currently) to <emphasis>pilot-install-expenses</emphasis> and create
          new expense records on your Palm handheld.
       </para>
    </refsect1>
    <refsect1>
       <title>Options</title>
       <refsect2>
-         <title>install-expenses options</title>
+         <title>pilot-install-expenses options</title>
 	<variablelist>
 	<varlistentry>
 		<term>
@@ -177,9 +177,9 @@
          <listitem>
             <para>
                Use device file &lt;<filename>port</filename>&gt; to communicate with the Palm
-               handheld. If this is not specified, <emphasis>install-expenses</emphasis> will look
+               handheld. If this is not specified, <emphasis>pilot-install-expenses</emphasis> will look
                for the <filename>$PILOTPORT</filename> environment variable. If neither are found
-               or supplied, <emphasis>install-expenses</emphasis> will print the usage information.
+               or supplied, <emphasis>pilot-install-expenses</emphasis> will print the usage information.
             </para>
          </listitem>
 	</varlistentry>
@@ -198,7 +198,7 @@
          </term>
          <listitem>
             <para>
-               Display version information for <emphasis>install-expenses</emphasis> and exit
+               Display version information for <emphasis>pilot-install-expenses</emphasis> and exit
                without connecting.
             </para>
          </listitem>
@@ -214,7 +214,7 @@
 		</term>
          <listitem>
             <para>
-               Display the help synopsis for <emphasis>install-expenses</emphasis> and exit without
+               Display the help synopsis for <emphasis>pilot-install-expenses</emphasis> and exit without
                connecting.
             </para>
          </listitem>
@@ -234,13 +234,13 @@
       <title>Usage</title>
       <para>
          The program will connect to the Palm handheld, and install entries into the Expense
-         application based on values passed to <emphasis>install-expenses</emphasis> arguments.
+         application based on values passed to <emphasis>pilot-install-expenses</emphasis> arguments.
       </para>
    </refsect1>
    <refsect1>
       <title>Example</title>
       <para>
-         <emphasis>install-expenses</emphasis>
+         <emphasis>pilot-install-expenses</emphasis>
          <emphasis>-p</emphasis> <filename>/dev/pilot</filename>
          <emphasis>-c</emphasis> Unfiled
          <emphasis>-t</emphasis> Cash <emphasis>-e</emphasis> Meals
@@ -257,7 +257,7 @@
    <refsect1>
       <title>Author</title>
       <para>
-         <emphasis>install-expenses</emphasis> was originally written by community authors, the original
+         <emphasis>pilot-install-expenses</emphasis> was originally written by community authors, the original
          author is unknown.
       </para>
       <para>

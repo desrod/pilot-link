@@ -69,7 +69,7 @@
             installs a new datebook entry onto your Palm handheld.</para>
     </refsect2>
     <refsect2>
-      <title>install-expenses</title>
+      <title>pilot-install-expenses</title>
       <para>
             Install an expense record from various parameters and arguments passed at connection time.</para>
     </refsect2>
@@ -360,7 +360,7 @@ the application itself.</para>
     <para><filename>pilot-addresses</filename>(1), <filename>pilot-dlpsh</filename>(1),
 <filename>pilot-hinotes</filename>(1), <filename>ietf2datebook</filename>(1),
 <filename>install-datebook</filename>(1),
-<filename>install-expenses</filename>(1),
+<filename>pilot-install-expenses</filename>(1),
 <filename>install-hinote</filename>(1), <filename>install-memo</filename>(1),
 <filename>install-netsync</filename>(1), <filename>install-user</filename>(1),
 <filename>pilot-getrom</filename>(1), <filename>pilot-getram</filename>(1),

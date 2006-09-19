@@ -20,7 +20,6 @@ noinst_LTLIBRARIES = libpiuserland.la
 
 bin_PROGRAMS =			\
 	install-datebook	\
-	install-expenses	\
 	install-hinote		\
 	install-memo		\
 	install-netsync		\
@@ -39,6 +38,7 @@ bin_PROGRAMS =			\
 	pilot-getrom		\
 	pilot-getromtoken	\
 	pilot-hinotes		\
+	pilot-install-expenses	\
 	pilot-memos		\
 	pilot-nredir		\
 	pilot-reminders		\
@@ -91,9 +91,9 @@ install_datebook_LDADD = 	\
 	$(POPT_LIBS)		\
 	$(top_builddir)/libpisock/libpisock.la
 
-install_expenses_SOURCES = 	\
-	install-expenses.c
-install_expenses_LDADD = 	\
+pilot_install_expenses_SOURCES = 	\
+	pilot-install-expenses.c
+pilot_install_expenses_LDADD = 	\
 	libpiuserland.la	\
 	$(POPT_LIBS)		\
 	$(top_builddir)/libpisock/libpisock.la
@@ -345,11 +345,7 @@ EXTRA_DIST = 			\
 	pilot-undelete.PL	\
 	sync-plan.PL		\
 	ccexample.cc		\
-	pilot-debugsh.c		\
-	pilot-dlpsh.c		\
-	pilot-hinotes.c		\
 	install-datebook.c	\
-	install-expenses.c	\
 	install-hinote.c	\
 	install-memo.c		\
 	install-netsync.c	\
@@ -361,6 +357,8 @@ EXTRA_DIST = 			\
 	parsedate.y		\
 	pd-tty.c		\
 	pilot-csd.c		\
+	pilot-debugsh.c		\
+	pilot-dlpsh.c		\
 	pilot-getram.c		\
 	pilot-getrom.c		\
 	pilot-getromtoken.c	\
@@ -371,6 +369,8 @@ EXTRA_DIST = 			\
 	pilot-dedupe.c		\
 	pilot-file.c		\
 	pilot-foto.c		\
+	pilot-hinotes.c		\
+	pilot-install-expenses	\
 	pilot-port.c		\
 	pilot-schlep.c		\
 	pilot-treofoto.c	\
