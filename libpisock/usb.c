@@ -880,28 +880,16 @@ pi_usb_dev_t known_devices[] = {
 	},
 };
 
-static pi_usb_dev_t override_device;
-
 int
 USB_check_device (pi_usb_data_t *dev, u_int16_t vendor, u_int16_t product)
 {
 	unsigned int i;
-	if (override_device.vendor) {
-		if (override_device.vendor == vendor) {
-			if (!override_device.product ||
-					override_device.product == product) {
-				dev->dev.flags |= override_device.flags;
-				return 0;
-			}
-		}
-		return -1;
-	}
 
 	for (i = 0; i < (sizeof (known_devices) / sizeof (known_devices[0])); i++) {
 		if (known_devices[i].vendor == vendor) {
 			if (!known_devices[i].product ||
 					known_devices[i].product == product) {
-				dev->dev.flags |= override_device.flags;
+				dev->dev.flags |= known_devices[i].flags;
 				return 0;
 			}
 		}
