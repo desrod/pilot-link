@@ -44,6 +44,7 @@ bin_PROGRAMS =			\
 	pilot-reminders		\
 	pilot-schlep		\
 	pilot-treofoto		\
+	pilot-650foto		\
 	pilot-wav		\
 	pilot-xfer		\
 	read-expenses		\
@@ -258,6 +259,13 @@ pilot_treofoto_LDADD = 		\
 	$(POPT_LIBS)		\
 	$(top_builddir)/libpisock/libpisock.la
 
+pilot_650foto_SOURCES = 		\
+	pilot-650foto.c
+pilot_650foto_LDADD = 		\
+	libpiuserland.la	\
+	$(POPT_LIBS)		\
+	$(top_builddir)/libpisock/libpisock.la
+
 pilot_wav_SOURCES = 		\
 	pilot-wav.c
 pilot_wav_LDADD = 		\
@@ -374,6 +382,7 @@ EXTRA_DIST = 			\
 	pilot-port.c		\
 	pilot-schlep.c		\
 	pilot-treofoto.c	\
+	pilot-650foto.c	\
 	pilot-wav.c		\
 	pilot-xfer.c		\
 	read-expenses.c		\
