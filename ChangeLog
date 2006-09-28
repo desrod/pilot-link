@@ -1,3 +1,8 @@
+2006-09-27 22:00  Angus
+
+	* ChangeLog, src/pilot-650.c, src/Makefile.am: pilot-650 grabs
+	  photos and videos from the phone
+
 2006-08-28 20:57  desrod
 
 	* ChangeLog, configure.ac, libpisock/cmp.c, libpisock/padp.c,
