@@ -658,7 +658,7 @@ pi_usb_dev_t known_devices[] = {
 
 	{
 		.vendor 	= 0x054c,
-		.product 	= 0x000a,
+		.product 	= 0x009a,
 		.idstr 		= "Sony NR and other Palm OS 4.1 devices",
 	},
 
