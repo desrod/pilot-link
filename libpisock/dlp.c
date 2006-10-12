@@ -3,7 +3,7 @@
  *
  * Copyright (c) 1996, 1997, Kenneth Albanowski
  * Copyright (c) 1998-2003, David Desrosiers, JP Rosevear and others
- * Copyright (c) 2004, 2005, Florent Pillet
+ * Copyright (c) 2004, 2005, 2006, Florent Pillet
  *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Library General Public License as published by
@@ -48,6 +48,13 @@
 #define	RequireDLPVersion(sd,major,minor)	\
 	if (pi_version(sd) < (((major)<<8) | (minor))) \
 		return dlpErrNotSupp
+
+/* This constant is being used during dlp_ReadResourceByType, dlp_ReadResourceByIndex, dlp_ReadRecordById, and dlp_ReadRecordByIndex
+ * Scott Gruby discovered that on some devices, reading a record that has the maximum record size can lock up the device.
+ * We'll read large records in two steps, getting the small amount of remaining data the second time.
+ * Scott's tests showed that the value above (100 bytes) was enough of a safeguard to prevent device lockup
+ */
+#define	RECORD_READ_SAFEGUARD_SIZE	100
 
 /* Define prototypes */
 #ifdef PI_DEBUG
@@ -221,9 +228,8 @@ struct dlpArg
 		arg->id_ = argID;
 		arg->len = len;
 		arg->data = NULL;
-
 		if (len > 0) {
-			arg->data = malloc (len);
+			arg->data = (char *)malloc (len);
 			if (arg->data == NULL) {
 				free(arg);
 				arg = NULL;
@@ -473,7 +479,7 @@ dlp_response_read (struct dlpResponse **res, int sd)
 	size_t len;
 	pi_buffer_t *dlp_buf;
 	
-	dlp_buf = pi_buffer_new (DLP_BUF_SIZE);
+	dlp_buf = pi_buffer_new (pi_maxrecsize(sd));
 	if (dlp_buf == NULL)
 		return pi_set_error(sd, PI_ERR_GENERIC_MEMORY);
 
@@ -494,7 +500,7 @@ dlp_response_read (struct dlpResponse **res, int sd)
 		return pi_set_error(sd, PI_ERR_DLP_COMMAND);
 	}
 
-	response = dlp_response_new (dlp_buf->data[0] & 0x7f, dlp_buf->data[1]);
+	response = dlp_response_new ((enum dlpFunctions)(dlp_buf->data[0] & 0x7f), dlp_buf->data[1]);
 	*res = response;
 
 	/* note that in case an error occurs, we do not deallocate the response
@@ -504,7 +510,7 @@ dlp_response_read (struct dlpResponse **res, int sd)
 		return pi_set_error(sd, PI_ERR_GENERIC_MEMORY);
 	}
 
-	response->err = get_short (&dlp_buf->data[2]);
+	response->err = (enum dlpErrors) get_short (&dlp_buf->data[2]);
 	pi_set_palmos_error(sd, (int)response->err);
 
 	/* FIXME: add bounds checking to make sure we don't access past
@@ -717,7 +723,6 @@ dlp_exec(int sd, struct dlpRequest *req, struct dlpResponse **res)
 
 	/* Check to make sure the response is for this command */
 	if ((*res)->cmd != req->cmd) {
-		
 		/* The Palm m130 and Tungsten T return the wrong code for VFSVolumeInfo */
 		/* Tungsten T5 (and maybe Treo 650) return dlpFuncEndOfSync for dlpFuncWriteResource */
 		/* In some cases, the Tapwave Zodiac returns dlpFuncReadRecord instead of dlpFuncReadRecordEx */
@@ -2021,6 +2026,11 @@ dlp_ReadUserInfo(int sd, struct PilotUser *User)
 			 DLP_RESPONSE_DATA (res, 0, 30 + userlen),
 				User->passwordLength);
 
+		if (userlen < sizeof(User->username))
+			User->username[userlen] = '\0';
+		if (User->passwordLength < sizeof(User->password))
+			User->password[User->passwordLength] = '\0';
+
 		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
 		    	"DLP ReadUserInfo UID=0x%8.8lX VID=0x%8.8lX "
 			"PCID=0x%8.8lX\n",
@@ -2554,7 +2564,7 @@ dlp_WriteRecord(int sd, int dbhandle, int flags, recordid_t recID,
 				0xffff,									/* index */
 				flags,
 				catID,
-				data, (int)length));
+				(const char *)data, (int)length));
 	}
 	
 	dlp_response_free(res);
@@ -2651,6 +2661,7 @@ dlp_ReadResourceByType(int sd, int dbhandle, unsigned long type, int resID,
 		data_len;
 	struct dlpRequest *req;
 	struct dlpResponse *res;
+	int maxBufferSize = pi_maxrecsize(sd) - RECORD_READ_SAFEGUARD_SIZE;
 
 	TraceX(dlp_ReadResourceByType,"type='%4.4s' resID=%d",(const char *)&type,resID);
 	pi_reset_errors(sd);
@@ -2664,7 +2675,7 @@ dlp_ReadResourceByType(int sd, int dbhandle, unsigned long type, int resID,
 	set_long(DLP_REQUEST_DATA(req, 0, 2), type);
 	set_short(DLP_REQUEST_DATA(req, 0, 6), resID);
 	set_short(DLP_REQUEST_DATA(req, 0, 8), 0);
-	set_short(DLP_REQUEST_DATA(req, 0, 10), buffer ? DLP_BUF_SIZE : 0);
+	set_short(DLP_REQUEST_DATA(req, 0, 10), buffer ? maxBufferSize : 0);
 
 	result = dlp_exec(sd, req, &res);
 
@@ -2678,6 +2689,32 @@ dlp_ReadResourceByType(int sd, int dbhandle, unsigned long type, int resID,
 			pi_buffer_clear (buffer);
 			pi_buffer_append (buffer, DLP_RESPONSE_DATA(res, 0, 10),
 				(size_t)data_len);
+
+			// Some devices such as the Tungsten TX, Treo 650 and Treo 700p lock up if you try to read the entire record if the
+			// record is almost at the maximum record size. The following mitigates this and allows the record
+			// to be read in two chunks.
+			if (data_len == maxBufferSize) {
+				dlp_response_free(res);
+				req = dlp_request_new_with_argid(dlpFuncReadResource, 0x21, 1, 12);
+				if (req != NULL) {
+					set_byte(DLP_REQUEST_DATA(req, 0, 0), dbhandle);
+					set_byte(DLP_REQUEST_DATA(req, 0, 1), 0);
+					set_long(DLP_REQUEST_DATA(req, 0, 2), type);
+					set_short(DLP_REQUEST_DATA(req, 0, 6), resID);
+					set_short(DLP_REQUEST_DATA(req, 0, 8), maxBufferSize);	// Offset in record
+					set_short(DLP_REQUEST_DATA(req, 0, 10), RECORD_READ_SAFEGUARD_SIZE);
+
+					result = dlp_exec(sd, req, &res);
+					
+					dlp_request_free(req);
+					
+					if (result > 0) {
+						data_len = res->argv[0]->len - 10;	// number of bytes returned by the second read...
+						pi_buffer_append (buffer, DLP_RESPONSE_DATA(res, 0, 10), (size_t)data_len);
+						data_len += maxBufferSize;		// ...that add up to the bytes received in the first read
+					}
+				}
+			}
 		}
 		
 		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
@@ -2705,6 +2742,7 @@ dlp_ReadResourceByIndex(int sd, int dbhandle, unsigned int resindex, pi_buffer_t
 		large = 0;
 	struct dlpRequest *req;
 	struct dlpResponse *res;
+	int maxBufferSize = pi_maxrecsize(sd) - RECORD_READ_SAFEGUARD_SIZE;
 
 	TraceX(dlp_ReadResourceByIndex,"resindex=%d",resindex);
 	pi_reset_errors(sd);
@@ -2731,7 +2769,7 @@ dlp_ReadResourceByIndex(int sd, int dbhandle, unsigned int resindex, pi_buffer_t
 		set_byte(DLP_REQUEST_DATA(req, 0, 0), dbhandle);
 		set_byte(DLP_REQUEST_DATA(req, 0, 1), 0);
 		set_short(DLP_REQUEST_DATA(req, 0, 2), resindex);
-		set_long(DLP_REQUEST_DATA(req, 0, 4), DLP_BUF_SIZE);
+		set_long(DLP_REQUEST_DATA(req, 0, 4), maxBufferSize);
 	}
 
 	result = dlp_exec(sd, req, &res);
@@ -2748,6 +2786,32 @@ dlp_ReadResourceByIndex(int sd, int dbhandle, unsigned int resindex, pi_buffer_t
 			pi_buffer_clear (buffer);
 			pi_buffer_append (buffer, DLP_RESPONSE_DATA(res, 0, large ? 12 : 10),
 				(size_t)data_len);
+
+			// Some devices such as the Tungsten TX, Treo 650 and Treo 700p lock up if you try to read the entire record if the
+			// record is almost at the maximum record size. The following mitigates this and allows the record
+			// to be read in two chunks.
+			if (data_len == maxBufferSize && !large) {
+				dlp_response_free(res);
+				req = dlp_request_new (dlpFuncReadResource, 1, 8);
+				if (req != NULL) {
+					set_byte(DLP_REQUEST_DATA(req, 0, 0), dbhandle);
+					set_byte(DLP_REQUEST_DATA(req, 0, 1), 0);
+					set_short(DLP_REQUEST_DATA(req, 0, 2), resindex);
+					set_short(DLP_REQUEST_DATA(req, 0, 4), maxBufferSize); // Offset in record
+					set_short(DLP_REQUEST_DATA(req, 0, 6), RECORD_READ_SAFEGUARD_SIZE);
+					
+					result = dlp_exec(sd, req, &res);
+					
+					dlp_request_free(req);
+					
+					if (result > 0) {
+						data_len = res->argv[0]->len - (large ? 12 : 10); // number of bytes returned by the second read...
+						pi_buffer_append (buffer, DLP_RESPONSE_DATA(res, 0, large ? 12 : 10),
+										  (size_t)data_len);
+						data_len += maxBufferSize;			// ...that add up to the bytes received in the first read
+					}
+				}
+			}			
 		}
 
 		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
@@ -3522,6 +3586,7 @@ dlp_ReadRecordById(int sd, int dbhandle, recordid_t recuid, pi_buffer_t *buffer,
 	int 	result;
 	struct dlpRequest *req;
 	struct dlpResponse *res;
+	int maxBufferSize = pi_maxrecsize(sd) - RECORD_READ_SAFEGUARD_SIZE;
 
 	TraceX(dlp_ReadRecordById,"recuid=0x%08lx",recuid);
 	pi_reset_errors(sd);
@@ -3534,7 +3599,7 @@ dlp_ReadRecordById(int sd, int dbhandle, recordid_t recuid, pi_buffer_t *buffer,
 	set_byte(DLP_REQUEST_DATA(req, 0, 1), 0);
 	set_long(DLP_REQUEST_DATA(req, 0, 2), recuid); 
 	set_short(DLP_REQUEST_DATA(req, 0, 6), 0); /* Offset into record */
-	set_short(DLP_REQUEST_DATA(req, 0, 8), buffer ? DLP_BUF_SIZE : 0);	/* length to return */
+	set_short(DLP_REQUEST_DATA(req, 0, 8), buffer ? maxBufferSize : 0);	/* length to return */
 
 	result = dlp_exec(sd, req, &res);
 
@@ -3552,6 +3617,31 @@ dlp_ReadRecordById(int sd, int dbhandle, recordid_t recuid, pi_buffer_t *buffer,
 			pi_buffer_clear (buffer);
 			pi_buffer_append (buffer, DLP_RESPONSE_DATA(res, 0, 10),
 				(size_t)result);
+
+			// Some devices such as the Tungsten TX, Treo 650 and Treo 700p lock up if you try to read the entire record if the
+			// record is almost at the maximum record size. The following mitigates this and allows the record
+			// to be read in two chunks.
+			if (result == maxBufferSize) {
+				dlp_response_free(res);
+				req = dlp_request_new(dlpFuncReadRecord, 1, 10);
+				if (req != NULL) {
+					set_byte(DLP_REQUEST_DATA(req, 0, 0), dbhandle);
+					set_byte(DLP_REQUEST_DATA(req, 0, 1), 0);
+					set_long(DLP_REQUEST_DATA(req, 0, 2), recuid); 
+					set_short(DLP_REQUEST_DATA(req, 0, 6), maxBufferSize); /* Offset into record */
+					set_short(DLP_REQUEST_DATA(req, 0, 8), buffer ? RECORD_READ_SAFEGUARD_SIZE : 0);	/* length to return */
+
+					result = dlp_exec(sd, req, &res);
+					dlp_request_free(req);
+
+					if (result > 0) {
+						result = res->argv[0]->len - 10;
+						pi_buffer_append (buffer, DLP_RESPONSE_DATA(res, 0, 10),
+										  (size_t)result);
+						result += maxBufferSize;
+					}
+				}
+			}
 		}
 
 		CHECK(PI_DBG_DLP, PI_DBG_LVL_DEBUG,
@@ -3576,6 +3666,7 @@ dlp_ReadRecordByIndex(int sd, int dbhandle, int recindex, pi_buffer_t *buffer,
 		large = 0;
 	struct dlpRequest *req;
 	struct dlpResponse *res;
+	int maxBufferSize = pi_maxrecsize(sd) - RECORD_READ_SAFEGUARD_SIZE;
 
 	TraceX(dlp_ReadRecordByIndex,"recindex=%d",recindex);
 	pi_reset_errors(sd);
@@ -3603,10 +3694,9 @@ dlp_ReadRecordByIndex(int sd, int dbhandle, int recindex, pi_buffer_t *buffer,
 		set_byte(DLP_REQUEST_DATA(req, 0, 1), 0x00);
 		set_short(DLP_REQUEST_DATA(req, 0, 2), recindex);
 		set_short(DLP_REQUEST_DATA(req, 0, 4), 0); /* Offset into record */
-		set_short(DLP_REQUEST_DATA(req, 0, 6), buffer ? DLP_BUF_SIZE : 0);	/* length to return */
+		set_short(DLP_REQUEST_DATA(req, 0, 6), buffer ? maxBufferSize : 0);	/* length to return */
 	}
 	result = dlp_exec(sd, req, &res);
-
 	dlp_request_free(req);
 	
 	if (result > 0) {
@@ -3621,6 +3711,32 @@ dlp_ReadRecordByIndex(int sd, int dbhandle, int recindex, pi_buffer_t *buffer,
 			pi_buffer_clear (buffer);
 			pi_buffer_append (buffer, DLP_RESPONSE_DATA(res, 0, large ? 14 : 10),
 				(size_t)result);
+
+			// Some devices such as the Tungsten TX, Treo 650 and Treo 700p lock up if you try to read the entire record if the
+			// record is almost at the maximum record size. The following mitigates this and allows the record
+			// to be read in two chunks.
+			if (result == maxBufferSize && !large) {
+				dlp_response_free(res);
+				req = dlp_request_new_with_argid(dlpFuncReadRecord, 0x21, 1, 8);
+				if (req != NULL) {
+					set_byte(DLP_REQUEST_DATA(req, 0, 0), dbhandle);
+					set_byte(DLP_REQUEST_DATA(req, 0, 1), 0x00);
+					set_short(DLP_REQUEST_DATA(req, 0, 2), recindex);
+					set_short(DLP_REQUEST_DATA(req, 0, 4), maxBufferSize); /* Offset into record */
+					set_short(DLP_REQUEST_DATA(req, 0, 6), buffer ? RECORD_READ_SAFEGUARD_SIZE : 0);	/* length to return */
+
+					result = dlp_exec(sd, req, &res);
+					dlp_request_free(req);
+
+					if (result > 0) {
+						result = res->argv[0]->len - (large ? 14 : 10);
+						pi_buffer_append (buffer, DLP_RESPONSE_DATA(res, 0, large ? 14 : 10),
+										  (size_t)result);
+						
+						result += maxBufferSize;
+					}
+				}
+			}
 		}
 
 		CHECK(PI_DBG_DLP, PI_DBG_LVL_DEBUG,
