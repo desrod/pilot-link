@@ -348,7 +348,7 @@ acceptedDevices[] = {
 	{0x0830, 0x0052},
 	{0x0830, 0x0053},
 	{0x0830, 0x0060, FLAG_ANSWERS_CONN_INFO},	/* Tungsten series, Zire 71 */
-	{0x0830, 0x0061, FLAG_ANSWERS_PALM_CONN_INFO | FLAG_USE_FIRST_PAIR},	/* Zire 22, 31, 72, T|5, T|X, LifeDrive -- for T|X and LD, they don't answer to the PALM_EXT_CONNECTION_INFORMATION control code. In this case we revert to using the first pair of pipes */
+	{0x0830, 0x0061, FLAG_ANSWERS_PALM_CONN_INFO | FLAG_USE_FIRST_PAIR},	/* Zire 22, 31, 72, T|5, T|X, LifeDrive, Treo 650 -- for T|X and LD, they don't answer to the PALM_EXT_CONNECTION_INFORMATION control code. In this case we revert to using the first pair of pipes */
 	{0x0830, 0x0062},
 	{0x0830, 0x0063},
 	{0x0830, 0x0070, FLAG_ANSWERS_CONN_INFO},	/* Zire */
