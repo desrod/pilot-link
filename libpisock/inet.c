@@ -1,12 +1,12 @@
 /*
+ * $Id$
+ *
  * inet.c: Interface layer to TCP/IP NetSync connections
  *
  * Copyright (c) 1997, Kenneth Albanowski
  * Copyright (c) 1999, Tilo Christ
  * Copyright (c) 1999, John Franks
  * Copyright (c) 2004, 2005 Florent Pillet
- *
- * $Id$
  *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Library General Public License as published by
@@ -587,8 +587,9 @@ pi_inet_setsockopt(pi_socket_t *ps, int level, int option_name,
 	return 0;
 }
 
-/* vi: set ts=4 sw=4 sts=4 noexpandtab: cin */
+/* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */
+/* ex: set tabstop=4 expandtab: */
 /* Local Variables: */
 /* indent-tabs-mode: t */
-/* c-basic-offset: 4 */
+/* c-basic-offset: 8 */
 /* End: */

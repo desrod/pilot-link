@@ -1,4 +1,6 @@
 /*
+ * $Id$ 
+ *
  * install-datebook.c:  Palm datebook installer
  *
  * Copyright 1997, Tero Kivinen
@@ -265,6 +267,7 @@ error:
 }
 
 /* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */
+/* ex: set tabstop=4 expandtab: */
 /* Local Variables: */
 /* indent-tabs-mode: t */
 /* c-basic-offset: 8 */

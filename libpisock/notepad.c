@@ -1,9 +1,9 @@
 /*
+ * $Id$
+ *
  * notepad.c:  Translate Palm NotePad application data formats
  *
  * Copyright (c) 2002, Angus Ainslie
- *
- * $Id$
  *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Library General Public License as published by
@@ -257,7 +257,9 @@ pack_NotePadAppInfo(NotePadAppInfo_t *appinfo, unsigned char *record,
 }
 
 /* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */
+/* ex: set tabstop=4 expandtab: */
 /* Local Variables: */
 /* indent-tabs-mode: t */
 /* c-basic-offset: 8 */
 /* End: */
+

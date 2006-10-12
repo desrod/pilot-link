@@ -1,4 +1,6 @@
 /*
+ * $Id$ 
+ *
  * pilot-csd.c: Connection Service Daemon, required for accepting logons via
  *           NetSync(tm)
  *
@@ -420,3 +422,10 @@ int main(int argc, const char *argv[])
 
 	return 0;
 }
+
+/* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */
+/* ex: set tabstop=4 expandtab: */
+/* Local Variables: */
+/* indent-tabs-mode: t */
+/* c-basic-offset: 8 */
+/* End: */

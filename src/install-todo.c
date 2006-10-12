@@ -1,4 +1,6 @@
 /*
+ * $Id$ 
+ *
  * install-todo.c:  Palm ToDo list installer
  *
  * Copyright 2002, Martin Fick, based on code in install-todos by Robert A.
@@ -229,7 +231,9 @@ int main(int argc, const char *argv[])
 }
 
 /* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */
+/* ex: set tabstop=4 expandtab: */
 /* Local Variables: */
 /* indent-tabs-mode: t */
 /* c-basic-offset: 8 */
 /* End: */
+

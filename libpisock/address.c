@@ -1,9 +1,8 @@
 /*
- * address.c:  Translate Pilot address book data formats
- *
- * Copyright (c) 1996, Kenneth Albanowski
- *
  * $Id$
+ *
+ * address.c:  Translate Pilot address book data formats
+ * (c) 1996, Kenneth Albanowski
  *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Library General Public License as published by
@@ -305,3 +304,10 @@ pack_AddressAppInfo(AddressAppInfo_t *ai, unsigned char *record, size_t len)
 
 	return (pos - record);
 }
+
+/* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */
+/* ex: set tabstop=4 expandtab: */
+/* Local Variables: */
+/* indent-tabs-mode: t */
+/* c-basic-offset: 8 */
+/* End: */

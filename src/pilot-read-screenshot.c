@@ -1,5 +1,6 @@
-/* ex: set tabstop=4 expandtab: */
 /*
+ * $Id$ 
+ *
  * read-screenshot.c
  *
  * Copyright (c) 2003-2004, Angus Ainslie
@@ -473,3 +474,10 @@ error_close:
 error:
 	return -1;
 }
+
+/* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */
+/* ex: set tabstop=4 expandtab: */
+/* Local Variables: */
+/* indent-tabs-mode: t */
+/* c-basic-offset: 8 */
+/* End: */

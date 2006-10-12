@@ -1,4 +1,6 @@
 /*
+ * $Id$ 
+ *
  * pilot-wav.c: Palm Voice Memo Wav Fetcher/Converter
  *
  * This is a palm conduit to fetch Memo Wav files from a Palm.  It can also
@@ -423,3 +425,10 @@ int main(int argc, const char *argv[])
 
         return 0;
 }
+
+/* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */
+/* ex: set tabstop=4 expandtab: */
+/* Local Variables: */
+/* indent-tabs-mode: t */
+/* c-basic-offset: 8 */
+/* End: */

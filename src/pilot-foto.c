@@ -1,4 +1,6 @@
 /*
+ * $Id$ 
+ *
  * pilot-foto.c: Palm 'Foto' Image Fetcher/Converter
  *
  * This is a palm conduit to fetch Foto files from a Palm.  It can also
@@ -1107,3 +1109,10 @@ int memcpy_tux_record(unsigned char *dest)
     memcpy(dest, tux, SIZE_OF_TUX);
     return 0;
 }
+
+/* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */
+/* ex: set tabstop=4 expandtab: */
+/* Local Variables: */
+/* indent-tabs-mode: t */
+/* c-basic-offset: 8 */
+/* End: */

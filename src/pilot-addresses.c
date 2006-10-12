@@ -1,4 +1,6 @@
 /*
+ * $Id$ 
+ *
  * pilot-addresses.c:  Palm address transfer utility
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -868,3 +870,10 @@ error_close:
 error:
         return -1;
 }
+
+/* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */
+/* ex: set tabstop=4 expandtab: */
+/* Local Variables: */
+/* indent-tabs-mode: t */
+/* c-basic-offset: 8 */
+/* End: */

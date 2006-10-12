@@ -1,4 +1,6 @@
 /*
+ * $Id$ 
+ *
  * read-notepad.c:  Translate Palm NotePad database into generic picture format
  *
  * Copyright (c) 2002, Angus Ainslie
@@ -541,4 +543,10 @@ error:
 
 }
 
-/* vi: set ts=4 sw=4 sts=4 noexpandtab: cin */
+/* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */
+/* ex: set tabstop=4 expandtab: */
+/* Local Variables: */
+/* indent-tabs-mode: t */
+/* c-basic-offset: 8 */
+/* End: */
+

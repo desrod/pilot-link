@@ -1,9 +1,9 @@
 /*
+ * $Id$
+ *
  * appinfo.c:  Translate Pilot category info
  *
  * Copyright (c) 1996, 1997, Kenneth Albanowski
- *
- * $Id$
  *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Library General Public License as published by
@@ -110,3 +110,10 @@ pack_CategoryAppInfo(CategoryAppInfo_t *ai, unsigned char *record, size_t len)
 
 	return (record - start);
 }
+
+/* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */
+/* ex: set tabstop=4 expandtab: */
+/* Local Variables: */
+/* indent-tabs-mode: t */
+/* c-basic-offset: 8 */
+/* End: */

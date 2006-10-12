@@ -1,4 +1,6 @@
 /*
+ * $Id$ 
+ *
  * pilot-getromtoken.c:  Retrieve a rom token from a device.
  *
  * Copyright (C) 2002, Owen Stenseth

@@ -1,4 +1,6 @@
 /*
+ * $Id$
+ *
  * padp.c:  Pilot PADP protocol
  *
  * (c) 1996, D. Jeff Dionne.
@@ -6,8 +8,6 @@
  *	Mostly rewritten by Kenneth Albanowski.  Adjusted timeout values and
  *	better error handling by Tilo Christ.
  * (c) 2005, Florent Pillet
- *
- * $Id$
  *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Library General Public License as published by
@@ -961,7 +961,9 @@ padp_dump(const unsigned char *data)
 }
 
 /* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */
+/* ex: set tabstop=4 expandtab: */
 /* Local Variables: */
 /* indent-tabs-mode: t */
 /* c-basic-offset: 8 */
 /* End: */
+

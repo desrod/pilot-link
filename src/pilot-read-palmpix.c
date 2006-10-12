@@ -1,5 +1,6 @@
-/* ex: set tabstop=4 expandtab: */
 /*
+ * $Id$ 
+ *
  * read-palmpix.c:  PalmPix image convertor
  *
  * Copyright 2001 John Marshall <jmarshall@acm.org>
@@ -598,6 +599,7 @@ int main (int argc, const char **argv) {
 }
 
 /* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */
+/* ex: set tabstop=4 expandtab: */
 /* Local Variables: */
 /* indent-tabs-mode: t */
 /* c-basic-offset: 8 */

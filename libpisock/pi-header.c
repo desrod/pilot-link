@@ -1,9 +1,9 @@
 /*
+ * $Id$
+ *
  * pi-header.c:  Splash for the version/etc.
  *
  * Copyright (c) 2000, David A. Desrosiers
- *
- * $Id$
  *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Library General Public License as published by
@@ -56,6 +56,7 @@ void print_splash(const char *progname)
 }
 
 /* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */
+/* ex: set tabstop=4 expandtab: */
 /* Local Variables: */
 /* indent-tabs-mode: t */
 /* c-basic-offset: 8 */

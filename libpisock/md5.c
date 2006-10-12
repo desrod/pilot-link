@@ -20,6 +20,7 @@
  * Modified by Ian Jackson in 1995 so as not to use Colin Plumb's
  * 'usuals.h'.  Arranged for byteSwap to be compiled and called even on
  * little-endian machines, as performance isn't critical here.
+ *
  */
 
 #include <string.h>		/* for memcpy() */
@@ -232,6 +233,7 @@ void MD5Transform(UINT32 buf[4], UINT32 const in[16])
 #endif
 
 /* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */
+/* ex: set tabstop=4 expandtab: */
 /* Local Variables: */
 /* indent-tabs-mode: t */
 /* c-basic-offset: 8 */

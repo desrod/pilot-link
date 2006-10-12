@@ -1,9 +1,9 @@
 /*
+ * $Id$
+ *
  * darwinusb.c: I/O support for Darwin (Mac OS X) USB
  *
  * Copyright (c) 2004-2006, Florent Pillet.
- *
- * $Id$
  *
  * libpisock interface modeled after linuxusb.c by Jeff Dionne and 
  * Kenneth Albanowski
@@ -1958,8 +1958,9 @@ pi_usb_impl_init (struct pi_usb_impl *impl)
 	impl->control_request	= NULL;   /* that is, until we factor out common code */
 }
 
-/* vi: set ts=4 sw=4 sts=4 noexpandtab: cin */
+/* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */
+/* ex: set tabstop=4 expandtab: */
 /* Local Variables: */
 /* indent-tabs-mode: t */
-/* c-basic-offset: 4 */
+/* c-basic-offset: 8 */
 /* End: */

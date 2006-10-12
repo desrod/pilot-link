@@ -1,4 +1,6 @@
 /*
+ * $Id$ 
+ *
  * pilot-dedupe.c:  Palm utility to remove duplicate records
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -266,6 +268,7 @@ int main(int argc, const char *argv[])
 }
 
 /* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */
+/* ex: set tabstop=4 expandtab: */
 /* Local Variables: */
 /* indent-tabs-mode: t */
 /* c-basic-offset: 8 */

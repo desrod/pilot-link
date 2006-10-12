@@ -1,10 +1,10 @@
 /*
+ * $Id$
+ *
  * contact.c: Support for palmOne's Contacts
  *
  * Copyright 2004  Joseph Carter
  * portions of this code are Copyright 2004 Judd Montgomery
- *
- * $Id$
  *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Library General Public License as published by
@@ -492,4 +492,9 @@ pack_ContactAppInfo (ContactAppInfo_t *ai, pi_buffer_t *buf)
 	return 0;
 }
 
-/* vi: set ft=c tw=78 ts=4 sw=4 sts=4 noexpandtab: cin */
+/* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */
+/* ex: set tabstop=4 expandtab: */
+/* Local Variables: */
+/* indent-tabs-mode: t */
+/* c-basic-offset: 8 */
+/* End: */

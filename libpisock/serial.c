@@ -1,11 +1,11 @@
 /*
+ * $Id$
+ *
  * serial.c: Interface layer to serial HotSync connections
  *
  * Copyright (c) 1996, 1997, D. Jeff Dionne & Kenneth Albanowski
  * Copyright (c) 1999, Tilo Christ
  * Copyright (c) 2005, Florent Pillet
- *
- * $Id$
  *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Library General Public License as published by
@@ -710,6 +710,7 @@ static int pi_serial_close(pi_socket_t *ps)
 }
 
 /* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */
+/* ex: set tabstop=4 expandtab: */
 /* Local Variables: */
 /* indent-tabs-mode: t */
 /* c-basic-offset: 8 */

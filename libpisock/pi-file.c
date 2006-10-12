@@ -1,10 +1,10 @@
 /* 
+ * $Id$
+ *
  * Pilot File Interface Library
  * Pace Willisson <pace@blitz.com> December 1996
  * Additions by Kenneth Albanowski
  * Additions by Florent Pillet
- *
- * $Id$
  *
  * This is free software, licensed under the GNU Library Public License V2.
  * See the file COPYING.LIB for details.
@@ -1523,7 +1523,9 @@ pi_file_find_resource_by_type_id(const pi_file_t *pf,
 
 
 /* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */
+/* ex: set tabstop=4 expandtab: */
 /* Local Variables: */
 /* indent-tabs-mode: t */
 /* c-basic-offset: 8 */
 /* End: */
+

@@ -1,4 +1,6 @@
 /*
+ * $Id$ 
+ *
  * pilot-xfer.c:  Palm Database transfer utility
  *
  * (c) 1996, 1998, Kenneth Albanowski.
@@ -2573,4 +2575,9 @@ main(int argc, const char *argv[])
 	return 0;
 }
 
-/* vi: set ts=4 sw=4 sts=4 noexpandtab: cin */
+/* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */
+/* ex: set tabstop=4 expandtab: */
+/* Local Variables: */
+/* indent-tabs-mode: t */
+/* c-basic-offset: 8 */
+/* End: */

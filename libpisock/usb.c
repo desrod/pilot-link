@@ -1,11 +1,11 @@
 /*
+ * $Id$
+ *
  * usb.c: Interface layer to serial HotSync connections
  *
  * Copyright (c) 1996, 1997, D. Jeff Dionne & Kenneth Albanowski
  * Copyright (c) 1999, Tilo Christ
  * Copyright (c) 2005, Florent Pillet
- *
- * $Id$
  *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Library General Public License as published by
@@ -1055,8 +1055,9 @@ USB_configure_generic (pi_usb_data_t *dev, u_int8_t *input_pipe, u_int8_t *outpu
 	return ret;
 }
 
-/* vi: set ts=4 sw=4 sts=0 noexpandtab: cin */
+/* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */
+/* ex: set tabstop=4 expandtab: */
 /* Local Variables: */
 /* indent-tabs-mode: t */
-/* c-basic-offset: 4 */
+/* c-basic-offset: 8 */
 /* End: */

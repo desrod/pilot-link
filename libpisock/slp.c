@@ -1,11 +1,11 @@
 /*
+ * $Id$
+ *
  * slp.c:  Pilot SLP protocol
  *
  * (c) 1996, D. Jeff Dionne.
  * Much of this code adapted from Brian J. Swetland <swetland@uiuc.edu>
  * Additional work Copyright (c) 2005, Florent Pillet
- *
- * $Id$
  *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Library General Public License as published by
@@ -648,6 +648,7 @@ slp_dump(const unsigned char *data)
 }
 
 /* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */
+/* ex: set tabstop=4 expandtab: */
 /* Local Variables: */
 /* indent-tabs-mode: t */
 /* c-basic-offset: 8 */

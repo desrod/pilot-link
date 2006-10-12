@@ -1,10 +1,10 @@
 /*
+ * $Id$
+ *
  * palmpix.c:  Translate PalmPix image format
  *
  * Copyright 2001 Angus Ainslie <angusa@deltatee.com>
  * Copyright 2001 John Marshall <jmarshall@acm.org>
- *
- * $Id$
  *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Library General Public License as published by
@@ -1808,6 +1808,7 @@ int
 }
 
 /* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */
+/* ex: set tabstop=4 expandtab: */
 /* Local Variables: */
 /* indent-tabs-mode: t */
 /* c-basic-offset: 8 */

@@ -1,4 +1,6 @@
 /*
+ * $Id$ 
+ *
  * pilot-650foto.c: Grab photos and video off a Treo 650 camera phone.
  *
  * (c) 2004, Matthew Allum <mallum@o-hand.com>
@@ -348,6 +350,7 @@ int main(int argc, const char *argv[])
 }
 
 /* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */
+/* ex: set tabstop=4 expandtab: */
 /* Local Variables: */
 /* indent-tabs-mode: t */
 /* c-basic-offset: 8 */

@@ -1,9 +1,9 @@
 /*
+ * $Id$
+ *
  * libusb.c: device i/o for libusb
  *
  * Copyright (c) 2004 Zephaniah E. Hull & Florent Pillet.
- *
- * $Id$
  *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Library General Public License as published by
@@ -546,8 +546,9 @@ u_control_request (pi_usb_data_t *usb_data, int request_type, int request,
 	return usb_control_msg (usb_data->ref, request_type, request, value, control_index, data, size, timeout);
 }
 
-/* vi: set ts=4 sw=4 sts=0 noexpandtab: cin */
+/* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */
+/* ex: set tabstop=4 expandtab: */
 /* Local Variables: */
 /* indent-tabs-mode: t */
-/* c-basic-offset: 4 */
+/* c-basic-offset: 8 */
 /* End: */

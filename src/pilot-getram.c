@@ -1,4 +1,6 @@
 /*
+ * $Id$ 
+ *
  * pi-getram:  Fetch RAM image from Palm
  *
  * Copyright (C) 1997, Kenneth Albanowski
@@ -21,4 +23,3 @@
 
 #define DEFAULT_MODE mode_getram
 #include "pilot-getrom.c"
-

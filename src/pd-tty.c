@@ -1,4 +1,6 @@
-/* 
+/*
+ * $Id$ 
+ *
  * pd-tty.c: Text asynchronous input/output support for pilot-debug. 
  *           Currently includes interfaces to STDIO (using plus-patch style
  *           handlers), readline 2.0 (using hack of readline internals to
@@ -481,6 +483,7 @@ void display(char *text, char *tag, int type)
 }
 
 /* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */
+/* ex: set tabstop=4 expandtab: */
 /* Local Variables: */
 /* indent-tabs-mode: t */
 /* c-basic-offset: 8 */
