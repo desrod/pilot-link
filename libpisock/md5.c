@@ -1,4 +1,6 @@
 /*
+ * $Id$
+ *
  * LICENSE: Public Domain
  *
  * This code implements the MD5 message-digest algorithm.  The algorithm is

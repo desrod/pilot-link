@@ -4,6 +4,8 @@
  * Copyright 2001 Angus Ainslie <angusa@deltatee.com>
  * Copyright 2001 John Marshall <jmarshall@acm.org>
  *
+ * $Id$
+ *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Library General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or (at

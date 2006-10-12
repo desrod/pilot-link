@@ -4,7 +4,9 @@
  * Copyright (c) 1997, Kenneth Albanowski
  * Copyright (c) 1999, Tilo Christ
  * Copyright (c) 1999, John Franks
- * Copyright (c) 2004, Florent Pillet
+ * Copyright (c) 2004, 2005 Florent Pillet
+ *
+ * $Id$
  *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Library General Public License as published by

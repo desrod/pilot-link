@@ -2,10 +2,12 @@
  * padp.c:  Pilot PADP protocol
  *
  * (c) 1996, D. Jeff Dionne.
- * Much of this code adapted from Brian J. Swetland <swetland@uiuc.edu>
- * Mostly rewritten by Kenneth Albanowski.  Adjusted timeout values and
- * better error handling by Tilo Christ.
+ *	Much of this code adapted from Brian J. Swetland <swetland@uiuc.edu>
+ *	Mostly rewritten by Kenneth Albanowski.  Adjusted timeout values and
+ *	better error handling by Tilo Christ.
  * (c) 2005, Florent Pillet
+ *
+ * $Id$
  *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Library General Public License as published by

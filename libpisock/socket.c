@@ -7,6 +7,8 @@
  * Copyright (c) 2000-2001, JP Rosevear
  * Copyright (c) 2004-2005, Florent Pillet
  *
+ * $Id$
+ *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Library General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or (at
@@ -1104,8 +1106,12 @@ pi_accept_to(int pi_sd, struct sockaddr *addr, size_t *addrlen, int timeout)
 	ps->accept_to = timeout;
 
 	result = ps->device->accept(ps, addr, addrlen);
-	if (result < 0)
-		pi_close(pi_sd);
+	if (result < 0) {
+		LOG((PI_DBG_SOCK, PI_DBG_LVL_DEBUG,
+			"pi_accept_to: ps->device->accept returned %d, calling pi_close()\n",
+			result));
+		pi_close(pi_sd);		
+	}
 
 	return result;
 }

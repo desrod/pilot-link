@@ -4,6 +4,8 @@
  * Additions by Kenneth Albanowski
  * Additions by Florent Pillet
  *
+ * $Id$
+ *
  * This is free software, licensed under the GNU Library Public License V2.
  * See the file COPYING.LIB for details.
  *
