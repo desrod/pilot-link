@@ -481,7 +481,7 @@ dlp_response_read (struct dlpResponse **res, int sd)
 	size_t len;
 	pi_buffer_t *dlp_buf;
 	
-	dlp_buf = pi_buffer_new (pi_maxrecsize(sd));
+	dlp_buf = pi_buffer_new (DLP_BUF_SIZE);
 	if (dlp_buf == NULL)
 		return pi_set_error(sd, PI_ERR_GENERIC_MEMORY);
 
@@ -616,6 +616,7 @@ dlp_request_write (struct dlpRequest *req, int sd)
 	}
 
 	pi_flush(sd, PI_FLUSH_INPUT);
+
 	if ((i = pi_write(sd, exec_buf, len)) < (ssize_t)len) {
 		errno = -EIO;
 		if (i >= 0 && i < (ssize_t)len)
@@ -991,6 +992,8 @@ dlp_ReadSysInfo(int sd, struct SysInfo *s)
 
 		if (res->argc > 1) {
 			/* response added in DLP 1.2 */
+			pi_socket_t *ps = find_pi_socket(sd);
+
 			s->dlpMajorVersion =
 				 get_short (DLP_RESPONSE_DATA (res, 1, 0));
 			s->dlpMinorVersion =
@@ -1002,6 +1005,9 @@ dlp_ReadSysInfo(int sd, struct SysInfo *s)
 			s->maxRecSize =
 				get_long  (DLP_RESPONSE_DATA (res, 1, 8));
 
+			/* update socket information */
+			ps->dlpversion = (s->dlpMajorVersion << 8) | s->dlpMinorVersion;
+			ps->maxrecsize = s->maxRecSize;
 		} else {
 			s->dlpMajorVersion = 0;
 			s->dlpMinorVersion = 0;
@@ -1023,7 +1029,6 @@ dlp_ReadSysInfo(int sd, struct SysInfo *s)
 		    s->compatMajorVersion, s->compatMinorVersion));
 		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
 		    "  Max Rec Size=%ld\n", s->maxRecSize));
-
 	}
 
 	dlp_response_free (res);

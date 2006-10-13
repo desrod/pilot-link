@@ -453,7 +453,8 @@ protocol_queue_build (pi_socket_t *ps, int autodetect)
 		"unknown", protocol));
 
 	if (protocol == PI_PF_DLP && autodetect) {
-		int	skipped_bytes = 0;
+		int	skipped_bytes = 0,
+			bytes_to_skip;
 		pi_buffer_t
 			*detect_buf = pi_buffer_new(64);
 
@@ -466,26 +467,46 @@ protocol_queue_build (pi_socket_t *ps, int autodetect)
 				pi_buffer_clear(detect_buf);
 				continue;
 			}
+			
+			bytes_to_skip = 1;
 
+			pi_dumpdata((const char *)detect_buf->data, (size_t)result);
+			
 			/* detect a valid PADP header packet */
 			if (detect_buf->data[0] == PI_SLP_SIG_BYTE1 &&
 			    detect_buf->data[1] == PI_SLP_SIG_BYTE2 &&
-			    detect_buf->data[2] == PI_SLP_SIG_BYTE3 &&
-			    detect_buf->data[3] == PI_SLP_SOCK_DLP &&	/* src  */
-			    detect_buf->data[4] == PI_SLP_SOCK_DLP &&	/* dest */
-			    detect_buf->data[5] == PI_SLP_TYPE_PADP &&	/* type */
-			    detect_buf->data[8] == 0xff)		/* txid */
+			    detect_buf->data[2] == PI_SLP_SIG_BYTE3)
 			{
-				protocol = PI_PF_PADP;
-				LOG((PI_DBG_SOCK, PI_DBG_LVL_INFO,
-					"\nusing PADP/SLP protocol (skipped %d bytes)\n",
-					skipped_bytes));
-				break;
+				/* compute the checksum */
+				int i;
+				unsigned char header_checksum;
+				for (header_checksum = i = 0; i < 9; i++)
+					header_checksum += detect_buf->data[i];
+
+				if (header_checksum == detect_buf->data[9]) {		/* sum  */
+					if (detect_buf->data[3] == PI_SLP_SOCK_DLP &&	/* src  */
+					    detect_buf->data[4] == PI_SLP_SOCK_DLP &&	/* dest */
+					    detect_buf->data[5] == PI_SLP_TYPE_PADP &&	/* type */
+					    detect_buf->data[8] == 0xff)		/* txid */
+					{
+						protocol = PI_PF_PADP;
+						LOG((PI_DBG_SOCK, PI_DBG_LVL_INFO,
+							"\nusing PADP/SLP protocol (skipped %d bytes)\n",
+							skipped_bytes));
+						break;
+					}
+					else {
+						/* valid but not what we're looking for, skip it altogether */
+						bytes_to_skip = 10;
+					}
+				} else {
+					/* skip the SLP SIG bytes */
+					bytes_to_skip = 3;
+				}
 			}
 
 			/* detect NET header packets */
 			else if (detect_buf->data[0] == 0x01 &&	/* NET packet */
-				 /*detect_buf->data[1] == 0xff &&*/	/* txid */
 			    	 detect_buf->data[2] == 0x00 &&	/* length byte 0 */
 				 detect_buf->data[3] == 0x00 &&	/* length byte 1 */
 				 detect_buf->data[4] == 0x00 &&	/* length byte 2 */
@@ -523,10 +544,10 @@ protocol_queue_build (pi_socket_t *ps, int autodetect)
 			}
 
 			/* eliminate one byte from the input, trying to frame a proper header */
-			result = dev_prot->read (ps, detect_buf, 1, 0);
+			result = dev_prot->read (ps, detect_buf, bytes_to_skip, 0);
 			if (result < 0)
 				break;
-			skipped_bytes++;
+			skipped_bytes += bytes_to_skip;
 			pi_buffer_clear(detect_buf);
 		}
 
@@ -537,6 +558,9 @@ protocol_queue_build (pi_socket_t *ps, int autodetect)
 			 * on PADP protocol. In further releases, we should really make
 			 * this function return an error if there was a problem. -- fpillet
 			 */
+		    	LOG((PI_DBG_SOCK, PI_DBG_LVL_DEBUG,
+				"Error: last read returned %d; switching to PADP by default\n",
+				result));
 			protocol = PI_PF_PADP;
 		}
 
@@ -1492,11 +1516,6 @@ pi_version(int pi_sd)
 {
 	size_t 	size;
 	pi_socket_t *ps;
-	struct  SysInfo si;
-
-	/* FIXME This is an ugly hack for versions because cmp doesn't
-	 * go beyond 1.1 in its versioning because ReadSysInfo
-	 * provides the dlp version in dlp 1.2 and higher */
 
 	if (!(ps = find_pi_socket(pi_sd))) {
 		errno = ESRCH;
@@ -1506,28 +1525,18 @@ pi_version(int pi_sd)
 	if (ps->dlpversion)
 		return ps->dlpversion;
 
-	if (dlp_ReadSysInfo (ps->sd, &si) < 0)
-		return 0x0000;
-
-	if (si.dlpMajorVersion != 0) {
-		ps->dlpversion = (si.dlpMajorVersion << 8) | si.dlpMinorVersion;
-		ps->maxrecsize = si.maxRecSize;
-		return ps->dlpversion;
-	}
-
-	/* Enter command state */
-	ps->command = 1;
-
-	/* Get the version */
 	if (ps->cmd == PI_CMD_CMP) {
-		size = sizeof(ps->dlpversion);
-		pi_getsockopt(ps->sd, PI_LEVEL_CMP,
-			PI_CMP_VERS, &ps->dlpversion, &size);
-		ps->maxrecsize = DLP_BUF_SIZE;
-	}
+		/* Enter command state */
+		ps->command = 1;
 
-	/* Exit command state */
-	ps->command = 0;
+		/* Get the version */
+		size = sizeof(ps->dlpversion);
+		pi_getsockopt(ps->sd, PI_LEVEL_CMP, PI_CMP_VERS, &ps->dlpversion, &size);
+		ps->maxrecsize = DLP_BUF_SIZE;
+
+		/* Exit command state */
+		ps->command = 0;
+	}
 
 	return ps->dlpversion;
 }
@@ -1543,7 +1552,7 @@ pi_maxrecsize(int pi_sd)
 	}
 
 	/* pi_version will read necessary info from device */
-	if (pi_version(pi_sd) == 0x0000)
+	if (pi_version(pi_sd) == 0)
 		return DLP_BUF_SIZE;
 
 	return ps->maxrecsize;
