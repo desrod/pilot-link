@@ -415,7 +415,9 @@ slp_rx(pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags)
 		do {
 			bytes = next->read(ps, slp_buf, (size_t)expect, flags);
 			if (bytes < 0) {
-				LOG((PI_DBG_SLP, PI_DBG_LVL_ERR, "SLP RX Read Error\n"));
+				LOG((PI_DBG_SLP, PI_DBG_LVL_ERR,
+				    "SLP RX Read Error %d\n",
+				    bytes));
 				pi_buffer_free (slp_buf);
 				return bytes;
 			}

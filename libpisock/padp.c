@@ -272,6 +272,7 @@ padp_tx(pi_socket_t *ps, const unsigned char *buf, size_t len, int flags)
 				break;
 
 keepwaiting:
+			LOG((PI_DBG_PADP, PI_DBG_LVL_DEBUG, "PADP TX waiting for ACK\n"));
 			result = next->read(ps, padp_buf, PI_PADP_HEADER_LEN + 2 + PI_PADP_MTU, flags);
 			if (result > 0) {				
 				padp.type = get_byte(&padp_buf->data[PI_PADP_OFFSET_TYPE]);
@@ -332,6 +333,7 @@ keepwaiting:
 					len -= tlen;
 					count += tlen;
 					fl = 0;
+					LOG((PI_DBG_PADP, PI_DBG_LVL_DEBUG, "PADP TX got ACK\n"));
 					break;
  				} else if (type       == PI_SLP_TYPE_PADP &&
 				           padp.type  == data->last_ack_padp.type &&
@@ -341,13 +343,13 @@ keepwaiting:
 					/* A repeat of a packet we already received.  The
 					ack got lost, so resend it. */
  					LOG((PI_DBG_PADP, PI_DBG_LVL_WARN,
-						 "PADP TX resending lost ack\n"));
+						 "PADP TX resending lost ACK\n"));
 					padp_sendack(ps, data, txid, &padp, flags);
  					continue;
 				} else {
 					LOG((PI_DBG_PADP, PI_DBG_LVL_ERR,
 					    "PADP TX Unexpected packet "
-					    "possible port speed problem? "
+					    "(possible port speed problem? "
 					    "out of sync packet?)\n"));
 					padp_dump_header (buf, 1);
 					/* Got unknown packet */
