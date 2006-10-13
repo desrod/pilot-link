@@ -2,6 +2,7 @@ c_headers = 			\
 	pi-address.h		\
 	pi-appinfo.h		\
 	pi-args.h		\
+	pi-bluetooth.h	\
 	pi-buffer.h		\
 	pi-cmp.h		\
 	pi-contact.h		\

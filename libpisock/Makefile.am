@@ -13,6 +13,8 @@ usb_FILES = 		\
 	freebsdusb.c	\
 	darwinusb.c
 
+bluez_FILES = bluetooth.c
+
 if WITH_LIBUSB
 usb_SOURCE = usb.c libusb.c
 endif
@@ -28,11 +30,16 @@ if WITH_DARWINUSB
 usb_SOURCE = usb.c darwinusb.c
 endif
 
+if WITH_BLUEZ
+bluez_SOURCE = bluetooth.c
+endif
+
 lib_LTLIBRARIES = libpisock.la
 
 libpisock_la_SOURCES =  \
 	$(serial_SOURCE)\
 	$(usb_SOURCE)	\
+	$(bluez_SOURCE)	\
 	address.c	\
 	appinfo.c	\
 	connect.c	\
@@ -68,10 +75,10 @@ libpisock_la_SOURCES =  \
 
 # Including PTHREAD_CFLAGS here is a dirty ugly kluge.  It works.
 libpisock_la_LIBADD = \
-	@usb_libs@ @PTHREAD_LIBS@ @PTHREAD_CFLAGS@
+	@usb_libs@ @PTHREAD_LIBS@ @PTHREAD_CFLAGS@ $(BLUEZ_LIBS)
 
 libpisock_la_LDFLAGS = \
 	-export-dynamic -version-info $(PISOCK_CURRENT):$(PISOCK_REVISION):$(PISOCK_AGE)
-libpisock_la_CFLAGS = $(PIC_LIBS) @PTHREAD_CFLAGS@
+libpisock_la_CFLAGS = $(PIC_LIBS) $(BLUEZ_CFLAGS) @PTHREAD_CFLAGS@
 
-EXTRA_DIST = $(serial_FILES) $(usb_FILES)
+EXTRA_DIST = $(serial_FILES) $(usb_FILES) $(bluez_FILES)

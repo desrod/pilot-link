@@ -46,6 +46,7 @@
 #ifdef HAVE_USB
 #include "pi-usb.h"
 #endif
+#include "pi-bluetooth.h"
 #include "pi-inet.h"
 #include "pi-slp.h"
 #include "pi-sys.h"
@@ -1038,11 +1039,16 @@ pi_devsocket(int pi_sd, const char *port, struct pi_sockaddr *addr)
 	} else if (!strncmp (port, "net:", 4)) {
 		strncpy(addr->pi_device, port + 4, sizeof(addr->pi_device));
 		ps->device = pi_inet_device (PI_NET_DEV);
-	} else if (!strncmp (port, "bluetooth:", 10)) {
-	    /* warning: this code is not well tested */
+	} else if (!strncmp (port, "bluetooth:", 10) || !strncmp (port, "bt:", 3)) {
+#ifdef HAVE_BLUEZ
+		strncpy(addr->pi_device, port + 3, sizeof(addr->pi_device));
+		ps->device = pi_bluetooth_device (PI_BLUETOOTH_DEV);
+#else
+	    	/* warning: this code is not tested */
 		strncpy(addr->pi_device, port + 10, sizeof(addr->pi_device));
 		ps->device = pi_serial_device (PI_SERIAL_DEV);
 		ps->protocol = PI_PF_NET;		/* force NET protocol over bluetooth */
+#endif
 	} else {
 		/* No prefix assumed to be serial: (for compatibility) */
 		strncpy(addr->pi_device, port, sizeof(addr->pi_device));
