@@ -1039,14 +1039,10 @@ pi_devsocket(int pi_sd, const char *port, struct pi_sockaddr *addr)
 	} else if (!strncmp (port, "net:", 4)) {
 		strncpy(addr->pi_device, port + 4, sizeof(addr->pi_device));
 		ps->device = pi_inet_device (PI_NET_DEV);
+#ifdef HAVE_BLUEZ
 	} else if (!strncmp (port, "bluetooth:", 10) || !strncmp (port, "bt:", 3)) {
 		strncpy(addr->pi_device, strchr(port, ':') + 1, sizeof(addr->pi_device));
-#ifdef HAVE_BLUEZ
-		// real bluetooth handling
 		ps->device = pi_bluetooth_device (PI_BLUETOOTH_DEV);
-#else
-		// behavior when bluez not present: serial port emulation
-		ps->device = pi_serial_device (PI_SERIAL_DEV);
 #endif
 	} else {
 		/* No prefix assumed to be serial: (for compatibility) */
