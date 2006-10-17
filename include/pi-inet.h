@@ -1,5 +1,7 @@
 /*
- * pi-inet.h
+ * $Id$
+ *
+ * pi-inet.h: Network macro definitions
  *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Library General Public License as published by
@@ -15,6 +17,7 @@
  * along with this library; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
+ 
 #ifndef _PILOT_INET_H_
 #define _PILOT_INET_H_
 

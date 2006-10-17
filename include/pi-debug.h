@@ -1,4 +1,6 @@
-/* 
+/*
+ * $Id$
+ *
  * pi-debug.h: Debugging utilities
  *
  * This library is free software; you can redistribute it and/or modify it
@@ -97,6 +99,3 @@ extern void pi_dumpdata
 }
 #endif
 #endif
-
-
-

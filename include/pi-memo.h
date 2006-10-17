@@ -1,3 +1,23 @@
+/*
+ * $Id$
+ *
+ * pi-memo.h: Support for the Palm Memos application
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Library General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or (at
+ * your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Library
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU Library General Public License
+ * along with this library; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ */
+
 #ifndef _PILOT_MEMO_H_		/* -*- C++ -*- */
 #define _PILOT_MEMO_H_
 
@@ -20,7 +40,7 @@ extern "C" {
 		memoType type;
 		struct CategoryAppInfo category;
 		/* New for 2.0 memo application, 0 is manual, 1 is
-		   alphabetical. 
+		   alphabetical.
 		 */
 		int sortByAlpha;	
 

@@ -1,5 +1,7 @@
-/* 
- * pi-contact.h: Support for palmOne's Contacts
+/*
+ * $Id$
+ *
+ * pi-contact.h: Support for palmOne's Contact application
  *
  * Copyright 2004  Joseph Carter
  * portions of this code are Copyright 2004 Judd Montgomery
@@ -126,12 +128,12 @@ typedef struct ContactAppInfo {
  *
  * Function:	free_Contact
  *
- * Summary:		Frees (only) the allocated contents of a Contact.  Call
- *				this when the structure's data is no longer needed.
+ * Summary:	Frees (only) the allocated contents of a Contact. Call
+ *		this when the structure's data is no longer needed.
  *
  * Parameters:	+ *c, the Contact_t to be disposed of
  *
- * Returns:		Nothing
+ * Returns:	Nothing
  *
  ***********************************************************************/
 extern void free_Contact PI_ARGS((Contact_t *c));
@@ -141,15 +143,15 @@ extern void free_Contact PI_ARGS((Contact_t *c));
  *
  * Function:	unpack_Contact
  *
- * Summary:		Unpacks raw contact data into a common structure for
- *				all known versions of palmOne Contacts
+ * Summary:	Unpacks raw contact data into a common structure for all
+ *		known versions of palmOne Contacts
  *
  * Parameters:	+ *c, a Contact_t to fill in
- *				- *buf, a pi_buffer_t containing (only) the raw record
- *				- type, the type field from ContactAppInfo
+ *		- *buf, a pi_buffer_t containing (only) the raw record
+ *		- type, the type field from ContactAppInfo
  *
  * Returns:     0 on success
- *				-1 on error
+ *		-1 on error
  *
  ***********************************************************************/
 extern int unpack_Contact
@@ -161,20 +163,20 @@ extern int unpack_Contact
  * Function:    pack_Contact
  *
  * Summary:     Packs a Contact structure into raw data corresponding to
- *				that of a given version of palmOne Contacts
+ *		that of a given version of palmOne Contacts
  *
- *				NOTE: Byte-for-byte reproduction of the original raw
- *				data is not guaranteed.  Moreover, if the target type
- *				does not support a given field in the Contact structure,
- *				that field is simply ignored to allow forward and
- *				backward compatibility.
+ *		NOTE: Byte-for-byte reproduction of the original raw data
+ *		is not guaranteed.  Moreover, if the target type does not
+ *		support a given field in the Contact structure, that field
+ *		is simply ignored to allow forward and backward
+ *		compatibility.
  *
  * Parameters:  - *c, a Contact_t containing the data to pack
- *				+ *buf, a pi_buffer_t to write to
- *				- type, the desired format of the output
+ *		+ *buf, a pi_buffer_t to write to
+ *		- type, the desired format of the output
  *
  * Returns:     0 on success
- *				-1 on error
+ *		-1 on error
  *
  ***********************************************************************/
 extern int pack_Contact
@@ -185,12 +187,12 @@ extern int pack_Contact
  *
  * Function:    free_ContactAppInfo
  *
- * Summary:		Frees (only) the allocated fields of a ContactAppInfo
- *				structure.
+ * Summary:	Frees (only) the allocated fields of a ContactAppInfo
+ *		structure.
  *
  * Parameters:	+ *ai, the ContactsAppInfo_t to dispose of
  *
- * Returns:		Nothing
+ * Returns:	Nothing
  *
  ***********************************************************************/
 extern void free_ContactAppInfo PI_ARGS((ContactAppInfo_t *ai));
@@ -201,13 +203,13 @@ extern void free_ContactAppInfo PI_ARGS((ContactAppInfo_t *ai));
  * Function:    unpack_ContactAppInfo
  *
  * Summary:     Unpacks a raw AppInfo into a usable structure.  palmOne
- *				Contacts 1.0 and 1.1/1.2 are currently supported.
+ *		Contacts 1.0 and 1.1/1.2 are currently supported.
  *
  * Parameters:  + *ai, the ContactAppInfo_t to fill in
- *				- *buf, a pi_buffer_t containing (only) the raw AppInfo
+ *		- *buf, a pi_buffer_t containing (only) the raw AppInfo
  *
  * Returns:     0 on success
- *				-1 on error
+ *		-1 on error
  *
  ***********************************************************************/
 extern int unpack_ContactAppInfo
@@ -218,21 +220,21 @@ extern int unpack_ContactAppInfo
  *
  * Function:	pack_ContactAppInfo
  *
- * Summary:		Build a raw AppInfo structure from a previously unpacked
- *				CategoryAppInfo structure.
+ * Summary:	Build a raw AppInfo structure from a previously unpacked
+ *		CategoryAppInfo structure.
  *
- *				NOTE: ContactAppInfo contains data necessary to produce
- *				only the raw AppInfo it was unpacked from.  Raw AppInfos
- *				can only be written to the devices they were read from.
- *				Use a read-modify-update on devices and database files.
- *				FIXME: Add a note about translate_ContactAppInfo once it
- *				exists.
+ *		NOTE: ContactAppInfo contains data necessary to produce
+ *		only the raw AppInfo it was unpacked from.  Raw AppInfos
+ *		can only be written to the devices they were read from. 
+ *		Use a read-modify-update on devices and database files. 
+ *		FIXME: Add a note about translate_ContactAppInfo once it
+ *		exists.
  *
  * Parameters:	- *ai, a ContactAppInfo of the type to pack
- *				+ *buf, a pi_buffer_t to store the raw AppInfo into
+ *		+ *buf, a pi_buffer_t to store the raw AppInfo into
  *
- * Returns:		0 on success
- *				-1 on error
+ * Returns:	0 on success
+ *		-1 on error
  *
  ***********************************************************************/
 extern int pack_ContactAppInfo
@@ -243,5 +245,3 @@ extern int pack_ContactAppInfo
 }
 #endif /* __cplusplus */
 #endif /* _PILOT_CONTACT_H_ */
-
-/* vi: set ft=c tw=78 ts=4 sw=4 sts=4 noexpandtab: cin */

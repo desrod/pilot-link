@@ -1,5 +1,7 @@
 /*
- * pi-serial.h
+ * $Id$
+ *
+ * pi-serial.h: Palm serial protocol support 
  *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Library General Public License as published by
@@ -15,6 +17,7 @@
  * along with this library; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
+ 
 #ifndef _PILOT_SERIAL_H_
 #define _PILOT_SERIAL_H_
 
@@ -46,7 +49,7 @@ extern "C" {
 		unsigned char buf[256];
 		size_t buf_size;
 		
-		/* I/O options */		
+		/* IO options */		
 #ifndef OS2
 # ifndef SGTTY
 		struct termios tco;

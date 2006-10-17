@@ -1,52 +1,96 @@
-DEBUGGING PILOT-LINK
---------------------
+======================================================================
+README.debugging
+Author: JP Rosevear, David A. Desrosiers
+Updated: Mon Oct 16 16:37:45 EDT 2006
+======================================================================
+This README will describe in detail, the process and programs necessary
+to debug any problems you might have with pilot-link with libusb on
+Linux and Mac OS X machines.
 
-In order to debug problems, libpisock by default contains runtime debugging
+Debugging pilot-link
+--------------------------------------------------------------------------
+To begin debugging problems, the core library "libpisock" contains
+runtime debugging features. You do not need to recompile pilot-link to
+include these. 
 
-Pass the --disable-debug configure option to disable at build time. Debugging
-is enabled by default, so there is no --enable-debugging target.
+If you want to disable them (not recommended, but you may if you know
+what you're doing), simply pass the --disable-debug configure option to
+disable at build time. Debugging is enabled by default, so there is no
+--enable-debugging target.
 
-The runtime debugging is controlled by four different environment variables:
 
-	PILOT_DEBUG
-	PILOT_DEBUG_LEVEL
-	PILOT_LOG
-	PILOT_LOGFILE
+Environment variables for debugging
+--------------------------------------------------------------------------
+	The runtime debugging is controlled by setting four different
+	environment variables. These are:
 
-PILOT_DEBUG controls what types of information are displayed.
+		PILOT_DEBUG
+		PILOT_DEBUG_LEVEL
+		PILOT_LOG
+		PILOT_LOGFILE
 
-	The options are:
+	PILOT_DEBUG controls what type of information is output to STDOUT or
+	your logfile. The levels of information available are:
 	    
-	    DEV	     Device I/O
-	    SLP	     Serial Link Protocol
-	    PADP     Packet Assembly/Disassembly Protocol
-	    CMP	     Connection Management Protocol
-	    NET      Network Sync Protocol
-	    SOCK     Socket Commands
-	    API	     API (datebook, todo, etc)
-	    USER     User apps	    
-	    
-You can specify multiple types of information, ie:
+		DEV      Device IO
+		SLP      Serial Link Protocol
+		PADP     Packet Assembly/Disassembly Protocol
+		CMP      Connection Management Protocol
+		NET      Network Sync Protocol
+		SOCK     Socket Commands
+		API      API (datebook, address, todo, memos, etc)
+		USER     User data
 
-	PILOT_DEBUG="DEV SLP PADP"
+	You can specify multiple types of information to be output/captured
+	as follows:
 
-PILOT_DEBUG_LEVEL controls the level of information displayed for each type.
+		setenv PILOT_DEBUG "DEV SLP PADP" # for csh
 
-	The options are:
+	or
 
-	    NONE     No information
-	    ERR	     Critical errors
-	    WARN     Non-critical errors
-	    INFO     General information
-	    DEBUG    Verbose debugging info
+		export PILOT_DEBUG="DEV SLP PADP" # for bash
 
-If PILOT_LOG is set, the information will be written to the file
-"pilot-link.debug", this can be overridden by setting PILOT_LOGFILE to the
-desired file name.
+	PILOT_DEBUG_LEVEL controls the level of information displayed for
+	each type. The availab levels are:
 
-Here's an example of the usage (for bash, your shell may vary): 
+		NONE     No information displayed at all
+		ERR      Critical errors
+		WARN     Non-critical errors
+		INFO     General information
+		DEBUG    Verbose debugging info, everything!
 
-	export PILOT_DEBUG="DEV SLP CMP PADP SOCK NET USER"
-	export PILOT_DEBUG_LEVEL="DEBUG"
-	export PILOT_LOG=1			# Set this to 0 to disable debugging
-	export PILOT_LOGFILE="debug.log"
+	If the variable PILOT_LOG is set (nonzero), the information will be
+	written to the file "pilot-link.debug" by default. This logfile name
+	be overridden by setting PILOT_LOGFILE to the desired file name you
+	wish to use.
+
+	If you wish to disable logging for a particular session, just set
+	PILOT_LOG to 0.
+
+	Here's an example of the overall usage (for bash, your shell may
+	vary):
+
+		export PILOT_DEBUG="DEV SLP CMP PADP SOCK NET USER"
+		export PILOT_DEBUG_LEVEL="DEBUG"
+		export PILOT_LOG=1
+		export PILOT_LOGFILE="debug.log"
+
+	These logs will provide a level of detail necessay for the
+	pilot-link developers (or yourself) to try to track down why your
+	Palm device is not communicating properly with pilot-link on your
+	machine or operating system.
+
+Capturing the output 
+--------------------------------------------------------------------------
+	FIXME
+
+
+How do I read this stuff?
+--------------------------------------------------------------------------
+	FIXME
+
+
+Now what do I do?
+--------------------------------------------------------------------------
+	FIXME
+

@@ -1,4 +1,6 @@
 /*
+ * $Id$
+ *
  * pi-buffer.h:  simple data block management for variable data storage
  *
  * Copyright (c) 2004-2005, Florent Pillet.
@@ -16,8 +18,6 @@
  * You should have received a copy of the GNU Library General Public License
  * along with this library; if not, write to the Free Software Foundation,
  * * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA. 
- *
- * -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  */
 
 /** @file pi-buffer.h
@@ -25,20 +25,20 @@
  *  @author Florent Pillet
  *
  * pi-buffer provides for a reliable and easy to use variable size buffer
- * management, allowing for buffers that grow as needed to store variable-length
- * data.
+ * management, allowing for buffers that grow as needed to store
+ * variable-length data.
  *
  * When you create a buffer with pi_buffer_new(), you indicate an initial
- * capacity that is allocated. The number of used bytes is set to 0. To append
- * data to the buffer, use pi_buffer_append(). This ensures that the buffer
- * grows as needed.
+ * capacity that is allocated. The number of used bytes is set to 0. To
+ * append data to the buffer, use pi_buffer_append(). This ensures that the
+ * buffer grows as needed.
  *
- * You can access data in the buffer using the @a buffer->data member. The number
- * of bytes used is always accessible using @a buffer->used.
+ * You can access data in the buffer using the @a buffer->data member. The
+ * number of bytes used is always accessible using @a buffer->used.
  *
- * It is possible to use the pi-buffer functions on static buffers. In this case,
- * you won't call pi_buffer_free() on the structure. You'll dispose of the memory
- * yourself instead. Here is an example:
+ * It is possible to use the pi-buffer functions on static buffers. In this
+ * case, you won't call pi_buffer_free() on the structure. You'll dispose of
+ * the memory yourself instead. Here is an example:
  *
  * @code
  *	pi_buffer_t mybuf;
@@ -52,7 +52,6 @@
  *
  *	free(mybuf.data);
  * @endcode
- *
  */
 
 #ifndef _PILOT_BUFFER_H_
@@ -65,9 +64,9 @@ extern "C" {
 #endif
 	/** @brief Variable buffer structure */
 	typedef struct pi_buffer_t {
-		unsigned char *data;		/**< Pointer to the data */
-		size_t allocated;		/**< Number of bytes allocated */
-		size_t used;			/**< Number of allocated bytes actually used */
+		unsigned char *data;	/**< Pointer to the data */
+		size_t allocated;	/**< Number of bytes allocated */
+		size_t used;		/**< Number of allocated bytes actually used */
 	} pi_buffer_t;
 
 	/** @brief Create a new variable size buffer

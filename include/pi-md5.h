@@ -1,9 +1,13 @@
 /*
- * md5.h:  Header file for Colin Plumb's MD5 implementation.
- *         Modified by Ian Jackson so as not to use Colin Plumb's
- *         'usuals.h'.
+ * $Id$
+ *
+ * pi-md5.h: Header file for Colin Plumb's MD5 implementation.
+ *           Modified by Ian Jackson so as not to use Colin Plumb's
+ *           'usuals.h'.
+ *           
+ *           Originally intended to be used for Palm password support
  * 
- *         This file is in the public domain.
+ *           This file is in the public domain.
  */
 
 #ifndef MD5_H

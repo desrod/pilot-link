@@ -1,4 +1,6 @@
 /*
+ * $Id$
+ *
  * userland.h: General definitions for userland conduits.
  *
  * Copyright (C) 2004 by Adriaan de Groot <groot@kde.org>
@@ -16,7 +18,6 @@
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *
  */
 #ifndef PALM_USERLAND_H
 #define PALM_USERLAND_H
@@ -27,15 +28,15 @@
 /*
  * This file defines general stuff for conduits -- common option processing,
  * perhaps some utility functions, etc. It prescribes how some of the code
- * of a conduit should look like, so as to preserve uniformity of
- * options and handling.
+ * of a conduit should look like, so as to preserve uniformity of options
+ * and handling.
  *
- * - Each conduit should start its options table with USERLAND_RESERVED_OPTIONS.
- *   This sets up the standard options --port, --version, --quiet as well as
- *   popt autohelp.
- * - If an error is found while processing options, call plu_badoption.
+ * - Each conduit should start its options table with
+ *   USERLAND_RESERVED_OPTIONS.  This sets up the standard options --port,
+ *   --version, --quiet as well as popt autohelp.
+ * - If an error is found while processing options, call plu_badoption. 
  *   This produces a standard error message.
- * - If no error is found, call plu_connect() instead of pilot_connect().
+ * - If no error is found, call plu_connect() instead of pilot_connect(). 
  *   This does the same as pilot_connect, but obeys --quiet and produces
  *   output on stderr only if there _is_ an error.
  */
@@ -48,9 +49,9 @@
  ***********************************************************************/
 
 /*
- * These are definitions for popt support in userland. Every conduit's
- * popt table should start with USERLAND_RESERVED_OPTIONS to insert
- * the standard options into it. Also enables autohelp.
+ * These are definitions for popt support in userland. Every conduit's popt
+ * table should start with USERLAND_RESERVED_OPTIONS to insert the standard
+ * options into it. Also enables autohelp.
  */
 
 #define USERLAND_RESERVED_OPTIONS \
@@ -66,8 +67,8 @@ extern void plu_badoption(poptContext pc, int optc);
 
 /*
  * Add an alias to a popt context; remember to use --bad-option in the alias
- * to add a complaint about deprecated options. Do not pass in both
- * a long and a short option in one go, use two calls for that.
+ * to add a complaint about deprecated options. Do not pass in both a long
+ * and a short option in one go, use two calls for that.
  */
 void plu_popt_alias(poptContext pc,
 	const char *alias_long,
@@ -75,14 +76,10 @@ void plu_popt_alias(poptContext pc,
 	const char *expansion);
 
 /*
- * Set explanation of what options to use in response to an alias
- * that contains --bad-option.
+ * Set explanation of what options to use in response to an alias that
+ * contains --bad-option.
  */
 void plu_set_badoption_help(const char *help);
-
-
-
-
 
 /***********************************************************************
  *
@@ -90,11 +87,9 @@ void plu_set_badoption_help(const char *help);
  *
  ***********************************************************************/
 
-
 /*
- * Connect to the Pilot specified by any --port option, respecting
- * the quiet flag as well. This is basically pilot_connect(), but
- * marginally cleaner.
+ * Connect to the Pilot specified by any --port option, respecting the quiet
+ * flag as well. This is basically pilot_connect(), but marginally cleaner.
  */
 
 extern int plu_connect(void);
@@ -108,10 +103,11 @@ extern int plu_connect(void);
 
 /*
  * Look up a category name. Argument @p info is the category part of the
- * AppInfo block for the database, while @p name is the category to look up.
+ * AppInfo block for the database, while @p name is the category to look up. 
  * Returns the index of the category if found (0..15) or -1 if not.
  *
- * The flags passed to findcategory are a bitwise or of enums; the meanings are:
+ * The flags passed to findcategory are a bitwise or of enums; the meanings
+ * are:
  *
  *   NOFLAGS          : Match case-sensitive, return -1 if not found, do not
  *                      match numbers as category numbers, do not complain.

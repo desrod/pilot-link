@@ -1,120 +1,161 @@
-Updated: 20-June--2005
+======================================================================
+README.libusb
+Author: David A. Desrosiers
+Updated: Mon Oct 16 16:57:59 EDT 2006
+Todo: Create README.porting as referenced in this HOWTO
+======================================================================
+This README will describe in detail, the process and programs required
+to get pilot-link 0.12.0 and later working with standard usb
+connectivity on Linux and Mac OS X machines.
 
 Since the release of version 0.10.99 of pilot-link, USB-based Palm
 handheld devices are fully supported by the entire toolset.
 
 To get this working may require a few things to be configured on your
-desktop or server machine first, and you should verify a few items to make
-sure that it is working properly.
+desktop or server machine first, and you should verify a few items to
+make sure that it is working properly.
 	
 Currently (as of 6/14/2005), USB connections are supported on Mac OS X,
-Linux and BSD-based operating systems on several hardware architectures.
+Linux and BSD-based operating systems on several hardware different
+architectures.
 
-Porting it to work with Win32, and any other POSIX-compliant environment
-should not be much harder. Please see README.porting in the pilot-link
-docs subdirectory for more details on how to help.
+Porting it to work with Win32 or and any other POSIX-compliant
+environment (such as OS/2 or BeOS) should not be much harder. Please
+see README.porting in the pilot-link docs subdirectory for more details
+on how to help with these efforts.
 
 
 Mac OS X USB Configuration
 --------------------------
-	There is nothing specific to do. When you compile pilot-link on
-	Mac OS X, the darwinusb driver code is detected and built and
-	supports USB handhelds as well as the PalmConnect USB serial
-	adapter.
-	
-	All pilot-link command line tools take a special port name as
-	argument. This is not like Linux where there is a specific entry
-	in /dev to manage. In OS X, there is no /dev, so we use a magic
-	port designation which talks to the bus directly.
+	There is nothing specific to do at all. No really, its just
+	that easy.
 
-	Use the port designation of "-p usb:" if your Palm handheld is
-	connected through a USB cradle, cable or a PalmConnect
-	serial-to-USB adapter.
+	When you compile pilot-link on Mac OS X, the darwinusb driver
+	code under ./libpisock/ is detected and built and supports USB
+	handhelds as well as the PalmConnect USB serial adapter.
 	
-	Note that USB support on OS X requires Mac OS X 10.2 or later.
-	If you are running Mac OS X, you can ignore all the rest of this
-	document. It Should Just Work (tm).
+	All pilot-link command line tools take a special port "name" as
+	their sole port argument. This is different from Linux where
+	there is a very specific entry in /dev to manage, depending on
+	your particular handheld (more on this point later).
+
+	In OS X, there is no /dev filesystem, so we use a magic port
+	designation which talks to the bus directly.
+
+	On OS X, use the port designation of "-p usb:" if your Palm
+	handheld is connected through a USB cradle, cable or a
+	PalmConnect serial-to-USB adapter. That's it. 
+	
+	Note that USB support on OS X requires Mac OS X 10.2 or later,
+	and will not work on MacOS 9 or earlier versions.  
+
+	If you are running Mac OS X, you can ignore all the rest of
+	this document, your job is done here; It Should Just Work (tm).
 
 
 Linux USB Configuration
 -----------------------
+	Roll up your sleeves, this could get a bit confusing... but
+	don't fret, I'm thorough.
+
 	First, in order to get USB working with your Palm device, your
-	desktop machine must support the USB subsystem. Depending on your
-	machine configuration, this may require enabling USB in the
-	machine's BIOS, or in your Linux kernel configuration, or perhaps
-	just as simple as loading the required modules for your USB
-	subsystem. Many of these are supported by current Linux kernels.
+	desktop machine must support the USB subsystem. Depending on
+	your machine's configuration, this may require enabling USB in
+	the machine's BIOS, or in your Linux kernel configuration, or
+	perhaps just as simple as loading the required modules for your
+	USB subsystem. Many of these are supported by current Linux
+	kernels and recent Linux distributions (as of 10/2006).
 
 	If you should find that your kernel is older than 2.4.21 (as of
-	the date of this README), you will need to do a kernel upgrade. 
+	the date of this README), you will need to do a kernel upgrade
+	to something more recent.
 
 	Using kernels older than 2.4.21 are not recommended and may not
-	work for newer Palm devices, as the kernel-level visor.o module
-	that is required may not have support for your newer Palm device.
+	work for newer Palm devices, as the kernel-level visor module
+	that is required may not have support for your newer Palm
+	device. In short, the kernel was released before your Palm
+	device was released, so it doesn't know how to speak to it.
 
-	With each new Palm device that is released, the vendor and product
-	identifiers in the hardware have to be added to the visor driver
-	to allow it to recognize the device at connect time. See the
-	"Loading visor" section below for more detail.
+	With each new Palm device that is released, the vendor and
+	product identifiers in the hardware have to be added to the
+	visor driver to allow it to recognize the device at connect
+	time. See the "Loading visor" section below for more detail.
 
-	First, verify that you have USB working on your system. If you're
-	using a USB-based keyboard or mouse and it works properly, you
-	already have functioning USB support in your linux kernel, which was
-	probably provided by your Linux distribution by default.
+	First, verify that you have USB working on your system. If
+	you're using a USB-based keyboard or mouse and it works
+	properly, you already have functioning USB support in your
+	linux kernel, which was probably provided through your Linux
+	distribution by default.
 
-	If you are not using a USB device already, you can try to probe for
-	the USB host controller that your system supports (you do have a
-	system with USB ports on it, right?) with the following syntax, as
-	the 'root' user (only root can load and unload kernel modules):
+	If you are not using a USB device already, you can try to probe
+	for the USB host controller that your system supports (you do
+	have a system with USB ports on it, right? =) with the
+	following syntax, as the 'root' user (only root can load and
+	unload kernel modules):
 
+
+	For 2.4.xx kernels
+	-----------------------
 		# /sbin/modprobe usb-ohci
 
-	..or
+		or..
 
 		# /sbin/modprobe usb-uhci
 
-	..or 
+		or..
 
 		# /sbin/modprobe usb
 
-	Each motherboard will have a specific chipset that one of these
-	drivers should support. You will only need one, so please don't be
-	alarmed if you try to modprobe one of the above, and receive errors. 
-	If you do, it simply means that the host controller isn't what the
-	driver expects. Try the others. 
+	For 2.6.xx kernels
+	-----------------------
 
-	Once you have that working, verified to be loaded with 'lsmod', you
-	can then try loading the USB serial support layer, using:
+		# /sbin/modprobe uhci_hcd
+	
+		or..
+
+		# /sbin/modprobe ehci_hcd
+
+	Each motherboard will have a specific chipset that one of these
+	drivers should support. You will only need one, so please don't
+	be alarmed if you try to modprobe one of the above, and receive
+	errors.  If you do, it simply means that the host controller
+	isn't what the driver expects. Try one of the others.
+
+	Once you have that working (verified to be loaded with
+	lsmod(1)), you can then try loading the USB serial support
+	layer, using:
 
 		# /sbin/modprobe usbserial
 
-	If this is successful, you should see the following in the system
-	logs (/var/log/messages, generally):
+	If this is successful, you should see the following in the
+	system logs (/var/log/messages, generally):
 
 		kernel: usb.c: registered new driver serial
 		kernel: usbserial.c: USB Serial support registered for Generic
 		kernel: usbserial.c: USB Serial Driver core v1.4
 
-	Then on top of that, add the Visor driver. The name of the driver is
-	called 'visor' for historical reasons, when the only USB-based Palm
-	handheld device was the Handspring Visor handheld. Many vendors such
-	as Sony, Palm, and others provide Palm handhelds with USB support,
-	and this 'visor' module should contain the proper code to sync and
-	communicate with them; the code still is inside the driver but it
-	retains its legacy name.
+	Then on top of that, load the Visor driver. The name of the
+	driver is called "visor" for historical reasons, here's why:
+	when the only USB-based Palm handheld device was the Handspring
+	Visor handheld. Many vendors such as Sony, Palm, and others
+	provide Palm handhelds with USB support, and this "visor"
+	module should contain the proper code to sync and communicate
+	with them; the code still is inside the driver but it retains
+	its legacy name.
 
 		# /sbin/modprobe visor
 
-	If successful, you should see the following entries in the logs:
+	If successful, you should see the following entries in the
+	logs:
 
 		kernel: usbserial.c: USB Serial support registered for Handspring Visor / Treo / Palm 4.0 / Clié 4.x
 		kernel: usbserial.c: USB Serial support registered for Sony Clié 3.5
 		kernel: visor.c: USB HandSpring Visor, Palm m50x, Treo, Sony Clié driver v1.7
 
-	Don't be alarmed if your version does not show these exact strings. 
-	As long as you see the usbserial and visor driver load successfully,
-	without reporting any errors or unresolved symbols, the system is
-	ready for the next step.
+	Don't be alarmed if your version does not show these exact
+	strings.  As long as you see the usbserial and visor driver
+	load successfully, without reporting any errors or unresolved
+	symbols, the system is ready for the next step.
 
 	Now if you do an '/sbin/lsmod' you should see something similar to this:
 

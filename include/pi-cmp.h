@@ -1,4 +1,6 @@
 /*
+ * $Id$
+ *
  * pi-cmp.h - Palm Connection Management Protocol interface
  *
  * This latches early in the sync to determine serial sync speeds
@@ -17,6 +19,7 @@
  * along with this library; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
+
 #ifndef _PILOT_CMP_H_
 #define _PILOT_CMP_H_
 
@@ -44,7 +47,7 @@ extern "C" {
 #define PI_CMP_TYPE_WAKE 0x01
 #define PI_CMP_TYPE_INIT 0x02
 #define PI_CMP_TYPE_ABRT 0x03
-#define PI_CMP_TYPE_EXTN 0x04		/**< Type for extended CMP packets */
+#define PI_CMP_TYPE_EXTN 0x04			/**< Type for extended CMP packets */
 
 #define PI_CMP_VERS_1_0 0x0100L
 #define PI_CMP_VERS_1_1 0x0101L
@@ -55,9 +58,9 @@ extern "C" {
 
 /* CMP packet flag values */
 #define	CMP_FL_CHANGE_BAUD_RATE		0x80	/**< Want to switch speeds */
-#define	CMP_FL_ONE_MINUTE_TIMEOUT	0x40	/**< Use a 1 minute timeout before dropping link */
-#define	CMP_FL_TWO_MINUTE_TIMEOUT	0x20	/**< Use a 2 minute timeout before dropping ling */
-#define	CMP_FL_LONG_PACKET_SUPPORT	0x10	/**< long PADP packet format is supported */
+#define	CMP_FL_ONE_MINUTE_TIMEOUT 	0x40	/**< Use a 1 minute timeout before dropping link */
+#define	CMP_FL_TWO_MINUTE_TIMEOUT 	0x20	/**< Use a 2 minute timeout before dropping ling */
+#define	CMP_FL_LONG_PACKET_SUPPORT 	0x10	/**< long PADP packet format is supported */
 
 	struct pi_cmp_data {
 		unsigned char type;

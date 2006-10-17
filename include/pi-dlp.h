@@ -1,4 +1,6 @@
 /*
+ * $Id$
+ *
  * pi-dlp.h: Desktop Link Protocol implementation (ala SLP)
  *
  * This library is free software; you can redistribute it and/or modify it
@@ -19,37 +21,43 @@
 /** @file pi-dlp.h
  *  @brief Direct protocol interface to the device using the HotSync protocol.
  *
- * The DLP layer is the lowest interface layer applications can use to access a handheld.
- * It provides equivalents to Palm Conduit Development Kit (CDK)'s SyncXXX functions, as
- * well as a number of convenience functions that are not found in the CDK.
+ * The DLP layer is the lowest interface layer applications can use to
+ * access a handheld.  It provides equivalents to Palm Conduit Development
+ * Kit (CDK)'s SyncXXX functions, as well as a number of convenience
+ * functions that are not found in the CDK.
  *
- * Once you have a socket number and a device is connected, you can start using DLP calls
- * to talk with the device. All DLP calls are @b synchronous: they are immediately sent to the device
- * and the current thread is blocked until either a response is received, or an error
+ * Once you have a socket number and a device is connected, you can start
+ * using DLP calls to talk with the device. All DLP calls are @b
+ * synchronous: they are immediately sent to the device and the current
+ * thread is blocked until either a response is received, or an error
  * occurs.
  *
- * It is a good pratice to always check errors returned by DLP calls. Usually, if the
- * value is nagative, it is an error code. If the error is #PI_ERR_DLP_PALMOS, an
- * error code was returned by the device itself: you can get this error code by calling
- * pi_palmos_error() on the current socket. Besides all the Palm OS error code defined in
- * Palm's documentation, there are a few values between #dlpErrNoError and #dlpErrUnknown
- * which are error returned by the DLP layer itself on the device.
+ * It is a good pratice to always check errors returned by DLP calls. 
+ * Usually, if the value is nagative, it is an error code. If the error is
+ * #PI_ERR_DLP_PALMOS, an error code was returned by the device itself: you
+ * can get this error code by calling pi_palmos_error() on the current
+ * socket. Besides all the Palm OS error code defined in Palm's
+ * documentation, there are a few values between #dlpErrNoError and
+ * #dlpErrUnknown which are error returned by the DLP layer itself on the
+ * device.
  *
- * The DLP protocol is the low level protocol that HotSync uses. Over the years, there have
- * been several iterations of DLP. Pre-Palm OS 5 devices have DLP 1.2 or lower. Palm OS 5
- * devices have DLP 1.3 or 1.4 (Palm OS 5.2 and up). Cobalt (Palm OS 6) uses DLP 2.1.
+ * The DLP protocol is the low level protocol that HotSync uses. Over the
+ * years, there have been several iterations of DLP. Pre-Palm OS 5 devices
+ * have DLP 1.2 or lower. Palm OS 5 devices have DLP 1.3 or 1.4 (Palm OS 5.2
+ * and up). Cobalt (Palm OS 6) uses DLP 2.1.
  *
- * Devices with DLP 1.4 and later are known to support transfers of large records and
- * resources (of size bigger than 64k). This is the case of the Tapwave Zodiac, for
- * example.
+ * Devices with DLP 1.4 and later are known to support transfers of large
+ * records and resources (of size bigger than 64k). This is the case of the
+ * Tapwave Zodiac, for example.
  *
- * Note that some devices report an incorrect version of DLP. Some Palm OS 5 devices report
- * using DLP 1.2 whereas they really support DLP 1.3.
+ * Note that some devices report an incorrect version of DLP. Some Palm OS 5
+ * devices report using DLP 1.2 whereas they really support DLP 1.3.
  *
  * Depending on which devices you plan on being compatible with, you should adjust
- * #PI_DLP_VERSION_MAJOR and #PI_DLP_VERSION_MINOR. If you want to support devices up to and
- * including Palm OS 5, setting your DLP version to 1.4 is a good idea. If you want to be
- * able to connect to Palm OS 6, you need to set your DLP version to 2.1.
+ * #PI_DLP_VERSION_MAJOR and #PI_DLP_VERSION_MINOR. If you want to support
+ * devices up to and including Palm OS 5, setting your DLP version to 1.4 is
+ * a good idea. If you want to be able to connect to Palm OS 6, you need to
+ * set your DLP version to 2.1.
  */
 
 #ifndef _PILOT_DLP_H_
@@ -71,11 +79,11 @@ extern "C" {
  * 1.4: TapWave Palm OS 5
  * 2.1: Palm OS 6
  */
-#define PI_DLP_VERSION_MAJOR 1			/**< Major DLP protocol version we report to the device. */
-#define PI_DLP_VERSION_MINOR 4			/**< Minor DLP protocol version we report to the device. */
+#define PI_DLP_VERSION_MAJOR 1		/**< Major DLP protocol version we report to the device. */
+#define PI_DLP_VERSION_MINOR 4		/**< Minor DLP protocol version we report to the device. */
 
 #ifndef SWIG
-	#define DLP_BUF_SIZE 0xffff		/**< Kept for compatibility, applications should avoid using this value. */
+	#define DLP_BUF_SIZE 0xffff	/**< Kept for compatibility, applications should avoid using this value. */
 #endif /* !SWIG */
 
 /** @name Internal definitions used to assemble DLP calls */
@@ -101,9 +109,9 @@ extern "C" {
 /** @name VFS definitions */
 /*@{*/
 #define vfsMountFlagsUseThisFileSystem	0x01	/**< Mount/Format the volume with the filesystem specified */
-#define vfsMAXFILENAME		256		/**< The maximum size of a filename in a VFS volume */
-#define vfsInvalidVolRef	0		/**< constant for an invalid volume reference, guaranteed not to represent a valid one.  Use it like you would use NULL for a FILE*. */
-#define vfsInvalidFileRef	0L		/**< constant for an invalid file reference, guaranteed not to represent a valid one.  Use it like you would use NULL for a FILE*. */
+#define vfsMAXFILENAME			256	/**< The maximum size of a filename in a VFS volume */
+#define vfsInvalidVolRef		0	/**< constant for an invalid volume reference, guaranteed not to represent a valid one.  Use it like you would use NULL for a FILE*. */
+#define vfsInvalidFileRef		0L	/**< constant for an invalid file reference, guaranteed not to represent a valid one.  Use it like you would use NULL for a FILE*. */
 /*@}*/
 
 typedef unsigned long FileRef;			/**< Type for file references when working with VFS files and directories. */
@@ -136,8 +144,10 @@ struct VFSInfo {
 	/* 4: Filesystem type for this volume (defined below).
 	      These you can expect to see in devices:
 		  'vfat' (FAT12/FAT16 with long name support)
+		  
 	      Other values observed:
 		  'twmf' (Tapwave Zodiac internal VFS)
+		  
 	      PalmSource defines these, but don't bet on device support:
 		  'afsu' (Andrew network filesystem)
 		  'ext2' (Linux ext2 filesystem)
@@ -172,9 +182,11 @@ struct VFSInfo {
 		   'mmcd' (MultiMedia Card)
 		   'mstk' (Memory Stick)
 		   'sdig' (SD card)
+
 	       Other values observed:
 		   'TFFS' (palmOne Tungsten T5 internal VFS)
 		   'twMF' (Tapwave Zodiac internal VFS)
+
 	       PalmSource also defines these:
 		   'pose' (Host filesystem emulated by POSE)
 		   'PSim' (Host filesystem emulated by Mac Simulator)

@@ -1,4 +1,6 @@
 /*
+ * $Id$
+ *
  * pi-threadsafe.h: utilities for thread-safe behavior
  *
  * Copyright (c) 2005, Florent Pillet.
@@ -16,9 +18,8 @@
  * You should have received a copy of the GNU Library General Public License
  * along with this library; if not, write to the Free Software Foundation,
  * * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA. 
- *
- * -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  */
+
 #ifndef _PILOT_THREADSAFE_H
 #define _PILOT_THREADSAFE_H
 
@@ -38,16 +39,17 @@
 	typedef pthread_mutex_t pi_mutex_t;
 
 #else
-	/* when not in thread-safe mode, we still use dummy variables
-	 * the code will simply do nothing
-	 */
+	/* when not in thread-safe mode, we still use dummy variables the
+	   code will simply do nothing */
 	#define PI_THREADSAFE 0
 
 	#define PI_MUTEX_DECLARE(mutex_name)	int mutex_name
-	#define	PI_MUTEX_DEFINE(mutex_name)	int mutex_name = 0	/* dummy declaration for the code to compile */
 
-	typedef int pi_mutex_t;						/* ditto */
+	/* dummy declaration for the code to compile */
+	#define	PI_MUTEX_DEFINE(mutex_name)	int mutex_name = 0
 
+        /* ditto from above */
+	typedef int pi_mutex_t;
 #endif
 
 extern int pi_mutex_lock(pi_mutex_t *mutex);

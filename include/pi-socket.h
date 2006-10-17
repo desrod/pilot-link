@@ -1,4 +1,6 @@
 /*
+ * $Id$
+ *
  * pi-socket.h: Socket-like interface to talk to handhelds
  *
  * This library is free software; you can redistribute it and/or modify it
@@ -35,11 +37,11 @@
  * from pi-dlp.h to talk to the device. They take care of all the low-level
  * stuff.
  *
- * At any time, you can check whether a connection is still established using
- * pi_socket_connected(). After each DLP call, you can call pi_error() to
- * check the latest error code. If the error code was #PI_ERR_DLP_PALMOS, you
- * should call pi_palmos_error() to retrieve the error code returned by the
- * device itself. See the pi-dlp.h documentation for more information.
+ * At any time, you can check whether a connection is still established
+ * using pi_socket_connected(). After each DLP call, you can call pi_error()
+ * to check the latest error code. If the error code was #PI_ERR_DLP_PALMOS,
+ * you should call pi_palmos_error() to retrieve the error code returned by
+ * the device itself. See the pi-dlp.h documentation for more information.
  *
  * Finally, pi_version() returns the version of the DLP protocol on the
  * device. This can be used to check whether some features are supported,
@@ -47,6 +49,7 @@
  *
  * @see pi-dlp.h
  */
+
 #ifndef _PILOT_SOCKET_H_
 #define _PILOT_SOCKET_H_
 
@@ -65,36 +68,35 @@ extern "C" {
 
 #define PI_AF_PILOT	0x00
 
-#define PI_SOCK_STREAM	0x0010	/**< Stream socket type, for pi_socket() function */
-#define PI_SOCK_RAW	0x0030	/**< Raw socket type, for pi_socket() function */
-
-#define PI_CMD_CMP	0x01	/**< CMD command protocol type (for serial connections) */
-#define PI_CMD_NET	0x02	/**< NET protocol type (for inet and USB connections) */
-#define PI_CMD_SYS	0x03	/**< SYS protocol type (low-level, debugger connections) */
-
-#define PI_MSG_PEEK	0x01	/**< Use this flag with pi_recv() to 'peek' at the incoming data (will not be removed from input buffer) */
-/*#define	PI_MSG_REALLOC		0x02*/  /* deprecated (wasn't used) */
+#define PI_SOCK_STREAM	0x0010		/**< Stream socket type, for pi_socket() function */
+#define PI_SOCK_RAW	0x0030		/**< Raw socket type, for pi_socket() function */
+#define PI_CMD_CMP	0x01		/**< CMD command protocol type (for serial connections) */
+#define PI_CMD_NET	0x02		/**< NET protocol type (for inet and USB connections) */
+#define PI_CMD_SYS	0x03		/**< SYS protocol type (low-level, debugger connections) */
+#define PI_MSG_PEEK	0x01		/**< Use this flag with pi_recv() to 'peek' at the incoming data (will not be removed from input buffer) */
+/* deprecated (wasn't used)
+#define	PI_MSG_REALLOC	0x02 */ 
 
 /** @brief Protocol types */
 enum PiProtocolTypes {
-	PI_PF_DEV	= 0x01,	/**< Device-level protocol */
-	PI_PF_SLP	= 0x02,	/**< Serial-level protocol */
-	PI_PF_SYS	= 0x03,	/**< System-level protocol */
-	PI_PF_PADP	= 0x04,	/**< PAD-level protocol */
-	PI_PF_NET	= 0x05,	/**< NET-level protocol */
-	PI_PF_DLP	= 0x06	/**< DLP-level protocol */
+	PI_PF_DEV	= 0x01,		/**< Device-level protocol 	*/
+	PI_PF_SLP	= 0x02,		/**< Serial-level protocol 	*/
+	PI_PF_SYS	= 0x03,		/**< System-level protocol 	*/
+	PI_PF_PADP	= 0x04,		/**< PAD-level protocol 	*/
+	PI_PF_NET	= 0x05,		/**< NET-level protocol 	*/
+	PI_PF_DLP	= 0x06		/**< DLP-level protocol 	*/
 };
 
 /** @brief Protocol levels for the socket's protocol queue */
 enum PiOptLevels {
-	PI_LEVEL_DEV,		/**< Device level */
-	PI_LEVEL_SLP,		/**< Serial link protocol level */
-	PI_LEVEL_PADP,		/**< PADP protocol level */
-	PI_LEVEL_NET,		/**< NET protocol level */
-	PI_LEVEL_SYS,		/**< System protocol level */
-	PI_LEVEL_CMP,		/**< CMP protocol level */
-	PI_LEVEL_DLP,		/**< Desktop link protocol level */
-	PI_LEVEL_SOCK		/**< Socket level */
+	PI_LEVEL_DEV,			/**< Device level 		*/
+	PI_LEVEL_SLP,			/**< Serial link protocol level */
+	PI_LEVEL_PADP,			/**< PADP protocol level 	*/
+	PI_LEVEL_NET,			/**< NET protocol level 	*/
+	PI_LEVEL_SYS,			/**< System protocol level 	*/
+	PI_LEVEL_CMP,			/**< CMP protocol level 	*/
+	PI_LEVEL_DLP,			/**< Desktop link protocol level*/
+	PI_LEVEL_SOCK			/**< Socket level 		*/
 };
 
 /** @brief Device level socket options (use pi_getsockopt() and pi_setsockopt()) */
@@ -238,8 +240,8 @@ typedef struct pi_socket_list
 
 	/** @brief Get a socket option
 	 *
-	 * You can get socket options for various levels of the protocol stack.
-	 * See the options list in #socket.h
+	 * You can get socket options for various levels of the protocol
+	 * stack.  See the options list in #socket.h
 	 *
 	 * @param pi_sd	Socket descriptor
 	 * @param level Protocol level (see #PiOptLevels enum)
@@ -254,8 +256,8 @@ typedef struct pi_socket_list
 
 	/** @brief Set a socket option
 	 *
-	 * You can set socket options for various levels of the protocol stack.
-	 * See the options list in #socket.h
+	 * You can set socket options for various levels of the protocol
+	 * stack.  See the options list in #socket.h
 	 *
 	 * @param pi_sd	Socket descriptor
 	 * @param level Protocol level (see #PiOptLevels enum)
@@ -271,7 +273,8 @@ typedef struct pi_socket_list
 	/** @brief Retrieve the protocol structure for the given level
 	 *
 	 * You should rarely need to use this function. It allows retrieving
-	 * the protocol structure for any protocol in a socket's protocol stack
+	 * the protocol structure for any protocol in a socket's protocol
+	 * stack
 	 *
 	 * @param pi_sd Socket descriptor
 	 * @param level Protocol level (see #PiOptLevels enum)
@@ -282,11 +285,12 @@ typedef struct pi_socket_list
 
 	/** @brief Browse the protocol stack
 	 *
-	 * You should rarely need to use this function. It allows retrieving the
-	 * next protocol in the stack, up from lower levels to upper levels. A
-	 * protocol stack always has a PI_LEVEL_DEV at bottom, so you can use
-	 * pi_protocol() to retrieve the lowest stack level, then repeatedly call
-	 * pi_protocol_next() to get the next protocol in the chain
+	 * You should rarely need to use this function. It allows retrieving
+	 * the next protocol in the stack, up from lower levels to upper
+	 * levels. A protocol stack always has a PI_LEVEL_DEV at bottom, so
+	 * you can use pi_protocol() to retrieve the lowest stack level,
+	 * then repeatedly call pi_protocol_next() to get the next protocol
+	 * in the chain
 	 *
 	 * @param pi_sd Socket descriptor
 	 * @param level Level from which you want to get the next protocol (see #PiOptLevels enum)
@@ -300,8 +304,8 @@ typedef struct pi_socket_list
 /*@{*/
 	/** @brief Checks whether a connection is established
 	 *
-	 * If the socket wasn't found, returns 0 and @a errno
-	 * is set to ESRCH.
+	 * If the socket wasn't found, returns 0 and @a errno is set to
+	 * ESRCH.
 	 *
 	 * @param pi_sd Socket descriptor
 	 * @return != 0 if a connection is established
@@ -338,8 +342,8 @@ typedef struct pi_socket_list
 
 	/** @brief Wait for a handheld
 	 *
-	 * This function calls pi_accept_to() with a timeout of 0
-	 * (wait forever). If an error occurs, the socket is closed.
+	 * This function calls pi_accept_to() with a timeout of 0 (wait
+	 * forever). If an error occurs, the socket is closed.
 	 *
 	 * @param pi_sd Socket descriptor
 	 * @param remote_addr Unused. Pass NULL.
@@ -353,8 +357,8 @@ typedef struct pi_socket_list
 	/** @brief Wait for a handheld
 	 *
 	 * Wait for a device to connect on the port the socket has been
-	 * bound to (using pi_bind()). If an error or timeout occurs, the socket
-	 * is closed.
+	 * bound to (using pi_bind()). If an error or timeout occurs, the
+	 * socket is closed.
 	 *
 	 * @param pi_sd Socket descriptor
 	 * @param remote_addr Unused. Pass NULL.
@@ -368,9 +372,9 @@ typedef struct pi_socket_list
 
 	/** @brief Close a socket
 	 *
-	 * This function closes a socket and disposes of all the
-	 * internal structures. If a device is currently connected
-	 * to this socket, the connection is interrupted.
+	 * This function closes a socket and disposes of all the internal
+	 * structures. If a device is currently connected to this socket,
+	 * the connection is interrupted.
 	 *
 	 * @param pi_sd Socket descriptor
 	 * @return Negative error code on error
@@ -384,9 +388,9 @@ typedef struct pi_socket_list
 	 *
 	 * Perform a synchronous write on the given socket. Writes are
 	 * performed through the protocol stack. Therefore, the data you
-	 * send will be properly encapsulated in a packet conforming to
-	 * the connected protocol (i.e. NET protocol if you're talking to
-	 * a network or USB device). Usually, you won't send data directly,
+	 * send will be properly encapsulated in a packet conforming to the
+	 * connected protocol (i.e. NET protocol if you're talking to a
+	 * network or USB device). Usually, you won't send data directly,
 	 * but rather use the dlp_XXX functions to talk to the device.
 	 *
 	 * @param pi_sd Socket descriptor
@@ -403,9 +407,10 @@ typedef struct pi_socket_list
 	 * Wait for data sent by the device. Note that this function goes
 	 * through the protocol stack, therefore it waits for well-formed
 	 * packets and decodes them to extract the data. Usually, you won't
-	 * use this function directly. Instead, you'll use the dlp_XXX functions
-	 * to talk to the device. Remember that you need to pass a valid
-	 * pi_buffer_t (for example one allocated with pi_buffer_new()).
+	 * use this function directly. Instead, you'll use the dlp_XXX
+	 * functions to talk to the device. Remember that you need to pass a
+	 * valid pi_buffer_t (for example one allocated with
+	 * pi_buffer_new()).
 	 *
 	 * @param pi_sd Socket descriptor
 	 * @param msg Ptr to a valid pi_buffer_t buffer that will contain the received data
@@ -440,9 +445,9 @@ typedef struct pi_socket_list
 
 	/** @brief Flush input and/or output bytes
 	 *
-	 * Flush incoming and/or outgoing data. Most device implementations currently
-	 * only support flushing the bytes in the incoming data buffer, as most writes
-	 * are synchronous.
+	 * Flush incoming and/or outgoing data. Most device implementations
+	 * currently only support flushing the bytes in the incoming data
+	 * buffer, as most writes are synchronous.
 	 *
 	 * @param pi_sd Socket descriptor
 	 * @param flags Mask with valus #PI_FLUSH_INPUT, #PI_FLUSH_OUTPUT.
@@ -455,8 +460,8 @@ typedef struct pi_socket_list
 /*@{*/
 	/** @brief Return the last error after a low-level or DLP call
 	 *
-	 * If the socket wasn't found, @a errno is set to ESRCH and
-	 * the function returns #PI_ERR_SOCK_INVALID.
+	 * If the socket wasn't found, @a errno is set to ESRCH and the
+	 * function returns #PI_ERR_SOCK_INVALID.
 	 *
 	 * @param pi_sd Socket descriptor
 	 * @return Error code or 0 if no error or #PI_ERR_SOCK_INVALID is socket was not found
@@ -466,9 +471,8 @@ typedef struct pi_socket_list
 
 	/** @brief Set the last error code
 	 *
-	 * If the socket wasn't found, @a errno is set to ESRCH.
-	 * If the error code is #PI_ERR_GENERIC_MEMORY, @a errno
-	 * is set to ENOMEM.
+	 * If the socket wasn't found, @a errno is set to ESRCH.  If the
+	 * error code is #PI_ERR_GENERIC_MEMORY, @a errno is set to ENOMEM.
 	 *
 	 * @param pi_sd Socket descriptor
 	 * @param error_code Error code to set
@@ -481,10 +485,10 @@ typedef struct pi_socket_list
 	 *
 	 * After a DLP transaction, if you got a #PI_ERR_DLP_PALMOS error,
 	 * you should call this function to obtain the error code returned
-	 * by the device. It may be either a standard Palm OS error code,
-	 * or one of the DLP errors (see #dlpErrors enum)
-	 * If the socket wasn't found, @a errno is set to ESRCH and
-	 * the function returns #PI_ERR_SOCK_INVALID.
+	 * by the device. It may be either a standard Palm OS error code, or
+	 * one of the DLP errors (see #dlpErrors enum) If the socket wasn't
+	 * found, @a errno is set to ESRCH and the function returns
+	 * #PI_ERR_SOCK_INVALID.
 	 *
 	 * @param pi_sd Socket descriptor
 	 * @return The Palm OS error code or #PI_ERR_SOCK_INVALID if socket was not found
@@ -517,9 +521,9 @@ typedef struct pi_socket_list
 /*@{*/
 	/** @brief Return the version of the DLP protocol supported by the device
 	 *
-	 * Once connected to a handheld, you can call this function to obtain
-	 * the version of the DLP protocol it supports. See pi-dlp.h for information
-	 * about the various DLP versions.
+	 * Once connected to a handheld, you can call this function to
+	 * obtain the version of the DLP protocol it supports. See pi-dlp.h
+	 * for information about the various DLP versions.
 	 *
 	 * @param pi_sd Socket descriptor
 	 * @return DLP version or #PI_ERR_SOCK_INVALID if socket was not found
@@ -528,11 +532,12 @@ typedef struct pi_socket_list
 	
 	/** @brief Return the maximum size of a database record that can be transferred
 	 *
-	 * Use this function to obtain the maximum size a database record can be
-	 * when transferring it to the device. On-device records may be larger than
-	 * what is currently supported by the version of the DLP protocol that runs
-	 * on the device. On devices with an implementation of DLP < 1.4, you'll get
-	 * 0xFFFF meaning that you can't transfer records larger than 64k.
+	 * Use this function to obtain the maximum size a database record
+	 * can be when transferring it to the device. On-device records may
+	 * be larger than what is currently supported by the version of the
+	 * DLP protocol that runs on the device. On devices with an
+	 * implementation of DLP < 1.4, you'll get 0xFFFF meaning that you
+	 * can't transfer records larger than 64k.
 	 *
 	 * If the socket wasn't found, returns 0 and errno is set to ESRCH.
 	 *
@@ -543,12 +548,12 @@ typedef struct pi_socket_list
 
 	/** @brief Tickle a stream connection to keep it alive
 	 *
-	 * Call pi_tickle() at regular intervals to keep the connection alive.
-	 * If you're not sending any command to the device, some devices will
-	 * automatically disconnect after some time. Calling pi_tickle() does
-	 * keep the connection opened, which can be necessary if you are writing
-	 * a conduit that performs lengthy tasks like retrieving data from the
-	 * Internet.
+	 * Call pi_tickle() at regular intervals to keep the connection
+	 * alive.  If you're not sending any command to the device, some
+	 * devices will automatically disconnect after some time. Calling
+	 * pi_tickle() does keep the connection opened, which can be
+	 * necessary if you are writing a conduit that performs lengthy
+	 * tasks like retrieving data from the Internet.
 	 *
 	 * @param pi_sd Socket descriptor
 	 * @return An error code if an error occured (see pi-error.h)

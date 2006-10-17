@@ -1,5 +1,7 @@
 /*
- * pi-padp.h
+ * $Id$
+ *
+ * pi-padp.h: 
  *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Library General Public License as published by
@@ -15,6 +17,7 @@
  * along with this library; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
+
 #ifndef _PILOT_PADP_H_
 #define _PILOT_PADP_H_
 
@@ -24,18 +27,18 @@ extern "C" {
 
 #include "pi-socket.h"
 
-#define PI_PADP_HEADER_LEN  4
-#define PI_PADP_MTU         1024
+#define PI_PADP_HEADER_LEN	4
+#define PI_PADP_MTU		1024
 
-#define PI_PADP_OFFSET_TYPE 0
-#define PI_PADP_OFFSET_FLGS 1
-#define PI_PADP_OFFSET_SIZE 2
+#define PI_PADP_OFFSET_TYPE	0
+#define PI_PADP_OFFSET_FLGS	1
+#define PI_PADP_OFFSET_SIZE	2
 
-#define padData		0x01
-#define padWake		0x101
-#define padAck		0x02
-#define padTickle	0x04
-#define padAbort	0x08	/* PalmOS 2.0 only */
+#define padData			0x01
+#define padWake			0x101
+#define padAck			0x02
+#define padTickle		0x04
+#define padAbort		0x08	/* PalmOS 2.0 only */
 
 #define PADP_FL_FIRST		0x80	/**< Flag indicating that this is the first fragment in a PADP packet */
 #define PADP_FL_LAST		0x40	/**< Flag indicating that this is the last fragment in a PADP packet */

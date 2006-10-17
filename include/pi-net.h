@@ -1,5 +1,7 @@
 /*
- * pi-net.h
+ * $Id$
+ *
+ * pi-net.h: Palm-specific network macro definitions
  *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Library General Public License as published by
@@ -15,6 +17,7 @@
  * along with this library; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
+ 
 #ifndef _PILOT_NET_H_
 #define _PILOT_NET_H_
 
@@ -40,8 +43,8 @@ extern "C" {
 	typedef struct pi_net_data 
 	{
 		int type;
-		int split_writes;				/* set to 0 or <> 0 (see net_tx() function) */
-		size_t write_chunksize;			/* set to 0 or a chunk size value (i.e. 4096) (see net_tx() function) */
+		int split_writes;	/* set to 0 or <> 0 (see net_tx() function) */
+		size_t write_chunksize;	/* set to 0 or a chunk size value (i.e. 4096) (see net_tx() function) */
 		unsigned char txid;
 	} pi_net_data_t;
 

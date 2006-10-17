@@ -1,5 +1,7 @@
-/* 
- * Pilot File Interface Library
+/*
+ * $Id$
+ *
+ * pi-file.h: Pilot File Interface Library
  *
  * This is free software, licensed under the GNU Library Public License V2.
  * See the file COPYING.LIB for details.
@@ -23,20 +25,21 @@
  *  @brief Database file install, retrieve and management interface
  *
  * The pi-file layer is a convenience management library that provides for
- * easy access, creation, install and retrieve of database files (PRC, PDB, PQA)
+ * easy access, creation, install and retrieve of database files (PRC, PDB,
+ * PQA)
  *
  * Palm databases on the local machines can be created with pi_file_create()
- * or opened read-only using pi_file_open(). Several functions are provided to
- * access resources and records. Caller must make sure to use the appropriate
- * functions, depending on the type of the database (i.e. only use the record
- * read/write functions on data databases, only use the resource read/write
- * functions on resource databases).
+ * or opened read-only using pi_file_open(). Several functions are provided
+ * to access resources and records. Caller must make sure to use the
+ * appropriate functions, depending on the type of the database (i.e. only
+ * use the record read/write functions on data databases, only use the
+ * resource read/write functions on resource databases).
  *
  * A set of utility functions are provided to facilitate installing and
- * retrieving databases on the devide. pi_file_install() will perform all the
- * steps required to install a database on a device. pi_file_merge() can be used
- * to update an existing database or add new records/resources to it.
- * pi_file_retrieve() will read a database from the device.
+ * retrieving databases on the devide. pi_file_install() will perform all
+ * the steps required to install a database on a device. pi_file_merge() can
+ * be used to update an existing database or add new records/resources to
+ * it.  pi_file_retrieve() will read a database from the device.
  */
 
 #ifndef _PILOT_FILE_H_
@@ -65,7 +68,7 @@ typedef struct pi_file {
 	int	sort_info_size;		/**< Size of the sortInfo block */
 	int	next_record_list_id;
 	int	resource_flag;
-	int	ent_hdr_size;	/**< Size of the header for each resource/record (depends on whether the file is a resource or record file) */
+	int	ent_hdr_size;		/**< Size of the header for each resource/record (depends on whether the file is a resource or record file) */
 	int	num_entries;		/**< Number of actual entries in the entries memory block */
 	int	num_entries_allocated;	/**< Number of entries allocated in the entries memory block */
 	int	rbuf_size;		/**< Size of the internal read buffer */
@@ -82,11 +85,11 @@ typedef struct pi_file {
 
 /** @brief Transfer progress callback structure
  *
- * The progress callback structure is prepared by the client application
- * and passed to pi_file_install(), pi_file_merge() and pi_file_retrieve()
- * functions. It allows the client application to be notified during a
- * file transfer (i.e. to update a progress indicator) and gives it a chance
- * to cancel transfers.
+ * The progress callback structure is prepared by the client application and
+ * passed to pi_file_install(), pi_file_merge() and pi_file_retrieve()
+ * functions. It allows the client application to be notified during a file
+ * transfer (i.e. to update a progress indicator) and gives it a chance to
+ * cancel transfers.
  */
 typedef struct {
 	int type;				/**< Transfer type (see #piProgressType enum) */
@@ -115,7 +118,7 @@ typedef int (*progress_func)(int socket, pi_progress_t *progress);
 
 /** @brief Transfer progress types for the @a type member of pi_progress_t */
 enum piProgressType {
-	PI_PROGRESS_SEND_DB	= 1,		/**< Sending a database */
+	PI_PROGRESS_SEND_DB = 1,		/**< Sending a database */
 	PI_PROGRESS_RECEIVE_DB,			/**< Receiving a database */
 	PI_PROGRESS_SEND_VFS,			/**< Sending a VFS file */
 	PI_PROGRESS_RECEIVE_VFS			/**< Receiving a VFS file */
@@ -140,7 +143,7 @@ enum piProgressType {
 
 	/** @brief Create a new database file
 	 *
-	 * A new database file is create on the local machine.
+	 * A new database file is created on the local machine.
 	 *
 	 * @param name Access path of the new file to create
 	 * @param INPUT	Characteristics of the database to create
@@ -151,8 +154,8 @@ enum piProgressType {
 
 	/** @brief Closes a local file
 	 *
-	 * If the file had been opened with pi_file_create, all modifications
-	 * are written to disk before the file is closed
+	 * If the file had been opened with pi_file_create, all
+	 * modifications are written to disk before the file is closed
 	 *
 	 * @param pf	The pi_file_t structure is being disposed of by this function
 	 * @return An error code (see file pi-error.h)
@@ -338,9 +341,9 @@ enum piProgressType {
 
 	/** @brief Add a record to a file open for write
 	 *
-	 * The file takes ownership of the passed data block
-	 * Function will return PI_ERR_FILE_ALREADY_EXISTS if record with
-	 * same unique ID already exists in the database
+	 * The file takes ownership of the passed data block Function will
+	 * return PI_ERR_FILE_ALREADY_EXISTS if record with same unique ID
+	 * already exists in the database
 	 *
 	 * @param pf A file open for write
 	 * @param data The resource data
@@ -387,11 +390,12 @@ enum piProgressType {
 
 	/** @brief Install a new file on the handheld or merge with an existing file
 	 *
-	 * The difference between this function and pi_file_install() is that
-	 * if the file already exists on the handheld, pi_file_merge() will append
-	 * data to the existing file. For resource files, all resources from the local
-	 * file are sent to the handheld. If resources with the same type/ID exist in
-	 * the handheld file, they are replaced with the new one.
+	 * The difference between this function and pi_file_install() is
+	 * that if the file already exists on the handheld, pi_file_merge()
+	 * will append data to the existing file. For resource files, all
+	 * resources from the local file are sent to the handheld. If
+	 * resources with the same type/ID exist in the handheld file, they
+	 * are replaced with the new one.
 	 *
 	 * You must first open the local file with pi_file_open()
 	 *

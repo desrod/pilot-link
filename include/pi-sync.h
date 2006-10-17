@@ -1,4 +1,6 @@
 /*
+ * $Id$
+ *
  * pi-sync.h: Header for generic synchronization algorithm
  *
  * Copyright (c) 2000-2001, Ximian Inc.

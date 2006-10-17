@@ -1,3 +1,4 @@
+<!-- $Id$ -->
 <refentry id="read-palmpix">
    <refmeta>
       <refentrytitle>read-palmpix</refentrytitle>
@@ -12,7 +13,7 @@
    </refnamediv>
    <refsect1>
       <title>Section</title>
-      <para>pilot-link: Conduits</para>
+      <para>pilot-link: Userland conduits</para>
    </refsect1>
    <refsect1>
       <title>Synopsis</title>

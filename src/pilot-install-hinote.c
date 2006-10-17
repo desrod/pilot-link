@@ -29,9 +29,8 @@
 #include "pi-header.h"
 #include "pi-userland.h"
 
-/*
- * Size of maximum buffer, containing 28k of note + a filename + \n + NUL at the end.
- */
+/* Size of maximum buffer, containing 28k of note + a filename + \n + NUL at
+   the end. */
 #define HINOTE_BUFFER_SIZE (28 * 1024 + FILENAME_MAX + 2)
 
 int main(int argc, const char *argv[])
@@ -131,8 +130,8 @@ int main(int argc, const char *argv[])
 
 	while((file_arg = poptGetArg(pc)) != NULL) {
 
-		/* Attempt to check the file size */
-		/* stat() returns nonzero on error */
+		/* Attempt to check the file size, stat() returns nonzero on
+		   error */
 		err = stat(file_arg, &info);
 		if (err) {
 		   /* FIXME: use perror() */

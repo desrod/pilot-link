@@ -109,7 +109,8 @@ int install_memo(int sd, int db, int category, int add_title, char *filename)
 		return 1;
 	}
 
-	/* When adding the title, we only want the filename, not the full path. */
+	/* When adding the title, we only want the filename, not the full
+	   path. */
 	tmp = strrchr (filename, '/');
 	if (tmp) {
 		filename = tmp + 1;
@@ -201,10 +202,8 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
-	/* How many files _might_ we have as arguments? Clearly, argc
-	** is the maximum that is on the command-line, so use that as
-	** a good guess.
-	*/
+	/* How many files _might_ we have as arguments? Clearly, argc is the
+	   maximum that is on the command-line, so use that as a good guess. */
 	memos.filenames = (char **)calloc(argc, sizeof(char *));
 	memos.filenames_allocated = argc;
 	memos.filenames_used = 0;

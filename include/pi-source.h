@@ -1,4 +1,6 @@
 /*
+ * $Id$
+ *
  * pi-source.h
  *
  * This library is free software; you can redistribute it and/or modify it
@@ -15,6 +17,7 @@
  * along with this library; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
+
 #ifndef _PILOT_SOURCE_H_
 #define _PILOT_SOURCE_H_
 
@@ -75,15 +78,15 @@ extern "C" {
 #include "pi-macros.h"
 #include "pi-buffer.h"
 
-#define PI_SOCK_LISTEN       0x01       /* Listener */
-#define PI_SOCK_CONN_ACCEPT  0x02       /* Connected by accepting */
-#define PI_SOCK_CONN_INIT    0x04       /* Connected by initiating */
-#define PI_SOCK_CONN_BREAK   0x08       /* Connected but broken */
-#define PI_SOCK_CONN_END     0x10       /* Connected but end */
-#define PI_SOCK_CLOSE        0x20       /* Closed */
+#define PI_SOCK_LISTEN       0x01       /* Listener 			*/
+#define PI_SOCK_CONN_ACCEPT  0x02       /* Connected by accepting 	*/
+#define PI_SOCK_CONN_INIT    0x04       /* Connected by initiating 	*/
+#define PI_SOCK_CONN_BREAK   0x08       /* Connected but broken 	*/
+#define PI_SOCK_CONN_END     0x10       /* Connected but end 		*/
+#define PI_SOCK_CLOSE        0x20       /* Closed 			*/
 
-#define PI_FLUSH_INPUT       0x01       /* for flush() */
-#define	PI_FLUSH_OUTPUT      0x02       /* for flush() */
+#define PI_FLUSH_INPUT       0x01       /* for flush() 			*/
+#define	PI_FLUSH_OUTPUT      0x02       /* for flush() 			*/
 
 	typedef struct pi_protocol {
 		int level;
@@ -138,7 +141,9 @@ extern "C" {
 	extern char *printlong PI_ARGS((unsigned long val));
 	extern unsigned long makelong PI_ARGS((char *c));
 
-	/* provide compatibility for old code. Code should now use pi_dumpline() and pi_dumpdata() */
+	/* provide compatibility for old code. Code should now use
+	   pi_dumpline() and pi_dumpdata() */
+
 	extern void dumpline
 	    PI_ARGS((PI_CONST char *buf, size_t len, unsigned int addr)) PI_DEPRECATED;
 

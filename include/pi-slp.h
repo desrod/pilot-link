@@ -1,5 +1,7 @@
 /*
- * pi-slp.h
+ * $Id$
+ *
+ * pi-slp.h: Palm Serial Link Protocol support
  *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Library General Public License as published by
@@ -15,6 +17,7 @@
  * along with this library; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
+
 #ifndef _PILOT_PADP_SLP_H_
 #define _PILOT_PADP_SLP_H_
 
@@ -25,9 +28,9 @@
 extern "C" {
 #endif
 
-#define PI_SLP_HEADER_LEN  10
-#define PI_SLP_FOOTER_LEN  2
-#define PI_SLP_MTU         0xffff
+#define PI_SLP_HEADER_LEN	10
+#define PI_SLP_FOOTER_LEN	2
+#define PI_SLP_MTU		0xffff
 
 #define PI_SLP_SIG_BYTE1 0xbe
 #define PI_SLP_SIG_BYTE2 0xef

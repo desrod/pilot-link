@@ -1,8 +1,9 @@
+<!-- $Id$ -->
 <refentry id="pilot-csd">
    <refmeta>
       <refentrytitle>pilot-csd</refentrytitle>
       <manvolnum>1</manvolnum>
-      <refmiscinfo>pilot-link: Conduits</refmiscinfo>
+      <refmiscinfo>pilot-link: Userland conduits</refmiscinfo>
    </refmeta>
    <refnamediv>
       <refname>pilot-csd</refname>

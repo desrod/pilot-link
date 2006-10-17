@@ -1,3 +1,24 @@
+/*
+ * $Id$
+ *
+ * pi-address.h: Macros for Palm "Classic" Address support
+ * see pi-contact.h for the "Extended" Contacts support
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Library General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or (at
+ * your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Library
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU Library General Public License
+ * along with this library; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ */
+  
 #ifndef _PILOT_ADDRESS_H_
 #define _PILOT_ADDRESS_H_
 
@@ -44,9 +65,9 @@ extern "C" {
 	typedef struct AddressAppInfo {
 		addressType type;
 		struct CategoryAppInfo category;
-		char labels[19 + 3][16]; /* Hairy explain, obvious to look */
-		int labelRenamed[19 + 3]; /* booleans show labels modified */
-		char phoneLabels[8][16]; /* Dup some labels, reduce hair */
+		char labels[19 + 3][16];	/* Hairy to explain, obvious to look	*/
+		int labelRenamed[19 + 3];	/* Booleans show labels modified		*/
+		char phoneLabels[8][16];	/* Dup some labels, reduce hair			*/
 		int country;
 		int sortByCompany;
 	} AddressAppInfo_t;

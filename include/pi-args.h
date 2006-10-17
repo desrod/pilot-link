@@ -1,4 +1,6 @@
 /*
+ * $Id$
+ *
  * pi-args.h: Macros for prototype definitions
  *
  * This library is free software; you can redistribute it and/or modify it
@@ -15,6 +17,7 @@
  * along with this library; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
+
 #ifndef __PILOT_ARGS_H__
 #define __PILOT_ARGS_H__
 

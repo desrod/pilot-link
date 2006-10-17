@@ -1,3 +1,23 @@
+/*
+ * $Id$
+ *
+ * pi-veo.h: Veo camera device support
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Library General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or (at
+ * your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Library
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU Library General Public License
+ * along with this library; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ */
+
 #ifndef _PILOT_VEO_H_
 #define _PILOT_VEO_H_
 
@@ -25,9 +45,8 @@ typedef struct VeoAppInfo {
 typedef struct Veo {
    unsigned char   res1[1];
 
-   /* 0 = high, 1 = med, 2 = low this must mean something 
-      to the conduit because it doesn't change anything 
-      on the Palm */
+   /* 0 = high, 1 = med, 2 = low this must mean something to the desktop
+      conduit side, because it doesn't change anything on the Palm */
    unsigned char   quality;
 
    /* 0 = 640x480, 1 = 320x240 */
@@ -36,7 +55,7 @@ typedef struct Veo {
    unsigned long   picnum;
    unsigned short  day, month, year;
    
-   /* These are not in the palm db header. They're used by the decoder */
+   /* These are not in the Palm db header. They're used by the decoder */
    unsigned short  width, height;
    int  sd, db;
    char            name[32];

@@ -1,4 +1,6 @@
 /*
+ * $Id$
+ *
  * pi-util.h: Header for utility routines
  *
  * Copyright (c) 2000, Helix Code Inc.
@@ -18,6 +20,7 @@
  * You should have received a copy of the GNU Library General Public License
  * along with this library; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
  */
 
 #ifndef _PILOT_UTIL_H_
@@ -32,12 +35,12 @@ extern "C" {
 /* pi_mktag Turn a sequence of characters into a long (er.. 32 bit quantity)
             like those used on the PalmOS device to identify creators and
             similar.
+
    pi_untag Given a 32 bit identifier, unpack it into the 5-byte char array
 	    buf so it is suitable for printing.
 
-
-   Both of these macros are deprecated for runtime use, but for
-   calculating compile-time constants pi_mktag is ok.
+   Both of these macros are deprecated for runtime use, but for calculating
+   compile-time constants pi_mktag is ok.
 */
 #define pi_mktag(c1,c2,c3,c4) (((c1)<<24)|((c2)<<16)|((c3)<<8)|(c4))
 #define pi_untag(buf,tag) { buf[0]=(tag >> 24) & 0xff; \
@@ -50,9 +53,9 @@ extern "C" {
 	/** @brief Read the PILOTRATE environment variable
 	 *
 	 * If the PILOTRATE environment variable is set, read it. It should
-	 * be a speed value. If the first letter is an 'H', then it means
-	 * we want to use this speed even if it's higher than the highest
-	 * speed published by the device.
+	 * be a speed value. If the first letter is an 'H', then it means we
+	 * want to use this speed even if it's higher than the highest speed
+	 * published by the device.
 	 *
 	 * @param establishrate On return, PILOTRATE value or -1 if environment variable not set
 	 * @param establishhighrate On return, 1 if speed prefixed with 'H', 0 otherwise
@@ -86,7 +89,8 @@ extern "C" {
 
 	/** @brief Convert an absolute time to a timeout value from now (in milliseconds)
 	 *
-	 * The returned timeout will be a negative if we passed the absolute time already
+	 * The returned timeout will be a negative if we passed the absolute
+	 * time already
 	 *
 	 * @param ts Timespec with an absolute time
 	 * @return Timeout value in milliseconds (negative if expired)
