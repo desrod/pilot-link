@@ -148,6 +148,11 @@
          Palm 'Foto' Image Installer/Remover/Fetcher/Converter</para>
     </refsect2>
     <refsect2>
+      <title>pilot-read-screenshot</title>
+      <para>
+         Read screenshots from Palm (ScreenShotDB).</para>
+    </refsect2>
+    <refsect2>
       <title>pilot-schlep</title>
       <para>
          Package up any arbitrary file and sync it to your Palm device.</para>
@@ -188,11 +193,6 @@
       <title>read-palmpix</title>
       <para>
          Convert all pictures in the files given or found on a Palm handheld.</para>
-    </refsect2>
-    <refsect2>
-      <title>read-screenshot</title>
-      <para>
-         Read screenshots from Palm (ScreenShotDB).</para>
     </refsect2>
     <refsect2>
       <title>read-todos</title>

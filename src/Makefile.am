@@ -41,6 +41,7 @@ bin_PROGRAMS =			\
 	pilot-install-expenses	\
 	pilot-memos		\
 	pilot-nredir		\
+	pilot-read-screenshot	\
 	pilot-reminders		\
 	pilot-schlep		\
 	pilot-treofoto		\
@@ -51,7 +52,7 @@ bin_PROGRAMS =			\
 	read-ical		\
 	read-notepad		\
 	read-palmpix		\
-	read-screenshot		\
+
 	read-todos		\
 	read-veo
 
@@ -238,6 +239,14 @@ pilot_foto_LDADD = 		\
 	$(POPT_LIBS)		\
 	$(top_builddir)/libpisock/libpisock.la
 
+pilot_read_screenshot_SOURCES =	\
+        pilot-read-screenshot.c
+pilot_read_screenshot_LDADD =	\
+	libpiuserland.la	\
+	$(POPT_LIBS)		\
+        $(PNG_LIBS)		\
+        $(top_builddir)/libpisock/libpisock.la
+
 pilot_reminders_SOURCES =	\
 	pilot-reminders.c
 pilot_reminders_LDADD = 	\
@@ -310,14 +319,6 @@ read_palmpix_LDADD = 		\
 	$(PNG_LIBS) 		\
 	$(top_builddir)/libpisock/libpisock.la
 
-read_screenshot_SOURCES =	\
-        read-screenshot.c
-read_screenshot_LDADD =		\
-	libpiuserland.la	\
-	$(POPT_LIBS)		\
-        $(PNG_LIBS)		\
-        $(top_builddir)/libpisock/libpisock.la
-
 read_todos_SOURCES = 		\
 	read-todos.c
 read_todos_LDADD = 		\
@@ -380,6 +381,7 @@ EXTRA_DIST = 			\
 	pilot-hinotes.c		\
 	pilot-install-expenses	\
 	pilot-port.c		\
+	pilot-read-screenshot.c	\
 	pilot-schlep.c		\
 	pilot-treofoto.c	\
 	pilot-650foto.c	\
@@ -389,7 +391,6 @@ EXTRA_DIST = 			\
 	read-ical.c		\
 	read-notepad.c		\
 	read-palmpix.c		\
-	read-screenshot.c	\
 	read-todos.c		\
 	read-veo.c		\
 	pilot-reminders.c	\

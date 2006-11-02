@@ -1,12 +1,12 @@
 <!-- $Id$ -->
-<refentry id="read-screenshot">
+<refentry id="pilot-read-screenshot">
    <refmeta>
-      <refentrytitle>read-screenshot</refentrytitle>
+      <refentrytitle>pilot-read-screenshot</refentrytitle>
       <manvolnum>1</manvolnum>
       <refmiscinfo>Copyright 1996-2005 FSF</refmiscinfo>
    </refmeta>
    <refnamediv>
-      <refname>read-screenshot</refname>
+      <refname>pilot-read-screenshot</refname>
       <refpurpose>Read screenshots from Palm (ScreenShotDB).</refpurpose>
    </refnamediv>
    <refsect1>
@@ -16,7 +16,7 @@
    <refsect1>
       <title>synopsis</title>
       <para>
-         <emphasis>read-screenshot</emphasis>
+         <emphasis>pilot-read-screenshot</emphasis>
          [<option>-p</option>|<option>--port</option> &lt;<userinput>port</userinput>&gt;]
          [<option>--version</option>] [<option>-?</option>|<option>--help</option>]
          [<option>--usage</option>] [<option>-q</option>|<option>--quiet</option>]
@@ -39,7 +39,7 @@
    <refsect1>
       <title>Options</title>
       <refsect2>
-         <title>read-screenshot option</title>
+         <title>pilot-read-screenshot option</title>
 	<variablelist>
 	<varlistentry>
 		<term>
@@ -64,9 +64,9 @@
          <listitem>
             <para>
                Use device file <filename>port</filename> to communicate with the Palm handheld. If
-               this is not specified, <emphasis>read-screenshot</emphasis> will look for the
+               this is not specified, <emphasis>pilot-read-screenshot</emphasis> will look for the
                <filename>$PILOTPORT</filename> environment variable. If neither are found or
-               supplied, <emphasis>read-screenshot</emphasis> will print the usage information.
+               supplied, <emphasis>pilot-read-screenshot</emphasis> will print the usage information.
             </para>
          </listitem>
 	</varlistentry>
@@ -85,7 +85,7 @@
          </term>
          <listitem>
             <para>
-               Display version of <emphasis>read-screenshot </emphasis> and exit without
+               Display version of <emphasis>pilot-read-screenshot </emphasis> and exit without
                connecting.
             </para>
          </listitem>
@@ -101,7 +101,7 @@
 		</term>
          <listitem>
             <para>
-               Display the help synopsis for <emphasis>read-screenshot</emphasis> and exit without
+               Display the help synopsis for <emphasis>pilot-read-screenshot</emphasis> and exit without
                connecting.
             </para>
          </listitem>
@@ -120,7 +120,7 @@
    <refsect1>
       <title>Author</title>
       <para>
-         <emphasis>read-screenshot</emphasis> was originally written by Angus Ainslie <email>angusa at
+         <emphasis>pilot-read-screenshot</emphasis> was originally written by Angus Ainslie <email>angusa at
          deltatee.com</email>
       </para>
       <para>

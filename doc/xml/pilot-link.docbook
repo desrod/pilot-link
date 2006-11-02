@@ -25,6 +25,7 @@
 <!ENTITY pilotlink SYSTEM "pilot-link.xml">
 <!ENTITY pilotmemos SYSTEM "pilot-memos.xml">
 <!ENTITY pilotnredir SYSTEM "pilot-nredir.xml">
+<!ENTITY pilotreadscreenshot SYSTEM "pilot-read-screenshot.xml">
 <!ENTITY pilotreminders SYSTEM "pilot-reminders.xml">
 <!ENTITY pilotschlep SYSTEM "pilot-schlep.xml">
 <!ENTITY pilottreofoto SYSTEM "pilot-treofoto.xml">
@@ -34,7 +35,7 @@
 <!ENTITY readical SYSTEM "read-ical.xml">
 <!ENTITY readnotepad SYSTEM "read-notepad.xml">
 <!ENTITY readpalmpix SYSTEM "read-palmpix.xml">
-<!ENTITY readscreenshot SYSTEM "read-screenshot.xml">
+
 <!ENTITY readtodos SYSTEM "read-todos.xml">
 <!ENTITY readveo SYSTEM "read-veo.xml">
  ]>
@@ -65,6 +66,7 @@
 &pilotlink;
 &pilotmemos;  
 &pilotnredir;
+&pilotreadscreenshot;
 &pilotreminders;
 &pilotschlep;
 &pilottreofoto;
@@ -74,7 +76,6 @@
 &readical;
 &readnotepad; 
 &readpalmpix;
-&readscreenshot;
 &readtodos;  
 &readveo;
 </chapter>

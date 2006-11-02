@@ -23,6 +23,7 @@ man_MANS =				\
 	pilot-link.7			\
 	pilot-memos.1			\
 	pilot-nredir.1			\
+	pilot-read-screenshot.1		\
 	pilot-reminders.1		\
 	pilot-schlep.1			\
 	pilot-treofoto.1		\
@@ -32,7 +33,6 @@ man_MANS =				\
 	read-ical.1			\
 	read-notepad.1			\
 	read-palmpix.1			\
-	read-screenshot.1		\
 	read-todos.1			\
 	read-veo.1
 
