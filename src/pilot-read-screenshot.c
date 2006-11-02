@@ -384,7 +384,7 @@ int main (int argc, const char *argv[])
 	  type = OUT_PPM;
 
 	const char
-                *ptype;
+                *pformat;
 
 	struct PilotUser User;
 
@@ -392,7 +392,7 @@ int main (int argc, const char *argv[])
 
 	struct poptOption options[] = {
 		USERLAND_RESERVED_OPTIONS
-		{"type", 	't', POPT_ARG_STRING, &ptype, 0, "Specify picture output type (ppm or png)"},
+		{"format", 	'f', POPT_ARG_STRING, &pformat, 0, "Specify picture output type (ppm or png)"},
 		POPT_TABLEEND
 	};
 
@@ -412,7 +412,7 @@ int main (int argc, const char *argv[])
 		plu_badoption(po,c);
 	}
 
-	if (!strncmp ("png", ptype, 3))
+	if (!strncmp ("png", pformat, 3))
 	{
 #ifdef HAVE_PNG
 		type = OUT_PNG;
@@ -420,7 +420,7 @@ int main (int argc, const char *argv[])
 		fprintf (stderr, "   ERROR: pilot-read-screenshot was built without png support.\n");
 #endif
 	}
-	else if (!strncmp ("ppm", ptype, 3))
+	else if (!strncmp ("ppm", pformat, 3))
 	{
 		type = OUT_PPM;
 	}

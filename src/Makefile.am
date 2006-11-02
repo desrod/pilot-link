@@ -52,7 +52,6 @@ bin_PROGRAMS =			\
 	read-ical		\
 	read-notepad		\
 	read-palmpix		\
-
 	read-todos		\
 	read-veo
 
