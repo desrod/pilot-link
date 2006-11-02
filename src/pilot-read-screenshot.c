@@ -1,7 +1,7 @@
 /*
  * $Id$ 
  *
- * read-screenshot.c
+ * pilot-read-screenshot.c
  *
  * Copyright (c) 2003-2004, Angus Ainslie
  *
@@ -396,7 +396,7 @@ int main (int argc, const char *argv[])
 		POPT_TABLEEND
 	};
 
-	po = poptGetContext("read-screenshot", argc, argv, options, 0);
+	po = poptGetContext("pilot-read-screenshot", argc, argv, options, 0);
 	poptSetOtherOptionHelp(po,"\n\n");
 
 	if (argc<2) {
@@ -417,7 +417,7 @@ int main (int argc, const char *argv[])
 #ifdef HAVE_PNG
 		type = OUT_PNG;
 #else
-		fprintf (stderr, "   ERROR: read-screenshot was built without png support.\n");
+		fprintf (stderr, "   ERROR: pilot-read-screenshot was built without png support.\n");
 #endif
 	}
 	else if (!strncmp ("ppm", ptype, 3))
