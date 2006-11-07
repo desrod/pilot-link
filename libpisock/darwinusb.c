@@ -954,7 +954,7 @@ configure_device(IOUSBDeviceInterface **di,
 	if (kr == kIOReturnNotReady)
 		return kr;
 
-	/* With some devices (Palm) we need to hardcord the location of the pipes to use
+	/* With some devices (Palm) we need to hardcode the location of the pipes to use
 	 * because the Palm engineers had the good idea to mismatch the connection information data
 	 * and the actual pipes to use
 	 */
@@ -1294,7 +1294,7 @@ decode_generic_connection_information(palm_ext_connection_info *ci, int *port_nu
 			 */
 			return kIOReturnNotReady;
 		}
-		if (port_function_id == 'sync')
+		if (port_function_id == 'sync' || port_function_id == 'ppp_')
 		{
 			/* we found the port/pipes to use for synchronization
 			 * If endpoint_numbers_different is != 0, then the number of each
