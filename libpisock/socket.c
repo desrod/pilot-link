@@ -105,7 +105,7 @@ int pi_sock_installedexit = 0;
  * Returns:     void
  *
  ***********************************************************************/
-#ifdef DEBUG
+#if 0
 static void
 ps_list_dump (pi_socket_list_t *list)
 {
@@ -1353,7 +1353,7 @@ pi_flush(int pi_sd, int flags)
 int
 pi_tickle(int pi_sd)
 {
-	int 	result,
+	int 	result=0,
 		type,
 		oldtype;
 	size_t	len = 0,

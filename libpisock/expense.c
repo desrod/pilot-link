@@ -387,6 +387,8 @@ unpack_ExpensePref(ExpensePref_t *pref, unsigned char *record, int len)
 	int 	i;
 	unsigned char *start = record;
 
+	(void) len;
+
 	pref->currentCategory 	= get_short(record);
 	record += 2;
 	pref->defaultCurrency 	= get_short(record);
@@ -435,6 +437,8 @@ int pack_ExpensePref(ExpensePref_t *p, unsigned char *record, int len)
 {
 	int 	i;
 	unsigned char *start = record;
+
+	(void) len;
 
 	set_short(record, p->currentCategory);
 	record += 2;

@@ -515,6 +515,8 @@ cmp_getsockopt(pi_socket_t *ps, int level, int option_name,
 	pi_protocol_t *prot;
 	struct 	pi_cmp_data *data;
 
+	(void) level;
+
 	prot = pi_protocol(ps->sd, PI_LEVEL_CMP);
 	if (prot == NULL)
 		return pi_set_error(ps->sd, PI_ERR_SOCK_INVALID);
@@ -580,6 +582,8 @@ cmp_setsockopt(pi_socket_t *ps, int level, int option_name,
 	pi_protocol_t *prot;
 	struct 	pi_padp_data *data;
 
+	(void) level;
+
 	prot = pi_protocol(ps->sd, PI_LEVEL_PADP);
 	if (prot == NULL)
 		return pi_set_error(ps->sd, PI_ERR_SOCK_INVALID);
@@ -616,7 +620,9 @@ void
 cmp_dump(const unsigned char *cmp, int rxtx)
 {
 	char *type;
-	
+
+	(void) rxtx;
+
 	switch (get_byte(&cmp[PI_CMP_OFFSET_TYPE])) {
 		case PI_CMP_TYPE_WAKE:
 			type = "WAKE";
