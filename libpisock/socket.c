@@ -442,6 +442,14 @@ protocol_queue_build (pi_socket_t *ps, int autodetect)
 	dev_prot 	= ps->device->protocol (ps->device);
 	dev_cmd_prot 	= ps->device->protocol (ps->device);
 
+	/* When opening the device in RAW mode, we stay low-level */
+	if (ps->type == PI_SOCK_RAW) {
+		LOG((PI_DBG_SOCK,PI_DBG_LVL_DEBUG, "RAW mode, no protocol\n",ps->sd,autodetect));
+		protocol_queue_add (ps, dev_prot);
+		protocol_cmd_queue_add (ps, dev_cmd_prot);
+		return;
+	}
+
 	protocol = ps->protocol;
 
 	LOG((PI_DBG_SOCK,PI_DBG_LVL_DEBUG, "SOCK proto=%s (%d)\n",
