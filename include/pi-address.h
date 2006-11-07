@@ -33,7 +33,8 @@ extern "C" {
 		address_v1,
 	} addressType;
   
-	enum {  entryLastname, 
+	typedef enum {
+		entryLastname, 
 		entryFirstname, 
 		entryCompany, 
 		entryPhone1, 
@@ -53,7 +54,7 @@ extern "C" {
 		entryCustom4,
 		entryNote,
 		entryCategory
-	};
+	} AddressField_t;
 
 	typedef struct Address {
 		int phoneLabel[5];
@@ -75,9 +76,9 @@ extern "C" {
 	extern void free_Address
 	  PI_ARGS((Address_t *));
 	extern int unpack_Address
-	  PI_ARGS((Address_t *, pi_buffer_t *buf, addressType type));
+	  PI_ARGS((Address_t *, const pi_buffer_t *buf, addressType type));
 	extern int pack_Address
-	  PI_ARGS((Address_t *, pi_buffer_t *buf, addressType type));
+	  PI_ARGS((const Address_t *, pi_buffer_t *buf, addressType type));
 	extern int unpack_AddressAppInfo
 	  PI_ARGS((AddressAppInfo_t *, unsigned char *AppInfo, size_t len));
 	extern int pack_AddressAppInfo

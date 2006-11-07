@@ -69,7 +69,7 @@ free_Address(Address_t *addr)
  *
  ***********************************************************************/
 int
-unpack_Address(Address_t *addr, pi_buffer_t *buf, addressType type)
+unpack_Address(Address_t *addr, const pi_buffer_t *buf, addressType type)
 {
 	unsigned long	contents,
 			v;
@@ -131,7 +131,7 @@ unpack_Address(Address_t *addr, pi_buffer_t *buf, addressType type)
  *
  ***********************************************************************/
 int
-pack_Address(Address_t *addr, pi_buffer_t *buf, addressType type)
+pack_Address(const Address_t *addr, pi_buffer_t *buf, addressType type)
 {
 	unsigned int	l,
 			destlen = 9;
