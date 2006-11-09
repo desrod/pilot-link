@@ -94,7 +94,7 @@
 #ifdef PI_DEBUG
     #define DEBUG_USB 1
 #endif
-#undef DEBUG_USB        /* comment out to leave debug enabled */
+//#undef DEBUG_USB        /* comment out to leave debug enabled */
 
 /* Macro to log more information when debugging USB. Note that this is for
  * my own use, mostly, as the info logged is primarily being used to
@@ -154,6 +154,7 @@ typedef struct usb_connection_t
 	int device_present;
 	int read_pending;			/* set to 1 when a prime_read() has been issued and the read_completion() has not been called yet */
 	int in_pipe_ref;			/* pipe for reads */
+	int in_pipe_bulk_size;		/* max packet size of bulk packets on input */
 	int out_pipe_ref;			/* pipe for writes */
 	int out_pipe_bulk_size;			/* size of bulk packets on the out pipe (used when talking with a PalmConnect USB serial adapter) */
 
@@ -1154,9 +1155,10 @@ find_interfaces(usb_connection_t *c,
 						if ((pass == 1 && input_pipe_number != 0xff && number == input_pipe_number) ||
 						    (pass == 1 && port_number == 0xff && input_pipe_number == 0xff && (accept_flags & FLAG_USE_FIRST_PAIR)) ||
 						    (pass == 2 && port_number != 0xff && number == port_number) ||
-						    (pass == 3 && ((port_number != 0xff && pair_index == port_number) || (port_number == 0xff && maxPacketSize == 64))) ||
+						    (pass == 3 && ((port_number != 0xff && pair_index == port_number) || (port_number == 0xff && (maxPacketSize == 64 || maxPacketSize == 512)))) ||
 						     pass == 4)
 							c->in_pipe_ref = pipeRef;
+							c->in_pipe_bulk_size = maxPacketSize;
 					}
 					else if (c->out_pipe_ref == 0 &&
 					         direction == kUSBOut &&
@@ -1165,7 +1167,7 @@ find_interfaces(usb_connection_t *c,
 						if ((pass == 1 && output_pipe_number != 0xff && number == output_pipe_number) ||
 						    (pass == 1 && port_number == 0xff && input_pipe_number == 0xff && (accept_flags & FLAG_USE_FIRST_PAIR)) ||
 						    (pass == 2 && port_number != 0xff && number == port_number) ||
-						    (pass == 3 && ((port_number != 0xff && pair_index == port_number) || (port_number == 0xff && maxPacketSize == 64))) ||
+						    (pass == 3 && ((port_number != 0xff && pair_index == port_number) || (port_number == 0xff && (maxPacketSize == 64 || maxPacketSize == 512)))) ||
 						     pass == 4)
 						{
 							c->out_pipe_ref = pipeRef;
@@ -1510,13 +1512,13 @@ prime_read(usb_connection_t *c)
 		}
 		else
 		{
-			c->last_read_ahead_size = c->read_ahead_size & ~63;
+			c->last_read_ahead_size = c->read_ahead_size & ~(c->in_pipe_bulk_size-1);
 			if (c->last_read_ahead_size <= 0)
 				c->last_read_ahead_size = c->auto_read_size;
 			if (c->last_read_ahead_size > MAX_AUTO_READ_SIZE)
 				c->last_read_ahead_size = MAX_AUTO_READ_SIZE;
-			else if (c->last_read_ahead_size <= 0)
-				c->last_read_ahead_size = 64;			// USB packet size
+			else if (c->last_read_ahead_size < c->in_pipe_bulk_size)
+				c->last_read_ahead_size = c->in_pipe_bulk_size;			// USB packet size
 		}
 
 		ULOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: prime_read(%p) for %d bytes\n", c, c->last_read_ahead_size));
