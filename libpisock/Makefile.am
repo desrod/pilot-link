@@ -30,10 +30,6 @@ if WITH_DARWINUSB
 usb_SOURCE = usb.c darwinusb.c
 endif
 
-if WITH_BLUEZ
-bluez_SOURCE = bluetooth.c
-endif
-
 lib_LTLIBRARIES = libpisock.la
 
 libpisock_la_SOURCES =  \
