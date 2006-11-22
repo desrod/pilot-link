@@ -204,7 +204,7 @@ pack_Address(const Address_t *addr, pi_buffer_t *buf, addressType type)
  *
  ***********************************************************************/
 int
-unpack_AddressAppInfo(AddressAppInfo_t *ai, unsigned char *record, size_t len)
+unpack_AddressAppInfo(AddressAppInfo_t *ai, const unsigned char *record, size_t len)
 {
 	size_t 	i,
 		destlen = 4 + 16 * 22 + 2 + 2;
@@ -260,7 +260,7 @@ unpack_AddressAppInfo(AddressAppInfo_t *ai, unsigned char *record, size_t len)
  *
  ***********************************************************************/
 int
-pack_AddressAppInfo(AddressAppInfo_t *ai, unsigned char *record, size_t len)
+pack_AddressAppInfo(const AddressAppInfo_t *ai, unsigned char *record, size_t len)
 {
 	int 	i;
 	size_t	destlen = 4 + 16 * 22 + 2 + 2;

@@ -80,9 +80,9 @@ extern "C" {
 	extern int pack_Address
 	  PI_ARGS((const Address_t *, pi_buffer_t *buf, addressType type));
 	extern int unpack_AddressAppInfo
-	  PI_ARGS((AddressAppInfo_t *, unsigned char *AppInfo, size_t len));
+	  PI_ARGS((AddressAppInfo_t *, const unsigned char *AppInfo, size_t len));
 	extern int pack_AddressAppInfo
-	  PI_ARGS((AddressAppInfo_t *, unsigned char *AppInfo, size_t len));
+	  PI_ARGS((const AddressAppInfo_t *, unsigned char *AppInfo, size_t len));
 
 #ifdef __cplusplus
   };

@@ -52,7 +52,7 @@ free_Memo(Memo_t *memo)
  *
  * Function:    unpack_Memo
  *
- * Summary:     Unpack the memo structure into the buffer allocated
+ * Summary:     Unpack the memo structure from the buffer
  *
  * Parameters:  Memo_t*, char* to buffer, length
  *
@@ -60,7 +60,7 @@ free_Memo(Memo_t *memo)
  *
  ***********************************************************************/
 int
-unpack_Memo(Memo_t *memo, pi_buffer_t *record, memoType type)
+unpack_Memo(Memo_t *memo, const pi_buffer_t *record, memoType type)
 {
 	if (type != memo_v1)
 		/* Don't support anything else yet */
@@ -84,7 +84,7 @@ unpack_Memo(Memo_t *memo, pi_buffer_t *record, memoType type)
  *
  ***********************************************************************/
 int
-pack_Memo(Memo_t *memo, pi_buffer_t *record, memoType type)
+pack_Memo(const Memo_t *memo, pi_buffer_t *record, memoType type)
 {
 	size_t destlen = (memo->text ? strlen(memo->text) : 0) + 1;
 
@@ -118,7 +118,7 @@ pack_Memo(Memo_t *memo, pi_buffer_t *record, memoType type)
  *
  ***********************************************************************/
 int
-unpack_MemoAppInfo(struct MemoAppInfo *appinfo, unsigned char *record,
+unpack_MemoAppInfo(struct MemoAppInfo *appinfo, const unsigned char *record,
 			 size_t len)
 {
 	int 	i = unpack_CategoryAppInfo(&appinfo->category, record, len);
@@ -153,7 +153,7 @@ unpack_MemoAppInfo(struct MemoAppInfo *appinfo, unsigned char *record,
  *
  ***********************************************************************/
 int
-pack_MemoAppInfo(MemoAppInfo_t *appinfo, unsigned char *record, size_t len)
+pack_MemoAppInfo(const MemoAppInfo_t *appinfo, unsigned char *record, size_t len)
 {
 	int 	i;
 	unsigned char *start = record;

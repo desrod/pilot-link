@@ -74,7 +74,8 @@ free_ToDo(ToDo_t *todo)
  *
  * Function:    unpack_ToDo
  *
- * Summary:     Unpack the ToDo structure into records we can chew on
+ * Summary:     Unpack the ToDo structure from buffer into records 
+ *              we can chew on.
  *
  * Parameters:  ToDo_t*, pi_buffer_t * of buffer, todo type
  *
@@ -82,7 +83,7 @@ free_ToDo(ToDo_t *todo)
  *
  ***********************************************************************/
 int
-unpack_ToDo(ToDo_t *todo, pi_buffer_t *buf, todoType type)
+unpack_ToDo(ToDo_t *todo, const pi_buffer_t *buf, todoType type)
 {
 	unsigned long d;
 	int ofs;
@@ -162,7 +163,7 @@ unpack_ToDo(ToDo_t *todo, pi_buffer_t *buf, todoType type)
  *
  ***********************************************************************/
 int
-pack_ToDo(ToDo_t *todo, pi_buffer_t *buf, todoType type)
+pack_ToDo(const ToDo_t *todo, pi_buffer_t *buf, todoType type)
 {
 	int pos;
 	size_t destlen = 3;
@@ -228,7 +229,7 @@ pack_ToDo(ToDo_t *todo, pi_buffer_t *buf, todoType type)
  *
  ***********************************************************************/
 int
-unpack_ToDoAppInfo(ToDoAppInfo_t *appinfo, unsigned char *record, size_t len)
+unpack_ToDoAppInfo(ToDoAppInfo_t *appinfo, const unsigned char *record, size_t len)
 {
 	int i;
 	unsigned char *start = record;
@@ -262,7 +263,7 @@ unpack_ToDoAppInfo(ToDoAppInfo_t *appinfo, unsigned char *record, size_t len)
  *
  ***********************************************************************/
 int
-pack_ToDoAppInfo(ToDoAppInfo_t *appinfo, unsigned char *record, size_t len)
+pack_ToDoAppInfo(const ToDoAppInfo_t *appinfo, unsigned char *record, size_t len)
 {
 	int i;
 	unsigned char *start = record;

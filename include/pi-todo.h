@@ -52,13 +52,13 @@ extern "C" {
 
 	extern void free_ToDo PI_ARGS((ToDo_t *));
 	extern int unpack_ToDo
-	    PI_ARGS((ToDo_t *, pi_buffer_t *record, todoType type));
+	    PI_ARGS((ToDo_t *, const pi_buffer_t *record, todoType type));
 	extern int pack_ToDo
-	    PI_ARGS((ToDo_t *, pi_buffer_t *record, todoType type));
+	    PI_ARGS((const ToDo_t *, pi_buffer_t *record, todoType type));
 	extern int unpack_ToDoAppInfo
-	    PI_ARGS((ToDoAppInfo_t *, unsigned char *record, size_t len));
+	    PI_ARGS((ToDoAppInfo_t *, const unsigned char *record, size_t len));
 	extern int pack_ToDoAppInfo
-	    PI_ARGS((ToDoAppInfo_t *, unsigned char *record, size_t len));
+	    PI_ARGS((const ToDoAppInfo_t *, unsigned char *record, size_t len));
 
 #ifdef __cplusplus
   };

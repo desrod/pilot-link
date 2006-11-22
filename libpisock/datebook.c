@@ -99,7 +99,7 @@ free_Appointment(Appointment_t *a)
  *
  ***********************************************************************/
 int
-unpack_Appointment(Appointment_t *a, pi_buffer_t *buf, datebookType type)
+unpack_Appointment(Appointment_t *a, const pi_buffer_t *buf, datebookType type)
 {
 	int 	iflags,
 		j,
@@ -278,7 +278,7 @@ unpack_Appointment(Appointment_t *a, pi_buffer_t *buf, datebookType type)
  *
  ***********************************************************************/
 int
-pack_Appointment(Appointment_t *a, pi_buffer_t *buf, datebookType type)
+pack_Appointment(const Appointment_t *a, pi_buffer_t *buf, datebookType type)
 {
 	int 	iflags,
 		destlen = 8;
@@ -425,7 +425,7 @@ pack_Appointment(Appointment_t *a, pi_buffer_t *buf, datebookType type)
  ***********************************************************************/
 int
 unpack_AppointmentAppInfo(AppointmentAppInfo_t *ai,
-	unsigned char *record, size_t len)
+	const unsigned char *record, size_t len)
 {
 	int 	i;
 
@@ -455,7 +455,7 @@ unpack_AppointmentAppInfo(AppointmentAppInfo_t *ai,
  *
  ***********************************************************************/
 int
-pack_AppointmentAppInfo(AppointmentAppInfo_t *ai,
+pack_AppointmentAppInfo(const AppointmentAppInfo_t *ai,
 	unsigned char *record, size_t len)
 {
 	int 	i;

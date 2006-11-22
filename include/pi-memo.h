@@ -48,14 +48,14 @@ extern "C" {
 
 	extern void free_Memo PI_ARGS((struct Memo *));
 	extern int unpack_Memo
-	    PI_ARGS((struct Memo *, pi_buffer_t *record, memoType type));
+	    PI_ARGS((struct Memo *, const pi_buffer_t *record, memoType type));
 	extern int pack_Memo
-	    PI_ARGS((struct Memo *, pi_buffer_t *record, memoType type));
+	    PI_ARGS((const struct Memo *, pi_buffer_t *record, memoType type));
 	extern int unpack_MemoAppInfo
-	    PI_ARGS((struct MemoAppInfo *, unsigned char *AppInfo,
+	    PI_ARGS((struct MemoAppInfo *, const unsigned char *AppInfo,
 		     size_t len));
 	extern int pack_MemoAppInfo
-	    PI_ARGS((struct MemoAppInfo *, unsigned char *AppInfo,
+	    PI_ARGS((const struct MemoAppInfo *, unsigned char *AppInfo,
 		     size_t len));
 
 #ifdef __cplusplus

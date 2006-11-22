@@ -97,14 +97,14 @@ extern "C" {
 	extern void free_Appointment
 	  PI_ARGS((struct Appointment *));
 	extern int unpack_Appointment
-	    PI_ARGS((struct Appointment *, pi_buffer_t *record, datebookType type));
+	    PI_ARGS((struct Appointment *, const pi_buffer_t *record, datebookType type));
 	extern int pack_Appointment
-	    PI_ARGS((struct Appointment *, pi_buffer_t *record, datebookType type));
+	    PI_ARGS((const struct Appointment *, pi_buffer_t *record, datebookType type));
 	extern int unpack_AppointmentAppInfo
-	  PI_ARGS((struct AppointmentAppInfo *, unsigned char *AppInfo,
+	  PI_ARGS((struct AppointmentAppInfo *, const unsigned char *AppInfo,
 		     size_t len));
 	extern int pack_AppointmentAppInfo
-	  PI_ARGS((struct AppointmentAppInfo *, unsigned char *AppInfo,
+	  PI_ARGS((const struct AppointmentAppInfo *, unsigned char *AppInfo,
 		     size_t len));
 
 #ifdef __cplusplus

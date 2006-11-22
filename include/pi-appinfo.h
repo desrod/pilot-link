@@ -40,9 +40,9 @@ extern "C" {
 	} CategoryAppInfo_t;
 
 	extern int unpack_CategoryAppInfo
-	    PI_ARGS((CategoryAppInfo_t *, unsigned char *AppInfo, size_t len));
+	    PI_ARGS((CategoryAppInfo_t *, const unsigned char *AppInfo, size_t len));
 	extern int pack_CategoryAppInfo
-	    PI_ARGS((CategoryAppInfo_t *, unsigned char *AppInfo, size_t len));
+	    PI_ARGS((const CategoryAppInfo_t *, unsigned char *AppInfo, size_t len));
 
 #ifdef __cplusplus
   };
