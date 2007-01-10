@@ -170,7 +170,6 @@ static int
 register_sdp (uint32_t *handle, int *channel, sdp_session_t *sess)
 {
 	svc_info_t si;
-	int ret;
 	bdaddr_t interface;
 
 	bacpy (&interface, BDADDR_ANY);
@@ -481,7 +480,7 @@ pi_bluetooth_connect(pi_socket_t *ps, struct sockaddr *addr,
 	memcpy(ps->laddr, addr, addrlen);
 	ps->laddrlen    = addrlen;
 
-	if (	ps->type == PI_SOCK_STREAM &&
+	if ((	ps->type == PI_SOCK_STREAM &&
 	    	ps->cmd  == PI_CMD_CMP) &&
 	    	cmp_tx_handshake(ps) < 0)
 	{
@@ -687,7 +686,7 @@ pi_bluetooth_read(struct pi_socket *ps, pi_buffer_t *buf, size_t len, int flags)
 		select(ps->sd + 1, &ready, 0, 0, &t);
 	}
 
-    	/* If data is available in time, read it */*/
+    	/* If data is available in time, read it */
     	if (FD_ISSET(ps->sd, &ready)) {
 		if (flags == PI_MSG_PEEK && len > 256)
 	    		len = 256;
@@ -795,7 +794,6 @@ pi_bluetooth_setsockopt(pi_socket_t *ps, int level, int option_name,
 		    return -1;
 		}
 		memcpy (&data->timeout, option_value, sizeof (data->timeout));
-		break;
 	}
 	return 0;
 }

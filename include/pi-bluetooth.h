@@ -23,6 +23,7 @@
 
 #ifdef HAVE_BLUEZ
 #include <bluetooth/sdp.h>
+#include <bluetooth/sdp_lib.h>
 #endif
 
 #ifdef __cplusplus

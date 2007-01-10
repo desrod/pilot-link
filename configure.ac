@@ -337,6 +337,45 @@ AM_CONDITIONAL(WITH_FREEBSDUSB, test x$usb_type = xfreebsd)
 AM_CONDITIONAL(WITH_DARWINUSB, test x$usb_type = xdarwin)
 AC_SUBST(usb_libs)
 
+dnl ******************************
+dnl BlueZ Support
+dnl ******************************
+msg_bluez=no
+AC_ARG_WITH(bluez, AC_HELP_STRING([--with-bluez=DIR], [BlueZ library is installed in DIR]), [
+	if (test "${withval}" != "yes"); then
+		bluez_prefix=${withval}
+	fi
+])
+
+if test x${withval} != xno; then
+
+	BLUEZ_CFLAGS=""
+	test -d "${bluez_prefix}/include" && BLUEZ_CFLAGS="$BLUEZ_CFLAGS -I${bluez_prefix}/include"
+
+	AC_CHECK_HEADER(bluetooth/bluetooth.h,, AC_MSG_ERROR(Bluetooth header files not found))
+
+	BLUEZ_LIBS=""
+	if (test "${ac_default_prefix}" = "${bluez_prefix}"); then
+		test -d "${libdir}" && BLUEZ_LIBS="$BLUEZ_LIBS -L${libdir}"
+	else
+		test -d "${bluez_prefix}/lib64" && BLUEZ_LIBS="$BLUEZ_LIBS -L${bluez_prefix}/lib64"
+		test -d "${bluez_prefix}/lib" && BLUEZ_LIBS="$BLUEZ_LIBS -L${bluez_prefix}/lib"
+	fi
+
+	AC_CHECK_LIB(bluetooth, hci_open_dev, BLUEZ_LIBS="$BLUEZ_LIBS -lbluetooth", AC_MSG_ERROR(Bluetooth library not found))
+	AC_CHECK_LIB(bluetooth, sdp_connect,, AC_CHECK_LIB(sdp, sdp_connect, BLUEZ_LIBS="$BLUEZ_LIBS -lsdp"))
+
+	if test "x$BLUEZ_LIBS" != "x"; then
+		AC_DEFINE(HAVE_BLUEZ, 1, [Define if we have bluez])
+		msg_bluez=yes
+	fi	
+
+	AC_SUBST(BLUEZ_CFLAGS)
+	AC_SUBST(BLUEZ_LIBS)
+
+fi	
+AM_CONDITIONAL(WITH_BLUEZ, test "x$BLUEZ_LIBS" != "x")
+
 
 dnl *********************************
 dnl Check for popt (use internal if needed)
@@ -779,6 +818,7 @@ AC_MSG_RESULT([
   Build for host.......... : $host
   Extra Warnings.......... : $set_compile_warnings
   Direct USB support...... : $msg_usb
+  BlueZ support........... : $msg_bluez
   Thread-safe libpisock... : $msg_threads
   ElectricFence checks.... : $msg_efence
   CPPFLAGS................ : $CPPFLAGS
