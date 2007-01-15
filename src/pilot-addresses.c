@@ -754,7 +754,7 @@ int main(int argc, const char *argv[])
                        "different structure. Your Palm has \"Contacts\", and this tool reads the\n"
                        "\"AddressBook\" database.\n\n"
 
-                       "Due to this chnage, pilot-addresses and other tools must be rewritten to\n"
+                       "Due to this change, pilot-addresses and other tools must be rewritten to\n"
                        "compensate. Sorry about the inconvenience.\n\n");
                 return -1;
         }
