@@ -13,7 +13,9 @@ usb_FILES = 		\
 	freebsdusb.c	\
 	darwinusb.c
 
+if WITH_BLUEZ
 bluez_FILES = bluetooth.c
+endif
 
 if WITH_LIBUSB
 usb_SOURCE = usb.c libusb.c
