@@ -29,6 +29,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
+#include <sys/time.h>
+
 #ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
@@ -379,6 +381,7 @@ int time_fn(int sd, int argc, const char *argv[])
 	int 	s;
 	time_t 	ltime;
 	struct 	tm *tm_ptr;
+	struct	timeval tv;
 	char 	timebuf[80];
 
 	time(&ltime);
@@ -387,6 +390,9 @@ int time_fn(int sd, int argc, const char *argv[])
 	strftime(timebuf, 80, "Now setting Palm time from desktop to: "
 			      "%a %b %d %H:%M:%S %Z %Y\n", tm_ptr);
 	printf(timebuf);
+	gettimeofday(&tv, 0);
+	ltime = tv.tv_sec + 1;
+	usleep(1000000 - tv.tv_usec);
 	s = dlp_SetSysDateTime(sd, ltime);
 
 	return 0;
