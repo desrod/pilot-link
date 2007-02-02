@@ -13,10 +13,6 @@ usb_FILES = 		\
 	freebsdusb.c	\
 	darwinusb.c
 
-if WITH_BLUEZ
-bluez_FILES = bluetooth.c
-endif
-
 if WITH_LIBUSB
 usb_SOURCE = usb.c libusb.c
 endif
@@ -34,12 +30,14 @@ endif
 
 lib_LTLIBRARIES = libpisock.la
 
+# All new sources MUST be added here, or anything 
+# building against libpisock will fail!
 libpisock_la_SOURCES =  \
 	$(serial_SOURCE)\
 	$(usb_SOURCE)	\
-	$(bluez_SOURCE)	\
 	address.c	\
 	appinfo.c	\
+	bluetooth.c	\
 	connect.c	\
 	contact.c	\
 	cmp.c		\
@@ -65,7 +63,7 @@ libpisock_la_SOURCES =  \
 	sys.c		\
 	socket.c	\
 	syspkt.c	\
-	threadsafe.c\
+	threadsafe.c	\
 	todo.c		\
 	utils.c		\
 	veo.c		\
@@ -73,10 +71,10 @@ libpisock_la_SOURCES =  \
 
 # Including PTHREAD_CFLAGS here is a dirty ugly kluge.  It works.
 libpisock_la_LIBADD = \
-	@usb_libs@ @PTHREAD_LIBS@ @PTHREAD_CFLAGS@ $(BLUEZ_LIBS)
+	@usb_libs@ @PTHREAD_LIBS@ @PTHREAD_CFLAGS@
 
 libpisock_la_LDFLAGS = \
 	-export-dynamic -version-info $(PISOCK_CURRENT):$(PISOCK_REVISION):$(PISOCK_AGE)
-libpisock_la_CFLAGS = $(PIC_LIBS) $(BLUEZ_CFLAGS) @PTHREAD_CFLAGS@
+libpisock_la_CFLAGS = $(PIC_LIBS) @PTHREAD_CFLAGS@
 
-EXTRA_DIST = $(serial_FILES) $(usb_FILES) $(bluez_FILES)
+EXTRA_DIST = $(serial_FILES) $(usb_FILES)
