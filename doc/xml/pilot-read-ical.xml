@@ -1,12 +1,12 @@
 <!-- $Id$ -->
-<refentry id="read-ical">
+<refentry id="pilot-read-ical">
    <refmeta>
-      <refentrytitle>read-ical</refentrytitle>
+      <refentrytitle>pilot-read-ical</refentrytitle>
       <manvolnum>1</manvolnum>
       <refmiscinfo>Copyright FSF 1996-2007</refmiscinfo>
    </refmeta>
    <refnamediv>
-      <refname>read-ical</refname>
+      <refname>pilot-read-ical</refname>
       <refpurpose>
          Exports the DatebookDB and/or ToDo applications to ical format.
       </refpurpose>
@@ -18,7 +18,7 @@
    <refsect1>
       <title>Synopsis</title>
       <para>
-         <emphasis>read-ical</emphasis>
+         <emphasis>pilot-read-ical</emphasis>
          [<option>-p</option>|<option>--port</option> &lt;<userinput>port</userinput>&gt;]
          [<option>--version</option>] [<option>-?</option>|<option>--help</option>]
 	 [<option>-q</option>|<option>--quiet</option>]
@@ -33,7 +33,7 @@
       <para>
          Note, this is not the same as the iCal calendar format.</para>
       <para>
-         <emphasis>read-ical</emphasis> allows the user to retrieve the contents of the ToDo and
+         <emphasis>pilot-read-ical</emphasis> allows the user to retrieve the contents of the ToDo and
          Datebook databases on a Palm handheld, and convert their contents to an Ical calendar.
       </para>
       <para>
@@ -42,14 +42,14 @@
          in your main calendar.
       </para>
       <para>
-         As <emphasis>read-ical</emphasis> works by passing a script to ical, the ical application
+         As <emphasis>pilot-read-ical</emphasis> works by passing a script to ical, the ical application
          must be in your $PATH.
       </para>
    </refsect1>
    <refsect1>
       <title>Options</title>
       <refsect2>
-         <title>read-ical options</title>
+         <title>pilot-read-ical options</title>
 	<variablelist>
 	<varlistentry>
 		<term>
@@ -95,9 +95,9 @@
          <listitem>
             <para>
                Use device file &lt;<filename>port</filename>&gt; to communicate with the Palm
-               handheld. If this is not specified, <emphasis>read-ical</emphasis> will look for the
+               handheld. If this is not specified, <emphasis>pilot-read-ical</emphasis> will look for the
                <filename>$PILOTPORT</filename> environment variable. If neither are found,
-               <emphasis>read-ical</emphasis> will print the usage information.
+               <emphasis>pilot-read-ical</emphasis> will print the usage information.
             </para>
          </listitem>
 	</varlistentry>
@@ -116,7 +116,7 @@
          </term>
          <listitem>
             <para>
-               Display version of <emphasis>read-ical</emphasis> and exit without connecting.
+               Display version of <emphasis>pilot-read-ical</emphasis> and exit without connecting.
             </para>
          </listitem>
 	</varlistentry>
@@ -131,7 +131,7 @@
 		</term>
          <listitem>
             <para>
-               Display the help synopsis for <emphasis>read-ical</emphasis> and exit without
+               Display the help synopsis for <emphasis>pilot-read-ical</emphasis> and exit without
                connecting.
             </para>
          </listitem>
@@ -160,7 +160,7 @@
    <refsect1>
       <title>Author</title>
       <para>
-         <emphasis>read-ical</emphasis> was originally written by Kenneth Albanowski.
+         <emphasis>pilot-read-ical</emphasis> was originally written by Kenneth Albanowski.
       </para>
       <para>
          This manual page was converted to XML by Neil Williams <email>linux@codehelp.co.uk</email>

@@ -1,8 +1,8 @@
 /*
  * $Id$ 
  *
- * read-expenses.c: Sample code to translate Palm Expense database into
- *                  generic format
+ * pilot-read-expenses.c: Sample code to translate Palm Expense database
+ *                        into generic format
  *
  * Copyright (c) 1997, Kenneth Albanowski
  *

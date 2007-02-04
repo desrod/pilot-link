@@ -112,9 +112,12 @@
    </refsect1>
    <refsect1>
       <title>Reporting Bugs</title>
-      <para>
-         Report bugs at: <emphasis>http://bugs.pilot-link.org</emphasis>
-      </para>
+
+      <para>We have an online bug tracker. Using this is the only way to
+      ensure that your bugs are recorded and that we can track them until they
+      are resolved or closed. Reporting bugs via email, while easy, is not
+      very useful in terms of accountability. Please point your browser to
+      http://bugs.pilot-link.org and report your bugs and issues there.</para>
    </refsect1>
    <refsect1>
       <title>Copyright</title>

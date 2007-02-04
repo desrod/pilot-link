@@ -1,12 +1,12 @@
 <!-- $Id$ -->
-<refentry id="install-hinote">
+<refentry id="pilot-install-hinote">
    <refmeta>
-      <refentrytitle>install-hinote</refentrytitle>
+      <refentrytitle>pilot-install-hinote</refentrytitle>
       <manvolnum>1</manvolnum>
       <refmiscinfo>Copyright FSF 1996-2007</refmiscinfo>
    </refmeta>
    <refnamediv>
-      <refname>install-hinote</refname>
+      <refname>pilot-install-hinote</refname>
       <refpurpose>
          Install local files into your Hi-Note database on your Palm handheld.
       </refpurpose>
@@ -18,7 +18,7 @@
    <refsect1>
       <title>Synopsis</title>
       <para>
-         <emphasis>install-hinote</emphasis>
+         <emphasis>pilot-install-hinote</emphasis>
          [<option>-p</option>|<option>--port</option> &lt;<userinput>port</userinput>&gt;]
          [<option>--version</option>] [<option>-q</option>|<option>--quiet</option>] 
          [<option>-?</option>|<option>--help</option>] [<option>--usage</option>]
@@ -29,7 +29,7 @@
    <refsect1>
       <title>Description</title>
       <para>
-         <emphasis>install-hinote</emphasis> allows the user to write one or more files as a new
+         <emphasis>pilot-install-hinote</emphasis> allows the user to write one or more files as a new
          <filename>Hi-Note</filename> or into the Hi-Notes Palm application itself, on the Palm
          handheld.
       </para>
@@ -40,7 +40,7 @@
    <refsect1>
       <title>Options</title>
       <refsect2>
-         <title>install-hinote option</title>
+         <title>pilot-install-hinote option</title>
 	<variablelist>
 	<varlistentry>
 		<term>
@@ -68,9 +68,9 @@
          <listitem>
             <para>
                Use device file &lt;<filename>port</filename>&gt; to communicate with the Palm
-               handheld. If this is not specified, <emphasis>install-hinote</emphasis> will look
+               handheld. If this is not specified, <emphasis>pilot-install-hinote</emphasis> will look
                for the <filename>$PILOTPORT</filename> environment variable. If neither are found
-               or supplied, <emphasis>install-hinote</emphasis> will print the usage information.
+               or supplied, <emphasis>pilot-install-hinote</emphasis> will print the usage information.
             </para>
          </listitem>
 	</varlistentry>
@@ -89,7 +89,7 @@
          </term>
          <listitem>
             <para>
-               Display version of <emphasis>install-hinote</emphasis> and exit without connecting.
+               Display version of <emphasis>pilot-install-hinote</emphasis> and exit without connecting.
             </para>
          </listitem>
 	</varlistentry>
@@ -104,7 +104,7 @@
 		</term>
          <listitem>
             <para>
-               Display the help synopsis for <emphasis>install-hinote</emphasis> and exit without
+               Display the help synopsis for <emphasis>pilot-install-hinote</emphasis> and exit without
                connecting.
             </para>
          </listitem>
@@ -132,7 +132,7 @@
    <refsect1>
       <title>Author</title>
       <para>
-         <emphasis>install-hinote</emphasis> was originally written by Bill Goodman
+         <emphasis>pilot-install-hinote</emphasis> was originally written by Bill Goodman
          <email>bgoodman@cyclos.com</email>.
       </para>
       <para>

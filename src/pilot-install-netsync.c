@@ -1,7 +1,7 @@
 /*
  * $Id$ 
  *
- * install-netsync.c:  Palm Network Information Installer
+ * pilot-install-netsync.c:  Palm Network Information Installer
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -55,7 +55,7 @@ int main(int argc, char *argv[])
 	struct 	NetSyncInfo 	Net;
 	struct in_addr addr;
 
-	po = poptGetContext("install-netsync", argc, (const char **) argv, options, 0);
+	po = poptGetContext("pilot-install-netsync", argc, (const char **) argv, options, 0);
 	poptSetOtherOptionHelp(po," [-p port] <netsync options>\n\n"
 		"   Assigns your Palm device NetSync information\n\n"
 		"   Example:\n"
@@ -123,7 +123,7 @@ int main(int argc, char *argv[])
 	if (dlp_WriteNetSyncInfo(sd, &Net) < 0)
 		goto error_close;
 
-	if (dlp_AddSyncLogEntry(sd, "install-netsync, exited normally.\n"
+	if (dlp_AddSyncLogEntry(sd, "pilot-install-netsync, exited normally.\n"
 				"Thank you for using pilot-link.\n") < 0)
 		goto error_close;
 

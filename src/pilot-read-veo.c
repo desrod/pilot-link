@@ -1,7 +1,7 @@
 /*
  * $Id$ 
  *
- * read-veo.c
+ * pilot-read-veo.c
  *
  * Copyright (c) 2003-2004, Angus Ainslie
  *

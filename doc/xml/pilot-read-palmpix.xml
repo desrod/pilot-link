@@ -1,12 +1,12 @@
 <!-- $Id$ -->
-<refentry id="read-palmpix">
+<refentry id="pilot-read-palmpix">
    <refmeta>
-      <refentrytitle>read-palmpix</refentrytitle>
+      <refentrytitle>pilot-read-palmpix</refentrytitle>
       <manvolnum>1</manvolnum>
       <refmiscinfo>Copyright FSF 1996-2007</refmiscinfo>
    </refmeta>
    <refnamediv>
-      <refname>read-palmpix</refname>
+      <refname>pilot-read-palmpix</refname>
       <refpurpose>
          Convert all pictures in the files given or found on a Palm handheld.
       </refpurpose>
@@ -18,7 +18,7 @@
    <refsect1>
       <title>Synopsis</title>
       <para>
-         <emphasis>read-palmpix</emphasis>
+         <emphasis>pilot-read-palmpix</emphasis>
          [<option>-p</option>|<option>--port</option> &lt;<userinput>port</userinput>&gt;]
          [<option>--version</option>] [<option>-?</option>|<option>--help</option>] 
 	 [<option>--usage</option>] [<option>-q</option>|<option>--quiet</option>]
@@ -31,25 +31,25 @@
          [<filename>file</filename>] ...
       </para>
       <para>
-         <emphasis>read-palmpix</emphasis> Image1.pdb Image2.pdb
+         <emphasis>pilot-read-palmpix</emphasis> Image1.pdb Image2.pdb
          Image3.pdb
       </para>
    </refsect1>
    <refsect1>
       <title>Description</title>
       <para>
-         <emphasis>read-palmpix</emphasis> allows a Kodak PalmPix camera user to extract the images
+         <emphasis>pilot-read-palmpix</emphasis> allows a Kodak PalmPix camera user to extract the images
          from their Palm handheld and convert them to Portable Network Graphic (.png) or Portable
          Pixmap (.ppm) files on their system. The default output type is Portable Pixmap (.ppm).
       </para>
-	<para><emphasis>read-palmpix</emphasis> converts all pictures in the files given, or 
+	<para><emphasis>pilot-read-palmpix</emphasis> converts all pictures in the files given, or 
 	 if no files are given, on a Palm handheld, to Portable Pixmap files.
 	</para>
    </refsect1>
    <refsect1>
       <title>Options</title>
       <refsect2>
-         <title>read-palmpix options</title>
+         <title>pilot-read-palmpix options</title>
 	<variablelist>
 	<varlistentry>
 		<term>
@@ -129,9 +129,9 @@
          <listitem>
             <para>
                Use device file &lt;<filename>port</filename>&gt; to communicate with the Palm
-               handheld. If this is not specified, <emphasis>read-palmpix</emphasis> will look for
+               handheld. If this is not specified, <emphasis>pilot-read-palmpix</emphasis> will look for
                the <filename>$PILOTPORT</filename> environment variable. If neither are found or
-               supplied, <emphasis>read-palmpix</emphasis> will print the usage information.
+               supplied, <emphasis>pilot-read-palmpix</emphasis> will print the usage information.
             </para>
          </listitem>
 	</varlistentry>
@@ -150,7 +150,7 @@
          </term>
          <listitem>
             <para>
-               Display version of <emphasis>read-palmpix</emphasis> and exit without connecting.
+               Display version of <emphasis>pilot-read-palmpix</emphasis> and exit without connecting.
             </para>
          </listitem>
 	</varlistentry>
@@ -165,7 +165,7 @@
 		</term>
          <listitem>
             <para>
-               Display the help synopsis for <emphasis>read-palmpix</emphasis> and exit without
+               Display the help synopsis for <emphasis>pilot-read-palmpix</emphasis> and exit without
                connecting.
             </para>
          </listitem>
@@ -204,7 +204,7 @@
    <refsect1>
       <title>Author</title>
       <para>
-         <emphasis>read-palmpix </emphasis> was originally written by Angus Ainslie <email>angusa
+         <emphasis>pilot-read-palmpix </emphasis> was originally written by Angus Ainslie <email>angusa
          at deltatee.com</email>, and updated by John Marshall <email>jmarshall@acm.org</email> to
          include core pilot-link functionality.
       </para>
@@ -217,14 +217,14 @@
       <refsect2>
          <title>Known Bugs</title>
          <para>
-            <emphasis>read-palmpix</emphasis>'s colour correction is nearly as good as Kodak's own,
+            <emphasis>pilot-read-palmpix</emphasis>'s colour correction is nearly as good as Kodak's own,
             but Kodak has deprecated the PalmPix device, so it is not likely that there will be any
             updates to their software in the future, so this may be as good as it gets. A simple
             method to improve the look of colours is to do a histogram equalization in your
             favourite image editor.
          </para>
          <para>
-            <emphasis>read-palmpix</emphasis> command DOES read from a file, but only if you
+            <emphasis>pilot-read-palmpix</emphasis> command DOES read from a file, but only if you
             specify a LIST of files. If only one file is given, the command tries reading from
             <filename>$PILOTPORT</filename>.
          </para>

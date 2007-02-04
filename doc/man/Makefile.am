@@ -3,7 +3,6 @@ man_MANS =				\
 	install-datebook.1		\
 	install-hinote.1		\
 	install-memo.1			\
-	install-netsync.1		\
 	install-todo.1			\
 	install-todos.1			\
 	install-user.1			\
@@ -20,6 +19,7 @@ man_MANS =				\
 	pilot-getromtoken.1		\
 	pilot-hinotes.1			\
 	pilot-install-expenses.1	\
+	pilot-install-netsync.1		\
 	pilot-link.7			\
 	pilot-memos.1			\
 	pilot-nredir.1			\

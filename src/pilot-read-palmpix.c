@@ -1,7 +1,7 @@
 /*
  * $Id$ 
  *
- * read-palmpix.c:  PalmPix image convertor
+ * pilot-read-palmpix.c:  PalmPix image convertor
  *
  * Copyright 2001 John Marshall <jmarshall@acm.org>
  * Copyright 2002-2004 Angus Ainslie <angusa@deltatee.com>

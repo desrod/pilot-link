@@ -1,7 +1,7 @@
 /*
  * $Id$ 
  *
- * read-todos.c:  Translate Palm ToDo database into generic format
+ * pilot-read-todos.c:  Translate Palm ToDo database into generic format
  *
  * Copyright (c) 1996, Kenneth Albanowski
  *

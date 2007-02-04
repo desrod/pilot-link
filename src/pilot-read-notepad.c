@@ -1,7 +1,8 @@
 /*
  * $Id$ 
  *
- * read-notepad.c:  Translate Palm NotePad database into generic picture format
+ * pilot-read-notepad.c:  Translate Palm NotePad database into generic
+ *                        picture format
  *
  * Copyright (c) 2002, Angus Ainslie
  *

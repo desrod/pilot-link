@@ -1,8 +1,8 @@
 /*
  * $Id$ 
  *
- * read-ical.c:  Translate Palm ToDo and Datebook databases into ical 2.0
- *               format
+ * pilot-read-ical.c:  Translate Palm ToDo and Datebook databases into ical
+ *                     2.0 format
  *
  * Copyright (c) 1996, Kenneth Albanowski
  *

@@ -1,12 +1,12 @@
 <!-- $Id$ -->
-<refentry id="install-datebook">
+<refentry id="pilot-install-datebook">
    <refmeta>
-      <refentrytitle>install-datebook</refentrytitle>
+      <refentrytitle>pilot-install-datebook</refentrytitle>
       <manvolnum>1</manvolnum>
       <refmiscinfo>Copyright FSF 1996-2007</refmiscinfo>
    </refmeta>
    <refnamediv>
-      <refname>install-datebook</refname>
+      <refname>pilot-install-datebook</refname>
       <refpurpose>
          Installs one or more new datebook entries onto your Palm handheld.
       </refpurpose>
@@ -18,7 +18,7 @@
    <refsect1>
       <title>Synopsis</title>
       <para>
-         <emphasis>install-datebook</emphasis>
+         <emphasis>pilot-install-datebook</emphasis>
          [<option>-p</option>|<option>--port</option> &lt;<userinput>port</userinput>&gt;]
          [<option>--version</option>] [<option>-?</option>|<option>--help</option>]
 	 [<option>-q</option>|<option>--quiet</option>] 
@@ -29,7 +29,7 @@
    <refsect1>
       <title>Description</title>
       <para>
-         <emphasis>install-datebook</emphasis> allows the user to create one or more datebook
+         <emphasis>pilot-install-datebook</emphasis> allows the user to create one or more datebook
          entries from one or more source files.
       </para>
       <para>
@@ -54,7 +54,7 @@
    <refsect1>
       <title>Options</title>
       <refsect2>
-         <title>install-datebook options</title>
+         <title>pilot-install-datebook options</title>
 	<variablelist>
 	<varlistentry>
 		<term>
@@ -80,9 +80,9 @@
             <para>
                 Use device file &lt;<filename>port</filename>&gt; to communicate with the 
 		Palm handheld. If this is not specified, 
-		<emphasis>install-datebook</emphasis> will look for the 
+		<emphasis>pilot-install-datebook</emphasis> will look for the 
 		<filename>$PILOTPORT</filename> environment variable. If neither are found,
-               <emphasis>install-datebook</emphasis> will print the usage information.
+               <emphasis>pilot-install-datebook</emphasis> will print the usage information.
             </para>
 		</listitem>
 	</varlistentry>
@@ -153,9 +153,9 @@
    <refsect1>
       <title>Author</title>
       <para>
-         <emphasis>install-datebook</emphasis> was originally written by Tero Kivinen
+         <emphasis>pilot-install-datebook</emphasis> was originally written by Tero Kivinen
          <email>kivinen@iki.fi</email>. This program was based on
-         <emphasis>install-todos</emphasis> program written by Robert A. Kaplan
+         <emphasis>pilot-install-todos</emphasis> program written by Robert A. Kaplan
          <email>kaplan@openmarket.com</email>.
       </para>
       <para>
@@ -167,7 +167,7 @@
       <refsect2>
          <title>Known Bugs</title>
          <para>
-            If no timezone is given, <emphasis>install-datebook</emphasis> will assume the time is
+            If no timezone is given, <emphasis>pilot-install-datebook</emphasis> will assume the time is
             in GMT and it will convert it to localtime. If you don't want to create timezone
             entries for all begin and end times, set the TZ environment variable to GMT before
             running this program.
@@ -201,7 +201,7 @@
    <refsect1>
       <title>See Also</title>
       <para>
-         <emphasis>install-todos</emphasis>(1),
+         <emphasis>pilot-install-todos</emphasis>(1),
          <emphasis>pilot-link</emphasis>(7).
       </para>
    </refsect1>

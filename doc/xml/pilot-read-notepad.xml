@@ -1,12 +1,12 @@
 <!-- $Id$ -->
-<refentry id="read-notepad">
+<refentry id="pilot-read-notepad">
    <refmeta>
-      <refentrytitle>read-notepad</refentrytitle>
+      <refentrytitle>pilot-read-notepad</refentrytitle>
       <manvolnum>1</manvolnum>
       <refmiscinfo>Copyright FSF 1996-2007</refmiscinfo>
    </refmeta>
    <refnamediv>
-      <refname>read-notepad</refname>
+      <refname>pilot-read-notepad</refname>
       <refpurpose>
          List the record information found in the Palm Notepad
       </refpurpose>
@@ -18,7 +18,7 @@
    <refsect1>
       <title>Synopsis</title>
       <para>
-         <emphasis>read-notepad</emphasis>
+         <emphasis>pilot-read-notepad</emphasis>
          [<option>-p</option>|<option>--port</option> &lt;<userinput>port</userinput>&gt;]
 	 [<option>-q</option>|<option>--quiet</option>]
          [<option>--version</option>] [<option>-?</option>|<option>--help</option>]
@@ -35,7 +35,7 @@
          Portable Pixmap (.ppm) format.
       </para>
       <para>
-         <emphasis>read-notepad</emphasis> allows a user running PalmOS 4.0 or later to read the
+         <emphasis>pilot-read-notepad</emphasis> allows a user running PalmOS 4.0 or later to read the
          data stored in the Palm Notepad application and extract the data into images and convert
          them to Portable Network Graphics (.png) or Portable Pixmap (.ppm) files.
       </para>
@@ -43,7 +43,7 @@
    <refsect1>
       <title>Options</title>
       <refsect2>
-         <title>read-notepad options</title>
+         <title>pilot-read-notepad options</title>
 	<variablelist>
 	<varlistentry>
 		<term>
@@ -79,9 +79,9 @@
          <listitem>
             <para>
                Use device file &lt;<filename>port</filename>&gt; to communicate with the Palm
-               handheld. If this is not specified, <emphasis>read-notepad</emphasis> will look for
+               handheld. If this is not specified, <emphasis>pilot-read-notepad</emphasis> will look for
                the <filename>$PILOTPORT</filename> environment variable. If neither are found or
-               supplied, <emphasis>read-notepad</emphasis> will print the usage information.
+               supplied, <emphasis>pilot-read-notepad</emphasis> will print the usage information.
             </para>
          </listitem>
 	</varlistentry>
@@ -100,7 +100,7 @@
          </term>
          <listitem>
             <para>
-               Display version of <emphasis>read-notepad</emphasis> and exit without connecting.
+               Display version of <emphasis>pilot-read-notepad</emphasis> and exit without connecting.
             </para>
          </listitem>
 	</varlistentry>
@@ -115,7 +115,7 @@
 		</term>
          <listitem>
             <para>
-               Display the help synopsis for <emphasis>read-notepad</emphasis> and exit without
+               Display the help synopsis for <emphasis>pilot-read-notepad</emphasis> and exit without
                connecting.
             </para>
          </listitem>
@@ -142,7 +142,7 @@
    <refsect1>
       <title>Author</title>
       <para>
-         <emphasis>read-notepad</emphasis> was originally written by Angus Ainslie
+         <emphasis>pilot-read-notepad</emphasis> was originally written by Angus Ainslie
          <email>angusa@deltatee.com</email>.
       </para>
       <para>

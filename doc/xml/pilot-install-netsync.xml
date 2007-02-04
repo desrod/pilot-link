@@ -1,12 +1,12 @@
 <!-- $Id$ -->
-<refentry id="install-netsync">
+<refentry id="pilot-install-netsync">
    <refmeta>
-      <refentrytitle>install-netsync</refentrytitle>
+      <refentrytitle>pilot-install-netsync</refentrytitle>
       <manvolnum>1</manvolnum>
       <refmiscinfo>Copyright FSF 1996-2007</refmiscinfo>
    </refmeta>
    <refnamediv>
-      <refname>install-netsync</refname>
+      <refname>pilot-install-netsync</refname>
       <refpurpose>
          reads or sets the Network Preferences information on a Palm
          Device.
@@ -19,7 +19,7 @@
    <refsect1>
       <title>Synopsis</title>
       <para>
-         <emphasis>install-netsync</emphasis>
+         <emphasis>pilot-install-netsync</emphasis>
          [<option>-p</option>|<option>--port</option> &lt;<userinput>port</userinput>&gt;]
          [<option>--version</option>] [<option>-?</option>|<option>--help</option>] 
 	 [<option>--usage</option>] [<option>-q</option>|<option>--quiet</option>] 
@@ -33,14 +33,14 @@
    <refsect1>
       <title>Description</title>
       <para>
-         <emphasis>install-netsync</emphasis> allows the user to read or change the Network
+         <emphasis>pilot-install-netsync</emphasis> allows the user to read or change the Network
          Preferences stored on the Palm.
       </para>
    </refsect1>
    <refsect1>
       <title>Options</title>
       <refsect2>
-         <title>install-netsync options</title>
+         <title>pilot-install-netsync options</title>
 	<variablelist>
 	<varlistentry>
 		<term>
@@ -123,9 +123,9 @@
          <listitem>
             <para>
                Use device file &lt;<userinput>port</userinput>&gt; to communicate with the Palm
-               handheld. If this is not specified, <emphasis>install-netsync</emphasis> will look
+               handheld. If this is not specified, <emphasis>pilot-install-netsync</emphasis> will look
                for the <filename>$PILOTPORT</filename> environment variable. If neither are found
-               or supplied, <emphasis>install-netsync</emphasis> will print the usage information.
+               or supplied, <emphasis>pilot-install-netsync</emphasis> will print the usage information.
             </para>
          </listitem>
 	</varlistentry>
@@ -144,7 +144,7 @@
          </term>
          <listitem>
             <para>
-               Display version of <emphasis>install-netsync</emphasis> and exit
+               Display version of <emphasis>pilot-install-netsync</emphasis> and exit
                without connecting.
             </para>
          </listitem>
@@ -160,7 +160,7 @@
 		</term>
          <listitem>
             <para>
-               Display the help synopsis for <emphasis>install-netsync</emphasis> and exit without
+               Display the help synopsis for <emphasis>pilot-install-netsync</emphasis> and exit without
                connecting.
             </para>
          </listitem>
@@ -200,8 +200,8 @@
    <refsect1>
       <title>Author</title>
       <para>
-         <emphasis>install-netsync</emphasis> was created from the original
-         <emphasis>install-user</emphasis> application originally written by D.  Jeff Dionne
+         <emphasis>pilot-install-netsync</emphasis> was created from the original
+         <emphasis>pilot-install-user</emphasis> application originally written by D.  Jeff Dionne
          <email>jeff@RyeHam.ee.ryerson.ca</email>, and was split into a separate conduit by JP
          Rosevear <email>jpr@ximian.com</email>.
       </para>
@@ -236,7 +236,7 @@
    <refsect1>
       <title>See Also</title>
       <para>
-         <emphasis>install-user</emphasis>(1),
+         <emphasis>pilot-install-user</emphasis>(1),
          <emphasis>pilot-link</emphasis>(7).
       </para>
    </refsect1>

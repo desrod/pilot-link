@@ -1,4 +1,4 @@
-<!-- $Id$ -->
+;<!-- $Id$ -->
 <refentry id="overview">
   <refmeta>
     <refentrytitle>pilot-link</refentrytitle>
@@ -85,7 +85,7 @@
             Installs a new Memo Pad entry onto your Palm handheld.</para>
     </refsect2>
     <refsect2>
-      <title>install-netsync</title>
+      <title>pilot-install-netsync</title>
       <para>
          reads or sets the Network Preferences information on a Palm Device. Modifies the "Network
          Preference" settings and reports additional intormation about the Palm, such as the IP,
@@ -125,7 +125,7 @@
     <refsect2>
       <title>pilot-archive</title>
       <para>
-         DEPRECATED: Use read-todos -w --archived instead. </para>
+         DEPRECATED: Use pilot-read-todos -w --archived instead. </para>
     </refsect2>
     <refsect2>
       <title>pilot-clip</title>
@@ -173,34 +173,34 @@
          Backup, sync, and restore databases from a Palm handheld device.</para>
     </refsect2>
     <refsect2>
-      <title>read-expenses</title>
+      <title>pilot-read-expenses</title>
       <para>
          Export Palm Expense application data in a text format.</para>
     </refsect2>
     <refsect2>
-      <title>read-ical</title>
+      <title>pilot-read-ical</title>
       <para>
          Exports the DatebookDB and/or ToDo applications (DatebookDB.pdb and ToDoDB.pdb
          respectively) to Ical format. (The ical application must be installed and working on your
          system first. This is NOT the same thing as the iCal Calendar format, however).
       </para>
     </refsect2> <refsect2>
-      <title>read-notepad</title>
+      <title>pilot-read-notepad</title>
       <para>
          List the record information found in the Palm Notepad (Palm OS4 and later) application.</para>
     </refsect2>
     <refsect2>
-      <title>read-palmpix</title>
+      <title>pilot-read-palmpix</title>
       <para>
          Convert all pictures in the files given or found on a Palm handheld.</para>
     </refsect2>
     <refsect2>
-      <title>read-todos</title>
+      <title>pilot-read-todos</title>
       <para>
          Syncronize your Palm ToDo application's database with your desktop machine.</para>
     </refsect2>
     <refsect2>
-      <title>read-veo</title>
+      <title>pilot-read-veo</title>
       <para>
          Synchronize your Veo Traveler databases </para>
     </refsect2>
@@ -363,11 +363,11 @@ the application itself.</para>
 <filename>install-datebook</filename>(1),
 <filename>pilot-install-expenses</filename>(1),
 <filename>install-hinote</filename>(1), <filename>install-memo</filename>(1),
-<filename>install-netsync</filename>(1), <filename>install-user</filename>(1),
+<filename>pilot-install-netsync</filename>(1), <filename>install-user</filename>(1),
 <filename>pilot-getrom</filename>(1), <filename>pilot-getram</filename>(1),
 <filename>pilot-addresses</filename>(1), <filename>pilot-xfer</filename>(1),
-<filename>read-ical</filename>(1), <filename>read-notepad</filename>(1),
-<filename>read-palmpix</filename>(1)
+<filename>pilot-read-ical</filename>(1), <filename>pilot-read-notepad</filename>(1),
+<filename>pilot-read-palmpix</filename>(1)
 </para>
     <para>
             David Silber <email>pilot@orbits.com</email> has written a Pilot HOWTO,

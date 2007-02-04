@@ -19,13 +19,7 @@ INCLUDES = 			\
 noinst_LTLIBRARIES = libpiuserland.la
 
 bin_PROGRAMS =			\
-	install-datebook	\
-	install-hinote		\
-	install-memo		\
-	install-netsync		\
-	install-todo		\
-	install-todos		\
-	install-user		\
+	pilot-650foto		\
 	pilot-addresses		\
 	pilot-clip		\
 	pilot-csd		\
@@ -38,22 +32,28 @@ bin_PROGRAMS =			\
 	pilot-getrom		\
 	pilot-getromtoken	\
 	pilot-hinotes		\
+	pilot-install-datebook	\
 	pilot-install-expenses	\
+	pilot-install-hinote	\
+	pilot-install-memo	\
+	pilot-install-netsync	\
+	pilot-install-todo	\
+	pilot-install-todos	\
+	pilot-install-user	\
 	pilot-memos		\
 	pilot-nredir		\
+	pilot-read-expenses	\
+	pilot-read-ical		\
+	pilot-read-notepad	\
+	pilot-read-palmpix	\
 	pilot-read-screenshot	\
+	pilot-read-todos	\
+	pilot-read-veo		\
 	pilot-reminders		\
 	pilot-schlep		\
 	pilot-treofoto		\
-	pilot-650foto		\
 	pilot-wav		\
-	pilot-xfer		\
-	read-expenses		\
-	read-ical		\
-	read-notepad		\
-	read-palmpix		\
-	read-todos		\
-	read-veo
+	pilot-xfer
 
 if WITH_PERL
 PERLSCRIPTS = 		\
@@ -84,59 +84,45 @@ libpiuserland_la_LDFLAGS =	\
 #getrom_LDADD = 		\
 #	$(top_builddir)/libpisock/libpisock.la
 
-install_datebook_SOURCES = 	\
-	install-datebook.c 	\
+pilot_install_datebook_SOURCES = 	\
+	pilot-install-datebook.c 	\
 	parsedate.y
-install_datebook_LDADD = 	\
+pilot_install_datebook_LDADD = 	\
 	libpiuserland.la	\
 	$(POPT_LIBS)		\
 	$(top_builddir)/libpisock/libpisock.la
 
-pilot_install_expenses_SOURCES = 	\
-	pilot-install-expenses.c
-pilot_install_expenses_LDADD = 	\
+pilot_install_hinote_SOURCES = 	\
+	pilot-install-hinote.c
+pilot_install_hinote_LDADD = 	\
 	libpiuserland.la	\
 	$(POPT_LIBS)		\
 	$(top_builddir)/libpisock/libpisock.la
 
-install_hinote_SOURCES = 	\
-	install-hinote.c
-install_hinote_LDADD = 		\
+pilot_install_memo_SOURCES = 	\
+	pilot-install-memo.c
+pilot_install_memo_LDADD = 	\
 	libpiuserland.la	\
 	$(POPT_LIBS)		\
 	$(top_builddir)/libpisock/libpisock.la
 
-install_memo_SOURCES = 		\
-	install-memo.c
-install_memo_LDADD = 		\
+pilot_install_todos_SOURCES = 	\
+	pilot-install-todos.c
+pilot_install_todos_LDADD =	\
 	libpiuserland.la	\
 	$(POPT_LIBS)		\
 	$(top_builddir)/libpisock/libpisock.la
 
-install_netsync_SOURCES = 	\
-	install-netsync.c
-install_netsync_LDADD = 	\
-	libpiuserland.la	\
-	$(POPT_LIBS)		\
-	$(top_builddir)/libpisock/libpisock.la
-
-install_todos_SOURCES = 	\
-	install-todos.c
-install_todos_LDADD = 		\
-	libpiuserland.la	\
-	$(POPT_LIBS)		\
-	$(top_builddir)/libpisock/libpisock.la
-
-install_todo_SOURCES =		\
-        install-todo.c  
-install_todo_LDADD =            \
+pilot_install_todo_SOURCES =	\
+	pilot-install-todo.c  
+pilot_install_todo_LDADD =	\
 	libpiuserland.la	\
 	$(POPT_LIBS)		\
         $(top_builddir)/libpisock/libpisock.la
 
-install_user_SOURCES = 		\
-	install-user.c
-install_user_LDADD = 		\
+pilot_install_user_SOURCES =	\
+	pilot-install-user.c
+pilot_install_user_LDADD =	\
 	libpiuserland.la	\
 	$(POPT_LIBS)		\
 	$(top_builddir)/libpisock/libpisock.la
@@ -192,6 +178,20 @@ pilot_getromtoken_LDADD =	\
 pilot_hinotes_SOURCES = 	\
 	pilot-hinotes.c
 pilot_hinotes_LDADD = 		\
+	libpiuserland.la	\
+	$(POPT_LIBS)		\
+	$(top_builddir)/libpisock/libpisock.la
+
+pilot_install_expenses_SOURCES = 	\
+	pilot-install-expenses.c
+pilot_install_expenses_LDADD = 	\
+	libpiuserland.la	\
+	$(POPT_LIBS)		\
+	$(top_builddir)/libpisock/libpisock.la
+
+pilot_install_netsync_SOURCES =	\
+	pilot-install-netsync.c
+pilot_install_netsync_LDADD = 	\
 	libpiuserland.la	\
 	$(POPT_LIBS)		\
 	$(top_builddir)/libpisock/libpisock.la
@@ -288,46 +288,46 @@ pilot_xfer_LDADD = 		\
 	$(POPT_LIBS)		\
 	$(top_builddir)/libpisock/libpisock.la
 
-read_expenses_SOURCES = 	\
-	read-expenses.c
-read_expenses_LDADD = 		\
+pilot_read_expenses_SOURCES = 	\
+	pilot-read-expenses.c
+pilot_read_expenses_LDADD =	\
 	libpiuserland.la	\
 	$(POPT_LIBS)		\
 	$(top_builddir)/libpisock/libpisock.la
 
-read_ical_SOURCES = 		\
-	read-ical.c
-read_ical_LDADD = 		\
+pilot_read_ical_SOURCES = 	\
+	pilot-read-ical.c
+pilot_read_ical_LDADD = 	\
 	libpiuserland.la	\
 	$(POPT_LIBS)		\
 	$(top_builddir)/libpisock/libpisock.la
 
-read_notepad_SOURCES = 		\
-	read-notepad.c
-read_notepad_LDADD = 		\
-	libpiuserland.la	\
-	$(POPT_LIBS)		\
-	$(PNG_LIBS) 		\
-	$(top_builddir)/libpisock/libpisock.la
-
-read_palmpix_SOURCES = 		\
-	read-palmpix.c
-read_palmpix_LDADD = 		\
+pilot_read_notepad_SOURCES =	\
+	pilot-read-notepad.c
+pilot_read_notepad_LDADD =	\
 	libpiuserland.la	\
 	$(POPT_LIBS)		\
 	$(PNG_LIBS) 		\
 	$(top_builddir)/libpisock/libpisock.la
 
-read_todos_SOURCES = 		\
-	read-todos.c
-read_todos_LDADD = 		\
+pilot_read_palmpix_SOURCES =	\
+	pilot-read-palmpix.c
+pilot_read_palmpix_LDADD =	\
+	libpiuserland.la	\
+	$(POPT_LIBS)		\
+	$(PNG_LIBS) 		\
+	$(top_builddir)/libpisock/libpisock.la
+
+pilot_read_todos_SOURCES =	\
+	pilot-read-todos.c
+pilot_read_todos_LDADD =	\
 	libpiuserland.la	\
 	$(POPT_LIBS)		\
 	$(top_builddir)/libpisock/libpisock.la
 
-read_veo_SOURCES = 		\
-	read-veo.c
-read_veo_LDADD = 		\
+pilot_read_veo_SOURCES =	\
+	pilot-read-veo.c
+pilot_read_veo_LDADD =		\
 	libpiuserland.la	\
 	$(POPT_LIBS)		\
 	$(PNG_LIBS) 		\
@@ -349,53 +349,52 @@ CLEANFILES = $(PERLSCRIPTS)
 endif
 
 EXTRA_DIST = 			\
-	ietf2datebook.PL	\
-	pilot-undelete.PL	\
-	sync-plan.PL		\
 	ccexample.cc		\
+	ietf2datebook.PL	\
 	install-datebook.c	\
 	install-hinote.c	\
 	install-memo.c		\
-	install-netsync.c	\
 	install-todo.c		\
 	install-todos.c		\
 	install-user.c		\
 	kittykiller.c		\
-	pilot-memos.c		\
 	parsedate.y		\
 	pd-tty.c		\
+	pilot-650foto.c		\
+	pilot-addresses.c	\
+	pilot-clip.c		\
 	pilot-csd.c		\
+	pilot-debug.c		\
 	pilot-debugsh.c		\
+	pilot-dedupe.c		\
 	pilot-dlpsh.c		\
+	pilot-file.c		\
+	pilot-foto.c		\
 	pilot-getram.c		\
 	pilot-getrom.c		\
 	pilot-getromtoken.c	\
-	pilot-nredir.c		\
-	pilot-addresses.c	\
-	pilot-clip.c		\
-	pilot-debug.c		\
-	pilot-dedupe.c		\
-	pilot-file.c		\
-	pilot-foto.c		\
 	pilot-hinotes.c		\
 	pilot-install-expenses	\
+	pilot-install-netsync.c	\
+	pilot-memos.c		\
+	pilot-nredir.c		\
 	pilot-port.c		\
+	pilot-read-expenses.c	\
+	pilot-read-ical.c	\
+	pilot-read-notepad.c	\
+	pilot-read-palmpix.c	\
 	pilot-read-screenshot.c	\
+	pilot-read-todos.c	\
+	pilot-read-veo.c	\
+	pilot-reminders.c	\
 	pilot-schlep.c		\
 	pilot-treofoto.c	\
-	pilot-650foto.c	\
+	pilot-undelete.PL	\
 	pilot-wav.c		\
 	pilot-xfer.c		\
-	read-expenses.c		\
-	read-ical.c		\
-	read-notepad.c		\
-	read-palmpix.c		\
-	read-todos.c		\
-	read-veo.c		\
-	pilot-reminders.c	\
+	sync-plan.PL		\
 	validate.cc
 
 # Magic to update Makefile from Makefile.am
 $(srcdir)/Makefile.in : $(srcdir)/Makefile.am
 	( cd $(top_srcdir) && automake src/Makefile )
-
