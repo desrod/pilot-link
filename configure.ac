@@ -222,7 +222,6 @@ dnl PNG Support
 dnl ******************************
 if test "x$enable_conduits" != "xno"; then
 	have_png=no
-	msg_png=no
 
 	AC_ARG_WITH(libpng,
 		[  --with-libpng           Prefix where libpng is installed])
@@ -254,7 +253,7 @@ if test "x$enable_conduits" != "xno"; then
 			AC_MSG_RESULT($have_png)
 			if test "$have_png" = yes; then
 				AC_DEFINE(HAVE_PNG, 1, [Define if we have PNG support])
-				msg_png=yes
+				have_png=yes
 			fi
 		fi
 	fi
@@ -263,7 +262,7 @@ if test "x$enable_conduits" != "xno"; then
 	CPPFLAGS="$save_CPPFLAGS"
 	LDFLAGS="$save_LDFLAGS"
 else
-	msg_png="none"
+	have_png="none"
 	PNG_CFLAGS=
 	PNG_LIBS=
 fi
@@ -513,7 +512,7 @@ dnl ******************************
 dnl Perl
 dnl ******************************
 use_perl=false
-msg_perl=no
+#msg_perl=no
 
 AC_ARG_WITH(perl,    [  --with-perl=perlexec    use Perl                    [[default=no]]],
 	, with_perl=no)
@@ -546,9 +545,9 @@ if test "x$PERL" != "x"; then
 fi
 
 AM_CONDITIONAL(WITH_PERL, $use_perl)
-if $use_perl; then
-	msg_perl=yes
-fi
+#if $use_perl; then
+#	msg_perl=yes
+#fi
 AC_SUBST(PERL)
 
 
@@ -556,7 +555,7 @@ dnl ******************************
 dnl Java
 dnl ******************************
 use_java=false
-msg_java=no
+# msg_java=no
 
 AC_ARG_WITH(java,     [  --with-java=jdkbase     use Java                    [[default=no]]],
 	, with_java=no)
@@ -582,7 +581,7 @@ AM_CONDITIONAL(WITH_JAVA, $use_java)
 
 
 if $use_java; then
-	msg_java=yes
+#	msg_java=yes
 	JAVA_VERSION=`java -version 2>&1 | grep '^java version' | awk -F\" '{print $2}'`
 fi
 
@@ -596,7 +595,6 @@ AC_SUBST(JAVA_VERSION)
 dnl ******************************
 dnl TCL
 dnl ******************************
-msg_tcl=no
 PILOT_LINK_PATH_TCLCONFIG
 if $use_tcl; then
 	PILOT_LINK_LOAD_TCLCONFIG
@@ -615,17 +613,12 @@ AC_SUBST(TCLSH_PROG)
 AC_SUBST(WISH_PROG)
 
 AM_CONDITIONAL(WITH_TCL, $use_tcl)
-if $use_tcl; then
-	msg_tcl=yes
-fi
 
 
 dnl ******************************
 dnl Python
 dnl ******************************
 use_python=false
-msg_python=no
-
 AC_ARG_WITH(python,   [  --with-python=pybase    use Python,                 [[default=no]]],
         , with_python=no)
 
@@ -635,15 +628,14 @@ if test "x$with_python" != "xno"; then
 		AM_CHECK_PYTHON
 	fi
 
-	if test "x$PYTHON_H" = "x"; then
+	if test "x$PYTHON_H" = "xyes"; then
 		AC_SUBST(PYTHON_VERSION)
 		AC_SUBST(PYTHON_CFLAGS)
 		AC_SUBST(PYTHON_LIBS)
 		AC_SUBST(PYTHON_H)
 
-		msg_python=yes
+		use_python=true
 	else
-		msg_python=no
 		PYTHON_VERSION=''
 	fi
 fi
@@ -657,8 +649,6 @@ dnl *************************************
 dnl ElectricFence (optional)
 dnl *************************************
 use_efence=false
-msg_efence=no
-
 AC_ARG_WITH(efence, [  --with-efence           use ElectricFence,          [[default=no]]],
 	, with_efence=no)
 
@@ -674,12 +664,6 @@ if test "x$with_efence" != "xno"; then
                 echo ""
                 exit 1;
         fi
-fi
-
-if $use_efence; then
-        msg_efence=yes
-else
-        msg_efence=no
 fi
 
 
@@ -824,7 +808,7 @@ AC_MSG_RESULT([
   Direct USB support...... : $msg_usb
   BlueZ support........... : $msg_bluez
   Thread-safe libpisock... : $msg_threads
-  ElectricFence checks.... : $msg_efence
+  ElectricFence checks.... : $use_efence
   CPPFLAGS................ : $CPPFLAGS
   CFLAGS.................. : $CFLAGS
 
@@ -841,10 +825,10 @@ AC_MSG_RESULT([
 
   External Language Support
   -------------------------.
-  TCL support............. : $msg_tcl	$TCL_VERSION
-  Java support............ : $msg_java	$JAVA_VERSION
-  Python support.......... : $msg_python $PYTHON_VERSION
-  Perl support............ : $msg_perl	$PERL_VERSION
+  TCL support............. : $use_tcl	$TCL_VERSION
+  Java support............ : $use_java	$JAVA_VERSION
+  Python support.......... : $use_python	$PYTHON_VERSION
+  Perl support............ : $use_perl	$PERL_VERSION
 ])
 
 if [[ x"$PL_FROM_CVS" = xyes ]]; then

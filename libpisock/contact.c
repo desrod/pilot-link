@@ -434,11 +434,42 @@ unpack_ContactAppInfo (ContactAppInfo_t *ai, pi_buffer_t *buf)
 		/* Should never happen */
 		return -1;
 
-	/* ofs gets repurposed here! */
+	/* ofs gets repurposed from here! */
+
+	/* these are spread into two blocks... */
+	ofs = 0;
+	for (i = 0; i < 14; i++) {
+		strcpy (ai->contactLabels[i], (char *)ai->labels->data + ofs);
+		ofs += 16;
+	}
+
+	ofs = 38 * 16;
+	for (i = 14; i < 17; i++) {
+		strcpy (ai->contactLabels[i], (char *)ai->labels->data + ofs);
+		ofs += 16;
+	}
+
 	ofs = 14 * 16;
 	ai->numCustoms = 9;
 	for (i = 0; i < ai->numCustoms; i++) {
 		strcpy (ai->customLabels[i], (char *)ai->labels->data + ofs);
+		ofs += 16;
+	}
+
+	strcpy (ai->addressTypeLabels[0], (char *)ai->labels->data + (23*16));
+	strcpy (ai->addressTypeLabels[1], (char *)ai->labels->data + (28*16));
+	strcpy (ai->addressTypeLabels[2], (char *)ai->labels->data + (33*16));
+
+	/* this is duplicated three times, but we'll only care about one set. */
+	ofs = 24 * 16;
+	for (i = 0; i < 4; i++) {
+		strcpy (ai->addressLabels[i], (char *)ai->labels->data + ofs);
+		ofs += 16;
+	}
+
+	ofs = 41 * 16;
+	for (i = 0; i < 5; i++) {
+		strcpy (ai->imLabels[i], (char *)ai->labels->data + ofs);
 		ofs += 16;
 	}
 
@@ -448,9 +479,10 @@ unpack_ContactAppInfo (ContactAppInfo_t *ai, pi_buffer_t *buf)
 int
 pack_ContactAppInfo (ContactAppInfo_t *ai, pi_buffer_t *buf)
 {
-	int				i,
-					destlen;
-	size_t			ofs;
+	int	i,
+		n=0,
+		destlen;
+	size_t	ofs;
 
 	if (buf == NULL || buf->data == NULL)
 		return -1;
@@ -476,9 +508,43 @@ pack_ContactAppInfo (ContactAppInfo_t *ai, pi_buffer_t *buf)
 	pi_buffer_append_buffer (buf, ai->internal);
 
 	/* First write the custom labels back out */
+	ofs = 0;
+	for (i = 0; i < 14; i++) {
+		strcpy ((char *)ai->labels->data + ofs, ai->contactLabels[i]);
+		ofs += 16;
+	}
+
+	ofs = 38*16;
+	for (i = 14; i < 17; i++) {
+		strcpy ((char *)ai->labels->data + ofs, ai->contactLabels[i]);
+		ofs += 16;
+	}
+
 	ofs = 14 * 16;
 	for (i = 0; i < ai->numCustoms; i++) {
 		strcpy ((char *)ai->labels->data + ofs, ai->customLabels[i]);
+		ofs += 16;
+	}
+
+	strcpy ((char *)ai->labels->data + (23*16), ai->addressTypeLabels[0]);
+	strcpy ((char *)ai->labels->data + (28*16), ai->addressTypeLabels[1]);
+	strcpy ((char *)ai->labels->data + (33*16), ai->addressTypeLabels[2]);
+
+	/* This block is duplicated three times on the Palm, separated
+	  one by line of something else */
+
+	ofs = 24 * 16;
+	for (n = 0; n < 3; n++) {
+		for (i = 0; i < 4; i++) {
+			strcpy ((char *)ai->labels->data + ofs, ai->addressLabels[i]);
+			ofs += 16;
+		}
+		ofs += 16;
+	}
+
+	ofs = 41 * 16;
+	for (i = 0; i < 5; i++) {
+		strcpy ((char *)ai->labels->data + ofs, ai->imLabels[i]);
 		ofs += 16;
 	}
 

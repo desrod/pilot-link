@@ -119,6 +119,12 @@ typedef struct ContactAppInfo {
 	int numCustoms;
 	char customLabels[9][16];
 
+	char contactLabels[17][16];
+	char addressTypeLabels[3][16];
+	char addressLabels[4][16];
+
+	char imLabels[5][16];
+
 	int country;
 	int sortByCompany;
 } ContactAppInfo_t;
