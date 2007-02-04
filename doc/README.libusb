@@ -1,7 +1,7 @@
 ======================================================================
 README.libusb
 Author: David A. Desrosiers
-Updated: Sat Aug 26 18:42:25 EDT 2006
+Updated: Sun Feb  4 15:49:15 EST 2007
 ======================================================================
 This README will describe in detail, the process and programs necessary
 to get pilot-link 0.12.0 and later working with libusb on Linux and Mac
@@ -10,55 +10,72 @@ OS X machines.
 Why do I want to use libusb?
 --------------------------------------------------------------------------
 	libusb is an alternative way of communicating with USB devices
-	on Linux, Unix, Mac OS X and Windows machines. 
+	on Linux, Unix, Mac OS X and Windows machines.
 
 	In the Linux world, Palm devices using USB would require the
-	Linux kernel's "visor" driver, written and maintained by Greg
-	Kroah-Hartman. A lot of work and testing has been put into the
-	visor driver over the years and it is very solid, but making
-	sure that it remains current with released Palm devices can be
-	problematic.
+	Linux kernel's "visor" module, written and maintained by Greg
+	Kroah-Hartman. 
 
-	The current version of the visor driver allows you to insert it
+	A lot of work and testing has been put into the visor module
+	over the years and it is very solid, but making sure that it
+	remains current with released Palm devices can be problematic,
+	because the devices coming out are always different and some
+	can require special handling.
+
+	The current version of the visor module allows you to insert it
 	into the kernel namespace with the proper Palm product and
-	vendor values, so modifying the driver's source code and
-	rebuilding it is no longer necessary as it was early on.
+	vendor values at runtime (described in README.usb), so
+	modifying the module's source code and rebuilding it is no
+	longer necessary as it was with earlier versions of the visor
+	module.
 
-	Using libusb, you no longer have to use the visor driver, and
-	you can talk directly to the device. In short, libusb requires
-	less maintenance overhead, and is MUCH faster to use with
-	current Palm devices.
+	Using libusb, you no longer have to use the visor module, and
+	you can talk "directly" to the device. In short, libusb
+	requires less maintenance overhead, and is MUCH faster to use
+	with current Palm devices (roughly 200% to 600% faster,
+	depending on your Palm's processor speed and the type of
+	records you are syncronizing across. YMMV, of course.).
 
 
 Why is visor so slow? Why is libusb so much faster?
 --------------------------------------------------------------------------
 	In testing, syncronizing a Palm device with libusb has been
 	shown to be anywhere from 200% to 600% faster vs. using the
-	kernel visor driver. The kernel visor driver itself is not
-	"slow", there are just more kernel interfaces to pass through,
-	which slows down the communication between kernel and Palm. 
+	kernel visor module. 
+
+	The kernel visor module itself is not "slow", there are just
+	more kernel interfaces to pass through, which slows down the
+	communication between kernel and Palm.
 
 	It has never been optimized for speed, and certainly could be,
-	if someone was interested in doing so.
+	if someone was interested in doing so. The primary maintainer
+	is not.
 
 
 Does it work with every device?
 --------------------------------------------------------------------------
-	It works with every device I've personally tested it with. Some
-	devices behave very differently with respect to the "timing"
-	between the point where you hit HotSync and the time libusb
-	recognizes it on the bus, but everything I've used with it
-	seems to work. 
+	It works with every device I've personally tested it with,
+	which isn't saying much. This includes an m505, T2, T3, Treo650
+	and Treo680 device. They all work over libusb without too much
+	trouble at all.
+
+	Some devices behave very differently with respect to the
+	"timing" between the point where you hit HotSync and the time
+	libusb recognizes it on the bus, but everything I've used with
+	it seems to work once I get a feel for the right timing.
 
 	Does that mean it will work with every device?  No. We need
-	testers to make sure it works reliably.
+	testers to make sure it works reliably. 
+
+	If you have a device that doesn't work with libusb, we want to
+	know about it.
 
 
 How do I use libusb, assuming I have all the pieces?
 --------------------------------------------------------------------------
 	Simply pass the port of 'usb:' (without the quotes) as the port
-	designation when using any userland conduit found in
-	pilot-link.  Some examples of that are:
+	designation when using any pilot-link or GUI conduits or tools.
+	Some examples of that are:
 
 	   pilot-xfer -p usb: -b $HOME/Palm/backups
 
@@ -69,15 +86,19 @@ How do I use libusb, assuming I have all the pieces?
 	The same syntax applies when running pilot-link on Mac OS X
 	machines.
 
+	When you configure J-Pilot, gnome-pilot or KPilot, the port
+	designation of 'usb:' is still the same.
+
 
 What are these "pieces" I need?
 --------------------------------------------------------------------------
 	Now things get really interesting. 
 
 	Below are the necessary programs and versions you'll need.
-	These are the MINIMUM versions you can use.  
 
-	Anything earlier than these versions WILL NOT work.
+	These are the MINIMUM versions you can use. Anything earlier
+	than these versions WILL NOT work, and will likely cause other
+	problems.
 
 	- pilot-link....: 0.12.0
 	- libusb........: 0.1
@@ -87,28 +108,36 @@ What are these "pieces" I need?
 
 	You'll also need the 60-libpisock.rules file included in the
 	latest pilot-link release. A copy of the current file can be
-	found at the following URL:
+	found at the following URL, and will always be updated to
+	reflect the latest changes or additions:
 
-		http://code.pilot-link.org/60-libpisock.rules
+		http://cvs.pilot-link.org/index.cgi/doc/60-libpisock.rules
 
-	Let's go through each program and see what we need here:
+	Let's go through each item above and see what we need here:
 
 	pilot-link
 	---------------------------------------------------
 		First, you'll need to grab a copy of the latest release
-		of pilot-link 0.12.0 or later. libusb does not work
-		with pilot-link v0.11.8, and there's no code in
-		pilot-link 0.11.8 to use libusb, so you can't use that
-		version or anything earlier than that.  
+		of pilot-link 0.12.0 or later. libusb does NOT work
+		with pilot-link v0.11.8 or previous versions. There is
+		no code in pilot-link 0.11.8 to use libusb, so you
+		can't use that version or anything earlier than that.
 
-		You MUST use 0.12.0 or later to use libusb.
+		You MUST use 0.12.0 or later to use libusb. Stick with
+		the latest public release (and not CVS versions) and
+		you'll be fine. 
+
+		CVS versions tend to include some unstable code being
+		put there for other developers to test, and may
+		sometimes break, so its best to stick with a public,
+		released version.
 
 	libusb
 	---------------------------------------------------
 		libusb should be a part of your current Linux or
 		FreeBSD distribution. If it isn't, you can install it
 		with the standard Linux package management tools for
-		your distribution.
+		your distribution (apt-get, yast2, yum, etc.) 
 
 		On Debian, this is as simple as: 
 
@@ -123,7 +152,13 @@ What are these "pieces" I need?
 		   yum install libusb libusb libusb-devel
 
 		Other distributions may vary, but the package names
-		should be similar.
+		should be similar. 
+
+		Remember, you'll want version 0.1 or later, and make
+		sure you use the one supplied with your distribution.
+		Don't try to build and install your own version from
+		source, unless your distribution uses that method
+		(FreeBSD, Gentoo, LFS)
 
 	udev
 	---------------------------------------------------
@@ -136,31 +171,42 @@ What are these "pieces" I need?
 		LEAST 0.70 or later. Anything earlier will cause
 		problems, and we cannot support it.
 
+		BIG FAT WARNING: Do not... I repeat, do NOT try to
+		build and install udev from source. The documentation
+		that comes with it warns against it, and it WILL break
+		things. Don't do it. Use your distributions package for
+		it and you'll be fine.
+
 
 How do I configure these pieces on Linux?
 --------------------------------------------------------------------------
 	Easy!
 
 	Assuming you have all of the prerequisites above, and have
-	compiled (but NOT installed) pilot-link 0.12.0 against libusb,
-	and that it reported a successful libusb implementation at
-	configure time, you can proceed.
+	compiled (but NOT installed!) pilot-link 0.12.0 against libusb
+	(described below, don't worry), and that it reported a
+	successful libusb implementation at configure time, you can
+	proceed.
 
 	setting up the rules file for udev
 	---------------------------------------------------
 		We need to configure and restart udev first, and since
 		its the easiest of the pieces, we'll start there.
 
-		Put the 60-libpisock.rules file in
-		/etc/udev/rules.d/ and restart udev.
+		Put the 60-libpisock.rules file that came with your
+		pilot-link release in '/etc/udev/rules.d/' and restart
+		udev.
 
-		Check that the file was read by udev by looking at the
-		udev logs in /var/log (if you log, if not, enable
-		logging in /etc/udev/udev.conf and restart udev to
-		verify), or use the following to enable logging at
-		runtime:
+		Check that the file was read and parsed by udev by
+		looking at the udev logs in /var/log (if you log, if
+		not, enable logging in /etc/udev/udev.conf and restart
+		udev to verify), or use the following to enable logging
+		at runtime:
 
 			udevcontrol log_priority="debug"
+
+		Check that it saw the new file and has correctly parsed
+		it.
 
 	mount the kernel's usbfs
 	---------------------------------------------------
@@ -176,28 +222,35 @@ How do I configure these pieces on Linux?
 		applications still use /proc/bus/usb, so we'll mount it
 		until that gets deprecated.
 
-	blacklist the kernel visor driver
+	blacklist the kernel visor module
 	---------------------------------
 		In order to use libusb, you'll want to make sure the
-		kernel "visor" driver does NOT load when it sees a Palm
-		device connecting to the USB root hub on your system.
+		kernel "visor" module does not automatically load when
+		it sees a Palm device connecting to the USB root hub on
+		your system.
 
 		udev method (for newer udev versions, no hotplug)
 		-------------------------------------------------
 		If your udev is new enough and you no longer use
 		hotplug, you can use the following process to blacklist
-		the visor driver:
+		the visor module:
 
-		Simply add 'blacklist visor' to
-		/etc/modprobe.d/blacklist-palm. If that file doesn't
-		exist, create it.
+		Simply add the two words 'blacklist visor' (without
+		quotes) to a new file called:
+
+			/etc/modprobe.d/blacklist-palm
+
+		If that file doesn't exist, create it and put the
+		one-line entry into it.
 
 		older method (for systems still using hotplug)
 		-------------------------------------------------
 		You can blacklist list by adding 'visor' to the
 		/etc/hotplug/blacklist file to stop hotplug from
-		loading it at connect time. Restart hotplug to re-read
-		the blacklist file.
+		loading it at connect time. 
+
+		Don't forget to restart hotplug to re-read the
+		blacklist file.
 
 	pilot-link
 	---------------------------------------------------
@@ -209,11 +262,16 @@ How do I configure these pieces on Linux?
 		  Direct USB support...... : yes, libusb
 
 		If you do not see that, you are missing some critical
-		build dependency. Check config.log, search for libusb
-		and see what went wrong. Remember, you'll need the
-		libusb headers to build the support into pilot-link for
-		it, not the runtime. This will be a libusb-dev or
-		libusb-devel package on most distributions.
+		build dependency (such as the libusb development
+		package, which includes the necessary header files to
+		provide this support). 
+
+		Check config.log, search for libusb and see what went
+		wrong. Remember, you'll need the libusb headers to
+		build the support into pilot-link for it, not the
+		runtime. This will be a libusb-dev or libusb-devel
+		package on most distributions.
+
 
 How do I configure these pieces on OS X?
 --------------------------------------------------------------------------
@@ -258,7 +316,7 @@ Ok, I have all the pieces, I've configured them, now what?
 	receive one.
 
 	That's it. If you get any sort of error or other problem, make
-	sure the visor driver is truly unloaded (rmmod visor, as root),
+	sure the visor module is truly unloaded (rmmod visor, as root),
 	make sure udev and hotplug are restarted, make sure your
 	pilot-link is the right version (built with libusb support),
 	and make sure your .rules file is in the right place for your
@@ -281,15 +339,16 @@ None of this is working! Where do I go for help now?
 	pilot-link irc channel
 	------------------------------------------------------
 	We can also be found on irc, at irc.pilot-link.org in the
-	#channel pilot-link
+	channel #pilot-link
 
 	If your irc client supports SSL, you can point to port 994 on
-	irc.pilot-link.org and have a secured session (no cleartext).
-	If you cannot, use port 6667 for "normal" irc.
+	irc.pilot-link.org and have a secured session (no cleartext). 
+
+	If you cannot use SSL, use port 6667 for "normal" irc.
 
 	Lastly, I can be reached directly at desrod@gnu-designs.com if
 	nothing else works for you. Try the mailing lists and irc first
-	though.
+	though, as I might be hard to reach at times.
 
 
 Donating to pilot-link
@@ -316,8 +375,16 @@ Thanks go to...
 
 	Florent Pillet, "fpillet" on irc, for helping fix up libpisock
 	to work on OSX and doing testing on newer devices to work out
-	the various Heisenbergs found in there.
+	the various Heisenbergs found in there. His work has been
+	invaluable over the last year or two with usb, devices and OS X
+	support.
 
 	Zephania Hull, "Mercury" on irc for spending the time and
 	effort to get libusb worked out on the Linux side. Without his
 	effort, libusb wouldn't be where it is today.
+
+	Other thanks go to Knghtbird, Nicholas Piper, Adriaan de Groot,
+	John Marshall, Kenneth Albanowski and many others through the
+	years for helping bring this to where it is today. If I've
+	forgotten to mention you, just let me know.
+
