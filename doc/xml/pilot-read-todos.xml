@@ -1,12 +1,12 @@
 <!-- $Id$ -->
-<refentry id="read-todos">
+<refentry id="pilot-read-todos">
    <refmeta>
-      <refentrytitle>read-todos</refentrytitle>
+      <refentrytitle>pilot-read-todos</refentrytitle>
       <manvolnum>1</manvolnum>
       <refmiscinfo>Copyright FSF 1996-2007</refmiscinfo>
    </refmeta>
    <refnamediv>
-      <refname>read-todos</refname>
+      <refname>pilot-read-todos</refname>
       <refpurpose>
          Syncronize your Palm ToDo application's database with your desktop machine.
       </refpurpose>
@@ -18,19 +18,19 @@
    <refsect1>
       <title>Synopsis</title>
       <para>
-         <emphasis>read-todos</emphasis>
+         <emphasis>pilot-read-todos</emphasis>
          [<option>-p</option>|<option>--port</option> &lt;<userinput>port</userinput>&gt;]
 	 [<option>-q</option>|<option>--quiet</option>]
 	 [<option>-A</option>|<option>--archived</option>]
 	 [<option>-w</option>|<option>--write</option>] 
 	</para>
 	<para>
-         <emphasis>read-todos</emphasis> [<option>-f</option>|<option>--file</option>
+         <emphasis>pilot-read-todos</emphasis> [<option>-f</option>|<option>--file</option>
          <filename>file</filename>] [<option>-A</option>|<option>--archived</option>]
 	 [<option>-w</option>|<option>--write</option>] 
       </para>
 	<para>
-         <emphasis>read-todos</emphasis>
+         <emphasis>pilot-read-todos</emphasis>
          [<option>--version</option>] [<option>-?</option>|<option>--help</option>]
          [<option>--usage</option>]
       </para>
@@ -38,7 +38,7 @@
    <refsect1>
       <title>Description</title>
       <para>
-         <emphasis>read-todos</emphasis> will read the ToDo database on the Palm handheld, or read
+         <emphasis>pilot-read-todos</emphasis> will read the ToDo database on the Palm handheld, or read
          the ToDoDB.pdb file directly from disk on your desktop machine, and print the contents to
          STDOUT (generally the screen).
       </para>
@@ -47,7 +47,7 @@
    <refsect1>
       <title>Options</title>
       <refsect2>
-         <title>read-todos option</title>
+         <title>pilot-read-todos option</title>
 	<variablelist>
 	<varlistentry>
 		<term>
@@ -87,9 +87,9 @@
          <listitem>
             <para>
                Use device file &lt;<filename>port</filename>&gt; to communicate with the Palm
-               handheld device. If this is not specified, <emphasis>read-todos</emphasis> will look
+               handheld device. If this is not specified, <emphasis>pilot-read-todos</emphasis> will look
                for the <filename>$PILOTPORT</filename> environment variable. If neither are found
-               or supplied, <emphasis>read-todos</emphasis> will print the usage information.
+               or supplied, <emphasis>pilot-read-todos</emphasis> will print the usage information.
             </para>
 	    <para>Excludes --file.</para>
          </listitem>
@@ -109,7 +109,7 @@
          </term>
          <listitem>
             <para>
-               Display version of <emphasis>read-todos</emphasis> and exit without connecting.
+               Display version of <emphasis>pilot-read-todos</emphasis> and exit without connecting.
             </para>
          </listitem>
 	</varlistentry>
@@ -124,7 +124,7 @@
 		</term>
          <listitem>
             <para>
-               Display the help synopsis for <emphasis>read-todos</emphasis> and exit without
+               Display the help synopsis for <emphasis>pilot-read-todos</emphasis> and exit without
                connecting.
             </para>
          </listitem>
@@ -152,21 +152,21 @@
       <para>
          Read the on-Palm ToDo database, and dump to STDOUT.</para>
       <para>
-         <emphasis>read-todos</emphasis> <option>-w</option>
+         <emphasis>pilot-read-todos</emphasis> <option>-w</option>
 		<option>-p</option> <filename>/dev/pilot</filename>
       </para>
       <para>
          Read the ToDoDB.pdb file on disk, and dump to STDOUT
       </para>
       <para>
-         <emphasis>read-todos</emphasis> <option>-w</option>
+         <emphasis>pilot-read-todos</emphasis> <option>-w</option>
 		<option>-f</option> <filename>ToDoDB.pdb</filename>
       </para>
    </refsect1>
    <refsect1>
       <title>Author</title>
       <para>
-         <emphasis>read-todos</emphasis> was originally written by Kenneth Albanowski
+         <emphasis>pilot-read-todos</emphasis> was originally written by Kenneth Albanowski
       </para>
    </refsect1>
    <refsect1>

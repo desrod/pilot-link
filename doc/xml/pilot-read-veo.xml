@@ -1,12 +1,12 @@
 <!-- $Id$ -->
-<refentry id="read-veo">
+<refentry id="pilot-read-veo">
    <refmeta>
-      <refentrytitle>read-veo</refentrytitle>
+      <refentrytitle>pilot-read-veo</refentrytitle>
       <manvolnum>1</manvolnum>
       <refmiscinfo>Copyright 1996-2007 FSF</refmiscinfo>
    </refmeta>
    <refnamediv>
-      <refname>read-veo</refname>
+      <refname>pilot-read-veo</refname>
       <refpurpose>Synchronize your Veo Traveler databases</refpurpose>
    </refnamediv>
    <refsect1>
@@ -16,7 +16,7 @@
    <refsect1>
       <title>synopsis</title>
       <para>
-         <emphasis>read-veo</emphasis>
+         <emphasis>pilot-read-veo</emphasis>
          [<option>-p</option>|<option>--port</option> &lt;<userinput>port</userinput>&gt;]
          [<option>--version</option>] [<option>-?</option>|<option>--help</option>]
          [<option>--usage</option>] [<option>-q</option>|<option>--quiet</option>]
@@ -37,7 +37,7 @@
    <refsect1>
       <title>Options</title>
       <refsect2>
-         <title>read-veo options</title>
+         <title>pilot-read-veo options</title>
 	<variablelist>
 	<varlistentry>
 		<term>
@@ -93,9 +93,9 @@
          <listitem>
             <para>
                Use device file <filename>port</filename> to communicate with the Palm handheld. If
-               this is not specified, <emphasis>read-veo </emphasis> will look for the
+               this is not specified, <emphasis>pilot-read-veo </emphasis> will look for the
                <filename>$PILOTPORT</filename> environment variable. If neither are found or
-               supplied, <emphasis>read-veo </emphasis> will print the usage information.
+               supplied, <emphasis>pilot-read-veo </emphasis> will print the usage information.
             </para>
          </listitem>
 	</varlistentry>
@@ -114,7 +114,7 @@
          </term>
          <listitem>
             <para>
-               Display version of <emphasis>read-veo</emphasis> and exit without connecting.
+               Display version of <emphasis>pilot-read-veo</emphasis> and exit without connecting.
             </para>
          </listitem>
 	</varlistentry>
@@ -129,7 +129,7 @@
 		</term>
          <listitem>
             <para>
-               Display the help synopsis for <emphasis>read-veo</emphasis> and exit without
+               Display the help synopsis for <emphasis>pilot-read-veo</emphasis> and exit without
                connecting.
             </para>
          </listitem>
@@ -148,7 +148,7 @@
    <refsect1>
       <title>Author</title>
       <para>
-         <emphasis>read-veo </emphasis> was originally written by Angus Ainslie <email>angusa at
+         <emphasis>pilot-read-veo </emphasis> was originally written by Angus Ainslie <email>angusa at
          deltatee.com</email>
       </para>
       <para>
