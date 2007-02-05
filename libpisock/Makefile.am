@@ -2,6 +2,9 @@ INCLUDES = 			\
 	-I../include		\
 	-I$(top_srcdir)/include
 
+bluetooth_FILES =	\
+	bluetooth.c
+
 serial_FILES = 		\
 	unixserial.c
 serial_SOURCE = unixserial.c
@@ -16,6 +19,7 @@ usb_FILES = 		\
 if WITH_LIBUSB
 usb_SOURCE = usb.c libusb.c
 endif
+
 if WITH_LINUXUSB
 usb_SOURCE = usb.c linuxusb.c
 endif
@@ -28,16 +32,20 @@ if WITH_DARWINUSB
 usb_SOURCE = usb.c darwinusb.c
 endif
 
+if WITH_BLUEZ
+bluetooth_SOURCE = bluetooth.c
+endif
+
 lib_LTLIBRARIES = libpisock.la
 
 # All new sources MUST be added here, or anything 
 # building against libpisock will fail!
 libpisock_la_SOURCES =  \
-	$(serial_SOURCE)\
-	$(usb_SOURCE)	\
+	$(bluetooth_SOURCE)	\
+	$(serial_SOURCE)	\
+	$(usb_SOURCE)		\
 	address.c	\
 	appinfo.c	\
-	bluetooth.c	\
 	connect.c	\
 	contact.c	\
 	cmp.c		\
@@ -77,4 +85,4 @@ libpisock_la_LDFLAGS = \
 	-export-dynamic -version-info $(PISOCK_CURRENT):$(PISOCK_REVISION):$(PISOCK_AGE)
 libpisock_la_CFLAGS = $(PIC_LIBS) @PTHREAD_CFLAGS@
 
-EXTRA_DIST = $(serial_FILES) $(usb_FILES)
+EXTRA_DIST = $(bluetooth_FILES) $(serial_FILES) $(usb_FILES)

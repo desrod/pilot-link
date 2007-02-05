@@ -342,7 +342,6 @@ AC_SUBST(usb_libs)
 dnl ******************************
 dnl BlueZ Support
 dnl ******************************
-msg_bluez=no
 AC_ARG_WITH(bluez, AC_HELP_STRING([--with-bluez=DIR], [BlueZ library is installed in DIR]), [
 	if (test "${withval}" != "yes"); then
 		bluez_prefix=${withval}
@@ -353,31 +352,17 @@ if test x${withval} != xno; then
 
 	case "$host_os" in
 	linux*)
-		BLUEZ_CFLAGS=""
-		test -d "${bluez_prefix}/include" && BLUEZ_CFLAGS="$BLUEZ_CFLAGS -I${bluez_prefix}/include"
-
-		AC_CHECK_HEADERS(bluetooth/bluetooth.h bluetooth/hci.h,, AC_MSG_ERROR(Bluetooth header files not found))
-
-		BLUEZ_LIBS=""
-		if (test "${ac_default_prefix}" = "${bluez_prefix}"); then
-			test -d "${libdir}" && BLUEZ_LIBS="$BLUEZ_LIBS -L${libdir}"
-		else
-			test -d "${bluez_prefix}/lib64" && BLUEZ_LIBS="$BLUEZ_LIBS -L${bluez_prefix}/lib64"
-			test -d "${bluez_prefix}/lib" && BLUEZ_LIBS="$BLUEZ_LIBS -L${bluez_prefix}/lib"
-		fi
-
-		AC_CHECK_LIB(bluetooth, hci_open_dev, BLUEZ_LIBS="$BLUEZ_LIBS -lbluetooth", AC_MSG_ERROR(Bluetooth library not found))
-		AC_CHECK_LIB(bluetooth, sdp_connect,, AC_CHECK_LIB(sdp, sdp_connect, BLUEZ_LIBS="$BLUEZ_LIBS -lsdp"))
-
-		if test "x$BLUEZ_LIBS" != "x"; then
-			AC_DEFINE(HAVE_BLUEZ, 1, [Define if we have bluez])
-			msg_bluez=yes
-		fi	
+	PKG_CHECK_MODULES(BLUEZ, bluez, have_bluez=1, AC_MSG_RESULT(no))
 	esac
 	AC_SUBST(BLUEZ_CFLAGS)
 	AC_SUBST(BLUEZ_LIBS)
 fi	
 AM_CONDITIONAL(WITH_BLUEZ, test "x$BLUEZ_LIBS" != "x")
+
+if test "x$have_bluez" != "x"; then
+	AC_DEFINE(HAVE_BLUEZ, yes, [Define if we have BlueZ bluetooth support])
+fi	
+
 
 
 dnl *********************************
@@ -648,7 +633,7 @@ fi
 dnl *************************************
 dnl ElectricFence (optional)
 dnl *************************************
-use_efence=false
+use_efence=no
 AC_ARG_WITH(efence, [  --with-efence           use ElectricFence,          [[default=no]]],
 	, with_efence=no)
 
@@ -657,7 +642,6 @@ if test "x$with_efence" != "xno"; then
         if test "$ac_cv_lib_efence_malloc" = yes; then
                 use_efence=true
         else
-                use_efence=false
                 echo "Unable to locate ElectricFence malloc() debugging library!"
                 echo "Please download from ftp://ftp.perens.com/pub/ElectricFence/"
                 echo "You may also try omitting --with-efence when running configure."
@@ -806,7 +790,7 @@ AC_MSG_RESULT([
   Build for host.......... : $host
   Extra Warnings.......... : $set_compile_warnings
   Direct USB support...... : $msg_usb
-  BlueZ support........... : $msg_bluez
+  BlueZ support........... : $have_bluez
   Thread-safe libpisock... : $msg_threads
   ElectricFence checks.... : $use_efence
   CPPFLAGS................ : $CPPFLAGS
