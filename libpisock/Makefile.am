@@ -79,10 +79,10 @@ libpisock_la_SOURCES =  \
 
 # Including PTHREAD_CFLAGS here is a dirty ugly kluge.  It works.
 libpisock_la_LIBADD = \
-	@usb_libs@ @PTHREAD_LIBS@ @PTHREAD_CFLAGS@
+	@usb_libs@ @PTHREAD_LIBS@ @PTHREAD_CFLAGS@ @BLUEZ_LIBS@
 
 libpisock_la_LDFLAGS = \
 	-export-dynamic -version-info $(PISOCK_CURRENT):$(PISOCK_REVISION):$(PISOCK_AGE)
-libpisock_la_CFLAGS = $(PIC_LIBS) @PTHREAD_CFLAGS@
+libpisock_la_CFLAGS = $(PIC_LIBS) @PTHREAD_CFLAGS@ @BLUEZ_CFLAGS@
 
 EXTRA_DIST = $(bluetooth_FILES) $(serial_FILES) $(usb_FILES)
