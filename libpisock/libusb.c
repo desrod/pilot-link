@@ -47,13 +47,17 @@
 
 static int u_open(struct pi_socket *ps, struct pi_sockaddr *addr, size_t addrlen);
 static int u_close(struct pi_socket *ps);
-static ssize_t u_write(struct pi_socket *ps, const unsigned char *buf, size_t len, int flags);
-static ssize_t u_read(struct pi_socket *ps, pi_buffer_t *buf, size_t len, int flags);
-static int u_read_i(struct pi_socket *ps, pi_buffer_t *buf, size_t len, int flags, int timeout);
+static ssize_t u_write(struct pi_socket *ps, const unsigned char *buf, size_t len, 
+	int flags);
+static ssize_t u_read(struct pi_socket *ps, pi_buffer_t *buf, size_t len, 
+	int flags);
+static int u_read_i(struct pi_socket *ps, pi_buffer_t *buf, size_t len, int flags, 
+	int timeout);
 static int u_poll(struct pi_socket *ps, int timeout);
 static int u_wait_for_device(struct pi_socket *ps, int *timeout);
 static int u_flush(pi_socket_t *ps, int flags);
-static int u_control_request (pi_usb_data_t *usb_data, int request_type, int request, int value, int control_index, void *data, int size, int timeout);
+static int u_control_request (pi_usb_data_t *usb_data, int request_type, 
+	int request, int value, int control_index, void *data, int size, int timeout);
 
 void pi_usb_impl_init (struct pi_usb_impl *impl)
 {
@@ -106,7 +110,8 @@ USB_poll (pi_usb_data_t *data)
 	for (bus = usb_busses; bus; bus = bus->next) {
 		for (dev = bus->devices; dev; dev = dev->next) {
 			int i;
-			LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s: checking device %p\n", __FILE__, dev));
+			LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s: checking device %p\n", 
+				__FILE__, dev));
 
 			if (dev->descriptor.bNumConfigurations < 1)
 				continue;
@@ -119,13 +124,19 @@ USB_poll (pi_usb_data_t *data)
 			if (dev->config[0].interface[0].altsetting[0].bNumEndpoints < 2)
 				continue;
 
-			LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s: %d, 0x%04x 0x%04x.\n", __FILE__, __LINE__, dev->descriptor.idVendor, dev->descriptor.idProduct));
+			LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s: %d, 0x%04x 0x%04x.\n", 
+				__FILE__, __LINE__, dev->descriptor.idVendor, dev->descriptor.idProduct));
+
 			if (USB_check_device (data, dev->descriptor.idVendor, dev->descriptor.idProduct))
 				continue;
 
-			LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s: trying to open device %p\n", __FILE__, dev));
+			LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s: trying to open device %p\n",
+				__FILE__, dev));
+
 			USB_handle = usb_open(dev);
-			LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s: USB_handle=%p\n", __FILE__, USB_handle));
+
+			LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s: USB_handle=%p\n", 
+				__FILE__, USB_handle));
 
 			data->ref = USB_handle;
 
@@ -133,6 +144,14 @@ USB_poll (pi_usb_data_t *data)
 			USB_in_endpoint = USB_out_endpoint = 0xFF;
 
 			ret = USB_configure_device (data, &input_endpoint, &output_endpoint);
+			if (ret < 0) {
+				LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, 
+					"%s: USB configure failed for familar device: 0x%04x 0x%04x. (LifeDrive issue?)\n", 
+					__FILE__, dev->descriptor.idVendor, dev->descriptor.idProduct));
+
+				usb_close(USB_handle);
+				continue;
+			}
 
 			for (i = 0; i < dev->config[0].interface[0].altsetting[0].bNumEndpoints; i++) {
 				struct usb_endpoint_descriptor *endpoint;
@@ -165,7 +184,9 @@ USB_poll (pi_usb_data_t *data)
 				continue;
 			}
 
-			LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "Config: %d, 0x%x 0x%x | 0x%x 0x%x.\n", ret, input_endpoint, output_endpoint, USB_in_endpoint, USB_out_endpoint));
+			LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, 
+				"Config: %d, 0x%x 0x%x | 0x%x 0x%x.\n", 
+				ret, input_endpoint, output_endpoint, USB_in_endpoint, USB_out_endpoint));
 
 			USB_interface = dev->config[0].interface[0].altsetting[0].bInterfaceNumber;
 #ifdef LIBUSB_HAS_DETACH_KERNEL_DRIVER_NP
@@ -190,11 +211,14 @@ claim:
 				usb_close (USB_handle);
 
 				errno = -i;
-				LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s: %d.\n", __FILE__, __LINE__));
+				LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s: %d.\n", 
+					__FILE__, __LINE__));
+
 				return 0;
 			}
 
-			LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s: %d.\n", __FILE__, __LINE__));
+			LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s: %d.\n", 
+				__FILE__, __LINE__));
 			return 1;
 		}
 	}
@@ -249,7 +273,8 @@ RD_do_read (int timeout)
 
 	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "Reading: len: %d, timeout: %d.\n", read_size, timeout));
 	bytes_read = usb_bulk_read (USB_handle, USB_in_endpoint, RD_usb_buffer, read_size, timeout);
-	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s %d (%s): %d\n", __FILE__, __LINE__, __FUNCTION__, bytes_read));
+	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s %d (%s): %d\n", 
+		__FILE__, __LINE__, __FUNCTION__, bytes_read));
 	if (bytes_read < 0) {
 		if (bytes_read == -ENODEV) {
 			LOG((PI_DBG_DEV, PI_DBG_LVL_NONE, "Device went byebye!\n"));
@@ -346,12 +371,16 @@ u_open(struct pi_socket *ps, struct pi_sockaddr *addr, size_t addrlen)
 {
 	pi_usb_data_t *data = (pi_usb_data_t *)ps->device->data;
 
-	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s %d (%s).\n", __FILE__, __LINE__, __FUNCTION__));
+	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s %d (%s).\n", 
+		__FILE__, __LINE__, __FUNCTION__));
+
 	if (RD_running)
 		return -1;
 	if (!USB_open (data))
 		return -1;
-	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s %d (%s).\n", __FILE__, __LINE__, __FUNCTION__));
+
+	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s %d (%s).\n", 
+		__FILE__, __LINE__, __FUNCTION__));
 
 	return 1;
 }
@@ -359,10 +388,15 @@ u_open(struct pi_socket *ps, struct pi_sockaddr *addr, size_t addrlen)
 static int
 u_close(struct pi_socket *ps)
 {
-	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s %d (%s).\n", __FILE__, __LINE__, __FUNCTION__));
+	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s %d (%s).\n", 
+		__FILE__, __LINE__, __FUNCTION__));
+
 	RD_stop ();
 	USB_close ();
-	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s %d (%s).\n", __FILE__, __LINE__, __FUNCTION__));
+
+	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s %d (%s).\n", 
+		__FILE__, __LINE__, __FUNCTION__));
+
 	return close (ps->sd);
 }
 
@@ -373,7 +407,8 @@ u_wait_for_device(struct pi_socket *ps, int *timeout)
 	struct timespec when;
 	int ret = 0;
 
-	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s %d (%s).\n", __FILE__, __LINE__, __FUNCTION__));
+	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s %d (%s).\n", 
+		__FILE__, __LINE__, __FUNCTION__));
 
 	if (*timeout)
 		pi_timeout_to_timespec (*timeout, &when);
@@ -410,7 +445,8 @@ u_wait_for_device(struct pi_socket *ps, int *timeout)
 static int
 u_poll(struct pi_socket *ps, int timeout)
 {
-	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s %d (%s).\n", __FILE__, __LINE__, __FUNCTION__));
+	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s %d (%s).\n", 
+		__FILE__, __LINE__, __FUNCTION__));
 
 	return u_read_i (ps, NULL, 1, PI_MSG_PEEK, timeout);
 }
@@ -455,7 +491,9 @@ u_read_i(struct pi_socket *ps, pi_buffer_t *buf, size_t len, int flags, int time
 	if (!RD_running)
 		return PI_ERR_SOCK_DISCONNECTED;
 
-	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s %d (%s): %d %d %d\n", __FILE__, __LINE__, __FUNCTION__, len, flags, timeout));
+	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s %d (%s): %d %d %d\n", 
+		__FILE__, __LINE__, __FUNCTION__, len, flags, timeout));
+
 	pthread_mutex_lock (&RD_buffer_mutex);
 	if (flags & PI_MSG_PEEK && len > 256)
 		len = 256;
@@ -475,29 +513,37 @@ u_read_i(struct pi_socket *ps, pi_buffer_t *buf, size_t len, int flags, int time
 		RD_wanted = len;
 		do {
 			last_used = RD_buffer_used;
-			LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s %d (%s): %d %d.\n", __FILE__, __LINE__, __FUNCTION__, len, RD_buffer_used));
+
+			LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s %d (%s): %d %d.\n", 
+				__FILE__, __LINE__, __FUNCTION__, len, RD_buffer_used));
+
 			if (timeout) {
 				gettimeofday(&now, NULL);
 				nownow.tv_sec = now.tv_sec;
 				nownow.tv_nsec = now.tv_usec * 1000;
 				if ((nownow.tv_sec == when.tv_sec ? (nownow.tv_nsec > when.tv_nsec) : (nownow.tv_sec > when.tv_sec))) {
-					LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s %d (%s): %d %d.\n", __FILE__, __LINE__, __FUNCTION__, len, RD_buffer_used));
+					LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s %d (%s): %d %d.\n", 
+						__FILE__, __LINE__, __FUNCTION__, len, RD_buffer_used));
 					break;
 				}
-				LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s %d (%s): %d %d.\n", __FILE__, __LINE__, __FUNCTION__, len, RD_buffer_used));
+				LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s %d (%s): %d %d.\n", 
+					__FILE__, __LINE__, __FUNCTION__, len, RD_buffer_used));
 				if (pthread_cond_timedwait (&RD_buffer_available_cond, &RD_buffer_mutex, &when) == ETIMEDOUT) {
-					LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s %d (%s): %d %d.\n", __FILE__, __LINE__, __FUNCTION__, len, RD_buffer_used));
+					LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s %d (%s): %d %d.\n", 
+						__FILE__, __LINE__, __FUNCTION__, len, RD_buffer_used));
 					break;
 				}
 			} else
 				pthread_cond_wait (&RD_buffer_available_cond, &RD_buffer_mutex);
-			LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s %d (%s): %d %d.\n", __FILE__, __LINE__, __FUNCTION__, len, RD_buffer_used));
+			LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s %d (%s): %d %d.\n", 
+				__FILE__, __LINE__, __FUNCTION__, len, RD_buffer_used));
 		} while (RD_buffer_used < len);
 
 		RD_wanted = 0;
 	}
 
-	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s %d (%s): %d %d.\n", __FILE__, __LINE__, __FUNCTION__, len, RD_buffer_used));
+	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s %d (%s): %d %d.\n", 
+		__FILE__, __LINE__, __FUNCTION__, len, RD_buffer_used));
 
 	if (!RD_running) {
 		pthread_mutex_unlock (&RD_buffer_mutex);
@@ -523,7 +569,8 @@ u_read_i(struct pi_socket *ps, pi_buffer_t *buf, size_t len, int flags, int time
 	}
 
 	pthread_mutex_unlock (&RD_buffer_mutex);
-	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s %d (%s).\n", __FILE__, __LINE__, __FUNCTION__));
+	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s %d (%s).\n", 
+		__FILE__, __LINE__, __FUNCTION__));
 	return len;
 }
 

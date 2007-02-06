@@ -947,6 +947,9 @@ USB_configure_device (pi_usb_data_t *dev, u_int8_t *input_pipe, u_int8_t *output
 	} else {
 		/* other devices will either accept or deny this generic call */
 		ret = USB_configure_generic (dev, input_pipe, output_pipe);
+		if (ret < 0) {
+			return -1;
+		}
 	}
 
 	/* query bytes available. Not that we really care,
@@ -958,6 +961,8 @@ USB_configure_device (pi_usb_data_t *dev, u_int8_t *input_pipe, u_int8_t *output
 		ret = dev->impl.control_request (dev, 0xc2, GENERIC_REQUEST_BYTES_AVAILABLE, 0, 0, &ba[0], 2, 0);
 		if (ret < 0) {
 			LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "usb: GENERIC_REQUEST_BYTES_AVAILABLE failed (err=%08x)\n", ret));
+			/* configuration have to fail to skip this device - or LifeDrive(?) devices will hang */
+			return -1;
 		}
 		LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "GENERIC_REQUEST_BYTES_AVAILABLE returns 0x%02x%02x\n", ba[0], ba[1]));
 	}
@@ -1002,8 +1007,12 @@ USB_configure_visor (pi_usb_data_t *dev, u_int8_t *input_pipe, u_int8_t *output_
 					function_str="UNKNOWN";
 					break;
 			}
-			LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "\t[%d] port_function_id=0x%02x (%s)\n", i, ci.connections[i].port_function_id, function_str));
-			LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "\t[%d] port=%d\n", i, ci.connections[i].port));
+			LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "\t[%d] port_function_id=0x%02x (%s)\n", i, 
+				ci.connections[i].port_function_id, 
+				function_str));
+
+			LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "\t[%d] port=%d\n", i, 
+				ci.connections[i].port));
 		}
 	}
 	return ret;
@@ -1013,6 +1022,7 @@ static int
 USB_configure_generic (pi_usb_data_t *dev, u_int8_t *input_pipe, u_int8_t *output_pipe)
 {
 	int i, ret;
+	int hotsync = 0;
 	palm_ext_connection_info_t ci;
 	u_int32_t flags = dev->dev.flags;
 
@@ -1020,12 +1030,25 @@ USB_configure_generic (pi_usb_data_t *dev, u_int8_t *input_pipe, u_int8_t *outpu
 	if (ret < 0) {
 		LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "usb: PALM_GET_EXT_CONNECTION_INFORMATION failed (err=%08x)\n", ret));
 	} else {
-		LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "usb: PALM_GET_EXT_CONNECTION_INFORMATION, num_ports=%d, endpoint_numbers_different=%d\n", ci.num_ports, ci.endpoint_numbers_different));
+		LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "usb: PALM_GET_EXT_CONNECTION_INFORMATION, num_ports=%d, endpoint_numbers_different=%d\n", 
+			ci.num_ports, 
+			ci.endpoint_numbers_different));
 		for (i=0; i < ci.num_ports; i++) {
-			LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "\t[%d] port_function_id='%c%c%c%c'\n", i, ci.connections[i].port_function_id[0], ci.connections[i].port_function_id[1], ci.connections[i].port_function_id[2], ci.connections[i].port_function_id[3]));
-			LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "\t[%d] port=%d\n", i, ci.connections[i].port));
-			LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "\t[%d] endpoint_info=%d\n", i, ci.connections[i].endpoint_info));
+			LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "\t[%d] port_function_id='%c%c%c%c'\n", i, 
+				ci.connections[i].port_function_id[0], 
+				ci.connections[i].port_function_id[1], 
+				ci.connections[i].port_function_id[2], 
+				ci.connections[i].port_function_id[3]));
+
+			LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "\t[%d] port=%d\n", i, 
+				ci.connections[i].port));
+
+			LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "\t[%d] endpoint_info=%d\n", i, 
+				ci.connections[i].endpoint_info));
 			if (!memcmp(ci.connections[i].port_function_id, "cnys", 4)) {
+
+				/* found hotsync port */
+				hotsync = 1;
 
 				/* 'sync': we found the pipes to use for synchronization force
 				   find_interfaces to select this one rather than another one */
@@ -1041,6 +1064,11 @@ USB_configure_generic (pi_usb_data_t *dev, u_int8_t *input_pipe, u_int8_t *outpu
 						*output_pipe = ci.connections[i].port;
 				}
 			}
+		}
+
+		if (!hotsync) {
+			LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "usb: PALM_GET_EXT_CONNECTION_INFORMATION - no hotsync port found.\n", ret));
+			return -1;
 		}
 	}
 
