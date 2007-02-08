@@ -1,208 +1,210 @@
 <!-- $Id$ -->
 <refentry id="pilot-install-datebook">
-   <refmeta>
-      <refentrytitle>pilot-install-datebook</refentrytitle>
-      <manvolnum>1</manvolnum>
-      <refmiscinfo>Copyright FSF 1996-2007</refmiscinfo>
-   </refmeta>
-   <refnamediv>
-      <refname>pilot-install-datebook</refname>
-      <refpurpose>
-         Installs one or more new datebook entries onto your Palm handheld.
-      </refpurpose>
-   </refnamediv>
-   <refsect1>
-      <title>Section</title>
-      <para>pilot-link: Userland conduits</para>
-   </refsect1>
-   <refsect1>
-      <title>Synopsis</title>
-      <para>
-         <emphasis>pilot-install-datebook</emphasis>
-         [<option>-p</option>|<option>--port</option> &lt;<userinput>port</userinput>&gt;]
-         [<option>--version</option>] [<option>-?</option>|<option>--help</option>]
-	 [<option>-q</option>|<option>--quiet</option>] 
-         [<option>--usage</option>] [<option>-r</option>|<option>--read</option>
-         <filename>file</filename>]	
-      </para>
-   </refsect1>
-   <refsect1>
-      <title>Description</title>
-      <para>
-         <emphasis>pilot-install-datebook</emphasis> allows the user to create one or more datebook
-         entries from one or more source files.
-      </para>
-      <para>
-        The format of the source file contains one datebook entry per line, containing 
-	four tab separated fields. The fields are start date/time, end date/time, alarm
-	settings, and the description of datebook entry. This program doesn't yet support
-	repeated entries. The date and time must be in format understood 
-	by <filename>parsedate.y</filename>. At the very least, the following two
-	formats are understood:
-      </para>
-      <para>
-            August 11, 1997 0800 GMT+300</para>
-      <para>
-            1997/08/11 08:22:33 GMT+300</para>
-      <para>
-        If either one of the date and time fields is empty, the entry is installed 
-	without time. If the alarm field is empty, the entry is installed without setting 
-	any alarms. The alarm field can contain numbers followed by "m" (minutes),
-	"h" (hours), or "d" (days).
-      </para>
-   </refsect1>
-   <refsect1>
-      <title>Options</title>
-      <refsect2>
-         <title>pilot-install-datebook options</title>
-	<variablelist>
-	<varlistentry>
-		<term>
-            <option>-r</option>, <option>--read</option>
-		</term>
-		<listitem>
+    <refmeta>
+        <refentrytitle>pilot-install-datebook</refentrytitle>
+        <manvolnum>1</manvolnum>
+        <refmiscinfo>Copyright FSF 1996-2007</refmiscinfo>
+    </refmeta>
+    <refnamediv>
+        <refname>pilot-install-datebook</refname>
+        <refpurpose>
+            Installs one or more new datebook entries onto your Palm handheld.
+        </refpurpose>
+    </refnamediv>
+    <refsect1>
+        <title>Section</title>
+        <para>pilot-link: Userland conduits</para>
+    </refsect1>
+    <refsect1>
+        <title>Synopsis</title>
+        <para>
+            <emphasis>pilot-install-datebook</emphasis>
+            [<option>-p</option>|<option>--port</option> &lt;<userinput>port</userinput>&gt;]
+            [<option>--version</option>] [<option>-?</option>|<option>--help</option>]
+            [<option>-q</option>|<option>--quiet</option>] 
+            [<option>--usage</option>] [<option>-r</option>|<option>--read</option>
+            <filename>file</filename>]	
+        </para>
+    </refsect1>
+    <refsect1>
+        <title>Description</title>
+        <para>
+            <emphasis>pilot-install-datebook</emphasis> allows the user to create one or more datebook entries from one
+            or more source files.
+        </para>
+        <para>
+            The format of the source file contains one datebook entry per line, containing 
+            four tab separated fields. The fields are start date/time, end date/time, alarm settings, and the
+            description of datebook entry. This program doesn't yet support repeated entries. The date and time must be
+            in format understood 
+            by <filename>parsedate.y</filename>. At the very least, the following two formats are understood:
+        </para>
+        <para>
+            August 11, 1997 0800 GMT+300
+        </para>
+        <para>
+            1997/08/11 08:22:33 GMT+300
+        </para>
+        <para>
+            If either one of the date and time fields is empty, the entry is installed 
+            without time. If the alarm field is empty, the entry is installed without setting 
+            any alarms. The alarm field can contain numbers followed by "m" (minutes),
+            "h" (hours), or "d" (days).
+        </para>
+    </refsect1>
+    <refsect1>
+        <title>Options</title>
+        <refsect2>
+            <title>pilot-install-datebook options</title>
+            <variablelist>
+                <varlistentry>
+                    <term>
+                        <option>-r</option>, <option>--read</option>
+                    </term>
+                    <listitem>
+                        <para>
+                            Read entries from <filename>file</filename>.
+                        </para>
+                    </listitem>
+                </varlistentry>
+            </variablelist>
+        </refsect2>
+        <refsect2>
+            <title>Conduit Options</title>
+            <variablelist>
+                <varlistentry>
+                    <term>
+                        <option>-p</option>, <option>--port</option>
+                        &lt;<userinput>port</userinput>&gt;
+                    </term>
+                    <listitem>
+                        <para>
+                            Use device file &lt;<filename>port</filename>&gt; to communicate with the 
+                            Palm handheld. If this is not specified, 
+                            <emphasis>pilot-install-datebook</emphasis> will look for the 
+                            <filename>$PILOTPORT</filename> environment variable. If neither are found,
+                            <emphasis>pilot-install-datebook</emphasis> will print the usage information.
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <option>-q</option>, 
+                        <option>--quiet</option>
+                    </term>
+                    <listitem>
+                        <para>Suppress 'Hit HotSync button' message</para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <option>--version</option>
+                    </term>
+                    <listitem>
+                        <para>
+                            Display the copyright information, version number, license details and build details and
+                            exit without connecting.
+                        </para>
+                    </listitem>
+                </varlistentry>
+            </variablelist>
+        </refsect2>
+        <refsect2>
+            <title>Help options</title>
+            <variablelist>
+                <varlistentry>
+                    <term>
+                        <option>-?</option>, <option>--help</option>
+                    </term>
+                    <listitem>
+                        <para>Show the help message and exit without connecting.</para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <option>--usage</option>
+                    </term>
+                    <listitem>
+                        <para>Display a brief usage message and exit without connecting.</para>
+                    </listitem>
+                </varlistentry>
+            </variablelist>
+        </refsect2>
+    </refsect1>
+    <refsect1>
+        <title>Usage</title>
+        <para>
+            The program will connect to the target Palm device, and create Datebook entries based on the
+            datebook-formatted file given on the commandline onto the Palm handheld (into the DatebookDB.pdb file).
+        </para>
+    </refsect1>
+    <refsect1>
+        <title>Examples</title>
+        <para>([__TAB__] = tab, [__NL__] = newline in these examples):</para>
+        <para>
+            1997/08/11 0800 GMT+300 [__TAB__] 1997/08/11 0900 GMT+300 [__TAB__]
+            [__TAB__] IETF Registration [__NL__]
+        </para>
+        <para>
+            August 11, 1997 0900 GMT+300 [__TAB__] August 11, 1997 0930 GMT+300
+            [__TAB__] 2m [__TAB__] Introductions [__NL__]
+        </para>
+    </refsect1>
+    <refsect1>
+        <title>Author</title>
+        <para>
+            <emphasis>pilot-install-datebook</emphasis> was originally written by Tero Kivinen
+            <email>kivinen@iki.fi</email>. This program was based on
+            <emphasis>pilot-install-todos</emphasis> program written by Robert A. Kaplan
+            <email>kaplan@openmarket.com</email>.
+        </para>
+        <para>
+            This manual page was converted to XML by Neil Williams <email>linux@codehelp.co.uk</email>
+        </para>
+    </refsect1>
+    <refsect1>
+        <title>Bugs</title>
+        <refsect2>
+            <title>Known Bugs</title>
             <para>
-               Read entries from <filename>file</filename>.
+                If no timezone is given, <emphasis>pilot-install-datebook</emphasis> will assume the time is in GMT and
+                it will convert it to localtime. If you don't want to create timezone entries for all begin and end
+                times, set the TZ environment variable to GMT before running this program.
             </para>
-		</listitem>
-	</varlistentry>
-	</variablelist>
-      </refsect2>
-      <refsect2>
-         <title>Conduit Options</title>
-	<variablelist>
-	<varlistentry>
-		<term>
-            <option>-p</option>, <option>--port</option>
-            &lt;<userinput>port</userinput>&gt;
-		</term>
-		<listitem>
-            <para>
-                Use device file &lt;<filename>port</filename>&gt; to communicate with the 
-		Palm handheld. If this is not specified, 
-		<emphasis>pilot-install-datebook</emphasis> will look for the 
-		<filename>$PILOTPORT</filename> environment variable. If neither are found,
-               <emphasis>pilot-install-datebook</emphasis> will print the usage information.
+        </refsect2>
+        <refsect2>
+            <title>Reporting Bugs</title>
+            <para>We have an online bug tracker. Using this is the only way to ensure that your bugs are recorded and
+                that we can track them until they are resolved or closed. Reporting bugs via email, while easy, is not
+                very useful in terms of accountability. Please point your browser to
+                <ulink url="http://bugs.pilot-link.org">http://bugs.pilot-link.org</ulink> and report your bugs and
+                issues there.
             </para>
-		</listitem>
-	</varlistentry>
-	<varlistentry>
-		<term>
-		<option>-q</option>, 
-		<option>--quiet</option>
-		</term>
-		<listitem>
-		<para>Suppress 'Hit HotSync button' message</para>
-		</listitem>
-	</varlistentry>
-	<varlistentry>
-		<term>
-            <option>--version</option>
-		</term>
-		<listitem>
-            <para>
-               Display the copyright information, version number, license details and build details
-               and exit without connecting.
-            </para>
-		</listitem>
-	</varlistentry>
-	</variablelist>
-      </refsect2>
-      <refsect2>
-         <title>Help options</title>
-	<variablelist>
-	<varlistentry>
-		<term>
-            <option>-?</option>, <option>--help</option>
-		</term>
-		<listitem>
-            <para>Show the help message and exit without connecting.</para>
-		</listitem>
-	</varlistentry>
-	<varlistentry>
-		<term>
-            <option>--usage</option>
-		</term>
-	        <listitem>
-            <para>Display a brief usage message and exit without connecting.</para>
-	        </listitem>
-	</varlistentry>
-	</variablelist>
-      </refsect2>
-   </refsect1>
-   <refsect1>
-      <title>Usage</title>
-      <para>
-         The program will connect to the target Palm device, and create Datebook entries based on
-         the datebook-formatted file given on the commandline onto the Palm handheld (into the
-         DatebookDB.pdb file).
-      </para>
-   </refsect1>
-   <refsect1>
-      <title>Examples</title>
-      <para>([__TAB__] = tab, [__NL__] = newline in these examples):</para>
-      <para>
-         1997/08/11 0800 GMT+300 [__TAB__] 1997/08/11 0900 GMT+300 [__TAB__]
-         [__TAB__] IETF Registration [__NL__]
-      </para>
-      <para>
-         August 11, 1997 0900 GMT+300 [__TAB__] August 11, 1997 0930 GMT+300
-         [__TAB__] 2m [__TAB__] Introductions [__NL__]
-      </para>
-   </refsect1>
-   <refsect1>
-      <title>Author</title>
-      <para>
-         <emphasis>pilot-install-datebook</emphasis> was originally written by Tero Kivinen
-         <email>kivinen@iki.fi</email>. This program was based on
-         <emphasis>pilot-install-todos</emphasis> program written by Robert A. Kaplan
-         <email>kaplan@openmarket.com</email>.
-      </para>
-      <para>
-         This manual page was converted to XML by Neil Williams <email>linux@codehelp.co.uk</email>
-      </para>
-   </refsect1>
-   <refsect1>
-      <title>Bugs</title>
-      <refsect2>
-         <title>Known Bugs</title>
-         <para>
-            If no timezone is given, <emphasis>pilot-install-datebook</emphasis> will assume the time is
-            in GMT and it will convert it to localtime. If you don't want to create timezone
-            entries for all begin and end times, set the TZ environment variable to GMT before
-            running this program.
-         </para>
-      </refsect2>
-      <refsect2>
-         <title>Reporting Bugs</title>
-         <para>
-            Report bugs at <emphasis>http://bugs.pilot-link.org/</emphasis>
-         </para>
-      </refsect2>
-   </refsect1>
-   <refsect1>
-      <title>Copyright</title>
-      <para>
-         This program is free software; you can redistribute it and/or modify it under the terms of
-         the GNU General Public License as published by the Free Software Foundation; either
-         version 2 of the License, or (at your option) any later version.
-      </para>
-      <para>
-         This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
-         without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
-         See the GNU General Public License for more details.
-      </para>
-      <para>
-         You should have received a copy of the GNU General Public License along with this program;
-         if not, write to the Free Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
-         MA 02110-1301, USA.
-      </para>
-   </refsect1>
-   <refsect1>
-      <title>See Also</title>
-      <para>
-         <emphasis>pilot-install-todos</emphasis>(1),
-         <emphasis>pilot-link</emphasis>(7).
-      </para>
-   </refsect1>
+        </refsect2>
+    </refsect1>
+    <refsect1>
+        <title>Copyright</title>
+        <para>
+            This program is free software; you can redistribute it and/or modify it under the terms of the GNU General
+            Public License as published by the Free Software Foundation; either version 2 of the License, or (at your
+            option) any later version.
+        </para>
+        <para>
+            This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+            without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+            See the GNU General Public License for more details.
+        </para>
+        <para>
+            You should have received a copy of the GNU General Public License along with this program;
+            if not, write to the Free Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
+            MA 02110-1301, USA.
+        </para>
+    </refsect1>
+    <refsect1>
+        <title>See Also</title>
+        <para>
+            <emphasis>pilot-install-todos</emphasis>(1),
+            <emphasis>pilot-link</emphasis>(7).
+        </para>
+    </refsect1>
 </refentry>

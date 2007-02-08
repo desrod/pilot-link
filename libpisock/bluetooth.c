@@ -428,7 +428,7 @@ pi_bluetooth_open(struct pi_socket *ps, struct pi_sockaddr *addr, int addrlen)
  *
  ***********************************************************************/
 pi_device_t*
-pi_bluetooth_device (int type) 
+pi_bluetooth_device (int type)
 {
 	pi_device_t *dev;
 	struct 	pi_bluetooth_data *data;

@@ -1,221 +1,226 @@
 <!-- $Id$ -->
 <refentry id="pilot-install-memo">
-   <refmeta>
-      <refentrytitle>pilot-install-memo</refentrytitle>
-      <manvolnum>1</manvolnum>
-      <refmiscinfo>Copyright FSF 1996-2007</refmiscinfo>
-   </refmeta>
-   <refnamediv>
-      <refname>pilot-install-memo</refname>
-      <refpurpose>
-         Installs a new Memo Pad entry onto your Palm handheld.
-      </refpurpose>
-   </refnamediv>
-   <refsect1>
-      <title>Section</title>
-      <para>pilot-link: Userland conduits</para>
-   </refsect1>
-   <refsect1>
-      <title>Synopsis</title>
-      <para>
-         <emphasis>pilot-install-memo</emphasis>
-         [<option>-p</option>|<option>--port</option> &lt;<userinput>port</userinput>&gt;]
-         [<option>--version</option>] [<option>-q</option>|<option>--quiet</option>] 
-         [<option>-?</option>|<option>--help</option>] [<option>--usage</option>]
-         [<option>-c</option>|<option>--category</option> <userinput>name</userinput>]
-         [<option>-r</option>|<option>--replace</option>]
-         [<option>-t</option>|<option>--title</option>]
-         [<option>-f</option>|<option>--file</option> <userinput>STRING</userinput>
-	 ...]
-      </para>
-   </refsect1>
-   <refsect1>
-      <title>Description</title>
-      <para>
-         <emphasis>pilot-install-memo</emphasis> allows the user to write one or more files as a new memo
-         or memos, respectively, onto the Palm handheld.
-      </para>
-   </refsect1>
-   <refsect1>
-      <title>Options</title>
-      <refsect2>
-         <title>pilot-install-memo options</title>
-	<variablelist>
-	<varlistentry>
-		<term>
-            <option>-c</option>,
-            <option>--category</option> <userinput>category</userinput>
-		</term>
-         <listitem>
-         <para>
-               Install memo(s) to category defined by <userinput>category</userinput>.
-               <emphasis>pilot-install-memo</emphasis> uses the <userinput>Unfiled</userinput>
-               category as the default category if no category is chosen or if the specified
-	       category does not already exist on the Palm.
-            </para>
-         </listitem>
-	</varlistentry>
-	<varlistentry>
-         <term>
-            <option>-f</option>,
-            <option>--file</option> <filename>STRING</filename>
-         </term>
-         <listitem>
-            <para>File containing the target memo entry. Append other filenames
-		to install one memo per file.</para>
-         </listitem>
-	</varlistentry>
-	<varlistentry>
-         <term>
-            <option>-r</option>, <option>--replace</option>
-         </term>
-         <listitem>
+    <refmeta>
+        <refentrytitle>pilot-install-memo</refentrytitle>
+        <manvolnum>1</manvolnum>
+        <refmiscinfo>Copyright FSF 1996-2007</refmiscinfo>
+    </refmeta>
+    <refnamediv>
+        <refname>pilot-install-memo</refname>
+        <refpurpose>
+            Installs a new Memo Pad entry onto your Palm handheld.
+        </refpurpose>
+    </refnamediv>
+    <refsect1>
+        <title>Section</title>
+        <para>pilot-link: Userland conduits</para>
+    </refsect1>
+    <refsect1>
+        <title>Synopsis</title>
+        <para>
+            <emphasis>pilot-install-memo</emphasis>
+            [<option>-p</option>|<option>--port</option> &lt;<userinput>port</userinput>&gt;]
+            [<option>--version</option>] [<option>-q</option>|<option>--quiet</option>] 
+            [<option>-?</option>|<option>--help</option>] [<option>--usage</option>]
+            [<option>-c</option>|<option>--category</option> <userinput>name</userinput>]
+            [<option>-r</option>|<option>--replace</option>]
+            [<option>-t</option>|<option>--title</option>]
+            [<option>-f</option>|<option>--file</option> <userinput>STRING</userinput>
+            ...]
+        </para>
+    </refsect1>
+    <refsect1>
+        <title>Description</title>
+        <para>
+            <emphasis>pilot-install-memo</emphasis> allows the user to write one or more files as a new memo or memos,
+            respectively, onto the Palm handheld.
+        </para>
+    </refsect1>
+    <refsect1>
+        <title>Options</title>
+        <refsect2>
+            <title>pilot-install-memo options</title>
+            <variablelist>
+                <varlistentry>
+                    <term>
+                        <option>-c</option>,
+                        <option>--category</option> <userinput>category</userinput>
+                    </term>
+                    <listitem>
+                        <para>
+                            Install memo(s) to category defined by <userinput>category</userinput>.
+                            <emphasis>pilot-install-memo</emphasis> uses the <userinput>Unfiled</userinput>
+                            category as the default category if no category is chosen or if the specified category does
+                            not already exist on the Palm.
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <option>-f</option>,
+                        <option>--file</option> <filename>STRING</filename>
+                    </term>
+                    <listitem>
+                        <para>File containing the target memo entry. Append other filenames to install one memo per
+                            file.
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <option>-r</option>, <option>--replace</option>
+                    </term>
+                    <listitem>
+                        <para>
+                            Replace all memos in the category specified by the <option>-c</option>
+                            <filename>category</filename> option.
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <option>-t</option> <option>--title</option>
+                    </term>
+                    <listitem>
+                        <para>
+                            Use the filename as the title for the memo. (Normally, the first line of a memo is used as
+                            the title if one is not supplied with the <option>-t</option> option).
+                        </para>
+                    </listitem>
+                </varlistentry>
+            </variablelist>
+        </refsect2>
+        <refsect2>
+            <title>Conduit Options</title>
+            <variablelist>
+                <varlistentry>
+                    <term>
+                        <option>-p</option>, <option>--port</option><userinput>port</userinput>
+                    </term>
+                    <listitem>
+                        <para>
+                            Use device file &lt;<userinput>port</userinput>&gt; to communicate with the Palm handheld.
+                            If this is not specified, <emphasis>pilot-install-memo</emphasis> will look for the <filename>
+                                $PILOTPORT
+                            </filename>
+                            environment variable. If neither are found or supplied, <emphasis>pilot-install-memo</emphasis> will print the usage information.
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <option>-q</option>, 
+                        <option>--quiet</option>
+                    </term>
+                    <listitem>
+                        <para>Suppress 'Hit HotSync button' message</para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <option>-v</option>, <option>--version</option>
+                    </term>
+                    <listitem>
+                        <para>
+                            Display version of <emphasis>pilot-install-memo</emphasis> and exit without connecting.
+                        </para>
+                    </listitem>
+                </varlistentry>
+            </variablelist>
+        </refsect2>
+        <refsect2>
+            <title>Help Options</title>
+            <variablelist>
+                <varlistentry>
+                    <term>
+                        <option>-h</option>, <option>--help</option>
+                    </term>
+                    <listitem>
+                        <para>
+                            Display the help synopsis for <emphasis>pilot-install-memo</emphasis>
+                            and exit without connecting.
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <option>--usage</option> 
+                    </term>
+                    <listitem>
+                        <para>
+                            Display a brief usage message and exit without connecting.
+                        </para>
+                    </listitem>
+                </varlistentry>
+            </variablelist>
+        </refsect2>
+    </refsect1>
+    <refsect1>
+        <title>Usage</title>
+        <para>
+            The program will connect to the Palm handheld, and create memo entries for each 
+            file(s) given on the commandline into the Memo Pad application on the Palm.
+        </para>
+    </refsect1>
+    <refsect1>
+        <title>Author</title>
+        <para>
+            <emphasis>pilot-install-memo</emphasis> was originally written by Damien P. Neil
+            <email>neild@rpi.edu</email>.
+        </para>
+        <para>
+            This manual page was converted to XML by Neil Williams <email>linux@codehelp.co.uk</email>
+        </para>
+    </refsect1>
+    <refsect1>
+        <title>Bugs</title>
+        <refsect2>
+            <title>Known Bugs</title>
             <para>
-               Replace all memos in the category specified by the <option>-c</option>
-               <filename>category</filename> option.
+                The Palm Device has a maximum length of 4,096 bytes (4k) on memopad entries, if you wish to retain the
+                ability to edit the Memo (add/remove/change data within the memo) on the Palm itself. You can create a
+                memo entry of 65,490 bytes in size (the absolute maximum) if you do not need to edit the memo entry any
+                further on the Palm device itself. Any memo larger than 4,096 bytes and less than 65,490 bytes will not
+                be editable on the Palm itself. Consider these memo entries "read-only".
             </para>
-         </listitem>
-	</varlistentry>
-	<varlistentry>
-         <term>
-            <option>-t</option> <option>--title</option>
-         </term>
-         <listitem>
             <para>
-               Use the filename as the title for the memo. (Normally, the first line of a memo is
-               used as the title if one is not supplied with the <option>-t</option> option).
+                This is not specifically a "bug", but a limitation in the PalmOS design itself.
             </para>
-         </listitem>
-	</varlistentry>
-	</variablelist>
-      </refsect2>
-      <refsect2>
-         <title>Conduit Options</title>
-	<variablelist>
-	<varlistentry>
-		<term>
-            <option>-p</option>, <option>--port</option><userinput>port</userinput>
-		</term>
-         <listitem>
-            <para>
-               Use device file &lt;<userinput>port</userinput>&gt; to communicate with the Palm
-               handheld. If this is not specified, <emphasis>pilot-install-memo</emphasis> will look for
-               the <filename>$PILOTPORT</filename> environment variable. If neither are found or
-               supplied, <emphasis>pilot-install-memo</emphasis> will print the usage information.
+        </refsect2>
+        <refsect2>
+            <title>Reporting Bugs</title>
+            
+            <para>We have an online bug tracker. Using this is the only way to ensure that your bugs are recorded and
+                that we can track them until they are resolved or closed. Reporting bugs via email, while easy, is not
+                very useful in terms of accountability. Please point your browser to
+                <ulink url="http://bugs.pilot-link.org">http://bugs.pilot-link.org</ulink> and report your bugs and
+                issues there.
             </para>
-         </listitem>
-	</varlistentry>
-	<varlistentry>
-		<term>
-		<option>-q</option>, 
-		<option>--quiet</option>
-		</term>
-		<listitem>
-		<para>Suppress 'Hit HotSync button' message</para>
-		</listitem>
-	</varlistentry>
-	<varlistentry>
-         <term>
-            <option>-v</option>, <option>--version</option>
-         </term>
-         <listitem>
-            <para>
-               Display version of <emphasis>pilot-install-memo</emphasis> and exit
-               without connecting.
-            </para>
-         </listitem>
-	</varlistentry>
-	</variablelist>
-      </refsect2>
-      <refsect2>
-         <title>Help Options</title>
-	<variablelist>
-	<varlistentry>
-		<term>
-            <option>-h</option>, <option>--help</option>
-		</term>
-         <listitem>
-            <para>
-               Display the help synopsis for <emphasis>pilot-install-memo</emphasis>
-               and exit without connecting.
-            </para>
-         </listitem>
-	</varlistentry>
-	<varlistentry>
-         <term>
-            <option>--usage</option> 
-         </term>
-         <listitem>
-            <para>
-            Display a brief usage message and exit without connecting.</para>
-         </listitem>
-	</varlistentry>
-	</variablelist>
-      </refsect2>
-   </refsect1>
-   <refsect1>
-      <title>Usage</title>
-      <para>
-         The program will connect to the Palm handheld, and create memo entries for each 
-	 file(s) given on the commandline into the Memo Pad application on the Palm.
-      </para>
-   </refsect1>
-   <refsect1>
-      <title>Author</title>
-      <para>
-         <emphasis>pilot-install-memo</emphasis> was originally written by Damien P. Neil
-         <email>neild@rpi.edu</email>.
-      </para>
-      <para>
-         This manual page was converted to XML by Neil Williams <email>linux@codehelp.co.uk</email>
-      </para>
-   </refsect1>
-   <refsect1>
-      <title>Bugs</title>
-      <refsect2>
-         <title>Known Bugs</title>
-         <para>
-            The Palm Device has a maximum length of 4,096 bytes (4k) on memopad entries, if you
-            wish to retain the ability to edit the Memo (add/remove/change data within the memo) on
-            the Palm itself. You can create a memo entry of 65,490 bytes in size (the absolute
-            maximum) if you do not need to edit the memo entry any further on the Palm device
-            itself. Any memo larger than 4,096 bytes and less than 65,490 bytes will not be
-            editable on the Palm itself. Consider these memo entries "read-only".
-         </para>
-         <para>
-            This is not specifically a "bug", but a limitation in the PalmOS design itself.
-         </para>
-      </refsect2>
-      <refsect2>
-         <title>Reporting Bugs</title>
-         <para>
-            Report bugs at <emphasis>http://bugs.pilot-link.org/</emphasis>
-         </para>
-      </refsect2>
-   </refsect1>
-   <refsect1>
-      <title>Copyright</title>
-      <para>
-         This program is free software; you can redistribute it and/or modify it under the terms of
-         the GNU General Public License as published by the Free Software Foundation; either
-         version 2 of the License, or (at your option) any later version.
-      </para>
-      <para>
-         This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
-         without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
-         See the GNU General Public License for more details.
-      </para>
-      <para>
-         You should have received a copy of the GNU General Public License along with this program;
-         if not, write to the Free Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
-         MA 02110-1301, USA.
-      </para>
-   </refsect1>
-   <refsect1>
-      <title>See Also</title>
-      <para>
-         <emphasis>memos</emphasis>(1),
-         <emphasis>pilot-link</emphasis>(7).
-      </para>
-   </refsect1>
+        </refsect2>
+    </refsect1>
+    <refsect1>
+        <title>Copyright</title>
+        <para>
+            This program is free software; you can redistribute it and/or modify it under the terms of the GNU General
+            Public License as published by the Free Software Foundation; either version 2 of the License, or (at your
+            option) any later version.
+        </para>
+        <para>
+            This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+            without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+            See the GNU General Public License for more details.
+        </para>
+        <para>
+            You should have received a copy of the GNU General Public License along with this program;
+            if not, write to the Free Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
+            MA 02110-1301, USA.
+        </para>
+    </refsect1>
+    <refsect1>
+        <title>See Also</title>
+        <para>
+            <emphasis>memos</emphasis>(1),
+            <emphasis>pilot-link</emphasis>(7).
+        </para>
+    </refsect1>
 </refentry>

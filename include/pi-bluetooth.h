@@ -66,7 +66,7 @@ struct pi_bluetooth_data
 };
 
 extern pi_device_t *pi_bluetooth_device
-           PI_ARGS((int type));
+	PI_ARGS((int type));
 
 extern void pi_bluetooth_impl_init
     PI_ARGS((struct pi_bluetooth_impl *impl));

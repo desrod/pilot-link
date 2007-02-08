@@ -10,12 +10,6 @@ INCLUDES = 			\
 	$(TCL_INCLUDES)		\
 	$(RL_CFLAGS)
 
-# Pedantic CFLAGS -std=c99 -g -Wshadow -Wall 		\
-#	-W -Waggregate-return -Wcast-align 		\
-#	-Wcast-qual -Wnested-externs 			\
-#	-Wpointer-arith -Wundef -Wbad-function-cast 	\
-#	-Winline -pedantic -O0
-
 noinst_LTLIBRARIES = libpiuserland.la
 
 bin_PROGRAMS =			\
@@ -348,51 +342,51 @@ sync-plan: sync-plan.PL
 CLEANFILES = $(PERLSCRIPTS)
 endif
 
-EXTRA_DIST = 			\
-	ccexample.cc		\
-	ietf2datebook.PL	\
-	install-datebook.c	\
-	install-hinote.c	\
-	install-memo.c		\
-	install-todo.c		\
-	install-todos.c		\
-	install-user.c		\
-	kittykiller.c		\
-	parsedate.y		\
-	pd-tty.c		\
-	pilot-650foto.c		\
-	pilot-addresses.c	\
-	pilot-clip.c		\
-	pilot-csd.c		\
-	pilot-debug.c		\
-	pilot-debugsh.c		\
-	pilot-dedupe.c		\
-	pilot-dlpsh.c		\
-	pilot-file.c		\
-	pilot-foto.c		\
-	pilot-getram.c		\
-	pilot-getrom.c		\
-	pilot-getromtoken.c	\
-	pilot-hinotes.c		\
-	pilot-install-expenses	\
-	pilot-install-netsync.c	\
-	pilot-memos.c		\
-	pilot-nredir.c		\
-	pilot-port.c		\
-	pilot-read-expenses.c	\
-	pilot-read-ical.c	\
-	pilot-read-notepad.c	\
-	pilot-read-palmpix.c	\
-	pilot-read-screenshot.c	\
-	pilot-read-todos.c	\
-	pilot-read-veo.c	\
-	pilot-reminders.c	\
-	pilot-schlep.c		\
-	pilot-treofoto.c	\
-	pilot-undelete.PL	\
-	pilot-wav.c		\
-	pilot-xfer.c		\
-	sync-plan.PL		\
+EXTRA_DIST = 				\
+	ccexample.cc			\
+	ietf2datebook.PL		\
+	kittykiller.c			\
+	parsedate.y			\
+	pd-tty.c			\
+	pilot-650foto.c			\
+	pilot-addresses.c		\
+	pilot-clip.c			\
+	pilot-csd.c			\
+	pilot-debug.c			\
+	pilot-debugsh.c			\
+	pilot-dedupe.c			\
+	pilot-dlpsh.c			\
+	pilot-file.c			\
+	pilot-foto.c			\
+	pilot-getram.c			\
+	pilot-getrom.c			\
+	pilot-getromtoken.c		\
+	pilot-hinotes.c			\
+	pilot-install-datebook.c	\
+	pilot-install-expenses		\
+	pilot-install-hinote.c		\
+	pilot-install-memo.c		\
+	pilot-install-netsync.c		\
+	pilot-install-todo.c		\
+	pilot-install-todos.c		\
+	pilot-install-user.c		\
+	pilot-memos.c			\
+	pilot-nredir.c			\
+	pilot-port.c			\
+	pilot-read-expenses.c		\
+	pilot-read-ical.c		\
+	pilot-read-notepad.c		\
+	pilot-read-palmpix.c		\
+	pilot-read-screenshot.c		\
+	pilot-read-todos.c		\
+	pilot-read-veo.c		\
+	pilot-reminders.c		\
+	pilot-schlep.c			\
+	pilot-treofoto.c		\
+	pilot-undelete.PL		\
+	pilot-wav.c			\
+	pilot-xfer.c			\
+	sync-plan.PL			\
 	validate.cc
 
 # Magic to update Makefile from Makefile.am

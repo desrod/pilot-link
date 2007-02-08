@@ -1,243 +1,247 @@
 <!-- $Id$ -->
 <refentry id="pilot-install-netsync">
-   <refmeta>
-      <refentrytitle>pilot-install-netsync</refentrytitle>
-      <manvolnum>1</manvolnum>
-      <refmiscinfo>Copyright FSF 1996-2007</refmiscinfo>
-   </refmeta>
-   <refnamediv>
-      <refname>pilot-install-netsync</refname>
-      <refpurpose>
-         reads or sets the Network Preferences information on a Palm
-         Device.
-      </refpurpose>
-   </refnamediv>
-   <refsect1>
-      <title>Section</title>
-      <para>pilot-link: Userland conduits</para>
-   </refsect1>
-   <refsect1>
-      <title>Synopsis</title>
-      <para>
-         <emphasis>pilot-install-netsync</emphasis>
-         [<option>-p</option>|<option>--port</option> &lt;<userinput>port</userinput>&gt;]
-         [<option>--version</option>] [<option>-?</option>|<option>--help</option>] 
-	 [<option>--usage</option>] [<option>-q</option>|<option>--quiet</option>] 
-         [<option>-e</option>|<option>--enable</option>]
-         [<option>-d</option>|<option>--disable</option>]
-         [<option>-n</option>|<option>--name</option> <userinput>name</userinput>]
-         [<option>-a</option>|<option>--address</option> <userinput>address</userinput>]
-         [<option>-m</option>|<option>--mask</option> <userinput>netmask</userinput>]
-      </para>
-   </refsect1>
-   <refsect1>
-      <title>Description</title>
-      <para>
-         <emphasis>pilot-install-netsync</emphasis> allows the user to read or change the Network
-         Preferences stored on the Palm.
-      </para>
-   </refsect1>
-   <refsect1>
-      <title>Options</title>
-      <refsect2>
-         <title>pilot-install-netsync options</title>
-	<variablelist>
-	<varlistentry>
-		<term>
-            <option>-e</option>, <option>--enable</option>
-		</term>
-         <listitem>
-            <para>
-               Enable the LanSync operation (Used for performing a "Network" HotSync (synchronize
-               across the Internet for example) instead of "Local" HotSync).
-            </para>
-         </listitem>
-	</varlistentry>
-	<varlistentry>
-         <term>
-            <option>-d</option>, <option>--disable</option>
-         </term>
-         <listitem>
-            <para>Disable the LANSync setting on the Palm</para>
-         </listitem>
-	</varlistentry>
-	<varlistentry>
-         <term>
-            <option>-a</option>,
-            <option>--address</option>=<userinput>address</userinput>
-         </term>
-         <listitem>
-            <para>
-               Set the IP address of the remote machine you wish to connect to via "Network"
-               HotSync. This is <emphasis>not</emphasis> the IP address of the Palm device itself.
-               In most cases the Palm will be assigned an IP address automatically by your desktop
-               or server-side configuration.
-            </para>
-         </listitem>
-	</varlistentry>
-	<varlistentry>
-         <term>
-            <option>-n</option>,
-            <option>--name</option> <userinput>hostname</userinput>
-         </term>
-         <listitem>
-            <para>
-               Sets the hostname of the remote machine you wish to connect to via "Network"
-               HotSync. This is <emphasis>not</emphasis> the hostname of the Palm device itself.
-            </para>
-         </listitem>
-	</varlistentry>
-	<varlistentry>
-         <term>
-            <option>-i</option>,
-            <option>--ip</option> <userinput>ip</userinput>
-         </term>
-         <listitem>
-            <para>This option is no longer supported in 0.12 - see -a, --address.
-            </para>
-         </listitem>
-	</varlistentry>
-	<varlistentry>
-         <term>
-            <option>-m</option>,
-            <option>--mask</option> <userinput>netmask</userinput>
-         </term>
-         <listitem>
-            <para>
-               Set the netmask of the remote machine you wish to connect to via "Network" HotSync.
-               This is <emphasis>not</emphasis> the netmask address of the Palm device itself, it
-               should be assigned a netmask value at connection time, based on your desktop or
-               server-side configuration.
-            </para>
-         </listitem>
-	</varlistentry>
-	</variablelist>
-      </refsect2>
-      <refsect2>
-         <title>Conduit Options</title>
-	<variablelist>
-	<varlistentry>
-		<term>
-            <option>-p</option>, <option>--port</option> lt;<userinput>port</userinput>&gt;
-		</term>
-         <listitem>
-            <para>
-               Use device file &lt;<userinput>port</userinput>&gt; to communicate with the Palm
-               handheld. If this is not specified, <emphasis>pilot-install-netsync</emphasis> will look
-               for the <filename>$PILOTPORT</filename> environment variable. If neither are found
-               or supplied, <emphasis>pilot-install-netsync</emphasis> will print the usage information.
-            </para>
-         </listitem>
-	</varlistentry>
-	<varlistentry>
-		<term>
-		<option>-q</option>, 
-		<option>--quiet</option>
-		</term>
-		<listitem>
-		<para>Suppress 'Hit HotSync button' message</para>
-		</listitem>
-	</varlistentry>
-	<varlistentry>
-         <term>
-            <option>-v</option>, <option>--version</option>
-         </term>
-         <listitem>
-            <para>
-               Display version of <emphasis>pilot-install-netsync</emphasis> and exit
-               without connecting.
-            </para>
-         </listitem>
-	</varlistentry>
-	</variablelist>
-      </refsect2>
-      <refsect2>
-         <title>Help Options</title>
-	<variablelist>
-	<varlistentry>
-		<term>
-            <option>-h</option>, <option>--help</option>
-		</term>
-         <listitem>
-            <para>
-               Display the help synopsis for <emphasis>pilot-install-netsync</emphasis> and exit without
-               connecting.
-            </para>
-         </listitem>
-	</varlistentry>
-	<varlistentry>
-         <term>
-            <option>--usage</option> 
-         </term>
-         <listitem>
-            <para>Display a brief usage message and exit without connecting.</para>
-         </listitem>
-	</varlistentry>
-	</variablelist>
-      </refsect2>
-   </refsect1>
-   <refsect1>
-      <title>Usage</title>
-      <para>
-         The program will connect to a target Palm handheld, and read and display or set the
-         Network Preferences information specified or display the Network Preferences stored on the
-         Palm device.
-      </para>
-   </refsect1>
-   <refsect1>
-      <title>Example</title>
-      <para>
-         <option>-p</option>
-         <filename>/dev/pilot</filename>
-         <option>-H</option>
-         <userinput>"localhost"</userinput>
-         <option>-a</option>
-         <userinput>127.0.0.1</userinput>
-         <option>-n</option>
-         <userinput>255.255.255.0</userinput>
-      </para>
-   </refsect1>
-   <refsect1>
-      <title>Author</title>
-      <para>
-         <emphasis>pilot-install-netsync</emphasis> was created from the original
-         <emphasis>pilot-install-user</emphasis> application originally written by D.  Jeff Dionne
-         <email>jeff@RyeHam.ee.ryerson.ca</email>, and was split into a separate conduit by JP
-         Rosevear <email>jpr@ximian.com</email>.
-      </para>
-      <para>
-         This manual page was converted to XML by Neil Williams <email>linux@codehelp.co.uk</email>
-      </para>
-   </refsect1>
-   <refsect1>
-      <title>Reporting Bugs</title>
-      <para>
-         Report bugs at: <emphasis>http://bugs.pilot-link.org</emphasis>
-      </para>
-   </refsect1>
-   <refsect1>
-      <title>Copyright</title>
-      <para>
-         This program is free software; you can redistribute it and/or modify it under the terms of
-         the GNU General Public License as published by the Free Software Foundation; either
-         version 2 of the License, or (at your option) any later version.
-      </para>
-      <para>
-         This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
-         without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
-         See the GNU General Public License for more details.
-      </para>
-      <para>
-         You should have received a copy of the GNU General Public License along with this program;
-         if not, write to the Free Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
-         MA 02110-1301, USA.
-      </para>
-   </refsect1>
-   <refsect1>
-      <title>See Also</title>
-      <para>
-         <emphasis>pilot-install-user</emphasis>(1),
-         <emphasis>pilot-link</emphasis>(7).
-      </para>
-   </refsect1>
+    <refmeta>
+        <refentrytitle>pilot-install-netsync</refentrytitle>
+        <manvolnum>1</manvolnum>
+        <refmiscinfo>Copyright FSF 1996-2007</refmiscinfo>
+    </refmeta>
+    <refnamediv>
+        <refname>pilot-install-netsync</refname>
+        <refpurpose>
+            reads or sets the Network Preferences information on a Palm Device.
+        </refpurpose>
+    </refnamediv>
+    <refsect1>
+        <title>Section</title>
+        <para>pilot-link: Userland conduits</para>
+    </refsect1>
+    <refsect1>
+        <title>Synopsis</title>
+        <para>
+            <emphasis>pilot-install-netsync</emphasis>
+            [<option>-p</option>|<option>--port</option> &lt;<userinput>port</userinput>&gt;]
+            [<option>--version</option>] [<option>-?</option>|<option>--help</option>] 
+            [<option>--usage</option>] [<option>-q</option>|<option>--quiet</option>] 
+            [<option>-e</option>|<option>--enable</option>]
+            [<option>-d</option>|<option>--disable</option>]
+            [<option>-n</option>|<option>--name</option> <userinput>name</userinput>]
+            [<option>-a</option>|<option>--address</option> <userinput>address</userinput>]
+            [<option>-m</option>|<option>--mask</option> <userinput>netmask</userinput>]
+        </para>
+    </refsect1>
+    <refsect1>
+        <title>Description</title>
+        <para>
+            <emphasis>pilot-install-netsync</emphasis> allows the user to read or change the Network Preferences stored
+            on the Palm.
+        </para>
+    </refsect1>
+    <refsect1>
+        <title>Options</title>
+        <refsect2>
+            <title>pilot-install-netsync options</title>
+            <variablelist>
+                <varlistentry>
+                    <term>
+                        <option>-e</option>, <option>--enable</option>
+                    </term>
+                    <listitem>
+                        <para>
+                            Enable the LanSync operation (Used for performing a "Network" HotSync (synchronize across
+                            the Internet for example) instead of "Local" HotSync).
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <option>-d</option>, <option>--disable</option>
+                    </term>
+                    <listitem>
+                        <para>Disable the LANSync setting on the Palm</para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <option>-a</option>,
+                        <option>--address</option>=<userinput>address</userinput>
+                    </term>
+                    <listitem>
+                        <para>
+                            Set the IP address of the remote machine you wish to connect to via "Network"
+                            HotSync. This is <emphasis>not</emphasis> the IP address of the Palm device itself.
+                            In most cases the Palm will be assigned an IP address automatically by your desktop or
+                            server-side configuration.
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <option>-n</option>,
+                        <option>--name</option> <userinput>hostname</userinput>
+                    </term>
+                    <listitem>
+                        <para>
+                            Sets the hostname of the remote machine you wish to connect to via "Network"
+                            HotSync. This is <emphasis>not</emphasis> the hostname of the Palm device itself.
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <option>-i</option>,
+                        <option>--ip</option> <userinput>ip</userinput>
+                    </term>
+                    <listitem>
+                        <para>This option is no longer supported in 0.12 - see -a, --address.
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <option>-m</option>,
+                        <option>--mask</option> <userinput>netmask</userinput>
+                    </term>
+                    <listitem>
+                        <para>
+                            Set the netmask of the remote machine you wish to connect to via "Network" HotSync.
+                            This is <emphasis>not</emphasis> the netmask address of the Palm device itself, it should
+                            be assigned a netmask value at connection time, based on your desktop or server-side
+                            configuration.
+                        </para>
+                    </listitem>
+                </varlistentry>
+            </variablelist>
+        </refsect2>
+        <refsect2>
+            <title>Conduit Options</title>
+            <variablelist>
+                <varlistentry>
+                    <term>
+                        <option>-p</option>, <option>--port</option> lt;<userinput>port</userinput>&gt;
+                    </term>
+                    <listitem>
+                        <para>
+                            Use device file &lt;<userinput>port</userinput>&gt; to communicate with the Palm handheld.
+                            If this is not specified, <emphasis>pilot-install-netsync</emphasis> will look for the <filename>
+                                $PILOTPORT
+                            </filename>
+                            environment variable. If neither are found or supplied, <emphasis>pilot-install-netsync</emphasis> will print the usage information.
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <option>-q</option>, 
+                        <option>--quiet</option>
+                    </term>
+                    <listitem>
+                        <para>Suppress 'Hit HotSync button' message</para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <option>-v</option>, <option>--version</option>
+                    </term>
+                    <listitem>
+                        <para>
+                            Display version of <emphasis>pilot-install-netsync</emphasis> and exit without connecting.
+                        </para>
+                    </listitem>
+                </varlistentry>
+            </variablelist>
+        </refsect2>
+        <refsect2>
+            <title>Help Options</title>
+            <variablelist>
+                <varlistentry>
+                    <term>
+                        <option>-h</option>, <option>--help</option>
+                    </term>
+                    <listitem>
+                        <para>
+                            Display the help synopsis for <emphasis>pilot-install-netsync</emphasis> and exit without
+                            connecting.
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <option>--usage</option> 
+                    </term>
+                    <listitem>
+                        <para>Display a brief usage message and exit without connecting.</para>
+                    </listitem>
+                </varlistentry>
+            </variablelist>
+        </refsect2>
+    </refsect1>
+    <refsect1>
+        <title>Usage</title>
+        <para>
+            The program will connect to a target Palm handheld, and read and display or set the Network Preferences
+            information specified or display the Network Preferences stored on the Palm device.
+        </para>
+    </refsect1>
+    <refsect1>
+        <title>Example</title>
+        <para>
+            <option>-p</option>
+            <filename>/dev/pilot</filename>
+            <option>-H</option>
+            <userinput>"localhost"</userinput>
+            <option>-a</option>
+            <userinput>127.0.0.1</userinput>
+            <option>-n</option>
+            <userinput>255.255.255.0</userinput>
+        </para>
+    </refsect1>
+    <refsect1>
+        <title>Author</title>
+        <para>
+            <emphasis>pilot-install-netsync</emphasis> was created from the original
+            <emphasis>pilot-install-user</emphasis> application originally written by D.  Jeff Dionne
+            <email>jeff@RyeHam.ee.ryerson.ca</email>, and was split into a separate conduit by JP Rosevear <email>
+                jpr@ximian.com
+            </email>
+            .
+        </para>
+        <para>
+            This manual page was converted to XML by Neil Williams <email>linux@codehelp.co.uk</email>
+        </para>
+    </refsect1>
+    <refsect1>
+        <title>Reporting Bugs</title>
+        
+        <para>We have an online bug tracker. Using this is the only way to ensure that your bugs are recorded and that
+            we can track them until they are resolved or closed. Reporting bugs via email, while easy, is not very
+            useful in terms of accountability. Please point your browser to
+            <ulink url="http://bugs.pilot-link.org">http://bugs.pilot-link.org</ulink> and report your bugs and issues
+            there.
+        </para>
+    </refsect1>
+    <refsect1>
+        <title>Copyright</title>
+        <para>
+            This program is free software; you can redistribute it and/or modify it under the terms of the GNU General
+            Public License as published by the Free Software Foundation; either version 2 of the License, or (at your
+            option) any later version.
+        </para>
+        <para>
+            This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+            without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+            See the GNU General Public License for more details.
+        </para>
+        <para>
+            You should have received a copy of the GNU General Public License along with this program;
+            if not, write to the Free Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
+            MA 02110-1301, USA.
+        </para>
+    </refsect1>
+    <refsect1>
+        <title>See Also</title>
+        <para>
+            <emphasis>pilot-install-user</emphasis>(1),
+            <emphasis>pilot-link</emphasis>(7).
+        </para>
+    </refsect1>
 </refentry>

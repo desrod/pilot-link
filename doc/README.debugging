@@ -11,7 +11,7 @@ Debugging pilot-link
 --------------------------------------------------------------------------
 To begin debugging problems, the core library "libpisock" contains
 runtime debugging features. You do not need to recompile pilot-link to
-include these. 
+include these.
 
 If you want to disable them (not recommended, but you may if you know
 what you're doing), simply pass the --disable-debug configure option to
@@ -80,6 +80,7 @@ Environment variables for debugging
 	Palm device is not communicating properly with pilot-link on your
 	machine or operating system.
 
+
 Capturing the output 
 --------------------------------------------------------------------------
 	FIXME
@@ -90,7 +91,22 @@ How do I read this stuff?
 	FIXME
 
 
-Now what do I do?
+Now what do I do next?
 --------------------------------------------------------------------------
 	FIXME
 
+
+Donating to pilot-link
+--------------------------------------------------------------------------
+        Do you like our work? Do you rely on the code we release for
+        your daily work or for your own commercial or OSS project?
+
+        Please consider donating to keep the project going. We're 100%
+        self-funded, and we see a LOT of traffic from users and
+        downloads. Every contribution helps, whether to pay for
+        bandwidth or to buy devices for testing.
+
+        You can help support us by visiting the pilot-link.org site and
+        clicking on the "Donate" button on the left side of the page.
+
+        We thank you for your contributions, whatever you can offer.

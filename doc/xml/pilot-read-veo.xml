@@ -1,188 +1,192 @@
 <!-- $Id$ -->
 <refentry id="pilot-read-veo">
-   <refmeta>
-      <refentrytitle>pilot-read-veo</refentrytitle>
-      <manvolnum>1</manvolnum>
-      <refmiscinfo>Copyright 1996-2007 FSF</refmiscinfo>
-   </refmeta>
-   <refnamediv>
-      <refname>pilot-read-veo</refname>
-      <refpurpose>Synchronize your Veo Traveler databases</refpurpose>
-   </refnamediv>
-   <refsect1>
-      <title>Section</title>
-      <para>pilot-link: Userland conduits</para>
-   </refsect1>
-   <refsect1>
-      <title>synopsis</title>
-      <para>
-         <emphasis>pilot-read-veo</emphasis>
-         [<option>-p</option>|<option>--port</option> &lt;<userinput>port</userinput>&gt;]
-         [<option>--version</option>] [<option>-?</option>|<option>--help</option>]
-         [<option>--usage</option>] [<option>-q</option>|<option>--quiet</option>]
-         [<option>-n</option>|<option>--name</option> <filename>filename</filename>]
-         [<option>-l</option>|<option>--list</option>]
-         [<option>-b</option>|<option>--bias</option> <userinput>bias</userinput>]
-         [<option>-c</option>|<option>--colour</option>]
-         [<option>-t</option>|<option>--type</option> [<userinput>ppm|png</userinput>]]
-      </para>
-   </refsect1>
-   <refsect1>
-      <title>Description</title>
-      <para>
-         Synchronize your Veo Traveler databases with your desktop machine.  Output defaults to
-         ppm.
-      </para>
-   </refsect1>
-   <refsect1>
-      <title>Options</title>
-      <refsect2>
-         <title>pilot-read-veo options</title>
-	<variablelist>
-	<varlistentry>
-		<term>
-            <option>-n</option>, <option>--name</option> <filename>name</filename>
-		</term>
-         <listitem>
-            <para>Specify output picture by name</para>
-         </listitem>
-	</varlistentry>
-	<varlistentry>
-         <term>
-            <option>-l</option>, <option>--list</option>
-         </term>
-         <listitem>
-            <para>List Photos on device</para>
-         </listitem>
-	</varlistentry>
-	<varlistentry>
-         <term>
-            <option>-b</option>, <option>--bias</option> <userinput>bias</userinput>
-         </term>
-         <listitem>
-            <para>lighten or darken the image (0..50 darken, 50..100 lighten)
-            </para>
-         </listitem>
-	</varlistentry>
-	<varlistentry>
-         <term>
-            <option>-c</option>, <option>--colour</option>
-         </term>
-         <listitem>
-            <para>colour correct the output colours</para>
-         </listitem>
-	</varlistentry>
-	<varlistentry>
-         <term>
-            <option>-t</option>,
-            <option>--type</option> [<userinput>ppm</userinput>|<userinput>png</userinput>]
-         </term>
-         <listitem>
-            <para>Specify picture output type (ppm or png)</para>
-         </listitem>
-	</varlistentry>
-	</variablelist>
-      </refsect2>
-      <refsect2>
-         <title>Conduit Options</title>
-	<variablelist>
-	<varlistentry>
-		<term>
-            <option>-p</option>, <option>--port</option> <filename>port</filename>
-		</term>
-         <listitem>
-            <para>
-               Use device file <filename>port</filename> to communicate with the Palm handheld. If
-               this is not specified, <emphasis>pilot-read-veo </emphasis> will look for the
-               <filename>$PILOTPORT</filename> environment variable. If neither are found or
-               supplied, <emphasis>pilot-read-veo </emphasis> will print the usage information.
-            </para>
-         </listitem>
-	</varlistentry>
-	<varlistentry>
-		<term>
-		<option>-q</option>, 
-		<option>--quiet</option>
-		</term>
-		<listitem>
-		<para>Suppress 'Hit HotSync button' message</para>
-		</listitem>
-	</varlistentry>
-	<varlistentry>
-         <term>
-            <option>-v</option>, <option>--version</option>
-         </term>
-         <listitem>
-            <para>
-               Display version of <emphasis>pilot-read-veo</emphasis> and exit without connecting.
-            </para>
-         </listitem>
-	</varlistentry>
-	</variablelist>
-      </refsect2>
-      <refsect2>
-         <title>Help Options</title>
-	<variablelist>
-	<varlistentry>
-		<term>
-            <option>-h</option>, <option>--help</option>
-		</term>
-         <listitem>
-            <para>
-               Display the help synopsis for <emphasis>pilot-read-veo</emphasis> and exit without
-               connecting.
-            </para>
-         </listitem>
-	</varlistentry>
-	<varlistentry>
-         <term>
-            <option>--usage</option> 
-         </term>
-         <listitem>
-            <para>Display a brief usage message and exit without connecting.</para>
-         </listitem>
-	</varlistentry>
-	</variablelist>
-      </refsect2>
-   </refsect1>
-   <refsect1>
-      <title>Author</title>
-      <para>
-         <emphasis>pilot-read-veo </emphasis> was originally written by Angus Ainslie <email>angusa at
-         deltatee.com</email>
-      </para>
-      <para>
-         This manual page was written by Neil Williams <email>linux@codehelp.co.uk</email>
-      </para>
-   </refsect1>
-   <refsect1>
-      <title>Reporting Bugs</title>
-      <para>
-         Report bugs at: <emphasis>http://bugs.pilot-link.org</emphasis>
-      </para>
-   </refsect1>
-   <refsect1>
-      <title>Copyright</title>
-      <para>
-         This program is free software; you can redistribute it and/or modify it under the terms of
-         the GNU General Public License as published by the Free Software Foundation; either
-         version 2 of the License, or (at your option) any later version.
-      </para>
-      <para>
-         This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
-         without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
-         See the GNU General Public License for more details.
-      </para>
-      <para>
-         You should have received a copy of the GNU General Public License along with this program;
-         if not, write to the Free Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
-         MA 02110-1301, USA.
-      </para>
-   </refsect1>
-   <refsect1>
-      <title>See Also</title>
-      <para>
-         <emphasis>pilot-link</emphasis>(7)
-      </para>
-   </refsect1>
+    <refmeta>
+        <refentrytitle>pilot-read-veo</refentrytitle>
+        <manvolnum>1</manvolnum>
+        <refmiscinfo>Copyright 1996-2007 FSF</refmiscinfo>
+    </refmeta>
+    <refnamediv>
+        <refname>pilot-read-veo</refname>
+        <refpurpose>Synchronize your Veo Traveler databases</refpurpose>
+    </refnamediv>
+    <refsect1>
+        <title>Section</title>
+        <para>pilot-link: Userland conduits</para>
+    </refsect1>
+    <refsect1>
+        <title>synopsis</title>
+        <para>
+            <emphasis>pilot-read-veo</emphasis>
+            [<option>-p</option>|<option>--port</option> &lt;<userinput>port</userinput>&gt;]
+            [<option>--version</option>] [<option>-?</option>|<option>--help</option>]
+            [<option>--usage</option>] [<option>-q</option>|<option>--quiet</option>]
+            [<option>-n</option>|<option>--name</option> <filename>filename</filename>]
+            [<option>-l</option>|<option>--list</option>]
+            [<option>-b</option>|<option>--bias</option> <userinput>bias</userinput>]
+            [<option>-c</option>|<option>--colour</option>]
+            [<option>-t</option>|<option>--type</option> [<userinput>ppm|png</userinput>]]
+        </para>
+    </refsect1>
+    <refsect1>
+        <title>Description</title>
+        <para>
+            Synchronize your Veo Traveler databases with your desktop machine.  Output defaults to ppm.
+        </para>
+    </refsect1>
+    <refsect1>
+        <title>Options</title>
+        <refsect2>
+            <title>pilot-read-veo options</title>
+            <variablelist>
+                <varlistentry>
+                    <term>
+                        <option>-n</option>, <option>--name</option> <filename>name</filename>
+                    </term>
+                    <listitem>
+                        <para>Specify output picture by name</para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <option>-l</option>, <option>--list</option>
+                    </term>
+                    <listitem>
+                        <para>List Photos on device</para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <option>-b</option>, <option>--bias</option> <userinput>bias</userinput>
+                    </term>
+                    <listitem>
+                        <para>lighten or darken the image (0..50 darken, 50..100 lighten)
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <option>-c</option>, <option>--colour</option>
+                    </term>
+                    <listitem>
+                        <para>colour correct the output colours</para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <option>-t</option>,
+                        <option>--type</option> [<userinput>ppm</userinput>|<userinput>png</userinput>]
+                    </term>
+                    <listitem>
+                        <para>Specify picture output type (ppm or png)</para>
+                    </listitem>
+                </varlistentry>
+            </variablelist>
+        </refsect2>
+        <refsect2>
+            <title>Conduit Options</title>
+            <variablelist>
+                <varlistentry>
+                    <term>
+                        <option>-p</option>, <option>--port</option> <filename>port</filename>
+                    </term>
+                    <listitem>
+                        <para>
+                            Use device file <filename>port</filename> to communicate with the Palm handheld. If this is
+                            not specified, <emphasis>pilot-read-veo </emphasis> will look for the
+                            <filename>$PILOTPORT</filename> environment variable. If neither are found or supplied, <emphasis>
+                                pilot-read-veo 
+                            </emphasis>
+                            will print the usage information.
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <option>-q</option>, 
+                        <option>--quiet</option>
+                    </term>
+                    <listitem>
+                        <para>Suppress 'Hit HotSync button' message</para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <option>-v</option>, <option>--version</option>
+                    </term>
+                    <listitem>
+                        <para>
+                            Display version of <emphasis>pilot-read-veo</emphasis> and exit without connecting.
+                        </para>
+                    </listitem>
+                </varlistentry>
+            </variablelist>
+        </refsect2>
+        <refsect2>
+            <title>Help Options</title>
+            <variablelist>
+                <varlistentry>
+                    <term>
+                        <option>-h</option>, <option>--help</option>
+                    </term>
+                    <listitem>
+                        <para>
+                            Display the help synopsis for <emphasis>pilot-read-veo</emphasis> and exit without
+                            connecting.
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <option>--usage</option> 
+                    </term>
+                    <listitem>
+                        <para>Display a brief usage message and exit without connecting.</para>
+                    </listitem>
+                </varlistentry>
+            </variablelist>
+        </refsect2>
+    </refsect1>
+    <refsect1>
+        <title>Author</title>
+        <para>
+            <emphasis>pilot-read-veo </emphasis> was originally written by Angus Ainslie <email>angusa at deltatee.com</email>
+        </para>
+        <para>
+            This manual page was written by Neil Williams <email>linux@codehelp.co.uk</email>
+        </para>
+    </refsect1>
+    <refsect1>
+        <title>Reporting Bugs</title>
+        
+        <para>We have an online bug tracker. Using this is the only way to ensure that your bugs are recorded and that
+            we can track them until they are resolved or closed. Reporting bugs via email, while easy, is not very
+            useful in terms of accountability. Please point your browser to
+            <ulink url="http://bugs.pilot-link.org">http://bugs.pilot-link.org</ulink> and report your bugs and issues
+            there.
+        </para>
+    </refsect1>
+    <refsect1>
+        <title>Copyright</title>
+        <para>
+            This program is free software; you can redistribute it and/or modify it under the terms of the GNU General
+            Public License as published by the Free Software Foundation; either version 2 of the License, or (at your
+            option) any later version.
+        </para>
+        <para>
+            This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+            without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+            See the GNU General Public License for more details.
+        </para>
+        <para>
+            You should have received a copy of the GNU General Public License along with this program;
+            if not, write to the Free Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
+            MA 02110-1301, USA.
+        </para>
+    </refsect1>
+    <refsect1>
+        <title>See Also</title>
+        <para>
+            <emphasis>pilot-link</emphasis>(7)
+        </para>
+    </refsect1>
 </refentry>

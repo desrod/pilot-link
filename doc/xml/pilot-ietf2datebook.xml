@@ -1,91 +1,92 @@
 <!-- $Id$ -->
 <refentry id="ietf2datebook">
-   <refmeta>
-      <refentrytitle>ietf2datebook</refentrytitle>
-      <manvolnum>1</manvolnum>
-      <refmiscinfo>Copyright FSF 1996-2007</refmiscinfo>
-   </refmeta>
-   <refnamediv>
-      <refname>ietf2datebook</refname>
-      <refpurpose>
-         Converts IETF agenda format to <emphasis>install-datebook</emphasis> format
-      </refpurpose>
-   </refnamediv>
-   <refsect1>
-      <title>Section</title>
-      <para>pilot-link: Tools</para>
-   </refsect1>
-   <refsect1>
-      <title>Synopsis</title>
-      <para>
-         <emphasis>ietf2datebook</emphasis> &lt; ietf-agenda &gt; datebook.txt
-      </para>
-   </refsect1>
-   <refsect1>
-      <title>Description</title>
-      <para>
-         <emphasis>ietf2datebook</emphasis> is a Perl script that converts IETF
-         (<filename>http://www.ietf.org</filename>) agenda to format suitable for the
-         <filename>install-datebook</filename> program. The agenda file is given to it as standard
-         input and the output file is sent to standard output. Please remove all headers and
-         footers from the agenda file before giving it to <emphasis>ietf2datebook</emphasis>.
-      </para>
-   </refsect1>
-   <refsect1>
-      <title>Options</title>
-      <para>none</para>
-   </refsect1>
-   <refsect1>
-      <title>Usage</title>
-      <para>
-         The program will read IETF agenda from its stdin and output format suitable for the
-         <emphasis>install-datebook</emphasis> program to STDOUT.
-      </para>
-   </refsect1>
-   <refsect1>
-      <title>Author</title>
-      <para>
-         <emphasis>ietf2datebook</emphasis> was originally written by Tero Kivinen
-         <email>kivinen@iki.fi</email>
-      </para>
-      <para>
-         This manual page was converted to XML by Neil Williams <email>linux@codehelp.co.uk</email>
-      </para>
-   </refsect1>
-   <refsect1>
-      <title>Reporting Bugs</title>
-
-      <para>We have an online bug tracker. Using this is the only way to
-      ensure that your bugs are recorded and that we can track them until they
-      are resolved or closed. Reporting bugs via email, while easy, is not
-      very useful in terms of accountability. Please point your browser to
-      http://bugs.pilot-link.org and report your bugs and issues there.</para>
-   </refsect1>
-   <refsect1>
-      <title>Copyright</title>
-      <para>
-         This program is free software; you can redistribute it and/or modify it under the terms of
-         the GNU General Public License as published by the Free Software Foundation; either
-         version 2 of the License, or (at your option) any later version.
-      </para>
-      <para>
-         This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
-         without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
-         See the GNU General Public License for more details.
-      </para>
-      <para>
-         You should have received a copy of the GNU General Public License along with this program;
-         if not, write to the Free Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
-         MA 02110-1301, USA.
-      </para>
-   </refsect1>
-   <refsect1>
-      <title>See Also</title>
-      <para>
-         <emphasis>pilot-read-ical</emphasis>(1),
-         <emphasis>pilot-xfer</emphasis>(1),
-         <emphasis>install-datebook</emphasis>(1),
-         <emphasis>pilot-link</emphasis>(7).
-      </para>
-   </refsect1>
+    <refmeta>
+        <refentrytitle>ietf2datebook</refentrytitle>
+        <manvolnum>1</manvolnum>
+        <refmiscinfo>Copyright FSF 1996-2007</refmiscinfo>
+    </refmeta>
+    <refnamediv>
+        <refname>ietf2datebook</refname>
+        <refpurpose>
+            Converts IETF agenda format to <emphasis>install-datebook</emphasis> format
+        </refpurpose>
+    </refnamediv>
+    <refsect1>
+        <title>Section</title>
+        <para>pilot-link: Tools</para>
+    </refsect1>
+    <refsect1>
+        <title>Synopsis</title>
+        <para>
+            <emphasis>ietf2datebook</emphasis> &lt; ietf-agenda &gt; datebook.txt
+        </para>
+    </refsect1>
+    <refsect1>
+        <title>Description</title>
+        <para>
+            <emphasis>ietf2datebook</emphasis> is a Perl script that converts IETF
+            (<filename>http://www.ietf.org</filename>) agenda to format suitable for the
+            <filename>install-datebook</filename> program. The agenda file is given to it as standard input and the
+            output file is sent to standard output. Please remove all headers and footers from the agenda file before
+            giving it to <emphasis>ietf2datebook</emphasis>.
+        </para>
+    </refsect1>
+    <refsect1>
+        <title>Options</title>
+        <para>none</para>
+    </refsect1>
+    <refsect1>
+        <title>Usage</title>
+        <para>
+            The program will read IETF agenda from its stdin and output format suitable for the
+            <emphasis>install-datebook</emphasis> program to STDOUT.
+        </para>
+    </refsect1>
+    <refsect1>
+        <title>Author</title>
+        <para>
+            <emphasis>ietf2datebook</emphasis> was originally written by Tero Kivinen
+            <email>kivinen@iki.fi</email>
+        </para>
+        <para>
+            This manual page was converted to XML by Neil Williams <email>linux@codehelp.co.uk</email>
+        </para>
+    </refsect1>
+    <refsect1>
+        <title>Reporting Bugs</title>
+        
+        <para>We have an online bug tracker. Using this is the only way to ensure that your bugs are recorded and that
+            we can track them until they are resolved or closed. Reporting bugs via email, while easy, is not very
+            useful in terms of accountability. Please point your browser to
+            <ulink url="http://bugs.pilot-link.org">http://bugs.pilot-link.org</ulink> and report your bugs and issues
+            there.
+        </para>
+    </refsect1>
+    <refsect1>
+        <title>Copyright</title>
+        <para>
+            This program is free software; you can redistribute it and/or modify it under the terms of the GNU General
+            Public License as published by the Free Software Foundation; either version 2 of the License, or (at your
+            option) any later version.
+        </para>
+        <para>
+            This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+            without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+            See the GNU General Public License for more details.
+        </para>
+        <para>
+            You should have received a copy of the GNU General Public License along with this program;
+            if not, write to the Free Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
+            MA 02110-1301, USA.
+        </para>
+    </refsect1>
+    <refsect1>
+        <title>See Also</title>
+        <para>
+            <emphasis>pilot-read-ical</emphasis>(1),
+            <emphasis>pilot-xfer</emphasis>(1),
+            <emphasis>install-datebook</emphasis>(1),
+            <emphasis>pilot-link</emphasis>(7).
+        </para>
+    </refsect1>
 </refentry>

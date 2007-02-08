@@ -1,227 +1,229 @@
 <!-- $Id$ -->
 <refentry id="pilot-dlpsh">
-   <refmeta>
-      <refentrytitle>pilot-dlpsh</refentrytitle>
-      <manvolnum>1</manvolnum>
-      <refmiscinfo>Copyright 1996-2007 FSF - pilot-link @VERSION@</refmiscinfo>
-   </refmeta>
-   <refnamediv>
-      <refname>pilot-dlpsh</refname>
-      <refpurpose>
-	 An interactive Desktop Link Protocol (DLP) Shell for your Palm device.
-      </refpurpose>
-   </refnamediv>
-   <refsect1>
-      <title>Section</title>
-      <para>pilot-link: Tools</para>
-   </refsect1>
-   <refsect1>
-      <title>Synopsis</title>
-      <para>
-         <emphasis>pilot-dlpsh</emphasis>
-         [<option>-p</option>|<option>--port</option> &lt;<userinput>port</userinput>&gt;]
-         [<option>-c</option>|<option>--command</option> <userinput>STRING</userinput>]
-         [<option>-i</option>|<option>--interactive</option>]
-         [<option>--version</option>] 
-      </para>
-   </refsect1>
-   <refsect1>
-      <title>options</title>
-      <refsect2>
-         <title>pilot-dlpsh options</title>
-	<variablelist>
-	<varlistentry>
-        	<term>
-            <option>-c</option>,
-            <option>--command STRING</option>
-		</term>
-		<listitem>
-            <para>Execute <userinput>cmd</userinput> and exit immediately.</para>
-		</listitem>
-	</varlistentry>
-        <varlistentry>
-		<term>
-            <option>-i</option>, <option>--interactive</option>
-		</term>
-		<listitem>
-            <para>Enter interactive mode</para>
-		</listitem>
-	</varlistentry>
-	</variablelist>
-      </refsect2>
-      <refsect2>
-         <title>Conduit Options</title>
-	<variablelist>
-	<varlistentry>
-		<term>
-		<option>-p</option>, 
-		<option>--port</option> &lt;
-		<userinput>port</userinput>&gt;
-		</term>
-		<listitem>
-		<para>
-		Use device file &lt;<filename>port</filename>&gt; to communicate with 
-		the Palm handheld. If this is not specified, <emphasis>pilot-dlpsh</emphasis> 
-		will look for the <filename>$PILOTPORT</filename> environment variable. 
-		If the port is missing and <filename>$PILOTPORT</filename> is not set,
-		<emphasis>pilot-dlpsh</emphasis> will print the usage information.
-		</para>
-		</listitem>
-        </varlistentry>
-	<varlistentry>
-		<term>
-            <option>--version</option>
-		</term>
-		<listitem>
-            <para>
-		Display the copyright information, version number, license details and 
-		build details and exit without connecting.
-            </para>
-		</listitem>
-	</varlistentry>
-	</variablelist>
-      </refsect2>
-   </refsect1>
-   <refsect1>
-      <title>Description</title>
-      <para>
-            <filename>pilot-dlpsh</filename> allows the user to connect to a Palm handheld and execute
-            arbitrary DLP commands.
-      </para>
-      <para>
-            pilot-dlpsh can query many different types of information from your Palm device, such as
-            username, memory capacity, set the time, as well as other useful functions.
-      </para>
-      <para>
+    <refmeta>
+        <refentrytitle>pilot-dlpsh</refentrytitle>
+        <manvolnum>1</manvolnum>
+        <refmiscinfo>Copyright 1996-2007 FSF - pilot-link @VERSION@</refmiscinfo>
+    </refmeta>
+    <refnamediv>
+        <refname>pilot-dlpsh</refname>
+        <refpurpose>
+            An interactive Desktop Link Protocol (DLP) Shell for your Palm device.
+        </refpurpose>
+    </refnamediv>
+    <refsect1>
+        <title>Section</title>
+        <para>pilot-link: Tools</para>
+    </refsect1>
+    <refsect1>
+        <title>Synopsis</title>
+        <para>
+            <emphasis>pilot-dlpsh</emphasis>
+            [<option>-p</option>|<option>--port</option> &lt;<userinput>port</userinput>&gt;]
+            [<option>-c</option>|<option>--command</option> <userinput>STRING</userinput>]
+            [<option>-i</option>|<option>--interactive</option>]
+            [<option>--version</option>] 
+        </para>
+    </refsect1>
+    <refsect1>
+        <title>options</title>
+        <refsect2>
+            <title>pilot-dlpsh options</title>
+            <variablelist>
+                <varlistentry>
+                    <term>
+                        <option>-c</option>,
+                        <option>--command STRING</option>
+                    </term>
+                    <listitem>
+                        <para>
+                            Execute <userinput>cmd</userinput> and exit immediately.
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <option>-i</option>, <option>--interactive</option>
+                    </term>
+                    <listitem>
+                        <para>Enter interactive mode</para>
+                    </listitem>
+                </varlistentry>
+            </variablelist>
+        </refsect2>
+        <refsect2>
+            <title>Conduit Options</title>
+            <variablelist>
+                <varlistentry>
+                    <term>
+                        <option>-p</option>, 
+                        <option>--port</option> &lt;
+                        <userinput>port</userinput>&gt;
+                    </term>
+                    <listitem>
+                        <para>
+                            Use device file &lt;<filename>port</filename>&gt; to communicate with 
+                            the Palm handheld. If this is not specified, <emphasis>pilot-dlpsh</emphasis> 
+                            will look for the <filename>$PILOTPORT</filename> environment variable. 
+                            If the port is missing and <filename>$PILOTPORT</filename> is not set,
+                            <emphasis>pilot-dlpsh</emphasis> will print the usage information.
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <option>--version</option>
+                    </term>
+                    <listitem>
+                        <para>
+                            Display the copyright information, version number, license details and 
+                            build details and exit without connecting.
+                        </para>
+                    </listitem>
+                </varlistentry>
+            </variablelist>
+        </refsect2>
+    </refsect1>
+    <refsect1>
+        <title>Description</title>
+        <para>
+            <filename>pilot-dlpsh</filename> allows the user to connect to a Palm handheld and execute arbitrary DLP
+            commands.
+        </para>
+        <para>
+            pilot-dlpsh can query many different types of information from your Palm device, such as username, memory
+            capacity, set the time, as well as other useful functions.
+        </para>
+        <para>
             Once connected, the user may execute most of the built-in <emphasis>DLP</emphasis>
-            commands. (See <emphasis>BUILT-IN COMMANDS </emphasis> below for more detail on
-            currently supported options).
-      </para>
-      <para>
+            commands. (See <emphasis>BUILT-IN COMMANDS </emphasis> below for more detail on currently supported
+            options).
+        </para>
+        <para>
             The connection to the Pilot is kept alive by sending a <filename>PadTickle</filename>
             packet to the Pilot after a small period of non-activity. (7 seconds by default)
-      </para>
-   </refsect1>
-   <refsect1>
-      <title>Built-in Commands</title>
-      <para>
+        </para>
+    </refsect1>
+    <refsect1>
+        <title>Built-in Commands</title>
+        <para>
             There are many options available while connected to your Palm handheld via
             <filename>pilot-dlpsh</filename>, including the following:
-      </para>
-      <para>
-         <option>user, u</option>
-      </para>
-      <blockquote>
-         <para>
-            Print the currently set User information, including Username, UserID, PCid, and
-            ViewerID. You may also set these values from this command as well. To set these values,
-            simply pass the value to the option, such as 'user John Q. Public' for example.
-         </para>
-      </blockquote>
-      <para>
-         <option>ls</option>
-      </para>
-      <blockquote>
-         <para>
-            Used with <option>-l</option> and <option>-r</option> to provide long and RAM and ROM
-            file lists, similar to (but slightly different from) the Unix
-            '<systemitem>ls</systemitem>' command. This does not yet allow you to narrow your
-            listing to a certain range of files. It will simply list them all.
-         </para>
-      </blockquote>
-      <para>
-         <option>df</option>
-      </para>
-      <blockquote>
-         <para>
-            Display how much RAM and ROM is free on your device, again similar to the Unix
-            <systemitem>'df'</systemitem> command. This does not accept arguments at this time.
-         </para>
-      </blockquote>
-      <para>
-         <option>ntp, time, dtp</option>
-      </para>
-      <blockquote>
-         <para>
-            Set the time on the Palm from the currently-set desktop time.  This does not work on OS
-            version 3.3, due to a bug in PalmOS at that time.
-         </para>
-      </blockquote>
-      <para>
-         <option>rm, del</option>
-      </para>
-      <blockquote>
-         <para>
-            Remove a file and delete it entirely from the Palm device. This is an irrevokable
-            process, and you cannot "undelete" a file, once it has been deleted with this command.
-         </para>
-      </blockquote>
-      <para>
-         <option>quit, q, exit, bye</option>
-      </para>
-      <blockquote>
-         <para>
-            Exit the DLP Protocol Shell
-         </para>
-      </blockquote>
-   </refsect1>
-   <refsect1>
-      <title>options</title>
-      <para>
-         Passing commandline options to <userinput>pilot-dlpsh</userinput> will allow you to
-         interact with it in unattended mode, for example: '<userinput>pilot-dlpsh</userinput> -p
-         usb: -c user' will connect and display the user information, just as if you had connected
-         interactively and typed 'user' at the DLP shell prompt.
-      </para>
-   </refsect1>
-   <refsect1>
-      <title>usage</title>
-      <para>
-         The program will connect to your Palm handheld and give the user an interactive prompt (a
-         "shell") for executing commands across the DLP <emphasis>HotSync</emphasis> protocol.
-      </para>
-   </refsect1>
-   <refsect1>
-      <title>Author</title>
-      <para>
-         <userinput>pilot-dlpsh</userinput> was originally written by Chris Stevens
-         <email>stevens@rpi.edu</email> and Damien Neil <email>neild@rpi.edu</email>
-      </para>
-      <para>
-         This manual page was updated to XML by Neil Williams <email>linux@codehelp.co.uk</email>
-      </para>
-   </refsect1>
-   <refsect1>
-      <title>Reporting Bugs</title>
-
-      <para>We have an online bug tracker. Using this is the only way to
-      ensure that your bugs are recorded and that we can track them until they
-      are resolved or closed. Reporting bugs via email, while easy, is not
-      very useful in terms of accountability. Please point your browser to
-      http://bugs.pilot-link.org and report your bugs and issues there.</para>
-   </refsect1>
-   <refsect1>
-      <title>Copyright</title>
-      <para>
-         This program is free software; you can redistribute it and/or modify it under the terms of
-         the GNU General Public License as published by the Free Software Foundation; either
-         version 2 of the License, or (at your option) any later version.
-      </para>
-      <para>
-         This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
-         without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
-         See the GNU General Public License for more details.
-      </para>
-      <para>
-         You should have received a copy of the GNU General Public License along with this program;
-         if not, write to the Free Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
-         MA 02110-1301, USA.
-      </para>
-   </refsect1>
-   <refsect1>
-      <title>See Also</title>
-      <para>
-         <emphasis>pilot-link</emphasis>(7)
-      </para>
-   </refsect1>
+        </para>
+        <para>
+            <option>user, u</option>
+        </para>
+        <blockquote>
+            <para>
+                Print the currently set User information, including Username, UserID, PCid, and ViewerID. You may also
+                set these values from this command as well. To set these values,
+                simply pass the value to the option, such as 'user John Q. Public' for example.
+            </para>
+        </blockquote>
+        <para>
+            <option>ls</option>
+        </para>
+        <blockquote>
+            <para>
+                Used with <option>-l</option> and <option>-r</option> to provide long and RAM and ROM file lists,
+                similar to (but slightly different from) the Unix
+                '<systemitem>ls</systemitem>' command. This does not yet allow you to narrow your listing to a certain
+                range of files. It will simply list them all.
+            </para>
+        </blockquote>
+        <para>
+            <option>df</option>
+        </para>
+        <blockquote>
+            <para>
+                Display how much RAM and ROM is free on your device, again similar to the Unix
+                <systemitem>'df'</systemitem> command. This does not accept arguments at this time.
+            </para>
+        </blockquote>
+        <para>
+            <option>ntp, time, dtp</option>
+        </para>
+        <blockquote>
+            <para>
+                Set the time on the Palm from the currently-set desktop time.  This does not work on OS version 3.3,
+                due to a bug in PalmOS at that time.
+            </para>
+        </blockquote>
+        <para>
+            <option>rm, del</option>
+        </para>
+        <blockquote>
+            <para>
+                Remove a file and delete it entirely from the Palm device. This is an irrevokable process, and you
+                cannot "undelete" a file, once it has been deleted with this command.
+            </para>
+        </blockquote>
+        <para>
+            <option>quit, q, exit, bye</option>
+        </para>
+        <blockquote>
+            <para>
+                Exit the DLP Protocol Shell
+            </para>
+        </blockquote>
+    </refsect1>
+    <refsect1>
+        <title>options</title>
+        <para>
+            Passing commandline options to <userinput>pilot-dlpsh</userinput> will allow you to interact with it in
+            unattended mode, for example: '<userinput>pilot-dlpsh</userinput> -p usb: -c user' will connect and display
+            the user information, just as if you had connected interactively and typed 'user' at the DLP shell prompt.
+        </para>
+    </refsect1>
+    <refsect1>
+        <title>usage</title>
+        <para>
+            The program will connect to your Palm handheld and give the user an interactive prompt (a
+            "shell") for executing commands across the DLP <emphasis>HotSync</emphasis> protocol.
+        </para>
+    </refsect1>
+    <refsect1>
+        <title>Author</title>
+        <para>
+            <userinput>pilot-dlpsh</userinput> was originally written by Chris Stevens
+            <email>stevens@rpi.edu</email> and Damien Neil <email>neild@rpi.edu</email>
+        </para>
+        <para>
+            This manual page was updated to XML by Neil Williams <email>linux@codehelp.co.uk</email>
+        </para>
+    </refsect1>
+    <refsect1>
+        <title>Reporting Bugs</title>
+        
+        <para>We have an online bug tracker. Using this is the only way to ensure that your bugs are recorded and that
+            we can track them until they are resolved or closed. Reporting bugs via email, while easy, is not very
+            useful in terms of accountability. Please point your browser to
+            <ulink url="http://bugs.pilot-link.org">http://bugs.pilot-link.org</ulink> and report your bugs and issues
+            there.
+        </para>
+    </refsect1>
+    <refsect1>
+        <title>Copyright</title>
+        <para>
+            This program is free software; you can redistribute it and/or modify it under the terms of the GNU General
+            Public License as published by the Free Software Foundation; either version 2 of the License, or (at your
+            option) any later version.
+        </para>
+        <para>
+            This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+            without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+            See the GNU General Public License for more details.
+        </para>
+        <para>
+            You should have received a copy of the GNU General Public License along with this program;
+            if not, write to the Free Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
+            MA 02110-1301, USA.
+        </para>
+    </refsect1>
+    <refsect1>
+        <title>See Also</title>
+        <para>
+            <emphasis>pilot-link</emphasis>(7)
+        </para>
+    </refsect1>
 </refentry>

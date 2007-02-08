@@ -10,7 +10,6 @@ EXTRA_DIST = 		 	\
 	README.libusb		\
 	README.usb	 	\
 	TODO		 	\
-	syncabs.sgml	 	\
 	60-libpisock.rules	\
 	doxygen.cfg.in
 
