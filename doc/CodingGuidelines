@@ -1,7 +1,7 @@
 /*
  * CodingGuidelines:  pilot-link Coding Guidelines
  *
- * (c) 2002, David A. Desrosiers <hacker at gnu-designs.com>
+ * (c) 2002-2007, David A. Desrosiers <desrod@gnu-designs.com>
  *
  *
  * (2002-01-26) dd
@@ -11,30 +11,35 @@
  * 	Added some user-submitted suggestions to formatting and content,
  * 	fixed a pilot-unix reference
  *
+ * (2007-02-07) dd
+ *	Updated some links and verbage here and there, based on user input
+ *	over the last 5 years.
  */
 
-This is the first draft copy of the pilot-link coding conventions document.
-There are bound to be errors, but this should cleanly capture the ideas and
-concepts distributed throughout the pilot-link codebase and conduits.
+There are bound to be errors in this document, but this document strives to
+capture the ideas and concepts distributed throughout the pilot-link
+codebase, userland conduits and language bindings.
 
-This should assist anyone who wants to modify the code found here, or work
-on active development. Anyone who wishes to contribute code should adhere to
-these guidelines. Code that doesn't follow these conventions will be
-modified or (in extreme cases) rejected. If you have additional suggestions
-or a good case for changing some of these guidelines then send a message or
-post a message on the pilot-unix mailing list[1].
+This document should assist anyone who wants to modify the code found here,
+or work on active development of the codebase or submit patches to it.
 
-First, start off by reading the ANSI C99 Coding Standards document. I may
+Anyone who wishes to contribute code should adhere to these guidelines. Code
+that doesn't follow these conventions will be modified or (in extreme cases)
+rejected. If you have additional suggestions or a good case for changing
+some of these guidelines then send a message or post a message on one of the
+pilot-link mailing lists[1].
+
+First, start off by reading the ANSI C99 Coding Standards document[2]. I may
 have deviated in a few places but just about everything in the document
-applies here as well. 
+applies here as well.
 
 If you are new to C programming, and reading the code seems confusing to
-you, you might want to try some of the available FAQs[2] out there, as well
-as the K&R "The C Programming Language"[3] books.
+you, you might want to try some of the available FAQs[3][4][5] out there, as
+well as the K&R "The C Programming Language"[6] books.
 
-Above all, write code that is easy to read and maintain. Comment blocks of
-code and functions at all times. And get on my case if I deviate too much as
-well!
+Above all, write code that is easy to read and easy to maintain. Comment
+blocks of code and functions at all times. And get on my case if I deviate
+too much as well!
 
 Some Advice to Contributors 
 ---------------------------
@@ -47,11 +52,13 @@ Some Advice to Contributors
 
 File Organization
 -----------------
+	A source file consists of various sections that should be separated
+	by several blank lines. 
 
-	A file consists of various sections that should be separated by
-	several blank lines. Although there is no maximum length limit for
-	source files, files with more than about 1000 lines are cumbersome
-	to deal with. 
+	Although there is no maximum length limit for source files, files
+	with more than about 1,000 lines are cumbersome to deal with.. so
+	try to break them up into logical source files based on function,
+	rather than name.
 
 	Many rows of asterisks, for example, present little information
 	compared to the time it takes to scroll past, and are discouraged.
@@ -59,67 +66,80 @@ File Organization
 	Lines longer than 79 columns are not handled well by all terminals
 	and should be avoided if possible. Excessively long lines which
 	result from deep indenting are often a symptom of poorly-organized
-	code.
+	code. Avoid it if you can (yes, we fall into this trap in several
+	places in pilot-link too).
 
-	Every code file should start with comments containing a copyright
-	notice, the name of the file, and a half-to-one-line summary of what
-	the file contains. If you create a file by copying the boilerplate
-	from another file, make sure to edit the copyright year and the file
-	name as well as add your own name to the top if you are the original
-	author.
+	Every source file should start at the top with comments containing a
+	copyright notice, the name of the file, and a half-to-one-line
+	summary of what the file contains. 
+
+	If you create a file by copying the boilerplate from another file,
+	make sure to edit the copyright year and the file name as well as
+	add your own name to the top if you are the original author.
+
 
 File Naming Conventions
 -----------------------
-
 Some compilers and tools require certain suffix conventions for names of
-files. The following suffixes are required:
+files. The following suffixes are required and are lowercase unless
+otherwise noted:
 
-	* C source file names must end in .c
+	* C source file names must end in a .c extension
 
 	* Header files, otherwise called includes, must end in .h
 
 	* Headers for C++ code in pilot-link may end in .hxx
 
+	* Perl source files should always end in .pl, or .plt for "tainted"
+	  Perl scripts
+
+	* All Java source files should end in .java
+
+	* All Python source files should end in .py (or .i for swig source)
+
 The following conventions are universally followed:
 
 	* Relocatable object file names end in .o
 
-	* Include header file names end in .h.
+	* Include header file names end in .h
 
 	An alternate convention that may be preferable in multi-language
-	environments such as pilot-link is to suffix both the language type
-	and .h (e.g.  'foo.cc' or 'foo.hxx') to separate the standard .h
-	headers and includes from those that are C++ specific.
+	environments like pilot-link is to suffix both the language type and
+	.h (e.g.  'foo.cc' or 'foo.hxx') to separate the standard .h headers
+	and includes from those that are C++ specific.
 
 	* Yacc source file names end in .y
 
 	C++ has compiler-dependent suffix conventions, including .c, ..c,
 	.cc, .c.c, and .C. Since much C code is also C++ code, there is no
-	clear solution here.
+	clear solution here, just stick with .c for C and .cxx for C++.
 
 	In addition, it is conventional to use 'Makefile' (not 'makefile',
 	note the lowercase 'M' in the second case) for the main control file
-	for make (for systems that support it) and 'README' for a summary
-	of the contents of the directory or directory tree.
+	for make (for systems that support it) and 'README' for a summary of
+	the contents of the directory or directory tree.
+
+	We use Makefile.am for automake versions of the Makefile targets in
+	pilot-link.
 
 
 Program Files
 -------------
-
 The suggested order of sections for a program file is as follows:
 
-	1. First in the file is a prologue that tells what is in that file. 
+	1. First in the file is a prologue that tells what is in that file.
 	   A description of the purpose of the objects in the files (whether
 	   they be functions, external data declarations or definitions, or
-	   something else) is more useful than a list of the object names.
+	   something else) is more useful than a list of the object names. 
 	   The prologue may optionally contain author(s), revision control
 	   information, references, etc.
 
 	2. Any header file includes should be next. If the include is for a
 	   non-obvious reason, the reason should be commented. In most
 	   cases, system include files like stdio.h should be included
-	   before user include files. In pilot-link, the stacking order
-	   looks like this:
+	   before user include files. 
+
+	   In pilot-link, the stacking order looks like this:
 
 		#include <sys/types.h>
 		#include <sys/stat.h> 
@@ -137,7 +157,7 @@ The suggested order of sections for a program file is as follows:
 
 	3. Any defines and typedefs that apply to the file as a whole are
 	   next. One normal order is to have "constant" macros first, then
-	   "function" macros, then typedefs and enums.
+	   "function" macros, followed by typedefs and enums.
 
 	4. Next come the global (external) data declarations, usually in the
 	   order: externs, non-static globals, static globals. If a set of
@@ -159,7 +179,7 @@ The suggested order of sections for a program file is as follows:
 
 	   You'll notice a convention in pilot-link's source files which
 	   models the following boilerplate structure, that main() is ALWAYS
-	   last, and Help() appears directly above main():
+	   last, and any Help() functions appear directly above main():
 
 		/*
 		 * MyConduit.c:  Palm boilerplate conduit template
@@ -198,18 +218,19 @@ The suggested order of sections for a program file is as follows:
 		int main(int argc, char *argv[]) {
 			..main last function;
 		}
+
 	
 Header Files
 ------------
-
 	The header file is the first place that a contributor will go to
-	find out information about procedures, structures, constants, etc.
+	find out information about procedures, structures, constants, etc. 
 	Make sure that every procedure and structure has a comment that says
 	what it does. Divide procedures into meaningful groups set off by
 	some distinguished form of comment.
 
 	Avoid private header filenames that are the same as library header
-	filenames. 
+	filenames. Namespace pollution is no fun for anyone. Avoid it if you
+	can.
 
 	Don't use absolute pathnames for header files. Use the construction
 	for getting them from a standard place, or define them relative to
@@ -246,9 +267,9 @@ Header Files
 		  ..body of myheader.h
 		#endif	/* end MYHEADER_H */
 
+
 Comments
 --------
-
 	The comments should describe what is happening, how it is being
 	done, what parameters mean, which globals are used and which are
 	modified, and any restrictions or bugs.
@@ -262,10 +283,10 @@ Comments
 	making code faster is not enough to rationalize a hack; the
 	performance must be shown to be unacceptable without the hack. The
 	comment should explain the unacceptable behavior and describe why
-	the hack is a "good fix" fix.
+	the hack is a "good fix" solution to the problem.
 
 	Block comments inside a function are appropriate, and they should be
-	tabbed over to the same tab setting as the code that they describe.
+	tabbed over to the same tab setting as the code that they describe. 
 	One-line comments alone on a line should be indented to the tab
 	setting of the code that follows.
 
@@ -287,12 +308,12 @@ Comments
 			b = isprime(a); 	/* works only for odd 'a' */
 		}
 
+
 Declarations
 ------------
-
 	Global declarations should begin in column one at the top of the
 	file. All external data declaration should be preceded by the extern
-	keyword. 
+	keyword.
 
 	Repeated size declarations are particularly beneficial to someone
 	picking up code written by another.
@@ -315,10 +336,12 @@ Declarations
 
 	You may notice throughout pilot-link's codebase, a very different
 	indenting standard on declaring types. This style is called
-	"Berkeley Indenting". In the above two examples, you can see that
-	the types are indented one level beyond the type name, and each
-	additional declaration of the same type is indented underneath it,
-	separated by commas. The following two are functionally equivalent:
+	"Berkeley Indenting". 
+
+	In the above two examples, you can see that the types are indented
+	one level beyond the type name, and each additional declaration of
+	the same type is indented underneath it, separated by commas. The
+	following two are functionally equivalent:
 
 		char *s, *t, *u; 
 
@@ -329,7 +352,7 @@ Declarations
 	However, the second type is much more readable, and easier to
 	maintain. It also allows type-level commenting, which the first
 	example does not. Please adhere to this style when developing code
-	against pilot-link, or updating existing pilot-link code. 
+	against pilot-link, or updating existing pilot-link code.
 
 	The names, values, and comments are usually tabbed so that they line
 	up underneath each other. Use the tab character rather than blanks
@@ -361,9 +384,9 @@ Declarations
 	Such usage should be commented to make it clear that another file's
 	variables are being used; the comment should name the other file.
 
+
 Function Declarations
 ---------------------
-
 	Each function should be preceded by a block comment prologue that
 	gives a short description of what the function does and (if not
 	clear) how to use it. Discussion of non-trivial design decisions and
@@ -422,9 +445,9 @@ Function Declarations
 	levels. In particular, local variables should not be redeclared in
 	nested blocks.
 
+
 Whitespace
 ----------
-
 	Use vertical and horizontal whitespace tactfully. Indentation and
 	spacing should reflect the block structure of the code; i.e. there
 	should be at least two blank lines between the end of one function
@@ -449,10 +472,10 @@ Whitespace
 				..stuff
 		}
 
+
 Compound Statements
 -------------------
-
-	A compound statement is a list of statements enclosed by braces.
+	A compound statement is a list of statements enclosed by braces. 
 	There are many common ways of formatting the braces. Be consistent
 	with your local standard, if you have one, or pick one and use it
 	consistently. When editing someone else's code, always use the style
@@ -589,6 +612,9 @@ Miscellaneous
 
 Appendices
 ----------
-[1] http://www.pilot-link.org/mailman/listinfo/pilot-link-devel
-[2] http://www.eskimo.com/~scs/C-faq/top.html
-[3] http://isbn.nu/0131103628
+[1] http://lists.pilot-link.org/
+[2] http://webstore.ansi.org/ansidocstore/product.asp?sku=INCITS%2FISO%2FIEC+9899-1999+(R2005)
+[3] http://www.eskimo.com/~scs/C-faq/top.html
+[4] http://c-faq.com/
+[5] http://www.faqs.org/faqs/C-faq/
+[6] http://isbn.nu/0131103628
