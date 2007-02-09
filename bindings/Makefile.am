@@ -53,7 +53,7 @@ perl-uninstall: Perl/Makefile
 	cd Perl && $(MAKE) uninstall
 
 perl-clean: Perl/Makefile
-	cd Perl && $(MAKE) realclean
+	cd Perl && $(MAKE) veryclean
 
 if WITH_PERL
 PERL_ALL = perl-build
