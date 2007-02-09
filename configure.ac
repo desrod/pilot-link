@@ -342,6 +342,7 @@ AC_SUBST(usb_libs)
 dnl ******************************
 dnl BlueZ Support
 dnl ******************************
+msg_bluez=no
 AC_ARG_WITH(bluez, AC_HELP_STRING([--with-bluez=DIR], [BlueZ library is installed in DIR]), [
 	if (test "${withval}" != "yes"); then
 		bluez_prefix=${withval}
@@ -349,10 +350,9 @@ AC_ARG_WITH(bluez, AC_HELP_STRING([--with-bluez=DIR], [BlueZ library is installe
 ])
 
 if test x${withval} != xno; then
-
 	case "$host_os" in
 	linux*)
-	PKG_CHECK_MODULES(BLUEZ, bluez, have_bluez=1, AC_MSG_RESULT(no))
+	PKG_CHECK_MODULES(BlueZ, bluez, have_bluez=yes, AC_MSG_RESULT(no))
 	esac
 	AC_SUBST(BLUEZ_CFLAGS)
 	AC_SUBST(BLUEZ_LIBS)
@@ -360,7 +360,8 @@ fi
 AM_CONDITIONAL(WITH_BLUEZ, test "x$BLUEZ_LIBS" != "x")
 
 if test "x$have_bluez" != "x"; then
-	AC_DEFINE(HAVE_BLUEZ, yes, [Define if we have BlueZ bluetooth support])
+	AC_DEFINE(HAVE_BLUEZ, 1, [Define if we have BlueZ bluetooth support])
+	msg_bluez=yes
 fi	
 
 
@@ -790,7 +791,7 @@ AC_MSG_RESULT([
   Build for host.......... : $host
   Extra Warnings.......... : $set_compile_warnings
   Direct USB support...... : $msg_usb
-  BlueZ support........... : $have_bluez
+  BlueZ support........... : $msg_bluez
   Thread-safe libpisock... : $msg_threads
   ElectricFence checks.... : $use_efence
   CPPFLAGS................ : $CPPFLAGS
