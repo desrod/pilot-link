@@ -5,8 +5,6 @@
 
 <xsl:import href="http://docbook.sourceforge.net/release/xsl/current/html/docbook.xsl"/>
 <xsl:include href="http://docbook.sourceforge.net/release/xsl/current/manpages/synop.xsl"/>
-<xsl:include href="http://docbook.sourceforge.net/release/xsl/current/manpages/lists.xsl"/>
-<xsl:include href="http://docbook.sourceforge.net/release/xsl/current/manpages/xref.xsl"/>
 
 <!-- Needed for chunker.xsl (for now): -->
 <xsl:param name="chunker.output.method" select="'text'"/>
