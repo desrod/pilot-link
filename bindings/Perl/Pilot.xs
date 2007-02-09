@@ -232,7 +232,7 @@ SvChar4(arg)
 	    	hv_store(i, "successfulSyncDate", 18, newSViv(var.successfulSyncDate), 0);		\
 	    	hv_store(i, "lastSyncDate",       12, newSViv(var.lastSyncDate), 0);			\
 	    	hv_store(i, "name",                4, newSVpv(var.username,0), 0);			\
-	    	hv_store(i, "password",            8, newSVpv(var.password,var.passwordLength), 0);	\
+	    	hv_store(i, "password",            8, newSVpvn(var.password,var.passwordLength), 0);	\
 		arg = newRV_noinc((SV*)i);	\
 	}\
 }
@@ -276,7 +276,7 @@ SvChar4(arg)
 			int count;\
 	    		PUSHMARK(sp);\
 	    		XPUSHs(self->Class);\
-	    		XPUSHs(newSVpv((char *) buf, size));	\
+	    		XPUSHs(newSVpvn((char *) buf, size));	\
 		    	PUTBACK;\
 		    	count = perl_call_method("appblock", G_SCALAR);\
 		    	SPAGAIN;\
@@ -317,7 +317,7 @@ SvChar4(arg)
 	    		int count;\
 	    		PUSHMARK(sp);\
 	    		XPUSHs(self->Class);\
-	    		XPUSHs(newSVpv((char *) buf, size));	\
+	    		XPUSHs(newSVpvn((char *) buf, size));	\
 		    	PUTBACK;\
 		    	count = perl_call_method("sortblock", G_SCALAR);\
 		    	SPAGAIN;\
@@ -402,7 +402,7 @@ SvChar4(arg)
 	    		SV * ret;\
 	    		PUSHMARK(sp);\
 	    		XPUSHs(self->Class);\
-	    		XPUSHs(newSVpv((char *) buf, size));	\
+	    		XPUSHs(newSVpvn((char *) buf, size));	\
 		    	XPUSHs(sv_2mortal(newSViv(id)));\
 		    	XPUSHs(sv_2mortal(newSViv(attr)));\
 		    	XPUSHs(sv_2mortal(newSViv(category)));\
@@ -458,7 +458,7 @@ SvChar4(arg)
 	    		int count;\
 	    		PUSHMARK(sp);\
 	    		XPUSHs(self->Class);\
-	    		XPUSHs(newSVpv((char *) buf, size));	\
+	    		XPUSHs(newSVpvn((char *) buf, size));	\
 		    	XPUSHs(sv_2mortal(newSVChar4(type)));\
 		    	XPUSHs(sv_2mortal(newSViv(id)));\
 		    	XPUSHs(sv_2mortal(newSViv(index)));\
@@ -524,7 +524,7 @@ SvChar4(arg)
 				croak("Default PrefClass not defined");\
     		PUSHMARK(sp);\
     		XPUSHs(newSVsv(*s));\
-    		XPUSHs(newSVpv((char *) buf, size));		\
+    		XPUSHs(newSVpvn((char *) buf, size));		\
 	    	XPUSHs(sv_2mortal(newSVChar4(creator)));\
 	    	XPUSHs(sv_2mortal(newSViv(id)));\
 	    	XPUSHs(sv_2mortal(newSViv(version)));\
@@ -862,7 +862,7 @@ Pack(record)
     if (a.exception)
 		free(a.exception);
     
-    RETVAL = newSVpv((char *) pibuf.data, pibuf.used);
+    RETVAL = newSVpvn((char *) pibuf.data, pibuf.used);
 
     hv_store(h, "raw", 3, SvREFCNT_inc(RETVAL), 0);
     }
@@ -933,7 +933,7 @@ PackAppBlock(record)
 
     len = pack_AppointmentAppInfo(&a, (unsigned char *) mybuf, 0xffff);
 
-    RETVAL = newSVpv((char *) mybuf, len);
+    RETVAL = newSVpvn((char *) mybuf, len);
 
     hv_store(h, "raw", 3, SvREFCNT_inc(RETVAL), 0);
     }
@@ -1030,7 +1030,7 @@ Pack(record)
 	croak("pack_ToDo failed");
     }
     
-    RETVAL = newSVpv((char *) pibuf.data, pibuf.used);
+    RETVAL = newSVpvn((char *) pibuf.data, pibuf.used);
 
     hv_store(h, "raw", 3, SvREFCNT_inc(RETVAL), 0);
     }
@@ -1103,7 +1103,7 @@ PackAppBlock(record)
 
     len = pack_ToDoAppInfo(&a, mybuf, 0xffff);
 
-    RETVAL = newSVpv((char *) mybuf, len);
+    RETVAL = newSVpvn((char *) mybuf, len);
 
     hv_store(h, "raw", 3, SvREFCNT_inc(RETVAL), 0);
     }
@@ -1214,7 +1214,7 @@ Pack(record)
 	croak("pack_Address failed");
     }
     
-    RETVAL = newSVpv((char *) pibuf.data, pibuf.used);
+    RETVAL = newSVpvn((char *) pibuf.data, pibuf.used);
 
     hv_store(h, "raw", 3, SvREFCNT_inc(RETVAL), 0);
     }
@@ -1322,7 +1322,7 @@ PackAppBlock(record)
 
     len = pack_AddressAppInfo(&a, mybuf, 0xffff);
 
-    RETVAL = newSVpv((char *) mybuf, len);
+    RETVAL = newSVpvn((char *) mybuf, len);
 
     hv_store(h, "raw", 3, SvREFCNT_inc(RETVAL), 0);
     }
@@ -1404,7 +1404,7 @@ Pack(record)
 	croak("pack_Memo failed");
     }
     
-    RETVAL = newSVpv((char *) pibuf.data, pibuf.used);
+    RETVAL = newSVpvn((char *) pibuf.data, pibuf.used);
     
     hv_store(h, "raw", 3, SvREFCNT_inc(RETVAL), 0);
     }
@@ -1474,7 +1474,7 @@ PackAppBlock(record)
     
     len = pack_MemoAppInfo(&a, mybuf, 0xffff);
 
-    RETVAL = newSVpv((char *) mybuf, len);
+    RETVAL = newSVpvn((char *) mybuf, len);
 
     hv_store(h, "raw", 3, SvREFCNT_inc(RETVAL), 0);
     }
@@ -1583,7 +1583,7 @@ Pack(record)
     
     len = pack_Expense(&e, mybuf, 0xffff);
     
-    RETVAL = newSVpv((char *) mybuf, len);
+    RETVAL = newSVpvn((char *) mybuf, len);
     
     hv_store(h, "raw", 3, SvREFCNT_inc(RETVAL), 0);
 
@@ -1684,7 +1684,7 @@ PackAppBlock(record)
 	
     len = pack_ExpenseAppInfo(&e, mybuf, 0xffff);
 
-    RETVAL = newSVpv((char *) mybuf, len);
+    RETVAL = newSVpvn((char *) mybuf, len);
 
     hv_store(h, "raw", 3, SvREFCNT_inc(RETVAL), 0);
     }
@@ -1774,7 +1774,7 @@ PackPref(record, id)
 		
     len = pack_ExpensePref(&a, mybuf, 0xffff);
 
-    RETVAL = newSVpv((char *) mybuf, len);
+    RETVAL = newSVpvn((char *) mybuf, len);
 
     hv_store(h, "raw", 3, SvREFCNT_inc(RETVAL), 0);
     }
@@ -1879,7 +1879,7 @@ Pack(record)
 
     len = pack_Mail(&a, mybuf, 0xffff);
     
-    RETVAL = newSVpv((char *) mybuf, len);
+    RETVAL = newSVpvn((char *) mybuf, len);
 
     hv_store(h, "raw", 3, SvREFCNT_inc(RETVAL), 0);
     }
@@ -1955,7 +1955,7 @@ PackAppBlock(record)
 
     len = pack_MailAppInfo(&a, mybuf, 0xffff);
 
-    RETVAL = newSVpv((char *) mybuf, len);
+    RETVAL = newSVpvn((char *) mybuf, len);
 
     hv_store(h, "raw", 3, SvREFCNT_inc(RETVAL), 0);
     }
@@ -2039,7 +2039,7 @@ PackSyncPref(record, id)
 
     len = pack_MailSyncPref(&a, mybuf, 0xffff);
 
-    RETVAL = newSVpv((char *) mybuf, len);
+    RETVAL = newSVpvn((char *) mybuf, len);
 
     hv_store(h, "raw", 3, SvREFCNT_inc(RETVAL), 0);
     }
@@ -2103,7 +2103,7 @@ PackSignaturePref(record, id)
 
     len = pack_MailSignaturePref(&a, mybuf, 0xffff);
 
-    RETVAL = newSVpv((char *) mybuf, len);
+    RETVAL = newSVpvn((char *) mybuf, len);
 
     hv_store(h, "raw", 3, SvREFCNT_inc(RETVAL), 0);
     }
@@ -2144,7 +2144,7 @@ read(socket, len)
 
 	    result = pi_read(socket, &pibuf, len);
 	    if (result >=0) 
-	    	RETVAL = newSVpv((char *) pibuf.data, result);
+	    	RETVAL = newSVpvn((char *) pibuf.data, result);
 	    else
 	    	RETVAL = &sv_undef;
 	}
@@ -2925,7 +2925,7 @@ getSysInfo(self)
 			HV * i = newHV();
 			hv_store(i, "romVersion", 10, newSViv(si.romVersion), 0);\
 	    	hv_store(i, "locale", 6, newSViv(si.locale), 0);\
-	    	hv_store(i, "product", 4, newSVpv(si.prodID, si.prodIDLength), 0);\
+	    	hv_store(i, "product", 4, newSVpvn(si.prodID, si.prodIDLength), 0);\
 			RETVAL = newRV((SV*)i);
 		}
 	}
@@ -3383,7 +3383,7 @@ getROMToken(self,token)
 
 		if (result==0) {
 			EXTEND(sp,1);
-			PUSHs(sv_2mortal(newSVpv(buffer, size)));
+			PUSHs(sv_2mortal(newSVpvn(buffer, size)));
 		}
 	}
 
@@ -3405,7 +3405,7 @@ callApplication(self, creator, type, action, data=&sv_undef)
 		                    &retcode, &pibuf);
 		EXTEND(sp, 2);
 		if (result >= 0) {
-		        PUSHs(sv_2mortal(newSVpv((char *) pibuf.data, pibuf.used)));
+		        PUSHs(sv_2mortal(newSVpvn((char *) pibuf.data, pibuf.used)));
 			if (GIMME != G_SCALAR) {
 				PUSHs(sv_2mortal(newSViv(retcode)));
 			}
