@@ -342,28 +342,31 @@ AC_SUBST(usb_libs)
 dnl ******************************
 dnl BlueZ Support
 dnl ******************************
+have_bluez=no
+use_bluez=no
 msg_bluez=no
-AC_ARG_WITH(bluez, AC_HELP_STRING([--with-bluez=DIR], [BlueZ library is installed in DIR]), [
-	if (test "${withval}" != "yes"); then
-		bluez_prefix=${withval}
-	fi
-])
 
-if test x${withval} != xno; then
-	case "$host_os" in
-	linux*)
-	PKG_CHECK_MODULES(BlueZ, bluez, have_bluez=yes, AC_MSG_RESULT(no))
-	esac
-	AC_SUBST(BLUEZ_CFLAGS)
-	AC_SUBST(BLUEZ_LIBS)
-fi	
-AM_CONDITIONAL(WITH_BLUEZ, test "x$BLUEZ_LIBS" != "x")
+PKG_CHECK_MODULES(BLUEZ, bluez, have_bluez=yes, AC_MSG_RESULT(no))
 
-if test "x$have_bluez" != "x"; then
-	AC_DEFINE(HAVE_BLUEZ, 1, [Define if we have BlueZ bluetooth support])
-	msg_bluez=yes
-fi	
+AC_MSG_CHECKING([for BlueZ bluetooth support])
+AC_ARG_WITH(bluez,
+                AC_HELP_STRING([--with-bluez],
+                        [Enable usage of BlueZ]),,
+                use_bluez=auto)
+if test "x$use_bluez" != "xno"; then
+        if test "x$have_bluez" = xno && test "x$use_bluez" = xyes; then
+                AC_MSG_ERROR([BlueZ explicitly requested but no support found])
+        fi
+        if test "x$have_bluez" = xyes; then
+                AC_DEFINE(HAVE_BLUEZ, 1, [Define if we have BlueZ bluetooth support])
+                AC_MSG_RESULT([enabled])
+                msg_bluez="yes"
+        else
+                AC_MSG_RESULT([not found])
+        fi
+fi
 
+AM_CONDITIONAL(WITH_BLUEZ, test x$have_bluez = "xyes")
 
 
 dnl *********************************
