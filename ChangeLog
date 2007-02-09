@@ -1,3 +1,452 @@
+2007-02-09 12:58  desrod
+
+	* bindings/: README, README.de: More extraneous Java cruft in the
+	  wrong dir, reformatted a README
+
+2007-02-09 12:28  desrod
+
+	* bindings/: libjpisock.h, test.java: More extraneous Java junk in
+	  the wrong directory
+
+2007-02-09 12:27  desrod
+
+	* bindings/: Makefile.am, libjpisock.c: I'm not sure why this was
+	  in the bindings directory, it belongs in the Java directory..
+	  removed.
+
+2007-02-09 11:16  desrod
+
+	* bindings/Perl/Pilot.xs: Fix for using newSVpvn(buf,size) instead
+	  of newSVpv(buf,size) where necessary. This closes bug 1736 from
+	  Aaron.
+
+2007-02-09 11:11  desrod
+
+	* include/pi-usb.h: Solaris doesn't directly support uint8_t,
+	  uint16_t and uint32_t.. fixed.
+
+	  This closes bug 1759, reported by Jyu.
+
+2007-02-09 11:06  desrod
+
+	* libpisock/libusb.c: Fix for a missing define for __FUNCTION__ on
+	  Solaris; closes bug 1760 submitted by Jyu.
+
+2007-02-09 11:01  desrod
+
+	* doc/xml/: pilot-link.xml, pilot-schlep.xml: Small fixes here and
+	  there, just a dab of salt, a pinch of pepper..
+
+2007-02-09 10:51  desrod
+
+	* doc/xml/docbook.xsl.in: We're already importing docbook.xsl which
+	  includes xref.xsl and lists.xsl from /html/, there's no reason to
+	  do it twice (closes pilot-link bug 1773).
+
+2007-02-09 09:24  desrod
+
+	* doc/60-libpisock.rules: Fix for a struct change in upstream udev
+	  from SYSFS to ATTRS. This also closes Debian bug #410152 for the
+	  same issue.
+
+2007-02-08 12:08  desrod
+
+	* doc/Makefile.am, doc/README.debugging, doc/xml/docbook.xsl.in,
+	  doc/xml/ietf2datebook.xml, doc/xml/pilot-650foto.xml,
+	  doc/xml/pilot-addresses.xml, doc/xml/pilot-clip.xml,
+	  doc/xml/pilot-csd.xml, doc/xml/pilot-debugsh.xml,
+	  doc/xml/pilot-dedupe.xml, doc/xml/pilot-dlpsh.xml,
+	  doc/xml/pilot-file.xml, doc/xml/pilot-foto.xml,
+	  doc/xml/pilot-getram.xml, doc/xml/pilot-getrom.xml,
+	  doc/xml/pilot-getromtoken.xml, doc/xml/pilot-hinotes.xml,
+	  doc/xml/pilot-install-datebook.xml,
+	  doc/xml/pilot-install-expenses.xml,
+	  doc/xml/pilot-install-hinote.xml, doc/xml/pilot-install-memo.xml,
+	  doc/xml/pilot-install-netsync.xml,
+	  doc/xml/pilot-install-todo.xml, doc/xml/pilot-install-todos.xml,
+	  doc/xml/pilot-install-user.xml, doc/xml/pilot-link.xml,
+	  doc/xml/pilot-memos.xml, doc/xml/pilot-nredir.xml,
+	  doc/xml/pilot-read-expenses.xml, doc/xml/pilot-read-ical.xml,
+	  doc/xml/pilot-read-notepad.xml, doc/xml/pilot-read-palmpix.xml,
+	  doc/xml/pilot-read-screenshot.xml, doc/xml/pilot-read-todos.xml,
+	  doc/xml/pilot-read-veo.xml, doc/xml/pilot-reminders.xml,
+	  doc/xml/pilot-schlep.xml, doc/xml/pilot-treofoto.xml,
+	  doc/xml/pilot-wav.xml, doc/xml/pilot-xfer.xml,
+	  include/pi-bluetooth.h, libpisock/bluetooth.c, src/Makefile.am:
+	  Documentation bump for 0.12.2
+
+2007-02-08 10:02  desrod
+
+	* doc/CodingGuidelines: Update to add a few minor clarifications
+
+2007-02-08 09:26  desrod
+
+	* doc/syncabs.sgml: Removing deprecated syncabs information, needs
+	  to be rewritten based on the new changes in the 0.12.x codebase.
+
+2007-02-06 10:17  desrod
+
+	* libpisock/: libusb.c, usb.c: Fix for a Tungsten X issue. This
+	  will detect that the usb control message send has failed and skip
+	  the interface until the correct one appears, and the usb control
+	  message is successfully send/recieved.
+
+2007-02-05 12:53  desrod
+
+	* libpisock/Makefile.am: Last-minute fixes for BlueZ support from
+	  Daniel Gollub.. fixes an oopsie in userland conduits
+
+2007-02-05 12:21  desrod
+
+	* configure.ac, libpisock/Makefile.am: Incorporating Daniel
+	  Gollub's BlueZ patches and fixes
+
+2007-02-04 20:57  desrod
+
+	* configure.ac: Fix a small issue with libtool not creating
+	  ltmain.sh on a clean checkout
+
+2007-02-04 20:47  desrod
+
+	* doc/: man/Makefile.am, xml/pilot-read-todos.xml,
+	  xml/pilot-read-veo.xml: Fixing up some doc building issues
+
+2007-02-04 18:05  desrod
+
+	* doc/man/Makefile.am, doc/xml/ietf2datebook.xml,
+	  doc/xml/install-datebook.xml, doc/xml/install-hinote.xml,
+	  doc/xml/install-memo.xml, doc/xml/install-netsync.xml,
+	  doc/xml/install-todo.xml, doc/xml/install-todos.xml,
+	  doc/xml/install-user.xml, doc/xml/pilot-650foto.xml,
+	  doc/xml/pilot-addresses.xml, doc/xml/pilot-clip.xml,
+	  doc/xml/pilot-csd.xml, doc/xml/pilot-debugsh.xml,
+	  doc/xml/pilot-dedupe.xml, doc/xml/pilot-dlpsh.xml,
+	  doc/xml/pilot-file.xml, doc/xml/pilot-getram.xml,
+	  doc/xml/pilot-getrom.xml, doc/xml/pilot-getromtoken.xml,
+	  doc/xml/pilot-hinotes.xml, doc/xml/pilot-install-datebook.xml,
+	  doc/xml/pilot-install-expenses.xml,
+	  doc/xml/pilot-install-hinote.xml, doc/xml/pilot-install-memo.xml,
+	  doc/xml/pilot-install-netsync.xml,
+	  doc/xml/pilot-install-todo.xml, doc/xml/pilot-install-todos.xml,
+	  doc/xml/pilot-install-user.xml, doc/xml/pilot-link.docbook,
+	  doc/xml/pilot-link.xml, doc/xml/pilot-memos.xml,
+	  doc/xml/pilot-nredir.xml, doc/xml/pilot-read-expenses.xml,
+	  doc/xml/pilot-read-ical.xml, doc/xml/pilot-read-notepad.xml,
+	  doc/xml/pilot-read-palmpix.xml,
+	  doc/xml/pilot-read-screenshot.xml, doc/xml/pilot-reminders.xml,
+	  doc/xml/pilot-schlep.xml, doc/xml/pilot-treofoto.xml,
+	  doc/xml/pilot-wav.xml, doc/xml/pilot-xfer.xml,
+	  doc/xml/read-expenses.xml, doc/xml/read-ical.xml,
+	  doc/xml/read-notepad.xml, doc/xml/read-palmpix.xml,
+	  doc/xml/read-todos.xml, doc/xml/read-veo.xml, src/Makefile.am,
+	  src/install-datebook.c, src/install-hinote.c, src/install-memo.c,
+	  src/install-netsync.c, src/install-todo.c, src/install-todos.c,
+	  src/install-user.c, src/pilot-install-netsync.c,
+	  src/pilot-read-expenses.c, src/pilot-read-ical.c,
+	  src/pilot-read-notepad.c, src/pilot-read-palmpix.c,
+	  src/pilot-read-todos.c, src/pilot-read-veo.c,
+	  src/read-expenses.c, src/read-ical.c, src/read-notepad.c,
+	  src/read-palmpix.c, src/read-todos.c, src/read-veo.c: More
+	  renaming of userland conduits to avoid namespace pollution,
+	  cleaned the XML manpage sources to align with these changes.
+	  Whew!
+
+2007-02-04 16:25  desrod
+
+	* doc/: README.libusb, README.usb: Documentation cleanup with
+	  respect to usb and libusb connections. Needed to update and
+	  clarify some minor details reported by users.
+
+2007-02-04 15:28  desrod
+
+	* configure.ac, bindings/Java/Makefile.am,
+	  doc/xml/ietf2datebook.xml, doc/xml/install-datebook.xml,
+	  doc/xml/install-hinote.xml, doc/xml/install-memo.xml,
+	  doc/xml/install-netsync.xml, doc/xml/install-todo.xml,
+	  doc/xml/install-todos.xml, doc/xml/install-user.xml,
+	  doc/xml/pilot-addresses.xml, doc/xml/pilot-clip.xml,
+	  doc/xml/pilot-debugsh.xml, doc/xml/pilot-dedupe.xml,
+	  doc/xml/pilot-dlpsh.xml, doc/xml/pilot-file.xml,
+	  doc/xml/pilot-foto.xml, doc/xml/pilot-getram.xml,
+	  doc/xml/pilot-getrom.xml, doc/xml/pilot-getromtoken.xml,
+	  doc/xml/pilot-hinotes.xml, doc/xml/pilot-install-datebook.xml,
+	  doc/xml/pilot-install-expenses.xml,
+	  doc/xml/pilot-install-hinote.xml, doc/xml/pilot-install-memo.xml,
+	  doc/xml/pilot-install-netsync.xml,
+	  doc/xml/pilot-install-todo.xml, doc/xml/pilot-install-todos.xml,
+	  doc/xml/pilot-install-user.xml, doc/xml/pilot-link.xml,
+	  doc/xml/pilot-memos.xml, doc/xml/pilot-read-expenses.xml,
+	  doc/xml/pilot-read-ical.xml, doc/xml/pilot-read-notepad.xml,
+	  doc/xml/pilot-read-palmpix.xml,
+	  doc/xml/pilot-read-screenshot.xml, doc/xml/pilot-read-todos.xml,
+	  doc/xml/pilot-schlep.xml, doc/xml/pilot-treofoto.xml,
+	  doc/xml/pilot-wav.xml, doc/xml/pilot-xfer.xml,
+	  doc/xml/read-expenses.xml, doc/xml/read-ical.xml,
+	  doc/xml/read-notepad.xml, doc/xml/read-palmpix.xml,
+	  doc/xml/read-todos.xml, doc/xml/pilot-read-veo.xml,
+	  doc/xml/read-veo.xml, include/pi-contact.h, libpisock/contact.c:
+	  1. Updated some of the manpages (more to come) 2. Fixed a DESTDIR
+	  problem in bindings/Java/Makefile.am (thanks Hans Meine!) 3.
+	  Fixed up a problem with Python detection (thanks Nicholas Piper
+	  and Hans Meine) 4. Other miscellaneous cleanup as necessary
+
+2007-02-02 06:55  desrod
+
+	* libpisock/Makefile.am: Minor fix for building with bluetooth
+	  support, was missing a source file declaration.
+
+2007-02-02 06:35  desrod
+
+	* configure.ac, pilot-link.m4.in, src/pilot-dlpsh.c: Minor tweaks
+	  and fixes here and there.. trying to figure out a bluetooth
+	  autoconf issue, still unresolved.
+
+2007-01-19 14:30  fpillet
+
+	* libpisock/Makefile.am: missing WITH_BLUEZ test
+
+2007-01-15 01:11  desrod
+
+	* src/pilot-addresses.c: Fixed a minor typo, closes bug #1745
+	  (thanks Ludovic!)
+
+2007-01-10 09:07  fpillet
+
+	* configure.ac, include/pi-bluetooth.h, libpisock/bluetooth.c:
+	  Applied dgollub's fix for BlueZ support. Fixes building
+	  pilot-link on Mac OS X
+
+2006-12-13 11:06  desrod
+
+	* doc/README.usb: oops, minor typo when copying the header from
+	  README.libusb back in
+
+2006-11-22 17:52  adridg
+
+	* include/pi-address.h, include/pi-appinfo.h,
+	  include/pi-datebook.h, include/pi-memo.h, include/pi-todo.h,
+	  libpisock/address.c, libpisock/appinfo.c, libpisock/datebook.c,
+	  libpisock/memo.c, libpisock/todo.c: Big batch of constness
+
+2006-11-18 17:43  adridg
+
+	* libpisock/Makefile.am: WITH_BLUEZ is not defined as a
+	  conditional, so automake 1.9.6 barfs on it. Remove it for now,
+	  since there's no way to get BLUEZ defined.
+
+2006-11-09 05:26  fpillet
+
+	* libpisock/darwinusb.c: forgot to undefine DEBUG_USB -- otherwise
+	  you get LOTS of traces
+
+2006-11-09 04:42  fpillet
+
+	* libpisock/darwinusb.c: Added support for high-speed USB devices
+	  (large packet sizes, 512 bytes). Somehow, with some versions of
+	  OS X on Intel Macs and depending on the machine the bulk packet
+	  maxsize may be bigger than 64. In this case the previous code was
+	  getting data overruns when reading.
+
+2006-11-07 16:13  adridg
+
+	* libpisock/: cmp.c, expense.c, socket.c: Warning suppression: use
+	  (void) foo for unused parameters foo [which demonstrates that
+	  expense packing and unpacking has interesting possible buffer
+	  overflows]; initialize the uninitialized; #if 0 unused debugging
+	  functions. (KPilot r. 502)
+
+2006-11-07 15:42  adridg
+
+	* include/pi-address.h, libpisock/address.c, libpisock/dlp.c,
+	  libpisock/socket.c: Typedef the Address fields enum so it has a
+	  name; add constness to some pack/unpack functions; remove C++
+	  style comments from C code. (KPilot r.500)
+
+2006-11-07 04:05  fpillet
+
+	* libpisock/socket.c: Fix for RAW mode: protocol_queue_build was
+	  trying to build the protocol stack even though RAW mode is not
+	  supposed to have one
+
+2006-11-07 04:03  fpillet
+
+	* libpisock/darwinusb.c: Fix to support PPP connections over USB:
+	  recognize ppp_ function for USB endpoints
+
+2006-11-02 09:54  desrod
+
+	* src/: Makefile.am, pilot-read-screenshot.c: Removed conflicting
+	  option (-t == timeout, not type). Will clean up further.
+
+2006-11-02 09:40  desrod
+
+	* configure.ac, doc/man/Makefile.am, doc/xml/pilot-link.docbook,
+	  doc/xml/pilot-link.xml, doc/xml/pilot-read-screenshot.xml,
+	  doc/xml/read-screenshot.xml, src/Makefile.am: Screenshot renaming
+	  to avoid namespace pollution
+
+2006-11-02 09:34  desrod
+
+	* src/: pilot-read-screenshot.c, read-screenshot.c: Renamed
+	  read-screenshot to avoid some namespace pollution
+
+2006-10-17 09:24  desrod
+
+	* ChangeLog, doc/README.debugging, doc/README.libusb,
+	  doc/README.usb, doc/man/Makefile.am, doc/xml/ietf2datebook.xml,
+	  doc/xml/install-datebook.xml, doc/xml/install-hinote.xml,
+	  doc/xml/install-memo.xml, doc/xml/install-netsync.xml,
+	  doc/xml/install-todo.xml, doc/xml/install-todos.xml,
+	  doc/xml/install-user.xml, doc/xml/pilot-650foto.xml,
+	  doc/xml/pilot-addresses.xml, doc/xml/pilot-clip.xml,
+	  doc/xml/pilot-csd.xml, doc/xml/pilot-debugsh.xml,
+	  doc/xml/pilot-dedupe.xml, doc/xml/pilot-dlpsh.xml,
+	  doc/xml/pilot-file.xml, doc/xml/pilot-foto.xml,
+	  doc/xml/pilot-getram.xml, doc/xml/pilot-getrom.xml,
+	  doc/xml/pilot-getromtoken.xml, doc/xml/pilot-hinotes.xml,
+	  doc/xml/pilot-install-datebook.xml,
+	  doc/xml/pilot-install-expenses.xml,
+	  doc/xml/pilot-install-hinote.xml, doc/xml/pilot-install-memo.xml,
+	  doc/xml/pilot-install-netsync.xml,
+	  doc/xml/pilot-install-todo.xml, doc/xml/pilot-install-todos.xml,
+	  doc/xml/pilot-install-user.xml, doc/xml/pilot-link.xml,
+	  doc/xml/pilot-memos.xml, doc/xml/pilot-nredir.xml,
+	  doc/xml/pilot-read-expenses.xml, doc/xml/pilot-read-ical.xml,
+	  doc/xml/pilot-read-notepad.xml, doc/xml/pilot-read-palmpix.xml,
+	  doc/xml/pilot-read-screenshot.xml, doc/xml/pilot-read-todos.xml,
+	  doc/xml/pilot-read-veo.xml, doc/xml/pilot-reminders.xml,
+	  doc/xml/pilot-schlep.xml, doc/xml/pilot-treofoto.xml,
+	  doc/xml/pilot-wav.xml, doc/xml/pilot-xfer.xml,
+	  doc/xml/read-expenses.xml, doc/xml/read-ical.xml,
+	  doc/xml/read-notepad.xml, doc/xml/read-palmpix.xml,
+	  doc/xml/read-screenshot.xml, doc/xml/read-todos.xml,
+	  doc/xml/read-veo.xml, include/pi-address.h, include/pi-appinfo.h,
+	  include/pi-args.h, include/pi-buffer.h, include/pi-cmp.h,
+	  include/pi-contact.h, include/pi-datebook.h, include/pi-debug.h,
+	  include/pi-dlp.h, include/pi-error.h, include/pi-expense.h,
+	  include/pi-file.h, include/pi-foto.h, include/pi-header.h,
+	  include/pi-hinote.h, include/pi-inet.h, include/pi-macros.h,
+	  include/pi-mail.h, include/pi-md5.h, include/pi-memo.h,
+	  include/pi-money.h, include/pi-net.h, include/pi-notepad.h,
+	  include/pi-padp.h, include/pi-palmpix.h, include/pi-serial.h,
+	  include/pi-slp.h, include/pi-sockaddr.h, include/pi-socket.h,
+	  include/pi-source.h, include/pi-sync.h, include/pi-sys.h,
+	  include/pi-syspkt.h, include/pi-threadsafe.h, include/pi-todo.h,
+	  include/pi-usb.h, include/pi-userland.h, include/pi-util.h,
+	  include/pi-veo.h, include/pi-versamail.h, src/install-hinote.c,
+	  src/install-memo.c, src/pilot-install-hinote.c,
+	  src/pilot-install-memo.c: This is what you do when your flight
+	  gets delayed several hours... just some general cleanup and
+	  maintenance housecleaning.
+
+2006-10-16 13:57  fpillet
+
+	* libpisock/socket.c: Following Matt Davey's advice on bluetooth:
+	  support: only allow the keyword to be used when bluetooth support
+	  is being linked in
+
+2006-10-16 13:46  fpillet
+
+	* libpisock/socket.c: Fixed port string matching for bt:/bluetooth:
+	  (thanks Matt)
+
+2006-10-13 13:36  fpillet
+
+	* include/pi-bluetooth.h, libpisock/bluetooth.c,
+	  include/Makefile.am, libpisock/Makefile.am, libpisock/socket.c:
+	  Linux bluetooth support (Bluez) contributed by Bastien Nocera
+
+2006-10-13 05:56  fpillet
+
+	* libpisock/socket.c: commented out the pi_dumpdata() call in
+	  protocol detection as I only use it for debugging this part
+
+2006-10-13 05:52  fpillet
+
+	* libpisock/: dlp.c, socket.c: dlp_ReadSysInfo() now updates the
+	  socket's dlpVersion and maxrecsize. We don't issue a separate
+	  dlp_ReadSysInfo() from pi_version() anymore as it can cause big
+	  trouble if called from within a DLP call. Tweaked pi_version(),
+	  and also tweaked protocol detection again for more accurate
+	  serial / bluetooth protocol detection
+
+2006-10-13 05:52  fpillet
+
+	* libpisock/: padp.c, slp.c: better logging for debug in padp/slp
+
+2006-10-12 10:21  desrod
+
+	* src/install-datebook.c, src/install-hinote.c, src/install-memo.c,
+	  src/install-netsync.c, src/install-todo.c, src/install-todos.c,
+	  src/pilot-install-datebook.c, src/pilot-install-hinote.c,
+	  src/pilot-install-memo.c, src/pilot-install-netsync.c,
+	  src/pilot-install-todo.c, src/pilot-install-todos.c,
+	  src/install-user.c, src/kittykiller.c, src/pd-tty.c,
+	  src/pilot-650foto.c, src/pilot-addresses.c, src/pilot-clip.c,
+	  src/pilot-csd.c, src/pilot-debug.c, src/pilot-debugsh.c,
+	  src/pilot-dedupe.c, src/pilot-dlpsh.c, src/pilot-file.c,
+	  src/pilot-foto.c, src/pilot-getram.c, src/pilot-getrom.c,
+	  src/pilot-getromtoken.c, src/pilot-hinotes.c,
+	  src/pilot-install-expenses.c, src/pilot-install-user.c,
+	  src/pilot-memos.c, src/pilot-nredir.c, src/pilot-port.c,
+	  src/pilot-read-expenses.c, src/pilot-read-ical.c,
+	  src/pilot-read-notepad.c, src/pilot-reminders.c,
+	  src/pilot-schlep.c, src/pilot-treofoto.c, src/pilot-wav.c,
+	  src/pilot-xfer.c, src/plu_args.c, src/read-expenses.c,
+	  src/read-ical.c, src/read-notepad.c, libpisock/address.c,
+	  libpisock/appinfo.c, libpisock/cmp.c, libpisock/connect.c,
+	  libpisock/contact.c, libpisock/darwinusb.c, libpisock/datebook.c,
+	  libpisock/debug.c, libpisock/dlp.c, libpisock/expense.c,
+	  libpisock/freebsdusb.c, libpisock/hinote.c, libpisock/inet.c,
+	  libpisock/libusb.c, libpisock/linuxusb.c, libpisock/mail.c,
+	  libpisock/md5.c, libpisock/memo.c, libpisock/money.c,
+	  libpisock/net.c, libpisock/notepad.c, libpisock/os2serial.c,
+	  libpisock/padp.c, libpisock/palmpix.c, libpisock/pi-buffer.c,
+	  libpisock/pi-file.c, libpisock/pi-header.c, libpisock/serial.c,
+	  libpisock/slp.c, libpisock/socket.c, libpisock/sys.c,
+	  src/pilot-read-palmpix.c, src/pilot-read-screenshot.c,
+	  src/pilot-read-todos.c, src/pilot-read-veo.c, src/read-palmpix.c,
+	  src/read-screenshot.c, src/read-todos.c, src/read-veo.c,
+	  src/userland.c, libpisock/syspkt.c, libpisock/threadsafe.c,
+	  libpisock/todo.c, libpisock/unixserial.c, libpisock/usb.c,
+	  libpisock/utils.c, libpisock/veo.c, libpisock/versamail.c: Just
+	  some long-needed CVS house-cleaning..
+
+2006-10-12 09:02  fpillet
+
+	* libpisock/: address.c, appinfo.c, cmp.c, connect.c, contact.c,
+	  datebook.c, debug.c, dlp.c, expense.c, freebsdusb.c, hinote.c,
+	  inet.c, libusb.c, linuxusb.c, mail.c, md5.c, memo.c, money.c,
+	  net.c, notepad.c, os2serial.c, padp.c, palmpix.c, pi-buffer.c,
+	  pi-file.c, pi-header.c, serial.c, slp.c, socket.c, sys.c,
+	  syspkt.c, threadsafe.c, todo.c, unixserial.c, usb.c, utils.c,
+	  veo.c, versamail.c: Add CVS Id to all source files, I hate it
+	  when I get an updated file and I don't know which release it
+	  originates from
+
+2006-10-12 09:01  fpillet
+
+	* libpisock/darwinusb.c: updated comment in USB entry 0830/0061 for
+	  Treo 650
+
+2006-10-12 08:32  fpillet
+
+	* libpisock/dlp.c: Integrated Scott Gruby's big record fix: reading
+	  records that have the maximum allowed size could lock up some
+	  devices. We now read maxRecordSize-100 and perform a second read
+	  if the record is large. Also some casts to make compilers happy,
+	  and a safeguard when reading username / password to properly
+	  terminate the strings.
+
+2006-10-09 12:43  desrod
+
+	* libpisock/usb.c: More sanity to catch both Sony models, including
+	  the NRxx series handhelds
+
+2006-10-09 12:30  desrod
+
+	* libpisock/usb.c: Minor fix for Sony Clie detection
+
 2006-09-28 14:43  angusa
 
 	* doc/xml/pilot-650foto.xml: Manual page for pilot-650foto
@@ -40,8 +489,10 @@
 	* ChangeLog, configure.ac, libpisock/cmp.c, libpisock/padp.c,
 	  src/ccexample.cc, src/install-datebook.c, src/install-expenses.c,
 	  src/install-hinote.c, src/install-memo.c, src/install-netsync.c,
-	  src/install-user.c, src/pilot-install-expenses.c: More cleanup
-	  for 0.12.1
+	  src/install-user.c, src/pilot-install-datebook.c,
+	  src/pilot-install-expenses.c, src/pilot-install-hinote.c,
+	  src/pilot-install-memo.c, src/pilot-install-netsync.c,
+	  src/pilot-install-user.c: More cleanup for 0.12.1
 
 2006-08-27 14:51  desrod
 
@@ -107,10 +558,12 @@
 
 	* doc/xml/: ietf2datebook.xml, install-datebook.xml,
 	  install-expenses.xml, install-hinote.xml, pilot-addresses.xml,
-	  pilot-csd.xml, pilot-dlpsh.xml, pilot-install-expenses.xml,
-	  pilot-getromtoken.xml, read-notepad.xml, read-screenshot.xml,
-	  read-veo.xml: More tweaks and pokes for the 0.12.0 release... its
-	  coming soon!
+	  pilot-csd.xml, pilot-dlpsh.xml, pilot-install-datebook.xml,
+	  pilot-install-expenses.xml, pilot-install-hinote.xml,
+	  pilot-getromtoken.xml, pilot-read-notepad.xml,
+	  pilot-read-screenshot.xml, pilot-read-veo.xml, read-notepad.xml,
+	  read-screenshot.xml, read-veo.xml: More tweaks and pokes for the
+	  0.12.0 release... its coming soon!
 
 2006-08-25 10:06  desrod
 
@@ -121,10 +574,10 @@
 
 2006-08-25 09:44  desrod
 
-	* src/install-user.c: Quick fix to properly parse the args as
-	  passed in. We were previously ignoring PILOTPORT in the process.
-	  This is a temporary quick-hack fix, and will be removed and
-	  replaced with a more elegant solution later.
+	* src/: install-user.c, pilot-install-user.c: Quick fix to properly
+	  parse the args as passed in. We were previously ignoring
+	  PILOTPORT in the process. This is a temporary quick-hack fix, and
+	  will be removed and replaced with a more elegant solution later.
 
 2006-08-25 09:27  desrod
 
@@ -171,8 +624,17 @@
 	  doc/xml/pilot-file.xml, doc/xml/pilot-foto.xml,
 	  doc/xml/pilot-getram.xml, doc/xml/pilot-getrom.xml,
 	  doc/xml/pilot-getromtoken.xml, doc/xml/pilot-hinotes.xml,
-	  doc/xml/pilot-install-expenses.xml, doc/xml/pilot-memos.xml,
-	  doc/xml/pilot-nredir.xml, doc/xml/pilot-reminders.xml,
+	  doc/xml/pilot-install-datebook.xml,
+	  doc/xml/pilot-install-expenses.xml,
+	  doc/xml/pilot-install-hinote.xml, doc/xml/pilot-install-memo.xml,
+	  doc/xml/pilot-install-netsync.xml,
+	  doc/xml/pilot-install-todo.xml, doc/xml/pilot-install-todos.xml,
+	  doc/xml/pilot-install-user.xml, doc/xml/pilot-memos.xml,
+	  doc/xml/pilot-nredir.xml, doc/xml/pilot-read-expenses.xml,
+	  doc/xml/pilot-read-ical.xml, doc/xml/pilot-read-notepad.xml,
+	  doc/xml/pilot-read-palmpix.xml,
+	  doc/xml/pilot-read-screenshot.xml, doc/xml/pilot-read-todos.xml,
+	  doc/xml/pilot-read-veo.xml, doc/xml/pilot-reminders.xml,
 	  doc/xml/pilot-schlep.xml, doc/xml/pilot-treofoto.xml,
 	  doc/xml/pilot-wav.xml, doc/xml/pilot-xfer.xml,
 	  doc/xml/read-expenses.xml, doc/xml/read-ical.xml,
@@ -191,8 +653,15 @@
 	  src/pilot-clip.c, src/pilot-csd.c, src/pilot-debug.c,
 	  src/pilot-dedupe.c, src/pilot-file.c, src/pilot-foto.c,
 	  src/pilot-getram.c, src/pilot-getrom.c, src/pilot-getromtoken.c,
-	  src/pilot-hinotes.c, src/pilot-install-expenses.c,
-	  src/pilot-memos.c, src/pilot-nredir.c, src/pilot-port.c,
+	  src/pilot-hinotes.c, src/pilot-install-datebook.c,
+	  src/pilot-install-expenses.c, src/pilot-install-hinote.c,
+	  src/pilot-install-memo.c, src/pilot-install-netsync.c,
+	  src/pilot-install-todo.c, src/pilot-install-todos.c,
+	  src/pilot-install-user.c, src/pilot-memos.c, src/pilot-nredir.c,
+	  src/pilot-port.c, src/pilot-read-expenses.c,
+	  src/pilot-read-ical.c, src/pilot-read-notepad.c,
+	  src/pilot-read-palmpix.c, src/pilot-read-screenshot.c,
+	  src/pilot-read-todos.c, src/pilot-read-veo.c,
 	  src/pilot-reminders.c, src/pilot-schlep.c, src/pilot-treofoto.c,
 	  src/pilot-wav.c, src/pilot-xfer.c, src/plu_args.c,
 	  src/read-expenses.c, src/read-ical.c, src/read-notepad.c,
@@ -356,8 +825,15 @@
 	  pilot-csd.xml, pilot-debugsh.xml, pilot-dedupe.xml,
 	  pilot-dlpsh.xml, pilot-file.xml, pilot-foto.xml,
 	  pilot-getram.xml, pilot-getrom.xml, pilot-getromtoken.xml,
-	  pilot-hinotes.xml, pilot-install-expenses.xml, pilot-memos.xml,
-	  pilot-nredir.xml, pilot-reminders.xml, pilot-schlep.xml,
+	  pilot-hinotes.xml, pilot-install-datebook.xml,
+	  pilot-install-expenses.xml, pilot-install-hinote.xml,
+	  pilot-install-memo.xml, pilot-install-netsync.xml,
+	  pilot-install-todo.xml, pilot-install-todos.xml,
+	  pilot-install-user.xml, pilot-memos.xml, pilot-nredir.xml,
+	  pilot-read-expenses.xml, pilot-read-ical.xml,
+	  pilot-read-notepad.xml, pilot-read-palmpix.xml,
+	  pilot-read-screenshot.xml, pilot-read-todos.xml,
+	  pilot-read-veo.xml, pilot-reminders.xml, pilot-schlep.xml,
 	  pilot-treofoto.xml, pilot-wav.xml, pilot-xfer.xml,
 	  read-expenses.xml, read-ical.xml, read-notepad.xml,
 	  read-palmpix.xml, read-screenshot.xml, read-todos.xml,
@@ -662,9 +1138,9 @@
 
 2005-06-23 09:57  desrod
 
-	* src/read-palmpix.c: Minor patch from Goffredo
-	  <goffredo@goffredo.eti.br> to write out the file with the same
-	  date and time as the photo itself.
+	* src/: pilot-read-palmpix.c, read-palmpix.c: Minor patch from
+	  Goffredo <goffredo@goffredo.eti.br> to write out the file with
+	  the same date and time as the photo itself.
 
 2005-06-22 08:28  fpillet
 
@@ -689,10 +1165,15 @@
 	  install-memo.xml, install-netsync.xml, install-todo.xml,
 	  install-user.xml, memos.xml, pi-getram.xml, pi-getrom.xml,
 	  pilot-dlpsh.xml, pilot-foto.xml, pilot-getram.xml,
-	  pilot-getrom.xml, pilot-hinotes.xml, pilot-install-expenses.xml,
-	  pilot-memos.xml, read-expenses.xml, read-ical.xml,
-	  read-notepad.xml, read-palmpix.xml: Minor adjustments to correct
-	  attribution on manpages
+	  pilot-getrom.xml, pilot-hinotes.xml, pilot-install-datebook.xml,
+	  pilot-install-expenses.xml, pilot-install-hinote.xml,
+	  pilot-install-memo.xml, pilot-install-netsync.xml,
+	  pilot-install-todo.xml, pilot-install-user.xml, pilot-memos.xml,
+	  pilot-read-expenses.xml, pilot-read-ical.xml,
+	  pilot-read-notepad.xml, pilot-read-palmpix.xml,
+	  read-expenses.xml, read-ical.xml, read-notepad.xml,
+	  read-palmpix.xml: Minor adjustments to correct attribution on
+	  manpages
 
 2005-06-21 13:54  desrod
 
@@ -705,14 +1186,21 @@
 	  pilot-csd.xml, pilot-debugsh.xml, pilot-dedupe.xml,
 	  pilot-dlpsh.xml, pilot-file.xml, pilot-foto.xml,
 	  pilot-getram.xml, pilot-getrom.xml, pilot-getromtoken.xml,
-	  pilot-hinotes.xml, pilot-install-expenses.xml, pilot-link.xml,
-	  pilot-memos.xml, pilot-nredir.xml, pilot-reminders.xml,
-	  pilot-schlep.xml, pilot-treofoto.xml, pilot-wav.xml,
-	  pilot-xfer.xml, read-expenses.xml, read-ical.xml,
-	  read-notepad.xml, read-palmpix.xml, read-screenshot.xml,
-	  read-todos.xml, read-veo.xml, reminders.xml: More cleanup,
-	  reformatted the manpages to try to unify the structure a bit, so
-	  they can be further templated out at a later time.
+	  pilot-hinotes.xml, pilot-install-datebook.xml,
+	  pilot-install-expenses.xml, pilot-install-hinote.xml,
+	  pilot-install-memo.xml, pilot-install-netsync.xml,
+	  pilot-install-todo.xml, pilot-install-todos.xml,
+	  pilot-install-user.xml, pilot-link.xml, pilot-memos.xml,
+	  pilot-nredir.xml, pilot-read-expenses.xml, pilot-read-ical.xml,
+	  pilot-read-notepad.xml, pilot-read-palmpix.xml,
+	  pilot-read-screenshot.xml, pilot-read-todos.xml,
+	  pilot-read-veo.xml, pilot-reminders.xml, pilot-schlep.xml,
+	  pilot-treofoto.xml, pilot-wav.xml, pilot-xfer.xml,
+	  read-expenses.xml, read-ical.xml, read-notepad.xml,
+	  read-palmpix.xml, read-screenshot.xml, read-todos.xml,
+	  read-veo.xml, reminders.xml: More cleanup, reformatted the
+	  manpages to try to unify the structure a bit, so they can be
+	  further templated out at a later time.
 
 2005-06-21 10:37  desrod
 
@@ -769,14 +1257,17 @@
 	  doc/xml/.cvsignore, doc/xml/Makefile.am, doc/xml/README,
 	  doc/xml/catalog.xml.in, doc/xml/docbook.xsl.in,
 	  doc/xml/install-todos.xml, doc/xml/pilot-foto.xml,
-	  doc/xml/pilot-link.docbook, doc/xml/pilot-schlep.xml,
-	  doc/xml/pilot-treofoto.xml, doc/xml/pilot-wav.xml,
-	  doc/xml/read-screenshot.xml, doc/xml/read-veo.xml:
-	  Auto-generation of manpages using xsltproc, only in CVS builds
+	  doc/xml/pilot-install-todos.xml, doc/xml/pilot-link.docbook,
+	  doc/xml/pilot-read-screenshot.xml, doc/xml/pilot-read-veo.xml,
+	  doc/xml/pilot-schlep.xml, doc/xml/pilot-treofoto.xml,
+	  doc/xml/pilot-wav.xml, doc/xml/read-screenshot.xml,
+	  doc/xml/read-veo.xml: Auto-generation of manpages using xsltproc,
+	  only in CVS builds
 
 2005-06-17 09:49  desrod
 
-	* src/install-netsync.c: Fixed fubar'd example
+	* src/: install-netsync.c, pilot-install-netsync.c: Fixed fubar'd
+	  example
 
 2005-06-17 06:38  warp
 
@@ -845,9 +1336,10 @@
 	  src/debugsh.c, src/install-memo.c, src/install-todos.c,
 	  src/pi-csd.c, src/pi-getrom.c, src/pi-port.c, src/pilot-csd.c,
 	  src/pilot-debug.c, src/pilot-debugsh.c, src/pilot-getrom.c,
-	  src/pilot-port.c, src/read-expenses.c, tests/packers.c,
-	  tests/vfs-test.c: use pi_dumpdata() instead of dumpdata(). Some
-	  cleanup for compilation warnings.
+	  src/pilot-install-memo.c, src/pilot-install-todos.c,
+	  src/pilot-port.c, src/pilot-read-expenses.c, src/read-expenses.c,
+	  tests/packers.c, tests/vfs-test.c: use pi_dumpdata() instead of
+	  dumpdata(). Some cleanup for compilation warnings.
 
 2005-06-15 10:08  fpillet
 
@@ -980,18 +1472,27 @@
 	  doc/xml/pilot-file.xml, doc/xml/pilot-foto.xml,
 	  doc/xml/pilot-getram.xml, doc/xml/pilot-getrom.xml,
 	  doc/xml/pilot-getromtoken.xml, doc/xml/pilot-hinotes.xml,
-	  doc/xml/pilot-install-expenses.xml, doc/xml/pilot-link.xml,
+	  doc/xml/pilot-install-datebook.xml,
+	  doc/xml/pilot-install-expenses.xml,
+	  doc/xml/pilot-install-hinote.xml, doc/xml/pilot-install-memo.xml,
+	  doc/xml/pilot-install-netsync.xml,
+	  doc/xml/pilot-install-todo.xml, doc/xml/pilot-install-todos.xml,
+	  doc/xml/pilot-install-user.xml, doc/xml/pilot-link.xml,
 	  doc/xml/pilot-memos.xml, doc/xml/pilot-nredir.xml,
-	  doc/xml/pilot-reminders.xml, doc/xml/pilot-schlep.xml,
-	  doc/xml/pilot-treofoto.xml, doc/xml/pilot-wav.xml,
-	  doc/xml/pilot-xfer.xml, doc/xml/read-expenses.xml,
-	  doc/xml/read-ical.xml, doc/xml/read-notepad.xml,
-	  doc/xml/read-palmpix.xml, doc/xml/read-screenshot.xml,
-	  doc/xml/read-todos.xml, doc/xml/read-veo.xml,
-	  doc/xml/reminders.xml, libpisock/libusb.c, src/Makefile.am,
-	  src/money2qif.c, src/pilot-reminders.c, src/reminders.c: Mostly a
-	  documentation update, minor fix for Florent's libusb typo, some
-	  deprecated conduits removed from the tree... more to come.
+	  doc/xml/pilot-read-expenses.xml, doc/xml/pilot-read-ical.xml,
+	  doc/xml/pilot-read-notepad.xml, doc/xml/pilot-read-palmpix.xml,
+	  doc/xml/pilot-read-screenshot.xml, doc/xml/pilot-read-todos.xml,
+	  doc/xml/pilot-read-veo.xml, doc/xml/pilot-reminders.xml,
+	  doc/xml/pilot-schlep.xml, doc/xml/pilot-treofoto.xml,
+	  doc/xml/pilot-wav.xml, doc/xml/pilot-xfer.xml,
+	  doc/xml/read-expenses.xml, doc/xml/read-ical.xml,
+	  doc/xml/read-notepad.xml, doc/xml/read-palmpix.xml,
+	  doc/xml/read-screenshot.xml, doc/xml/read-todos.xml,
+	  doc/xml/read-veo.xml, doc/xml/reminders.xml, libpisock/libusb.c,
+	  src/Makefile.am, src/money2qif.c, src/pilot-reminders.c,
+	  src/reminders.c: Mostly a documentation update, minor fix for
+	  Florent's libusb typo, some deprecated conduits removed from the
+	  tree... more to come.
 
 2005-06-13 05:34  fpillet
 
@@ -1160,9 +1661,10 @@
 
 2005-06-07 08:34  adridg
 
-	* doc/man/install-memo.1.in, src/install-memo.c: Deal with recent
-	  report by making install-memo able to install more than one memo;
-	  this hasn't been tested yet.
+	* doc/man/install-memo.1.in, src/install-memo.c,
+	  src/pilot-install-memo.c: Deal with recent report by making
+	  install-memo able to install more than one memo; this hasn't been
+	  tested yet.
 
 2005-06-07 08:32  adridg
 
@@ -1540,8 +2042,8 @@
 
 2005-05-02 16:19  adridg
 
-	* src/read-ical.c: Patch from BR 1475, though I don't really see
-	  how it can help
+	* src/: pilot-read-ical.c, read-ical.c: Patch from BR 1475, though
+	  I don't really see how it can help
 
 2005-04-27 13:38  desrod
 
@@ -1782,7 +2284,8 @@
 
 2005-04-02 16:16  neilw
 
-	* src/read-todos.c: Fixing dlp_ReadRecordByIndex loop error
+	* src/: pilot-read-todos.c, read-todos.c: Fixing
+	  dlp_ReadRecordByIndex loop error
 
 2005-03-23 11:28  fpillet
 
@@ -1880,7 +2383,9 @@
 	  libpisock/address.c, libpisock/contact.c, libpisock/datebook.c,
 	  libpisock/memo.c, libpisock/pi-buffer.c, libpisock/todo.c,
 	  src/install-datebook.c, src/install-todo.c, src/install-todos.c,
-	  src/memos.c, src/pilot-addresses.c, src/pilot-memos.c,
+	  src/memos.c, src/pilot-addresses.c, src/pilot-install-datebook.c,
+	  src/pilot-install-todo.c, src/pilot-install-todos.c,
+	  src/pilot-memos.c, src/pilot-read-ical.c, src/pilot-read-todos.c,
 	  src/pilot-reminders.c, src/read-ical.c, src/read-todos.c,
 	  src/reminders.c, src/validate.cc, tests/contactsdb-test.c,
 	  tests/packers.c: Switch the packer/unpacker functions over to use
@@ -1955,11 +2460,15 @@
 	  src/install-netsync.c, src/install-todo.c, src/kittykiller.c,
 	  src/pd-tty.c, src/pi-port.c, src/pilot-debug.c,
 	  src/pilot-debugsh.c, src/pilot-dedupe.c, src/pilot-hinotes.c,
-	  src/pilot-port.c, src/pilot-reminders.c, src/pilot-schlep.c,
-	  src/pilot-treofoto.c, src/plu_args.c, src/read-ical.c,
-	  src/read-palmpix.c, src/reminders.c: Add emacs local variables to
-	  every place that has vi ones. This is to stop emacs trying to
-	  indent stuff a different way.
+	  src/pilot-install-datebook.c, src/pilot-install-hinote.c,
+	  src/pilot-install-memo.c, src/pilot-install-netsync.c,
+	  src/pilot-install-todo.c, src/pilot-port.c,
+	  src/pilot-read-ical.c, src/pilot-read-palmpix.c,
+	  src/pilot-reminders.c, src/pilot-schlep.c, src/pilot-treofoto.c,
+	  src/plu_args.c, src/read-ical.c, src/read-palmpix.c,
+	  src/reminders.c: Add emacs local variables to every place that
+	  has vi ones. This is to stop emacs trying to indent stuff a
+	  different way.
 
 2005-03-02 17:36  fpillet
 
@@ -2285,7 +2794,8 @@
 
 2005-02-09 11:25  fpillet
 
-	* src/install-hinote.c: removed unused variable buf
+	* src/: install-hinote.c, pilot-install-hinote.c: removed unused
+	  variable buf
 
 2005-02-09 06:51  fpillet
 
@@ -2434,16 +2944,22 @@
 	  pilot-debugsh.xml, pilot-dedupe.xml, pilot-dlpsh.xml,
 	  pilot-file.xml, pilot-foto.xml, pilot-getram.xml,
 	  pilot-getrom.xml, pilot-getromtoken.xml, pilot-hinotes.xml,
-	  pilot-install-expenses.xml, pilot-link.xml, pilot-memos.xml,
-	  pilot-nredir.xml, pilot-reminders.xml, pilot-schlep.xml,
-	  pilot-treofoto.xml, pilot-wav.xml, pilot-xfer.xml,
-	  read-expenses.xml, read-ical.xml, read-notepad.xml,
-	  read-palmpix.xml, read-screenshot.xml, read-todos.xml,
-	  read-veo.xml, reminders.xml: Adding XML versions of the manpages
-	  to the tree. These will not be disted but will remain in CVS for
-	  continuous editing and updating. Thanks to Neil Williams for the
-	  first big push, with major modifications of his work on my part
-	  to unify them and clean them up a bit.
+	  pilot-install-datebook.xml, pilot-install-expenses.xml,
+	  pilot-install-hinote.xml, pilot-install-memo.xml,
+	  pilot-install-netsync.xml, pilot-install-todo.xml,
+	  pilot-install-todos.xml, pilot-install-user.xml, pilot-link.xml,
+	  pilot-memos.xml, pilot-nredir.xml, pilot-read-expenses.xml,
+	  pilot-read-ical.xml, pilot-read-notepad.xml,
+	  pilot-read-palmpix.xml, pilot-read-screenshot.xml,
+	  pilot-read-todos.xml, pilot-read-veo.xml, pilot-reminders.xml,
+	  pilot-schlep.xml, pilot-treofoto.xml, pilot-wav.xml,
+	  pilot-xfer.xml, read-expenses.xml, read-ical.xml,
+	  read-notepad.xml, read-palmpix.xml, read-screenshot.xml,
+	  read-todos.xml, read-veo.xml, reminders.xml: Adding XML versions
+	  of the manpages to the tree. These will not be disted but will
+	  remain in CVS for continuous editing and updating. Thanks to Neil
+	  Williams for the first big push, with major modifications of his
+	  work on my part to unify them and clean them up a bit.
 
 2005-01-28 13:52  desrod
 
@@ -2607,19 +3123,22 @@
 
 2005-01-19 15:25  adridg
 
-	* src/read-screenshot.c, src/read-veo.c, tests/contactsdb-test.c:
+	* src/pilot-read-screenshot.c, src/pilot-read-veo.c,
+	  src/read-screenshot.c, src/read-veo.c, tests/contactsdb-test.c:
 	  No stdint needed (or exists) on 4-stable
 
 2005-01-19 15:18  adridg
 
-	* src/: install-todo.c, pi-csd.c, pilot-csd.c, pilot-xfer.c,
+	* src/: install-todo.c, pi-csd.c, pilot-csd.c,
+	  pilot-install-todo.c, pilot-read-palmpix.c, pilot-xfer.c,
 	  read-palmpix.c: More gcc 2.95 / 4-stable stuff
 
 2005-01-19 15:11  adridg
 
-	* src/install-netsync.c: Another 4-stable fix: need sys/types for
-	  sys/socket; previous commit used HAVE_, but I see it's included
-	  unconditionally in other files, so do same here.
+	* src/: install-netsync.c, pilot-install-netsync.c: Another
+	  4-stable fix: need sys/types for sys/socket; previous commit used
+	  HAVE_, but I see it's included unconditionally in other files, so
+	  do same here.
 
 2005-01-19 15:08  adridg
 
@@ -2639,9 +3158,10 @@
 
 2005-01-14 20:39  adridg
 
-	* doc/man/install-datebook.1.in, src/install-datebook.c: For bug
-	  1411: bail on file error _before_ connecting to the Pilot;
-	  improve manpage to state that exactly one file is read.
+	* doc/man/install-datebook.1.in, src/install-datebook.c,
+	  src/pilot-install-datebook.c: For bug 1411: bail on file error
+	  _before_ connecting to the Pilot; improve manpage to state that
+	  exactly one file is read.
 
 2005-01-14 12:50  desrod
 
@@ -2650,16 +3170,16 @@
 
 2005-01-10 17:34  adridg
 
-	* src/read-notepad.c: Default to a value that does not cause a
-	  warning when the value is left default
+	* src/: pilot-read-notepad.c, read-notepad.c: Default to a value
+	  that does not cause a warning when the value is left default
 
 2005-01-10 08:06  knghtbrd
 
-	* src/read-notepad.c: Default to png.  If you don't have libpng and
-	  don't specify that you want ppm, you'll get a warning about
-	  getting ppm instead of png.  I figure that is reasonable, pending
-	  a rewrite of this program which supports installing new notepad
-	  pages.
+	* src/: pilot-read-notepad.c, read-notepad.c: Default to png.  If
+	  you don't have libpng and don't specify that you want ppm, you'll
+	  get a warning about getting ppm instead of png.  I figure that is
+	  reasonable, pending a rewrite of this program which supports
+	  installing new notepad pages.
 
 2005-01-10 07:57  fpillet
 
@@ -2710,7 +3230,8 @@
 
 2005-01-05 15:09  adridg
 
-	* src/install-todo.c: Avoid printing possible uninitialized buffer.
+	* src/: install-todo.c, pilot-install-todo.c: Avoid printing
+	  possible uninitialized buffer.
 
 2005-01-02 19:44  adridg
 
@@ -2778,12 +3299,12 @@
 
 2004-12-22 15:00  adridg
 
-	* src/read-todos.c: Fix for #1230
+	* src/: pilot-read-todos.c, read-todos.c: Fix for #1230
 
 2004-12-21 19:03  adridg
 
-	* src/: pilot-archive.c, read-todos.c: Deprecate silly -archive and
-	  merge into read-todos.
+	* src/: pilot-archive.c, pilot-read-todos.c, read-todos.c:
+	  Deprecate silly -archive and merge into read-todos.
 
 2004-12-21 18:14  adridg
 
@@ -2795,8 +3316,8 @@
 
 2004-12-21 17:32  adridg
 
-	* src/: pilot-reminders.c, pilot-treofoto.c, read-expenses.c,
-	  reminders.c: Add -w (mandatory) to all
+	* src/: pilot-read-expenses.c, pilot-reminders.c, pilot-treofoto.c,
+	  read-expenses.c, reminders.c: Add -w (mandatory) to all
 
 2004-12-21 17:10  adridg
 
@@ -2805,9 +3326,10 @@
 
 2004-12-21 17:01  adridg
 
-	* src/: pilot-addresses.c, pilot-archive.c, pilot-reminders.c,
-	  pilot-treofoto.c, read-expenses.c, reminders.c, userland.c:
-	  Remove remainder of wonky no-args handling
+	* src/: pilot-addresses.c, pilot-archive.c, pilot-read-expenses.c,
+	  pilot-reminders.c, pilot-treofoto.c, read-expenses.c,
+	  reminders.c, userland.c: Remove remainder of wonky no-args
+	  handling
 
 2004-12-21 16:58  adridg
 
@@ -2828,7 +3350,8 @@
 2004-12-21 14:51  adridg
 
 	* include/pi-userland.h, src/addresses.c, src/pi-nredir.c,
-	  src/pilot-archive.c, src/pilot-nredir.c, src/pilot-reminders.c,
+	  src/pilot-archive.c, src/pilot-nredir.c,
+	  src/pilot-read-expenses.c, src/pilot-reminders.c,
 	  src/pilot-treofoto.c, src/read-expenses.c, src/reminders.c,
 	  src/userland.c: Another thing slapped into userland.
 
@@ -2860,17 +3383,22 @@
 	* src/: addresses.c, dlpsh.c, hinotes.c, install-datebook.c,
 	  install-expenses.c, install-hinote.c, install-memo.c,
 	  install-netsync.c, install-todo.c, install-todos.c,
-	  pilot-dlpsh.c, pilot-hinotes.c, pilot-install-expenses.c,
-	  install-user.c, memos.c, money2qif.c, pi-csd.c, pi-getrom.c,
-	  pi-nredir.c, pi-port.c, pilot-addresses.c, pilot-archive.c,
-	  pilot-clip.c, pilot-csd.c, pilot-dedupe.c, pilot-file.c,
-	  pilot-foto.c, pilot-getrom.c, pilot-memos.c, pilot-nredir.c,
-	  pilot-port.c, pilot-reminders.c, pilot-schlep.c,
-	  pilot-treofoto.c, pilot-wav.c, pilot-xfer.c, plu_args.c,
-	  read-expenses.c, read-ical.c, read-notepad.c, read-palmpix.c,
-	  read-screenshot.c, read-todos.c, read-veo.c, reminders.c,
-	  userland.c: Update userland to handle the relocation of
-	  userland.h to include/pi-userland.h
+	  pilot-dlpsh.c, pilot-hinotes.c, pilot-install-datebook.c,
+	  pilot-install-expenses.c, pilot-install-hinote.c,
+	  pilot-install-memo.c, pilot-install-netsync.c,
+	  pilot-install-todo.c, pilot-install-todos.c, install-user.c,
+	  memos.c, money2qif.c, pi-csd.c, pi-getrom.c, pi-nredir.c,
+	  pi-port.c, pilot-addresses.c, pilot-archive.c, pilot-clip.c,
+	  pilot-csd.c, pilot-dedupe.c, pilot-file.c, pilot-foto.c,
+	  pilot-getrom.c, pilot-install-user.c, pilot-memos.c,
+	  pilot-nredir.c, pilot-port.c, pilot-read-expenses.c,
+	  pilot-read-ical.c, pilot-read-notepad.c, pilot-read-palmpix.c,
+	  pilot-read-screenshot.c, pilot-read-todos.c, pilot-read-veo.c,
+	  pilot-reminders.c, pilot-schlep.c, pilot-treofoto.c, pilot-wav.c,
+	  pilot-xfer.c, plu_args.c, read-expenses.c, read-ical.c,
+	  read-notepad.c, read-palmpix.c, read-screenshot.c, read-todos.c,
+	  read-veo.c, reminders.c, userland.c: Update userland to handle
+	  the relocation of userland.h to include/pi-userland.h
 
 2004-12-20 17:34  desrod
 
@@ -3065,7 +3593,9 @@
 
 2004-12-15 11:24  fpillet
 
-	* src/: pilot-addresses.c, pilot-archive.c, read-expenses.c,
+	* src/: pilot-addresses.c, pilot-archive.c, pilot-read-expenses.c,
+	  pilot-read-ical.c, pilot-read-notepad.c, pilot-read-screenshot.c,
+	  pilot-read-todos.c, pilot-read-veo.c, read-expenses.c,
 	  read-ical.c, read-notepad.c, read-screenshot.c, read-todos.c,
 	  read-veo.c: completed updating code for new dlp_ReadAppBlock
 	  prototype
@@ -3074,7 +3604,8 @@
 
 	* src/: addresses.c, hinotes.c, install-expenses.c,
 	  install-hinote.c, install-memo.c, memos.c, money2qif.c,
-	  pilot-hinotes.c, pilot-install-expenses.c, pilot-memos.c:
+	  pilot-hinotes.c, pilot-install-expenses.c,
+	  pilot-install-hinote.c, pilot-install-memo.c, pilot-memos.c:
 	  updating code for new prototype of dlp_ReadAppBlock
 
 2004-12-15 11:03  fpillet
@@ -3244,13 +3775,13 @@
 	  libpisync/sync.c, src/debugsh.c, src/memos.c, src/pi-port.c,
 	  src/pilot-debug.c, src/pilot-debugsh.c, src/pilot-dedupe.c,
 	  src/pilot-file.c, src/pilot-foto.c, src/pilot-mail.c,
-	  src/pilot-memos.c, src/pilot-port.c, src/pilot-wav.c,
-	  src/pilot-xfer.c, src/read-ical.c, tests/dlp-test.c: Changes from
-	  MarkSpace that are useful.  Need to talk to Scott Gruby or
-	  someone from MarkSpace about the rest.  People using 0.12 will
-	  find compile errors with this in their own code (*pilot) around
-	  the id -> id_ changes, but they're minor (and important for
-	  Objective-C).
+	  src/pilot-memos.c, src/pilot-port.c, src/pilot-read-ical.c,
+	  src/pilot-wav.c, src/pilot-xfer.c, src/read-ical.c,
+	  tests/dlp-test.c: Changes from MarkSpace that are useful.  Need
+	  to talk to Scott Gruby or someone from MarkSpace about the rest.
+	  People using 0.12 will find compile errors with this in their own
+	  code (*pilot) around the id -> id_ changes, but they're minor
+	  (and important for Objective-C).
 
 2004-12-09 18:47  adridg
 
@@ -3298,10 +3829,14 @@
 	  src/install-netsync.c, src/install-todo.c, src/install-todos.c,
 	  src/money2qif.c, src/pi-getrom.c, src/pilot-dedupe.c,
 	  src/pilot-foto.c, src/pilot-getrom.c, src/pilot-hinotes.c,
-	  src/pilot-install-expenses.c, src/pilot-schlep.c,
-	  src/pilot-wav.c, src/pi-nredir.c, src/pilot-nredir.c,
-	  src/read-notepad.c, src/read-todos.c: Bump version from -rc16 to
-	  -pre0 for now, to lessen the confusion with bug reporting.
+	  src/pilot-install-datebook.c, src/pilot-install-expenses.c,
+	  src/pilot-install-hinote.c, src/pilot-install-netsync.c,
+	  src/pilot-install-todo.c, src/pilot-install-todos.c,
+	  src/pilot-schlep.c, src/pilot-wav.c, src/pi-nredir.c,
+	  src/pilot-nredir.c, src/pilot-read-notepad.c,
+	  src/pilot-read-todos.c, src/read-notepad.c, src/read-todos.c:
+	  Bump version from -rc16 to -pre0 for now, to lessen the confusion
+	  with bug reporting.
 
 	  Also fixed the serial:/dev/ttyUSB0 issue in userland conduits
 
@@ -3416,12 +3951,13 @@
 
 2004-11-21 15:35  adridg
 
-	* src/install-user.c: Cleanup usage message; basically, the first
-	  bit of the string set in OtherOptionHelp immediately follows the
-	  usage output that summarizes the options -- it should not contain
-	  any of the flags or options, but at most contain a name for the
-	  'remaining arguments' like "FILES ...".  Nearly all conduits use
-	  \n\n here, since there's no sensible remaining arguments.
+	* src/: install-user.c, pilot-install-user.c: Cleanup usage
+	  message; basically, the first bit of the string set in
+	  OtherOptionHelp immediately follows the usage output that
+	  summarizes the options -- it should not contain any of the flags
+	  or options, but at most contain a name for the 'remaining
+	  arguments' like "FILES ...".	Nearly all conduits use \n\n here,
+	  since there's no sensible remaining arguments.
 
 	  Make the conduit obey --quiet.
 
@@ -3435,10 +3971,10 @@
 
 2004-11-21 13:09  desrod
 
-	* src/install-user.c: Rolled back to the previous example output of
-	  this conduit. There be bugs here with the --help and --usage
-	  output doubling up, and reporting out of order. The output looks
-	  horrible. Must fix soon.
+	* src/: install-user.c, pilot-install-user.c: Rolled back to the
+	  previous example output of this conduit. There be bugs here with
+	  the --help and --usage output doubling up, and reporting out of
+	  order. The output looks horrible. Must fix soon.
 
 2004-11-20 20:10  adridg
 
@@ -3458,13 +3994,14 @@
 2004-11-17 17:48  adridg
 
 	* src/: install-expenses.c, install-hinote.c, install-memo.c,
-	  memos.c, pilot-install-expenses.c, pilot-memos.c: Factor out
-	  category-finding code and use userland.
+	  memos.c, pilot-install-expenses.c, pilot-install-hinote.c,
+	  pilot-install-memo.c, pilot-memos.c: Factor out category-finding
+	  code and use userland.
 
 2004-11-17 11:30  warp
 
-	* src/install-memo.c: Fix it to work again instead of writing empty
-	  memos.
+	* src/: install-memo.c, pilot-install-memo.c: Fix it to work again
+	  instead of writing empty memos.
 
 	  When using -t only have the filename as the title, not the full
 	  path given.
@@ -3547,7 +4084,8 @@
 2004-11-14 17:07  adridg
 
 	* src/: dlpsh.c, install-datebook.c, pilot-dlpsh.c, pilot-file.c,
-	  pilot-treofoto.c: -Wall -Werror based fixes
+	  pilot-install-datebook.c, pilot-treofoto.c: -Wall -Werror based
+	  fixes
 
 2004-11-14 16:53  adridg
 
@@ -3584,7 +4122,7 @@
 2004-11-14 11:41  adridg
 
 	* src/: install-netsync.c, money2qif.c, pi-csd.c, pi-nredir.c,
-	  pilot-csd.c, pilot-nredir.c: Userlandify
+	  pilot-csd.c, pilot-install-netsync.c, pilot-nredir.c: Userlandify
 
 2004-11-14 05:36  knghtbrd
 
@@ -3612,10 +4150,11 @@
 2004-11-13 18:46  adridg
 
 	* src/: install-expenses.c, pilot-install-expenses.c,
-	  read-expenses.c: Use the global string tables from pi-expense.c
-	  in libpisock. Do some more argument checking -- hopefully this is
-	  correct, to avoid NULL amount strings, for instance. I don't have
-	  a copy of Expenses to test with.
+	  pilot-read-expenses.c, read-expenses.c: Use the global string
+	  tables from pi-expense.c in libpisock. Do some more argument
+	  checking -- hopefully this is correct, to avoid NULL amount
+	  strings, for instance. I don't have a copy of Expenses to test
+	  with.
 
 2004-11-13 18:28  adridg
 
@@ -3628,7 +4167,8 @@
 
 2004-11-13 18:21  adridg
 
-	* src/read-expenses.c: Straightforward userlandification
+	* src/: pilot-read-expenses.c, read-expenses.c: Straightforward
+	  userlandification
 
 2004-11-13 10:12  knghtbrd
 
@@ -3637,12 +4177,16 @@
 	  install-todos.c, install-user.c, money2qif.c, pi-getrom.c,
 	  pi-nredir.c, pi-port.c, pilot-clip.c, pilot-dedupe.c,
 	  pilot-foto.c, pilot-getrom.c, pilot-hinotes.c,
-	  pilot-install-expenses.c, pilot-nredir.c, pilot-port.c,
-	  pilot-schlep.c, pilot-wav.c, read-expenses.c, read-todos.c:
-	  Removed all mention to /dev/pilot in src!  serial:/dev/ttyUSB0 is
-	  used instead, just because it's probably a little more obvious
-	  that you shouldn't be making random symlinks as newbies keep
-	  trying to do for /dev/pilot.
+	  pilot-install-datebook.c, pilot-install-expenses.c,
+	  pilot-install-hinote.c, pilot-install-netsync.c,
+	  pilot-install-todo.c, pilot-install-todos.c,
+	  pilot-install-user.c, pilot-nredir.c, pilot-port.c,
+	  pilot-read-expenses.c, pilot-read-todos.c, pilot-schlep.c,
+	  pilot-wav.c, read-expenses.c, read-todos.c: Removed all mention
+	  to /dev/pilot in src!  serial:/dev/ttyUSB0 is used instead, just
+	  because it's probably a little more obvious that you shouldn't be
+	  making random symlinks as newbies keep trying to do for
+	  /dev/pilot.
 
 	  Of course, it means that as soon as the device specs are finished
 	  being hashed out as part of my planned attack on socket code,
@@ -3742,21 +4286,23 @@
 
 2004-11-11 17:47  adridg
 
-	* src/read-palmpix.c: Userlandify. The usual stuff, except for the
-	  exciting function pointer "action", while everyone else uses an
-	  enum and then calls based on that.
+	* src/: pilot-read-palmpix.c, read-palmpix.c: Userlandify. The
+	  usual stuff, except for the exciting function pointer "action",
+	  while everyone else uses an enum and then calls based on that.
 
 2004-11-11 17:29  adridg
 
-	* src/: read-notepad.c, read-palmpix.c, read-screenshot.c,
-	  read-veo.c: Finish being sidetracked: remove broken
-	  protect_files, use userland one, actually check return values,
-	  indent bits touched properly and with braces.
+	* src/: pilot-read-notepad.c, pilot-read-palmpix.c,
+	  pilot-read-screenshot.c, pilot-read-veo.c, read-notepad.c,
+	  read-palmpix.c, read-screenshot.c, read-veo.c: Finish being
+	  sidetracked: remove broken protect_files, use userland one,
+	  actually check return values, indent bits touched properly and
+	  with braces.
 
 2004-11-11 17:15  adridg
 
-	* src/: pilot-foto.c, pilot-treofoto.c, read-palmpix.c: Whitespace
-	  crud before actual fix
+	* src/: pilot-foto.c, pilot-read-palmpix.c, pilot-treofoto.c,
+	  read-palmpix.c: Whitespace crud before actual fix
 
 2004-11-11 17:12  adridg
 
@@ -3776,42 +4322,47 @@
 
 2004-11-10 18:43  adridg
 
-	* src/: read-screenshot.c, read-veo.c: Userlandify. Could use a
-	  reindent, too. The functon protect_files is common to lots of
-	  conduits, should be factored out into userland (and made to be
-	  sensible, like using mkstemp(3)).
+	* src/: pilot-read-screenshot.c, pilot-read-veo.c,
+	  read-screenshot.c, read-veo.c: Userlandify. Could use a reindent,
+	  too. The functon protect_files is common to lots of conduits,
+	  should be factored out into userland (and made to be sensible,
+	  like using mkstemp(3)).
 
 2004-11-10 17:44  adridg
 
-	* src/read-notepad.c: A fair chunk of accidental whitespace
-	  changes, also userlandification. This file needs a total reindent
-	  anyway.
+	* src/: pilot-read-notepad.c, read-notepad.c: A fair chunk of
+	  accidental whitespace changes, also userlandification. This file
+	  needs a total reindent anyway.
 
 2004-11-10 17:36  adridg
 
-	* src/: install-todo.c, read-todos.c: no cookie. wish that the
-	  initial poptification had been consistent in naming the
-	  poptContext & the variable used to scan the args
+	* src/: install-todo.c, pilot-install-todo.c, pilot-read-todos.c,
+	  read-todos.c: no cookie. wish that the initial poptification had
+	  been consistent in naming the poptContext & the variable used to
+	  scan the args
 
 2004-11-10 17:33  adridg
 
-	* src/: install-todo.c, install-todos.c, read-todos.c: Remember to
-	  complain about unhandled options (indicates programming error --
-	  popt table says to return value and it's not handled.
+	* src/: install-todo.c, install-todos.c, pilot-install-todo.c,
+	  pilot-install-todos.c, pilot-read-todos.c, read-todos.c: Remember
+	  to complain about unhandled options (indicates programming error
+	  -- popt table says to return value and it's not handled.
 
 2004-11-10 16:21  adridg
 
-	* src/: install-todo.c, install-todos.c, read-todos.c: Userlandify.
-	  Normalize error messages. This stuff needs refactoring,
-	  especially since install-todo -f and install-todos -f overlaps so
-	  much.
+	* src/: install-todo.c, install-todos.c, pilot-install-todo.c,
+	  pilot-install-todos.c, pilot-read-todos.c, read-todos.c:
+	  Userlandify. Normalize error messages. This stuff needs
+	  refactoring, especially since install-todo -f and install-todos
+	  -f overlaps so much.
 
 2004-11-09 17:56  adridg
 
-	* src/: hinotes.c, install-hinote.c, pilot-hinotes.c:
-	  Userlandification of both; standardize error messages. Bail if <
-	  2 args.  Could make use of findcategory in plu_, though also uses
-	  "feature" of numbered categories. Hinotes deserves an outdent.
+	* src/: hinotes.c, install-hinote.c, pilot-hinotes.c,
+	  pilot-install-hinote.c: Userlandification of both; standardize
+	  error messages. Bail if < 2 args.  Could make use of findcategory
+	  in plu_, though also uses "feature" of numbered categories.
+	  Hinotes deserves an outdent.
 
 2004-11-09 01:02  knghtbrd
 
@@ -3829,17 +4380,19 @@
 
 2004-11-08 18:37  adridg
 
-	* src/install-memo.c: usage string; bail if no args
+	* src/: install-memo.c, pilot-install-memo.c: usage string; bail if
+	  no args
 
 2004-11-08 18:03  adridg
 
-	* src/read-ical.c: Userlandification. Make error messages
-	  consistent. Bail if no args.	Would like to bail if no ical, but
-	  can't detect it reliably.
+	* src/: pilot-read-ical.c, read-ical.c: Userlandification. Make
+	  error messages consistent. Bail if no args.  Would like to bail
+	  if no ical, but can't detect it reliably.
 
 2004-11-08 17:05  adridg
 
-	* src/install-datebook.c: Complain if no-args
+	* src/: install-datebook.c, pilot-install-datebook.c: Complain if
+	  no-args
 
 2004-11-08 17:00  adridg
 
@@ -3848,7 +4401,8 @@
 
 2004-11-08 16:49  adridg
 
-	* src/: pilot-wav.c, read-ical.c, read-palmpix.c, read-veo.c:
+	* src/: pilot-read-ical.c, pilot-read-palmpix.c, pilot-read-veo.c,
+	  pilot-wav.c, read-ical.c, read-palmpix.c, read-veo.c:
 	  poptification from Matt & Larry
 
 2004-11-07 16:58  adridg
@@ -3877,15 +4431,18 @@
 	* src/: Makefile.am, addresses.c, install-datebook.c,
 	  install-memo.c, install-netsync.c, install-todo.c,
 	  install-todos.c, install-user.c, memos.c, pilot-addresses.c,
-	  pilot-memos.c, pilot-xfer.c, plu_args.c, userland.c, userland.h:
-	  Split arg parsing out of userland.c into its own file.  Still
-	  need to clean up userland.h a little, but have decided that
-	  seperate headers probably should be avoided if possible.  David
-	  doesn't like the plu_ namespace, but didn't have a better
-	  suggestion.  plu_args.c may get renamed if he comes up with one,
-	  along with a sed.  Tried not to make significant other changes
-	  this run, but I did remove a couple of highly-unwise exit() calls
-	  without bothering to close the link to the PDA..oops!
+	  pilot-install-datebook.c, pilot-install-memo.c,
+	  pilot-install-netsync.c, pilot-install-todo.c,
+	  pilot-install-todos.c, pilot-install-user.c, pilot-memos.c,
+	  pilot-xfer.c, plu_args.c, userland.c, userland.h: Split arg
+	  parsing out of userland.c into its own file.	Still need to clean
+	  up userland.h a little, but have decided that seperate headers
+	  probably should be avoided if possible.  David doesn't like the
+	  plu_ namespace, but didn't have a better suggestion.	plu_args.c
+	  may get renamed if he comes up with one, along with a sed.  Tried
+	  not to make significant other changes this run, but I did remove
+	  a couple of highly-unwise exit() calls without bothering to close
+	  the link to the PDA..oops!
 
 2004-11-06 21:23  desrod
 
@@ -3909,7 +4466,8 @@
 
 2004-11-06 17:00  adridg
 
-	* src/install-datebook.c: Userlandification, accidental whitespace
+	* src/: install-datebook.c, pilot-install-datebook.c:
+	  Userlandification, accidental whitespace
 
 2004-11-06 16:44  adridg
 
@@ -3967,17 +4525,17 @@
 
 2004-11-05 17:45  adridg
 
-	* src/: Makefile.am, install-memo.c: Port to popt / userland. This
-	  was a bit of a mess, seems earlier it handled multiple files,
-	  which has been mercilessly ripped out (and made buggy in the
-	  process).
+	* src/: Makefile.am, install-memo.c, pilot-install-memo.c: Port to
+	  popt / userland. This was a bit of a mess, seems earlier it
+	  handled multiple files, which has been mercilessly ripped out
+	  (and made buggy in the process).
 
 	  TODO: Check if the WriteUserInfo is needed.
 
 2004-11-05 16:56  adridg
 
-	* src/install-netsync.c: Port to userland, modify arg setting a
-	  little (needs test)
+	* src/: install-netsync.c, pilot-install-netsync.c: Port to
+	  userland, modify arg setting a little (needs test)
 
 2004-11-05 16:55  adridg
 
@@ -3991,8 +4549,8 @@
 
 2004-11-05 16:18  adridg
 
-	* src/install-todo.c: - port to userland lib - fix breakages from
-	  popt porting - fix example strings
+	* src/: install-todo.c, pilot-install-todo.c: - port to userland
+	  lib - fix breakages from popt porting - fix example strings
 
 	  TODO: figure out if the WriteUserInfo call is needed (or indeed,
 	  doesn't totally break the Pilot by not having a username set).
@@ -4023,14 +4581,15 @@
 
 2004-11-04 19:26  adridg
 
-	* src/: Makefile.am, install-todos.c: Port install-todos to
-	  userland. TODO: fix indent, change reader function to user
-	  fgets() instead of reading entire file into memory.
+	* src/: Makefile.am, install-todos.c, pilot-install-todos.c: Port
+	  install-todos to userland. TODO: fix indent, change reader
+	  function to user fgets() instead of reading entire file into
+	  memory.
 
 2004-11-04 19:06  adridg
 
-	* src/: Makefile.am, install-user.c: Port install-user to new
-	  factored-out userland lib.
+	* src/: Makefile.am, install-user.c, pilot-install-user.c: Port
+	  install-user to new factored-out userland lib.
 
 2004-11-04 19:01  adridg
 
@@ -4075,9 +4634,10 @@
 
 2004-11-03 18:56  knghtbrd
 
-	* src/read-notepad.c: Fix minor compile niggle (no progname in that
-	  function).  Raises interesting question for error messages, but
-	  not one worth answering right now.
+	* src/: pilot-read-notepad.c, read-notepad.c: Fix minor compile
+	  niggle (no progname in that function).  Raises interesting
+	  question for error messages, but not one worth answering right
+	  now.
 
 2004-11-02 19:56  desrod
 
@@ -4088,13 +4648,18 @@
 	  pi-port.c, pilot-addresses.c, pilot-archive.c, pilot-clip.c,
 	  pilot-csd.c, pilot-dedupe.c, pilot-dlpsh.c, pilot-file.c,
 	  pilot-foto.c, pilot-getram.c, pilot-getrom.c,
-	  pilot-getromtoken.c, pilot-hinotes.c, pilot-install-expenses.c,
-	  pilot-memos.c, pilot-nredir.c, pilot-port.c, pilot-prc.c,
-	  pilot-reminders.c, pilot-schlep.c, pilot-treofoto.c, pilot-wav.c,
-	  pilot-xfer.c, read-expenses.c, read-notepad.c, read-screenshot.c,
-	  read-todos.c, read-veo.c, reminders.c: Fixing some of the
-	  const'ness issues, cleaned up some whitespace and indenting in
-	  other areas. More to come...
+	  pilot-getromtoken.c, pilot-hinotes.c, pilot-install-datebook.c,
+	  pilot-install-expenses.c, pilot-install-hinote.c,
+	  pilot-install-netsync.c, pilot-install-todo.c,
+	  pilot-install-todos.c, pilot-install-user.c, pilot-memos.c,
+	  pilot-nredir.c, pilot-port.c, pilot-prc.c, pilot-read-expenses.c,
+	  pilot-read-notepad.c, pilot-read-screenshot.c,
+	  pilot-read-todos.c, pilot-read-veo.c, pilot-reminders.c,
+	  pilot-schlep.c, pilot-treofoto.c, pilot-wav.c, pilot-xfer.c,
+	  read-expenses.c, read-notepad.c, read-screenshot.c, read-todos.c,
+	  read-veo.c, reminders.c: Fixing some of the const'ness issues,
+	  cleaned up some whitespace and indenting in other areas. More to
+	  come...
 
 2004-11-02 17:56  adridg
 
@@ -4187,7 +4752,9 @@
 	  pi-nredir.c, pilot-addresses.c, pilot-archive.c, pilot-clip.c,
 	  pilot-csd.c, pilot-dlpsh.c, pilot-file.c, pilot-foto.c,
 	  pilot-getram.c, pilot-getrom.c, pilot-install-expenses.c,
-	  pilot-mail.c, pilot-memos.c, pilot-nredir.c, pilot-prc.c,
+	  pilot-install-todos.c, pilot-mail.c, pilot-memos.c,
+	  pilot-nredir.c, pilot-prc.c, pilot-read-expenses.c,
+	  pilot-read-screenshot.c, pilot-read-todos.c, pilot-read-veo.c,
 	  pilot-wav.c, read-expenses.c, read-screenshot.c, read-todos.c,
 	  read-veo.c: Merge remaining popt fixes from Larry, so we can get
 	  down to serious bickering about what the options to pilot-xfer
@@ -4214,12 +4781,14 @@
 2004-10-29 03:48  adridg
 
 	* src/Makefile.am, src/hinotes.c, src/install-datebook.c,
-	  src/pilot-hinotes.c, src/install-hinote.c, src/pi-getromtoken.c,
-	  src/pi-port.c, src/pilot-dedupe.c, src/pilot-getromtoken.c,
-	  src/pilot-port.c, src/pilot-reminders.c, src/pilot-schlep.c,
-	  src/pilot-xfer.c, src/read-notepad.c, src/reminders.c,
-	  tests/Makefile.am: All around the mulberry bush .. popt goes the
-	  weasel.
+	  src/pilot-hinotes.c, src/pilot-install-datebook.c,
+	  src/install-hinote.c, src/pi-getromtoken.c, src/pi-port.c,
+	  src/pilot-dedupe.c, src/pilot-getromtoken.c,
+	  src/pilot-install-hinote.c, src/pilot-port.c,
+	  src/pilot-read-notepad.c, src/pilot-reminders.c,
+	  src/pilot-schlep.c, src/pilot-xfer.c, src/read-notepad.c,
+	  src/reminders.c, tests/Makefile.am: All around the mulberry bush
+	  .. popt goes the weasel.
 
 	  Merge patches from Matt for popt support in most places.  Tested
 	  on pilot-xfer, not on the rest.
@@ -4327,13 +4896,19 @@
 	  pilot-archive.c, pilot-clip.c, pilot-csd.c, pilot-debug.c,
 	  pilot-debugsh.c, pilot-dedupe.c, pilot-dlpsh.c, pilot-file.c,
 	  pilot-foto.c, pilot-getram.c, pilot-getrom.c,
-	  pilot-getromtoken.c, pilot-hinotes.c, pilot-install-expenses.c,
-	  pilot-mail.c, pilot-memos.c, pilot-nredir.c, pilot-port.c,
-	  pilot-prc.c, pilot-reminders.c, pilot-schlep.c, pilot-wav.c,
-	  pilot-xfer.c, read-expenses.c, read-ical.c, read-notepad.c,
-	  read-palmpix.c, read-screenshot.c, read-todos.c, read-veo.c,
-	  reminders.c: Updated mode lines to ensure proper indenting going
-	  forward (for those that use a real editor)
+	  pilot-getromtoken.c, pilot-hinotes.c, pilot-install-datebook.c,
+	  pilot-install-expenses.c, pilot-install-hinote.c,
+	  pilot-install-memo.c, pilot-install-netsync.c,
+	  pilot-install-todo.c, pilot-install-todos.c,
+	  pilot-install-user.c, pilot-mail.c, pilot-memos.c,
+	  pilot-nredir.c, pilot-port.c, pilot-prc.c, pilot-read-expenses.c,
+	  pilot-read-ical.c, pilot-read-notepad.c, pilot-read-palmpix.c,
+	  pilot-read-screenshot.c, pilot-read-todos.c, pilot-read-veo.c,
+	  pilot-reminders.c, pilot-schlep.c, pilot-wav.c, pilot-xfer.c,
+	  read-expenses.c, read-ical.c, read-notepad.c, read-palmpix.c,
+	  read-screenshot.c, read-todos.c, read-veo.c, reminders.c: Updated
+	  mode lines to ensure proper indenting going forward (for those
+	  that use a real editor)
 
 2004-10-24 01:21  desrod
 
@@ -4422,7 +4997,8 @@
 
 2004-09-27 00:59  angusa
 
-	* src/read-screenshot.c: fixed width and height being reversed
+	* src/: pilot-read-screenshot.c, read-screenshot.c: fixed width and
+	  height being reversed
 
 	  CV:
 	  ----------------------------------------------------------------------
@@ -4589,24 +5165,27 @@
 
 2004-08-27 01:06  desrod
 
-	* src/: Makefile.am, install-todo.c: Converted install-todo over to
-	  popt, added Makefile.am poke for POPT_LIBS and fixed a few
-	  smaller logic flow issues in the conduit.
+	* src/: Makefile.am, install-todo.c, pilot-install-todo.c:
+	  Converted install-todo over to popt, added Makefile.am poke for
+	  POPT_LIBS and fixed a few smaller logic flow issues in the
+	  conduit.
 
 2004-08-26 22:46  desrod
 
-	* src/install-memo.c: Silly non-portable basename() hack
+	* src/: install-memo.c, pilot-install-memo.c: Silly non-portable
+	  basename() hack
 
 2004-08-26 22:20  desrod
 
-	* src/: Makefile.am, install-memo.c: Converted install-memo over to
-	  popt, incremented changes in Makefile, fixed some common logic
-	  flow problems in the conduit itself, added a parameter for
-	  passing in a filename.
+	* src/: Makefile.am, install-memo.c, pilot-install-memo.c:
+	  Converted install-memo over to popt, incremented changes in
+	  Makefile, fixed some common logic flow problems in the conduit
+	  itself, added a parameter for passing in a filename.
 
 2004-08-26 14:51  desrod
 
-	* src/install-netsync.c: Moved globals out
+	* src/: install-netsync.c, pilot-install-netsync.c: Moved globals
+	  out
 
 2004-08-26 12:01  fpillet
 
@@ -4626,18 +5205,19 @@
 2004-08-26 01:14  desrod
 
 	* src/: Makefile.am, addresses.c, install-netsync.c,
-	  install-user.c: More popt conversions... still more to go.
+	  install-user.c, pilot-install-netsync.c, pilot-install-user.c:
+	  More popt conversions... still more to go.
 
 2004-08-26 00:33  desrod
 
-	* src/install-netsync.c: Completed the first phase of the popt
-	  migration from getopt_long. Only a few more tweaks to go in here
-	  for robustness.
+	* src/: install-netsync.c, pilot-install-netsync.c: Completed the
+	  first phase of the popt migration from getopt_long. Only a few
+	  more tweaks to go in here for robustness.
 
 2004-08-25 12:36  desrod
 
-	* src/install-netsync.c: Converted the option/arg parsing over to
-	  popt from getopt_long
+	* src/: install-netsync.c, pilot-install-netsync.c: Converted the
+	  option/arg parsing over to popt from getopt_long
 
 2004-08-25 11:15  desrod
 
@@ -4826,9 +5406,10 @@
 
 	* bindings/Perl/Pilot.xs, bindings/Python/src/pisock.i,
 	  bindings/Python/src/pisock_wrap.c, src/memos.c, src/pilot-file.c,
-	  src/pilot-memos.c, src/pilot-prc.c, src/read-palmpix.c,
-	  src/read-todos.c, tests/versamail-test.c: updated code to take
-	  modifications in pi-file into account
+	  src/pilot-memos.c, src/pilot-prc.c, src/pilot-read-palmpix.c,
+	  src/pilot-read-todos.c, src/read-palmpix.c, src/read-todos.c,
+	  tests/versamail-test.c: updated code to take modifications in
+	  pi-file into account
 
 2004-08-05 11:30  fpillet
 
@@ -5032,22 +5613,24 @@
 
 2004-07-19 16:35  angusa
 
-	* src/: read-screenshot.c, read-veo.c: Fixed HAVE_PNG defines
+	* src/: pilot-read-screenshot.c, read-screenshot.c,
+	  pilot-read-veo.c, read-veo.c: Fixed HAVE_PNG defines
 
 2004-07-19 13:46  angusa
 
-	* src/read-screenshot.c: Changed some unsigned char buffers to
-	  pi_buffer_t Added support for version 1 screenshots and grayscale
+	* src/: pilot-read-screenshot.c, read-screenshot.c: Changed some
+	  unsigned char buffers to pi_buffer_t Added support for version 1
+	  screenshots and grayscale
 
 2004-07-19 11:04  desrod
 
-	* configure.in, src/Makefile.am, src/read-screenshot.c: Bump to
-	  rc12, add read-screenshot
+	* configure.in, src/Makefile.am, src/pilot-read-screenshot.c,
+	  src/read-screenshot.c: Bump to rc12, add read-screenshot
 
 2004-07-18 21:08  desrod
 
-	* src/install-netsync.c: Negate popt for now, lets keep it building
-	  instead.
+	* src/: install-netsync.c, pilot-install-netsync.c: Negate popt for
+	  now, lets keep it building instead.
 
 2004-07-15 05:43  fpillet
 
@@ -5110,16 +5693,19 @@
 	  src/install-netsync.c, src/memos.c, src/money2qif.c,
 	  src/pi-nredir.c, src/pilot-addresses.c, src/pilot-archive.c,
 	  src/pilot-debugsh.c, src/pilot-dedupe.c, src/pilot-dlpsh.c,
-	  src/pilot-foto.c, src/pilot-hinotes.c, src/pilot-mail.c,
-	  src/pilot-memos.c, src/pilot-nredir.c, src/pilot-reminders.c,
-	  src/pilot-schlep.c, src/pilot-wav.c, src/pilot-xfer.c,
-	  src/read-expenses.c, src/read-ical.c, src/read-notepad.c,
-	  src/read-palmpix.c, src/read-todos.c, src/read-veo.c,
-	  src/reminders.c, tests/dlp-test.c, tests/versamail-test.c,
-	  tests/vfs-test.c: BIG COMMIT: changed several prototypes to take
-	  and return a pi_buffer_t*, so as to be able to download and
-	  upload records and resources bigger than 64k. Several other
-	  tweaks as well.
+	  src/pilot-foto.c, src/pilot-hinotes.c,
+	  src/pilot-install-netsync.c, src/pilot-mail.c, src/pilot-memos.c,
+	  src/pilot-nredir.c, src/pilot-read-expenses.c,
+	  src/pilot-read-ical.c, src/pilot-read-notepad.c,
+	  src/pilot-read-palmpix.c, src/pilot-read-todos.c,
+	  src/pilot-read-veo.c, src/pilot-reminders.c, src/pilot-schlep.c,
+	  src/pilot-wav.c, src/pilot-xfer.c, src/read-expenses.c,
+	  src/read-ical.c, src/read-notepad.c, src/read-palmpix.c,
+	  src/read-todos.c, src/read-veo.c, src/reminders.c,
+	  tests/dlp-test.c, tests/versamail-test.c, tests/vfs-test.c: BIG
+	  COMMIT: changed several prototypes to take and return a
+	  pi_buffer_t*, so as to be able to download and upload records and
+	  resources bigger than 64k. Several other tweaks as well.
 
 2004-06-02 10:22  fpillet
 
@@ -5259,8 +5845,8 @@
 
 2004-05-20 01:18  angusa
 
-	* src/read-palmpix.c: Added histogram, bias and colour correction
-	  options
+	* src/: pilot-read-palmpix.c, read-palmpix.c: Added histogram, bias
+	  and colour correction options
 
 2004-05-20 01:15  angusa
 
@@ -5281,17 +5867,23 @@
 	  install-expenses.c, install-hinote.c, install-memo.c,
 	  install-netsync.c, install-todo.c, install-todos.c,
 	  install-user.c, memos.c, money2qif.c, pilot-dlpsh.c,
-	  pilot-hinotes.c, pilot-install-expenses.c, pilot-memos.c,
-	  pi-csd.c, pi-getram.c, pi-getrom.c, pi-getromtoken.c,
-	  pi-nredir.c, pi-port.c, pilot-addresses.c, pilot-archive.c,
-	  pilot-clip.c, pilot-csd.c, pilot-dedupe.c, pilot-file.c,
-	  pilot-foto.c, pilot-getram.c, pilot-getrom.c,
-	  pilot-getromtoken.c, pilot-mail.c, pilot-nredir.c, pilot-port.c,
-	  pilot-prc.c, pilot-reminders.c, pilot-schlep.c, pilot-wav.c,
-	  pilot-xfer.c, read-expenses.c, read-ical.c, read-notepad.c,
-	  read-palmpix.c, read-todos.c, read-veo.c, reminders.c: Remove
-	  unnecessary prototype references, fix up existing calls to match
-	  the new const declarations in pi-header.h
+	  pilot-hinotes.c, pilot-install-datebook.c,
+	  pilot-install-expenses.c, pilot-install-hinote.c,
+	  pilot-install-memo.c, pilot-install-netsync.c,
+	  pilot-install-todo.c, pilot-install-todos.c,
+	  pilot-install-user.c, pilot-memos.c, pi-csd.c, pi-getram.c,
+	  pi-getrom.c, pi-getromtoken.c, pi-nredir.c, pi-port.c,
+	  pilot-addresses.c, pilot-archive.c, pilot-clip.c, pilot-csd.c,
+	  pilot-dedupe.c, pilot-file.c, pilot-foto.c, pilot-getram.c,
+	  pilot-getrom.c, pilot-getromtoken.c, pilot-mail.c,
+	  pilot-nredir.c, pilot-port.c, pilot-prc.c, pilot-read-expenses.c,
+	  pilot-read-ical.c, pilot-read-notepad.c, pilot-read-palmpix.c,
+	  pilot-read-todos.c, pilot-read-veo.c, pilot-reminders.c,
+	  pilot-schlep.c, pilot-wav.c, pilot-xfer.c, read-expenses.c,
+	  read-ical.c, read-notepad.c, read-palmpix.c, read-todos.c,
+	  read-veo.c, reminders.c: Remove unnecessary prototype references,
+	  fix up existing calls to match the new const declarations in
+	  pi-header.h
 
 2004-05-20 00:25  warp
 
@@ -5344,8 +5936,8 @@
 
 2004-05-18 12:59  angusa
 
-	* src/read-veo.c: Added better colour correction algorithm and bias
-	  to adjust the brightness.
+	* src/: pilot-read-veo.c, read-veo.c: Added better colour
+	  correction algorithm and bias to adjust the brightness.
 
 2004-05-18 12:56  angusa
 
@@ -5479,8 +6071,8 @@
 
 2004-05-10 17:27  angusa
 
-	* src/read-veo.c: Added png output.  Single picture output
-	  Histogram adjustment Comments
+	* src/: pilot-read-veo.c, read-veo.c: Added png output.  Single
+	  picture output Histogram adjustment Comments
 
 2004-05-10 04:35  fpillet
 
@@ -5502,12 +6094,13 @@
 	  src/install-memo.c, src/memos.c, src/pi-getromtoken.c,
 	  src/pi-nredir.c, src/pilot-addresses.c, src/pilot-archive.c,
 	  src/pilot-file.c, src/pilot-foto.c, src/pilot-getromtoken.c,
-	  src/pilot-memos.c, src/pilot-nredir.c, src/pilot-prc.c,
-	  src/pilot-wav.c, src/pilot-xfer.c, src/read-notepad.c,
-	  src/read-palmpix.c, src/read-todos.c, tests/versamail-test.c:
-	  Most compiler warnings issued with -Wall are fixed.
-	  test-versamail and pilot-datebook still have a few, but perhaps
-	  someone else can squash them?
+	  src/pilot-install-memo.c, src/pilot-memos.c, src/pilot-nredir.c,
+	  src/pilot-prc.c, src/pilot-wav.c, src/pilot-read-notepad.c,
+	  src/pilot-read-palmpix.c, src/pilot-read-todos.c,
+	  src/pilot-xfer.c, src/read-notepad.c, src/read-palmpix.c,
+	  src/read-todos.c, tests/versamail-test.c: Most compiler warnings
+	  issued with -Wall are fixed.	test-versamail and pilot-datebook
+	  still have a few, but perhaps someone else can squash them?
 
 2004-05-08 19:01  knghtbrd
 
@@ -5561,12 +6154,12 @@
 
 2004-05-06 16:23  knghtbrd
 
-	* configure.in, libpisock/Makefile.am, src/install-netsync.c:
-	  pilot-link now compiles on MacOS X, though with many warnings
-	  yet.	This code walks over one of Florent's unapplied patches a
-	  bit, but is the more correct fix anyway.  Darwin users *must*
-	  make distclean; ./autogen.sh all over again to ensure that
-	  libtool works.
+	* configure.in, libpisock/Makefile.am, src/install-netsync.c,
+	  src/pilot-install-netsync.c: pilot-link now compiles on MacOS X,
+	  though with many warnings yet.  This code walks over one of
+	  Florent's unapplied patches a bit, but is the more correct fix
+	  anyway.  Darwin users *must* make distclean; ./autogen.sh all
+	  over again to ensure that libtool works.
 
 2004-05-06 15:40  warp
 
@@ -5641,14 +6234,19 @@
 	  src/memos.c, src/money2qif.c, src/pd-tty.c, src/pi-csd.c,
 	  src/pi-nredir.c, src/pilot-addresses.c, src/pilot-archive.c,
 	  src/pilot-clip.c, src/pilot-csd.c, src/pilot-dedupe.c,
-	  src/pilot-file.c, src/pilot-foto.c, src/pilot-install-expenses.c,
+	  src/pilot-file.c, src/pilot-foto.c, src/pilot-install-datebook.c,
+	  src/pilot-install-expenses.c, src/pilot-install-hinote.c,
+	  src/pilot-install-netsync.c, src/pilot-install-todo.c,
+	  src/pilot-install-todos.c, src/pilot-install-user.c,
 	  src/pilot-mail.c, src/pilot-memos.c, src/pilot-nredir.c,
-	  src/pilot-reminders.c, src/pilot-schlep.c, src/pilot-wav.c,
-	  src/pilot-xfer.c, src/read-expenses.c, src/read-ical.c,
-	  src/read-notepad.c, src/read-todos.c, src/read-veo.c,
-	  src/reminders.c, src/validate.cc, tests/dlp-test.c,
-	  tests/vfs-test.c: Enormous commit, bring it up to hopefully
-	  current
+	  src/pilot-read-expenses.c, src/pilot-read-ical.c,
+	  src/pilot-read-notepad.c, src/pilot-read-todos.c,
+	  src/pilot-read-veo.c, src/pilot-reminders.c, src/pilot-schlep.c,
+	  src/pilot-wav.c, src/pilot-xfer.c, src/read-expenses.c,
+	  src/read-ical.c, src/read-notepad.c, src/read-todos.c,
+	  src/read-veo.c, src/reminders.c, src/validate.cc,
+	  tests/dlp-test.c, tests/vfs-test.c: Enormous commit, bring it up
+	  to hopefully current
 
 2004-04-29 10:03  desrod
 
@@ -5691,13 +6289,14 @@
 
 2004-02-20 10:19  desrod
 
-	* src/install-memo.c: Oops, one more minor verbage fix
+	* src/: install-memo.c, pilot-install-memo.c: Oops, one more minor
+	  verbage fix
 
 2004-02-20 10:18  desrod
 
-	* src/install-memo.c: Logic fixes, fix for minor getopt bug where
-	  't' required an empty arg, small verbage and usability fixes,
-	  etc.
+	* src/: install-memo.c, pilot-install-memo.c: Logic fixes, fix for
+	  minor getopt bug where 't' required an empty arg, small verbage
+	  and usability fixes, etc.
 
 2004-02-20 09:42  desrod
 
@@ -5732,20 +6331,23 @@
 
 2004-01-18 11:26  desrod
 
-	* src/read-palmpix.c: Deallocate the arg instead of losing it
+	* src/: pilot-read-palmpix.c, read-palmpix.c: Deallocate the arg
+	  instead of losing it
 
 2004-01-18 10:48  desrod
 
-	* ChangeLog, src/read-veo.c: Code formatting changes, added
-	  function doc headers, misc. cleanups
+	* ChangeLog, src/pilot-read-veo.c, src/read-veo.c: Code formatting
+	  changes, added function doc headers, misc. cleanups
 
 2004-01-18 10:00  desrod
 
-	* src/install-netsync.c: Revert priv_strdup() back out.
+	* src/: install-netsync.c, pilot-install-netsync.c: Revert
+	  priv_strdup() back out.
 
 2004-01-18 09:58  desrod
 
-	* src/install-netsync.c: Revert priv_strdup back out.
+	* src/: install-netsync.c, pilot-install-netsync.c: Revert
+	  priv_strdup back out.
 
 2004-01-18 09:57  desrod
 
@@ -5765,8 +6367,8 @@
 
 2004-01-17 18:42  desrod
 
-	* src/: install-netsync.c, install-user.c: Code refactoring,
-	  cleanup.
+	* src/: install-netsync.c, install-user.c, pilot-install-netsync.c,
+	  pilot-install-user.c: Code refactoring, cleanup.
 
 2004-01-17 18:14  desrod
 
@@ -5834,13 +6436,14 @@
 
 	* src/: Makefile.am, debugsh.c, pilot-debugsh.c, kittykiller.c,
 	  money2qif.c, pi-getromtoken.c, pilot-addresses.c, pilot-debug.c,
-	  pilot-file.c, pilot-getromtoken.c, pilot-reminders.c,
-	  read-expenses.c, reminders.c: Minor formatting, removal of unused
-	  headers, misc.
+	  pilot-file.c, pilot-getromtoken.c, pilot-read-expenses.c,
+	  pilot-reminders.c, read-expenses.c, reminders.c: Minor
+	  formatting, removal of unused headers, misc.
 
 2003-12-30 18:19  desrod
 
-	* src/read-palmpix.c: Added function doc headers
+	* src/: pilot-read-palmpix.c, read-palmpix.c: Added function doc
+	  headers
 
 2003-12-30 18:19  desrod
 
@@ -5849,7 +6452,8 @@
 
 2003-12-30 18:17  desrod
 
-	* src/: read-todos.c, pilot-wav.c: Minor formatting cleanup
+	* src/: pilot-read-todos.c, read-todos.c, pilot-wav.c: Minor
+	  formatting cleanup
 
 2003-12-30 18:13  desrod
 
@@ -5857,17 +6461,18 @@
 
 2003-12-30 18:10  desrod
 
-	* src/read-notepad.c: Support for "compressed" Notepad records
+	* src/: pilot-read-notepad.c, read-notepad.c: Support for
+	  "compressed" Notepad records
 
 2003-12-30 18:09  desrod
 
-	* src/read-veo.c: C99 comments, minor type fixes, remove unused
-	  vars
+	* src/: pilot-read-veo.c, read-veo.c: C99 comments, minor type
+	  fixes, remove unused vars
 
 2003-12-30 18:09  desrod
 
-	* src/install-todo.c: Fix closing cleanup, missing WriteUserInfo
-	  call, cleaned up sd call, remove cruft.
+	* src/: install-todo.c, pilot-install-todo.c: Fix closing cleanup,
+	  missing WriteUserInfo call, cleaned up sd call, remove cruft.
 
 2003-12-30 18:09  desrod
 
@@ -5880,7 +6485,7 @@
 
 2003-12-30 18:08  desrod
 
-	* src/install-user.c: Minor type cleanups
+	* src/: install-user.c, pilot-install-user.c: Minor type cleanups
 
 2003-12-30 18:08  desrod
 
@@ -5904,12 +6509,13 @@
 
 2003-12-21 14:44  desrod
 
-	* ChangeLog, src/install-user.c: Enforce a positive UserID, even if
-	  a negative was passed in.
+	* ChangeLog, src/install-user.c, src/pilot-install-user.c: Enforce
+	  a positive UserID, even if a negative was passed in.
 
 2003-12-21 13:23  desrod
 
-	* include/pi-notepad.h, src/read-notepad.c:
+	* include/pi-notepad.h, src/pilot-read-notepad.c,
+	  src/read-notepad.c:
 	  Support for "compressed" Notepad records, closes issue #913
 
 2003-12-11 12:00  desrod
@@ -5972,8 +6578,8 @@
 2003-10-06 07:54  desrod
 
 	* ChangeLog, bindings/Python/src/pisock_wrap.c, include/pi-file.h,
-	  libpisock/pi-file.c, src/ccexample.cc, src/read-ical.c: Closing
-	  some outstanding Debian bugs
+	  libpisock/pi-file.c, src/ccexample.cc, src/pilot-read-ical.c,
+	  src/read-ical.c: Closing some outstanding Debian bugs
 
 2003-10-06 07:17  desrod
 
@@ -6033,9 +6639,10 @@
 
 	* ChangeLog, doc/man/read-palmpix.1.in, doc/man/read-veo.1.in,
 	  include/Makefile.am, include/pi-veo.h, libpisock/Makefile.am,
-	  libpisock/veo.c, src/Makefile.am, src/read-veo.c: New conduit
-	  read-veo and support files added Makefiles changed to compile new
-	  conduit read-palmix documentation updated
+	  libpisock/veo.c, src/Makefile.am, src/pilot-read-veo.c,
+	  src/read-veo.c: New conduit read-veo and support files added
+	  Makefiles changed to compile new conduit read-palmix
+	  documentation updated
 
 2003-07-18 12:15  jpr
 
@@ -6195,8 +6802,8 @@
 
 2003-07-01 14:30  desrod
 
-	* src/read-todos.c: Fixed a non-exit issue when no arguments were
-	  passed
+	* src/: pilot-read-todos.c, read-todos.c: Fixed a non-exit issue
+	  when no arguments were passed
 
 2003-07-01 13:07  jpr
 
@@ -6225,8 +6832,8 @@
 
 2003-07-01 12:18  desrod
 
-	* src/: install-user.c, pilot-xfer.c: Small output changes,
-	  corrected syntax example
+	* src/: install-user.c, pilot-install-user.c, pilot-xfer.c: Small
+	  output changes, corrected syntax example
 
 2003-07-01 11:19  jpr
 
@@ -6291,7 +6898,7 @@
 2003-06-17 19:05  desrod
 
 	* src/: dlpsh.c, install-todo.c, kittykiller.c, pilot-dlpsh.c,
-	  pilot-xfer.c: Minor code cleanup
+	  pilot-install-todo.c, pilot-xfer.c: Minor code cleanup
 
 2003-06-17 18:26  desrod
 
@@ -6392,14 +6999,19 @@
 	* src/: addresses.c, dlpsh.c, getopt.c, getopt1.c, hinotes.c,
 	  install-datebook.c, install-expenses.c, install-hinote.c,
 	  install-memo.c, pilot-dlpsh.c, pilot-hinotes.c,
-	  pilot-install-expenses.c, install-netsync.c, install-todo.c,
-	  install-todos.c, install-user.c, memos.c, money2qif.c,
-	  parsedate.c, pi-csd.c, pi-getram.c, pi-getrom.c,
+	  pilot-install-datebook.c, pilot-install-expenses.c,
+	  pilot-install-hinote.c, pilot-install-memo.c, install-netsync.c,
+	  install-todo.c, install-todos.c, install-user.c, memos.c,
+	  money2qif.c, parsedate.c, pi-csd.c, pi-getram.c, pi-getrom.c,
 	  pi-getromtoken.c, pi-nredir.c, pi-port.c, pilot-addresses.c,
 	  pilot-archive.c, pilot-clip.c, pilot-csd.c, pilot-dedupe.c,
 	  pilot-file.c, pilot-getram.c, pilot-getrom.c,
-	  pilot-getromtoken.c, pilot-mail.c, pilot-memos.c, pilot-nredir.c,
-	  pilot-port.c, pilot-prc.c, pilot-reminders.c, pilot-schlep.c,
+	  pilot-getromtoken.c, pilot-install-netsync.c,
+	  pilot-install-todo.c, pilot-install-todos.c,
+	  pilot-install-user.c, pilot-mail.c, pilot-memos.c,
+	  pilot-nredir.c, pilot-port.c, pilot-prc.c, pilot-read-expenses.c,
+	  pilot-read-ical.c, pilot-read-notepad.c, pilot-read-palmpix.c,
+	  pilot-read-todos.c, pilot-reminders.c, pilot-schlep.c,
 	  pilot-xfer.c, read-expenses.c, read-ical.c, read-notepad.c,
 	  read-palmpix.c, read-todos.c, reminders.c: Lots of code cleanups,
 	  added missing 'default' in switch, fixed pilot-xfer exclude
@@ -6541,9 +7153,10 @@
 2003-02-20 14:07  desrod
 
 	* src/: dlpsh.c, hinotes.c, install-todo.c, pilot-addresses.c,
-	  pilot-dlpsh.c, pilot-hinotes.c, pilot-xfer.c, read-notepad.c,
-	  read-todos.c: Fixed a minor segfault problem in pilot-addresses,
-	  other minor cleanups
+	  pilot-dlpsh.c, pilot-hinotes.c, pilot-install-todo.c,
+	  pilot-read-notepad.c, pilot-read-todos.c, pilot-xfer.c,
+	  read-notepad.c, read-todos.c: Fixed a minor segfault problem in
+	  pilot-addresses, other minor cleanups
 
 2003-01-15 00:12  desrod
 
@@ -6708,15 +7321,19 @@
 	  install-memo.c, install-netsync.c, install-todo.c,
 	  install-todos.c, pi-getromtoken.c, pilot-archive.c,
 	  pilot-dlpsh.c, pilot-getromtoken.c, pilot-hinotes.c,
-	  pilot-install-expenses.c, pilot-reminders.c, pilot-xfer.c,
-	  read-notepad.c, read-palmpix.c, read-todos.c, reminders.c: Minor
-	  reformatting (sorry Angus =) and cleanup for 0.11.6 release
+	  pilot-install-expenses.c, pilot-install-hinote.c,
+	  pilot-install-memo.c, pilot-install-netsync.c,
+	  pilot-install-todo.c, pilot-install-todos.c,
+	  pilot-read-notepad.c, pilot-read-palmpix.c, pilot-read-todos.c,
+	  pilot-reminders.c, pilot-xfer.c, read-notepad.c, read-palmpix.c,
+	  read-todos.c, reminders.c: Minor reformatting (sorry Angus =) and
+	  cleanup for 0.11.6 release
 
 2002-12-24 17:29  desrod
 
-	* ChangeLog, src/install-memo.c: Many fixes to remove malloc() and
-	  cast bugs, check file sizes before syncronization, fixed missing
-	  't' argument specifier.
+	* ChangeLog, src/install-memo.c, src/pilot-install-memo.c: Many
+	  fixes to remove malloc() and cast bugs, check file sizes before
+	  syncronization, fixed missing 't' argument specifier.
 
 2002-12-24 11:42  desrod
 
@@ -6818,8 +7435,8 @@
 
 2002-12-05 13:20  desrod
 
-	* ChangeLog, src/install-todo.c: Change the author name on
-	  install-todo.c, oops, sorry Martin! =)
+	* ChangeLog, src/install-todo.c, src/pilot-install-todo.c: Change
+	  the author name on install-todo.c, oops, sorry Martin! =)
 
 2002-12-04 08:49  desrod
 
@@ -6882,7 +7499,8 @@
 
 2002-12-02 09:43  angusa
 
-	* src/read-notepad.c: added support for OS5 version 2 notepad
+	* src/: pilot-read-notepad.c, read-notepad.c: added support for OS5
+	  version 2 notepad
 
 2002-12-02 09:41  desrod
 
@@ -6902,8 +7520,13 @@
 	  pi-port.c, pilot-addresses.c, pilot-clip.c, pilot-csd.c,
 	  pilot-dedupe.c, pilot-dlpsh.c, pilot-file.c, pilot-getram.c,
 	  pilot-getrom.c, pilot-getromtoken.c, pilot-hinotes.c,
-	  pilot-install-expenses.c, pilot-mail.c, pilot-memos.c,
-	  pilot-nredir.c, pilot-port.c, pilot-prc.c, pilot-reminders.c,
+	  pilot-install-datebook.c, pilot-install-expenses.c,
+	  pilot-install-hinote.c, pilot-install-memo.c,
+	  pilot-install-netsync.c, pilot-install-todo.c,
+	  pilot-install-todos.c, pilot-install-user.c, pilot-mail.c,
+	  pilot-memos.c, pilot-nredir.c, pilot-port.c, pilot-prc.c,
+	  pilot-read-expenses.c, pilot-read-ical.c, pilot-read-notepad.c,
+	  pilot-read-palmpix.c, pilot-read-todos.c, pilot-reminders.c,
 	  pilot-schlep.c, pilot-xfer.c, read-expenses.c, read-ical.c,
 	  read-notepad.c, read-palmpix.c, read-todos.c, reminders.c:
 	  s/display_splash/print_splash/ for now, restores binary
@@ -6922,14 +7545,18 @@
 	  src/pi-getromtoken.c, src/pi-nredir.c, src/pi-port.c,
 	  src/pilot-clip.c, src/pilot-csd.c, src/pilot-dedupe.c,
 	  src/pilot-file.c, src/pilot-getram.c, src/pilot-getrom.c,
-	  src/pilot-getromtoken.c, src/pilot-install-expenses.c,
-	  src/pilot-mail.c, src/pilot-nredir.c, src/pilot-port.c,
-	  src/pilot-prc.c, src/pilot-reminders.c, src/pilot-schlep.c,
-	  src/read-expenses.c, src/read-ical.c, src/read-notepad.c,
-	  src/read-palmpix.c, src/read-todos.c, src/reminders.c: Pedantic
-	  cleanups, cleaned up location of getopt_long() structures, added
-	  all missing --long options, etc. and a bunch of things I probably
-	  forgot I added.
+	  src/pilot-getromtoken.c, src/pilot-install-datebook.c,
+	  src/pilot-install-expenses.c, src/pilot-install-hinote.c,
+	  src/pilot-install-memo.c, src/pilot-install-netsync.c,
+	  src/pilot-install-user.c, src/pilot-mail.c, src/pilot-nredir.c,
+	  src/pilot-port.c, src/pilot-prc.c, src/pilot-read-expenses.c,
+	  src/pilot-read-ical.c, src/pilot-read-notepad.c,
+	  src/pilot-read-palmpix.c, src/pilot-read-todos.c,
+	  src/pilot-reminders.c, src/pilot-schlep.c, src/read-expenses.c,
+	  src/read-ical.c, src/read-notepad.c, src/read-palmpix.c,
+	  src/read-todos.c, src/reminders.c: Pedantic cleanups, cleaned up
+	  location of getopt_long() structures, added all missing --long
+	  options, etc. and a bunch of things I probably forgot I added.
 
 2002-12-01 21:35  desrod
 
@@ -6977,7 +7604,8 @@
 
 2002-12-01 21:30  desrod
 
-	* src/install-todos.c: Expanded display_help() slightly
+	* src/: install-todos.c, pilot-install-todos.c: Expanded
+	  display_help() slightly
 
 2002-12-01 21:29  desrod
 
@@ -6999,8 +7627,8 @@
 
 2002-12-01 21:28  desrod
 
-	* src/install-todo.c: Added new ToDo conduit from Robert A. Kaplan,
-	  code cleanup
+	* src/: install-todo.c, pilot-install-todo.c: Added new ToDo
+	  conduit from Robert A. Kaplan, code cleanup
 
 2002-11-26 16:40  desrod
 
@@ -7260,8 +7888,10 @@
 
 2002-09-13 15:11  jpr
 
-	* ChangeLog, configure.in, src/Makefile.am, src/read-notepad.c,
-	  src/read-palmpix.c: 2002-09-13  JP Rosevear  <jpr@ximian.com>
+	* ChangeLog, configure.in, src/Makefile.am,
+	  src/pilot-read-notepad.c, src/pilot-read-palmpix.c,
+	  src/read-notepad.c, src/read-palmpix.c: 2002-09-13  JP Rosevear
+	  <jpr@ximian.com>
 
 		  * src/pilot-datebook/Makefile.am: remove LIBOBJS from
 	  LDADD
@@ -7290,14 +7920,16 @@
 
 2002-08-30 17:29  desrod
 
-	* ChangeLog, src/read-notepad.c, src/read-palmpix.c: Added missing
-	  unistd.h include for F_OK
+	* ChangeLog, src/pilot-read-notepad.c, src/pilot-read-palmpix.c,
+	  src/read-notepad.c, src/read-palmpix.c: Added missing unistd.h
+	  include for F_OK
 
 2002-08-30 17:16  desrod
 
-	* ChangeLog, src/Makefile.am, src/read-notepad.c,
-	  src/read-palmpix.c: AC_LIBOBJ fix for autoconf 2.5x builds,
-	  various fixes for AIX 4.3.3 users
+	* ChangeLog, src/Makefile.am, src/pilot-read-notepad.c,
+	  src/pilot-read-palmpix.c, src/read-notepad.c, src/read-palmpix.c:
+	  AC_LIBOBJ fix for autoconf 2.5x builds, various fixes for AIX
+	  4.3.3 users
 
 2002-08-30 15:44  desrod
 
@@ -7368,8 +8000,13 @@
 	  src/pilot-csd.c, src/pilot-debug.c, src/pilot-dedupe.c,
 	  src/pilot-dlpsh.c, src/pilot-file.c, src/pilot-getram.c,
 	  src/pilot-getrom.c, src/pilot-getromtoken.c, src/pilot-hinotes.c,
-	  src/pilot-install-expenses.c, src/pilot-mail.c,
-	  src/pilot-memos.c, src/pilot-nredir.c, src/pilot-port.c,
+	  src/pilot-install-datebook.c, src/pilot-install-expenses.c,
+	  src/pilot-install-hinote.c, src/pilot-install-memo.c,
+	  src/pilot-install-netsync.c, src/pilot-install-todos.c,
+	  src/pilot-install-user.c, src/pilot-mail.c, src/pilot-memos.c,
+	  src/pilot-nredir.c, src/pilot-port.c, src/pilot-read-expenses.c,
+	  src/pilot-read-ical.c, src/pilot-read-notepad.c,
+	  src/pilot-read-palmpix.c, src/pilot-read-todos.c,
 	  src/pilot-reminders.c, src/pilot-schlep.c, src/pilot-xfer.c,
 	  src/read-expenses.c, src/read-ical.c, src/read-notepad.c,
 	  src/read-palmpix.c, src/read-todos.c, src/reminders.c: Relocated
@@ -7405,7 +8042,7 @@
 
 2002-08-10 16:52  angusa
 
-	* src/read-notepad.c: Fixed bug 240
+	* src/: pilot-read-notepad.c, read-notepad.c: Fixed bug 240
 
 2002-08-10 14:03  angusa
 
@@ -7413,8 +8050,9 @@
 
 2002-08-10 13:09  angusa
 
-	* src/: read-notepad.c, read-palmpix.c: Added protect_files so that
-	  already exsisting files don't get overwritten.
+	* src/: pilot-read-notepad.c, read-notepad.c, pilot-read-palmpix.c,
+	  read-palmpix.c: Added protect_files so that already exsisting
+	  files don't get overwritten.
 
 2002-08-09 09:43  jpr
 
@@ -7459,8 +8097,8 @@
 2002-08-06 04:51  desrod
 
 	* bindings/Perl/test.pl, libpisock/freebsdusb.c,
-	  src/install-todos.c, src/pilot-xfer.c, src/sync-plan.PL: Last
-	  minute fixes before 0.11.2 release
+	  src/install-todos.c, src/pilot-install-todos.c, src/pilot-xfer.c,
+	  src/sync-plan.PL: Last minute fixes before 0.11.2 release
 
 2002-08-02 07:17  desrod
 
@@ -7507,9 +8145,9 @@
 	  src/pi-port.c, src/pilot-csd.c, src/pilot-debug.c,
 	  src/pilot-dedupe.c, src/pilot-dlpsh.c, src/pilot-file.c,
 	  src/pilot-install-expenses.c, src/pilot-memos.c,
-	  src/pilot-port.c, src/pilot-prc.c, src/pilot-xfer.c,
-	  src/read-expenses.c: Cleanup, typos fixed, Perl $prefix fix,
-	  FreeBSD updates
+	  src/pilot-port.c, src/pilot-prc.c, src/pilot-read-expenses.c,
+	  src/pilot-xfer.c, src/read-expenses.c: Cleanup, typos fixed, Perl
+	  $prefix fix, FreeBSD updates
 
 2002-07-30 10:57  desrod
 
@@ -7557,14 +8195,14 @@
 
 2002-07-23 11:02  desrod
 
-	* ChangeLog, libpisock/dlp.c, src/install-datebook.c: Fixes for
-	  wrong number of fields encountered, updated to getopt_long,
-	  cleansed
+	* ChangeLog, libpisock/dlp.c, src/install-datebook.c,
+	  src/pilot-install-datebook.c: Fixes for wrong number of fields
+	  encountered, updated to getopt_long, cleansed
 
 2002-07-22 21:40  desrod
 
-	* src/: dlpsh.c, install-netsync.c, install-user.c, pilot-dlpsh.c:
-	  More C89 fixes
+	* src/: dlpsh.c, install-netsync.c, install-user.c, pilot-dlpsh.c,
+	  pilot-install-netsync.c, pilot-install-user.c: More C89 fixes
 
 2002-07-21 20:39  desrod
 
@@ -7580,21 +8218,26 @@
 	  pilot-clip.c, pilot-csd.c, pilot-debug.c, pilot-dedupe.c,
 	  pilot-dlpsh.c, pilot-file.c, pilot-getram.c, pilot-getrom.c,
 	  pilot-getromtoken.c, pilot-hinotes.c, pilot-install-expenses.c,
-	  pilot-mail.c, pilot-memos.c, pilot-nredir.c, pilot-port.c,
-	  pilot-prc.c, pilot-reminders.c, pilot-schlep.c, pilot-xfer.c,
-	  read-expenses.c, read-ical.c, read-notepad.c, read-palmpix.c,
-	  read-todos.c, reminders.c: More C89 fixes,
+	  pilot-install-hinote.c, pilot-install-memo.c,
+	  pilot-install-netsync.c, pilot-install-todos.c,
+	  pilot-install-user.c, pilot-mail.c, pilot-memos.c,
+	  pilot-nredir.c, pilot-port.c, pilot-prc.c, pilot-read-expenses.c,
+	  pilot-read-ical.c, pilot-read-notepad.c, pilot-read-palmpix.c,
+	  pilot-read-todos.c, pilot-reminders.c, pilot-schlep.c,
+	  pilot-xfer.c, read-expenses.c, read-ical.c, read-notepad.c,
+	  read-palmpix.c, read-todos.c, reminders.c: More C89 fixes,
 	  s/print_help/display_help, also s/return/exit(0)/ to return error
 	  to caller
 
 2002-07-21 11:09  desrod
 
-	* src/read-palmpix.c: Missing <string.h> in pilot-datebook-update,
-	  fixed C89 warnings, missing proto for write_png in read-palmpix
+	* src/: pilot-read-palmpix.c, read-palmpix.c: Missing <string.h> in
+	  pilot-datebook-update, fixed C89 warnings, missing proto for
+	  write_png in read-palmpix
 
 2002-07-20 15:50  angusa
 
-	* src/read-notepad.c: fixed typo
+	* src/: pilot-read-notepad.c, read-notepad.c: fixed typo
 
 2002-07-19 16:10  jpr
 
@@ -7609,7 +8252,8 @@
 
 2002-07-19 14:49  angusa
 
-	* src/read-palmpix.c: Cleaned out some old junk
+	* src/: pilot-read-palmpix.c, read-palmpix.c: Cleaned out some old
+	  junk
 
 2002-07-19 14:48  angusa
 
@@ -7723,8 +8367,8 @@
 
 	* libpisock/dlp.c, libpisock/notepad.c, libpisock/palmpix.c,
 	  src/pilot-addresses.c, src/pilot-debug.c, src/pilot-mail.c,
-	  src/pilot-xfer.c, src/read-palmpix.c: Fixed erroneous use of //
-	  in C comments
+	  src/pilot-read-palmpix.c, src/pilot-xfer.c, src/read-palmpix.c:
+	  Fixed erroneous use of // in C comments
 
 2002-07-18 11:45  desrod
 
@@ -7785,7 +8429,8 @@
 
 2002-07-16 17:54  angusa
 
-	* src/read-palmpix.c, include/pi-palmpix.h: Added png output
+	* src/pilot-read-palmpix.c, src/read-palmpix.c,
+	  include/pi-palmpix.h: Added png output
 
 2002-07-16 17:18  jpr
 
@@ -7815,11 +8460,12 @@
 
 2002-07-16 16:52  angusa
 
-	* src/read-notepad.c: Fixed bad ifdef
+	* src/: pilot-read-notepad.c, read-notepad.c: Fixed bad ifdef
 
 2002-07-16 16:48  angusa
 
-	* src/read-notepad.c: Added notepad qualifier to filename.
+	* src/: pilot-read-notepad.c, read-notepad.c: Added notepad
+	  qualifier to filename.
 
 2002-07-16 15:45  angusa
 
@@ -7827,7 +8473,8 @@
 
 2002-07-16 15:44  angusa
 
-	* src/read-notepad.c: Added -t for output type
+	* src/: pilot-read-notepad.c, read-notepad.c: Added -t for output
+	  type
 
 2002-07-14 10:09  jpr
 
@@ -7915,8 +8562,10 @@
 
 2002-07-12 11:22  desrod
 
-	* ChangeLog, src/install-hinote.c, src/read-notepad.c,
-	  src/read-palmpix.c: getopt_long fixes, minor formatting fixes
+	* ChangeLog, src/install-hinote.c, src/pilot-install-hinote.c,
+	  src/pilot-read-notepad.c, src/pilot-read-palmpix.c,
+	  src/read-notepad.c, src/read-palmpix.c: getopt_long fixes, minor
+	  formatting fixes
 
 2002-07-12 11:12  desrod
 
@@ -7931,12 +8580,15 @@
 
 2002-07-12 11:07  desrod
 
-	* src/install-netsync.c: Oops, fixed argument propagation
+	* src/: install-netsync.c, pilot-install-netsync.c: Oops, fixed
+	  argument propagation
 
 2002-07-12 11:04  desrod
 
-	* src/: install-hinote.c, install-netsync.c, install-user.c:
-	  Changed minor options to be a bit more intuitive
+	* src/: install-hinote.c, install-netsync.c, install-user.c,
+	  pilot-install-hinote.c, pilot-install-netsync.c,
+	  pilot-install-user.c: Changed minor options to be a bit more
+	  intuitive
 
 2002-07-12 11:03  desrod
 
@@ -7978,7 +8630,8 @@
 
 2002-07-11 15:29  angusa
 
-	* src/read-notepad.c: Fixed for PNG libs >= 1.0.12
+	* src/: pilot-read-notepad.c, read-notepad.c: Fixed for PNG libs >=
+	  1.0.12
 
 2002-07-11 14:34  desrod
 
@@ -7992,8 +8645,9 @@
 
 2002-07-11 13:35  desrod
 
-	* ChangeLog, src/read-palmpix.c: Changed 'struct U' to 'struct
-	  User' and s/&U/&User/ to match the other conduits
+	* ChangeLog, src/pilot-read-palmpix.c, src/read-palmpix.c: Changed
+	  'struct U' to 'struct User' and s/&U/&User/ to match the other
+	  conduits
 
 2002-07-11 13:24  desrod
 
@@ -8002,11 +8656,11 @@
 
 2002-07-09 16:42  angusa
 
-	* src/read-notepad.c: Fixed output to PPM
+	* src/: pilot-read-notepad.c, read-notepad.c: Fixed output to PPM
 
 2002-07-09 13:10  angusa
 
-	* src/read-notepad.c: Added PNG conversion
+	* src/: pilot-read-notepad.c, read-notepad.c: Added PNG conversion
 
 2002-07-09 13:08  angusa
 
@@ -8107,9 +8761,10 @@
 	  include/pi-palmpix.h, libpisock/Makefile.am, libpisock/connect.c,
 	  libpisock/inet.c, libpisock/notepad.c, libpisock/palmpix.c,
 	  libpisock/serial.c, libpisock/socket.c, libpisock/usb.c,
-	  src/Makefile.am, src/pilot-addresses.c, src/read-notepad.c,
-	  src/read-palmpix.c, tests/dlp-test.c: NEW CONDUITS: read-palmpix,
-	  read-notepad (Angus Ainslie)
+	  src/Makefile.am, src/pilot-addresses.c, src/pilot-read-notepad.c,
+	  src/pilot-read-palmpix.c, src/read-notepad.c, src/read-palmpix.c,
+	  tests/dlp-test.c: NEW CONDUITS: read-palmpix, read-notepad (Angus
+	  Ainslie)
 
 	  src/pilot-datebook: New datebook replacement (Matthias Hessler)
 
@@ -8372,8 +9027,9 @@
 
 2002-04-25 11:15  jpr
 
-	* libpisock/dlp.c, libpisock/net.c, src/install-user.c: 2002-04-25
-	  JP Rosevear  <jpr@ximian.com>
+	* libpisock/dlp.c, libpisock/net.c, src/install-user.c,
+	  src/pilot-install-user.c: 2002-04-25	JP Rosevear
+	  <jpr@ximian.com>
 
 		  * libpisock/connect.c (pilot_connect): read the system
 	  info
@@ -8504,8 +9160,12 @@
 	  src/pi-nredir.c, src/pi-port.c, src/pilot-addresses.c,
 	  src/pilot-clip.c, src/pilot-dedupe.c, src/pilot-dlpsh.c,
 	  src/pilot-getram.c, src/pilot-getrom.c,
-	  src/pilot-install-expenses.c, src/pilot-memos.c,
-	  src/pilot-nredir.c, src/pilot-port.c, src/pilot-reminders.c,
+	  src/pilot-install-datebook.c, src/pilot-install-expenses.c,
+	  src/pilot-install-hinote.c, src/pilot-install-memo.c,
+	  src/pilot-install-netsync.c, src/pilot-install-user.c,
+	  src/pilot-memos.c, src/pilot-nredir.c, src/pilot-port.c,
+	  src/pilot-read-expenses.c, src/pilot-read-ical.c,
+	  src/pilot-read-todos.c, src/pilot-reminders.c,
 	  src/pilot-schlep.c, src/pilot-xfer.c, src/read-expenses.c,
 	  src/read-ical.c, src/read-todos.c, src/reminders.c: Removed
 	  extraneous error strings in 'error:', since they are duplicated
@@ -8878,9 +9538,9 @@
 
 2002-03-18 21:39  desrod
 
-	* ChangeLog, src/install-user.c: Exit cleanly when no arguments are
-	  passed to install-user. Previously would remove UserInfo. Bad,
-	  and fixed now.
+	* ChangeLog, src/install-user.c, src/pilot-install-user.c: Exit
+	  cleanly when no arguments are passed to install-user. Previously
+	  would remove UserInfo. Bad, and fixed now.
 
 2002-03-18 19:20  jpr
 
@@ -9047,8 +9707,9 @@
 2002-03-07 14:30  jpr
 
 	* ChangeLog, read-expenses.c, bindings/Perl/Pilot.xs,
-	  include/pi-expense.h, libpisock/expense.c, src/read-expenses.c:
-	  2002-03-07  JP Rosevear  <jpr@ximian.com>
+	  include/pi-expense.h, libpisock/expense.c,
+	  src/pilot-read-expenses.c, src/read-expenses.c: 2002-03-07  JP
+	  Rosevear  <jpr@ximian.com>
 
 		  * tools/Perl5/Pilot.xs: adjust expense wrappers
 
@@ -9087,12 +9748,15 @@
 	  src/pilot-clip.c, src/pilot-csd.c, src/pilot-debug.c,
 	  src/pilot-dedupe.c, src/pilot-dlpsh.c, src/pilot-file.c,
 	  src/pilot-getram.c, src/pilot-getrom.c, src/pilot-hinotes.c,
-	  src/pilot-install-expenses.c, src/pilot-mail.c,
-	  src/pilot-memos.c, src/pilot-nredir.c, src/pilot-port.c,
-	  src/pilot-prc.c, src/pilot-reminders.c, src/pilot-schlep.c,
-	  src/pilot-xfer.c, src/read-expenses.c, src/read-ical.c,
-	  src/read-todos.c, src/reminders.c: s/PalmHeader/print_splash/ &&
-	  s/Help/print_help/
+	  src/pilot-install-expenses.c, src/pilot-install-hinote.c,
+	  src/pilot-install-memo.c, src/pilot-install-netsync.c,
+	  src/pilot-install-todos.c, src/pilot-install-user.c,
+	  src/pilot-mail.c, src/pilot-memos.c, src/pilot-nredir.c,
+	  src/pilot-port.c, src/pilot-prc.c, src/pilot-read-expenses.c,
+	  src/pilot-read-ical.c, src/pilot-read-todos.c,
+	  src/pilot-reminders.c, src/pilot-schlep.c, src/pilot-xfer.c,
+	  src/read-expenses.c, src/read-ical.c, src/read-todos.c,
+	  src/reminders.c: s/PalmHeader/print_splash/ && s/Help/print_help/
 
 2002-03-01 09:10  desrod
 
@@ -9111,12 +9775,14 @@
 	* ChangeLog, dlpsh.c, install-user.c, pi-nredir.c, pi-port.c,
 	  pilot-schlep.c, read-expenses.c, read-ical.c, read-todos.c,
 	  reminders.c, src/dlpsh.c, src/install-user.c, src/pi-nredir.c,
-	  src/pi-port.c, src/pilot-dlpsh.c, src/pilot-nredir.c,
-	  src/pilot-port.c, src/pilot-reminders.c, src/pilot-schlep.c,
-	  src/read-expenses.c, src/read-ical.c, src/read-todos.c,
-	  src/reminders.c: pilot_connect() cleanup, getopt_long()
-	  conversion/cleanup, general cleaning.  pi-port does not work at
-	  the moment, will fix later.
+	  src/pi-port.c, src/pilot-dlpsh.c, src/pilot-install-user.c,
+	  src/pilot-nredir.c, src/pilot-port.c, src/pilot-read-expenses.c,
+	  src/pilot-read-ical.c, src/pilot-read-todos.c,
+	  src/pilot-reminders.c, src/pilot-schlep.c, src/read-expenses.c,
+	  src/read-ical.c, src/read-todos.c, src/reminders.c:
+	  pilot_connect() cleanup, getopt_long() conversion/cleanup,
+	  general cleaning.  pi-port does not work at the moment, will fix
+	  later.
 
 2002-02-25 09:01  desrod
 
@@ -9149,9 +9815,10 @@
 
 	* ChangeLog, install-user.c, memos.c, money2qif.c, pilot-prc.c,
 	  pilot-xfer.c, src/install-user.c, src/memos.c, src/money2qif.c,
-	  src/pilot-memos.c, src/pilot-prc.c, src/pilot-xfer.c: Lots of
-	  cleanup here. Fixed the fallthrough cases, added --novsf hack to
-	  pilot-xfer to fix a JPilot issue, more stuff.
+	  src/pilot-install-user.c, src/pilot-memos.c, src/pilot-prc.c,
+	  src/pilot-xfer.c: Lots of cleanup here. Fixed the fallthrough
+	  cases, added --novsf hack to pilot-xfer to fix a JPilot issue,
+	  more stuff.
 
 2002-02-20 20:40  desrod
 
@@ -9173,8 +9840,9 @@
 
 2002-02-09 20:38  desrod
 
-	* ChangeLog, install-hinote.c, src/install-hinote.c: PILOTPORT
-	  conversion of install-hinote, flattened
+	* ChangeLog, install-hinote.c, src/install-hinote.c,
+	  src/pilot-install-hinote.c: PILOTPORT conversion of
+	  install-hinote, flattened
 
 2002-02-09 20:18  desrod
 
@@ -9334,8 +10002,9 @@
 
 2002-01-29 23:16  desrod
 
-	* ChangeLog, install-memo.c, src/install-memo.c: Fixed an error
-	  with install-memo reporting erroneous argv[0] on filename
+	* ChangeLog, install-memo.c, src/install-memo.c,
+	  src/pilot-install-memo.c: Fixed an error with install-memo
+	  reporting erroneous argv[0] on filename
 
 2002-01-29 16:29  desrod
 
@@ -9431,12 +10100,17 @@
 	  src/pilot-csd.c, src/pilot-debug.c, src/pilot-dedupe.c,
 	  src/pilot-dlpsh.c, src/pilot-file.c, src/pilot-getram.c,
 	  src/pilot-getrom.c, src/pilot-hinotes.c,
-	  src/pilot-install-expenses.c, src/pilot-mail.c,
-	  src/pilot-memos.c, src/pilot-nredir.c, src/pilot-port.c,
-	  src/pilot-prc.c, src/pilot-reminders.c, src/pilot-schlep.c,
-	  src/pilot-xfer.c, src/read-expenses.c, src/read-ical.c,
-	  src/read-todos.c, src/reminders.c: More annoying whitespace
-	  cleaning, fixing types, should match Coding Guidelines now
+	  src/pilot-install-datebook.c, src/pilot-install-expenses.c,
+	  src/pilot-install-hinote.c, src/pilot-install-memo.c,
+	  src/pilot-install-netsync.c, src/pilot-install-todos.c,
+	  src/pilot-install-user.c, src/pilot-mail.c, src/pilot-memos.c,
+	  src/pilot-nredir.c, src/pilot-port.c, src/pilot-prc.c,
+	  src/pilot-read-expenses.c, src/pilot-read-ical.c,
+	  src/pilot-read-todos.c, src/pilot-reminders.c,
+	  src/pilot-schlep.c, src/pilot-xfer.c, src/read-expenses.c,
+	  src/read-ical.c, src/read-todos.c, src/reminders.c: More annoying
+	  whitespace cleaning, fixing types, should match Coding Guidelines
+	  now
 
 2002-01-26 04:53  desrod
 
@@ -9537,7 +10211,9 @@
 	  src/install-todos.c, src/pi-getram.c, src/pi-getrom.c,
 	  src/pilot-addresses.c, src/pilot-file.c, src/pilot-getram.c,
 	  src/pilot-getrom.c, src/pilot-install-expenses.c,
-	  src/pilot-mail.c, src/pilot-prc.c, src/pilot-reminders.c,
+	  src/pilot-install-todos.c, src/pilot-mail.c, src/pilot-prc.c,
+	  src/pilot-read-expenses.c, src/pilot-read-ical.c,
+	  src/pilot-read-todos.c, src/pilot-reminders.c,
 	  src/pilot-schlep.c, src/pilot-xfer.c, src/read-expenses.c,
 	  src/read-ical.c, src/read-todos.c, src/reminders.c: Type
 	  cleanups. s/idx/i/ # that was stupid of me
@@ -9598,7 +10274,9 @@
 	  src/install-netsync.c, src/money2qif.c, src/pi-getram.c,
 	  src/pi-getrom.c, src/pi-nredir.c, src/pilot-clip.c,
 	  src/pilot-dedupe.c, src/pilot-getram.c, src/pilot-getrom.c,
-	  src/pilot-install-expenses.c, src/pilot-nredir.c,
+	  src/pilot-install-datebook.c, src/pilot-install-expenses.c,
+	  src/pilot-install-hinote.c, src/pilot-install-memo.c,
+	  src/pilot-install-netsync.c, src/pilot-nredir.c,
 	  src/pilot-reminders.c, src/reminders.c: Cleaned up the perror()
 	  printfs, no double-colon, no tabs, libsock/connect.c is still not
 	  quite right
@@ -9616,20 +10294,22 @@
 
 2002-01-23 09:16  desrod
 
-	* ChangeLog, install-netsync.c, src/install-netsync.c: Added the
-	  ability to run install-netsync without host/ip/netmask arguments
+	* ChangeLog, install-netsync.c, src/install-netsync.c,
+	  src/pilot-install-netsync.c: Added the ability to run
+	  install-netsync without host/ip/netmask arguments
 
 2002-01-23 09:07  desrod
 
-	* ChangeLog, install-user.c, src/install-user.c: install-user now
-	  runs without passing User and UserID, as before
+	* ChangeLog, install-user.c, src/install-user.c,
+	  src/pilot-install-user.c: install-user now runs without passing
+	  User and UserID, as before
 
 2002-01-23 07:35  desrod
 
 	* ChangeLog, TODO, dlpsh.c, install-datebook.c, doc/TODO,
-	  src/dlpsh.c, src/install-datebook.c, src/pilot-dlpsh.c: Fixed
-	  install-datebook, added pilot_connect() code, cleaned up dlpsh
-	  printf garbage text.
+	  src/dlpsh.c, src/install-datebook.c, src/pilot-dlpsh.c,
+	  src/pilot-install-datebook.c: Fixed install-datebook, added
+	  pilot_connect() code, cleaned up dlpsh printf garbage text.
 
 2002-01-22 20:13  desrod
 
@@ -9690,9 +10370,12 @@
 	  src/pilot-addresses.c, src/pilot-clip.c, src/pilot-csd.c,
 	  src/pilot-debug.c, src/pilot-debugsh.c, src/pilot-dedupe.c,
 	  src/pilot-dlpsh.c, src/pilot-getram.c, src/pilot-getrom.c,
-	  src/pilot-install-expenses.c, src/pilot-mail.c,
-	  src/pilot-nredir.c, src/pilot-schlep.c, src/pilot-xfer.c,
-	  src/read-ical.c: 2002-01-22  JP Rosevear  <jpr@ximian.com>
+	  src/pilot-install-datebook.c, src/pilot-install-expenses.c,
+	  src/pilot-install-hinote.c, src/pilot-install-memo.c,
+	  src/pilot-install-netsync.c, src/pilot-install-user.c,
+	  src/pilot-mail.c, src/pilot-nredir.c, src/pilot-read-ical.c,
+	  src/pilot-schlep.c, src/pilot-xfer.c, src/read-ical.c: 2002-01-22
+	   JP Rosevear	<jpr@ximian.com>
 
 		  * include/pi-config.h: remove unused file
 
@@ -9725,11 +10408,14 @@
 	  src/pilot-addresses.c, src/pilot-clip.c, src/pilot-csd.c,
 	  src/pilot-dedupe.c, src/pilot-dlpsh.c, src/pilot-file.c,
 	  src/pilot-getram.c, src/pilot-getrom.c, src/pilot-hinotes.c,
+	  src/pilot-install-hinote.c, src/pilot-install-netsync.c,
+	  src/pilot-install-todos.c, src/pilot-install-user.c,
 	  src/pilot-mail.c, src/pilot-nredir.c, src/pilot-port.c,
-	  src/pilot-prc.c, src/pilot-reminders.c, src/pilot-schlep.c,
-	  src/pilot-xfer.c, src/read-expenses.c, src/read-ical.c,
-	  src/read-todos.c, src/reminders.c: 2002-01-22  JP Rosevear
-	  <jpr@ximian.com>
+	  src/pilot-prc.c, src/pilot-read-expenses.c,
+	  src/pilot-read-ical.c, src/pilot-read-todos.c,
+	  src/pilot-reminders.c, src/pilot-schlep.c, src/pilot-xfer.c,
+	  src/read-expenses.c, src/read-ical.c, src/read-todos.c,
+	  src/reminders.c: 2002-01-22  JP Rosevear  <jpr@ximian.com>
 
 		  * addresses.c (main): convert to getopt_long
 
@@ -9756,9 +10442,9 @@
 	  libpisock/pi-header.c, libpisock/serial.c, libpisock/slp.c,
 	  libpisock/socket.c, libpisock/syspkt.c, src/debugsh.c,
 	  src/install-netsync.c, src/pi-getram.c, src/pilot-debugsh.c,
-	  src/pilot-getram.c: General warning cleanup in libsock/* and .
-	  Makefile.in: Make sure . is built first, then tools, editor macro
-	  placement
+	  src/pilot-getram.c, src/pilot-install-netsync.c: General warning
+	  cleanup in libsock/* and .  Makefile.in: Make sure . is built
+	  first, then tools, editor macro placement
 
 2002-01-18 17:28  jpr
 
@@ -9817,8 +10503,9 @@
 2002-01-18 11:48  jpr
 
 	* install-netsync.c, pi-csd.c, libpisock/inet.c,
-	  src/install-netsync.c, src/pi-csd.c, src/pilot-csd.c: 2002-01-18
-	  JP Rosevear  <jpr@ximian.com>
+	  src/install-netsync.c, src/pi-csd.c, src/pilot-csd.c,
+	  src/pilot-install-netsync.c: 2002-01-18  JP Rosevear
+	  <jpr@ximian.com>
 
 		  * install-netsync.c (Help): tidy help message
 
@@ -9860,9 +10547,11 @@
 	  pilot-prc.c, read-expenses.c, read-ical.c, read-todos.c,
 	  reminders.c, src/pi-csd.c, src/pi-port.c, src/pilot-addresses.c,
 	  src/pilot-csd.c, src/pilot-mail.c, src/pilot-port.c,
-	  src/pilot-prc.c, src/pilot-reminders.c, src/read-expenses.c,
-	  src/read-ical.c, src/read-todos.c, src/reminders.c: More function
-	  relocation, nothing to see here, move along...
+	  src/pilot-prc.c, src/pilot-read-expenses.c,
+	  src/pilot-read-ical.c, src/pilot-read-todos.c,
+	  src/pilot-reminders.c, src/read-expenses.c, src/read-ical.c,
+	  src/read-todos.c, src/reminders.c: More function relocation,
+	  nothing to see here, move along...
 
 2002-01-16 21:40  desrod
 
@@ -9872,13 +10561,15 @@
 	  src/hinotes.c, src/install-expenses.c, src/install-hinote.c,
 	  src/install-todos.c, src/memos.c, src/money2qif.c,
 	  src/pilot-debugsh.c, src/pilot-dlpsh.c, src/pilot-hinotes.c,
-	  src/pilot-install-expenses.c, src/pilot-memos.c: Just relocating
+	  src/pilot-install-expenses.c, src/pilot-install-hinote.c,
+	  src/pilot-install-todos.c, src/pilot-memos.c: Just relocating
 	  some functions, main() to bottom, Help() up one
 
 2002-01-16 21:27  jpr
 
 	* ChangeLog, install-netsync.c, pi-nredir.c, pilot-xfer.c,
-	  src/install-netsync.c, src/pi-nredir.c, src/pilot-nredir.c,
+	  src/install-netsync.c, src/pi-nredir.c,
+	  src/pilot-install-netsync.c, src/pilot-nredir.c,
 	  src/pilot-xfer.c: 2002-01-16	JP Rosevear  <jpr@ximian.com>
 
 		  * install-netsync.c: use -H to specify host
@@ -9891,13 +10582,15 @@
 
 	* ChangeLog, install-memo.c, install-user.c, memos.c,
 	  src/install-memo.c, src/install-user.c, src/memos.c,
+	  src/pilot-install-memo.c, src/pilot-install-user.c,
 	  src/pilot-memos.c: Minor cleanups, small type typo changed,
 	  preparing for merge
 
 2002-01-16 21:14  desrod
 
-	* ChangeLog, install-todos.c, src/install-todos.c: General
-	  formatting changes in preparation for merging the two into one
+	* ChangeLog, install-todos.c, src/install-todos.c,
+	  src/pilot-install-todos.c: General formatting changes in
+	  preparation for merging the two into one
 
 2002-01-16 20:50  desrod
 
@@ -9932,8 +10625,9 @@
 
 	* ChangeLog, install-netsync.c, install-user.c, pilot-dedupe.c,
 	  pilot-file.c, src/install-netsync.c, src/install-user.c,
-	  src/pilot-dedupe.c, src/pilot-file.c: 2002-01-16  JP Rosevear
-	  <jpr@ximian.com>
+	  src/pilot-dedupe.c, src/pilot-file.c,
+	  src/pilot-install-netsync.c, src/pilot-install-user.c: 2002-01-16
+	   JP Rosevear	<jpr@ximian.com>
 
 		  * install-user.c (Help): remove bogus info
 		  (main): don't call dlp_OpenConduit
@@ -9993,8 +10687,10 @@
 	  libpisock/connect.c, libpisock/socket.c, libpisock/unixserial.c,
 	  src/install-netsync.c, src/install-user.c, src/pi-getram.c,
 	  src/pi-getrom.c, src/pilot-clip.c, src/pilot-getram.c,
-	  src/pilot-getrom.c, src/pilot-schlep.c, bindings/Python/setup.py:
-	  2002-01-16  JP Rosevear  <jpr@ximian.com>
+	  src/pilot-getrom.c, src/pilot-install-netsync.c,
+	  src/pilot-install-user.c, src/pilot-schlep.c,
+	  bindings/Python/setup.py: 2002-01-16	JP Rosevear
+	  <jpr@ximian.com>
 
 		  * tools/Java: Doug G.'s Java stuff
 
@@ -10029,8 +10725,11 @@
 	  src/money2qif.c, src/pi-csd.c, src/pi-nredir.c, src/pi-port.c,
 	  src/pilot-addresses.c, src/pilot-clip.c, src/pilot-csd.c,
 	  src/pilot-dlpsh.c, src/pilot-hinotes.c,
-	  src/pilot-install-expenses.c, src/pilot-memos.c,
-	  src/pilot-nredir.c, src/pilot-port.c, src/pilot-reminders.c,
+	  src/pilot-install-expenses.c, src/pilot-install-hinote.c,
+	  src/pilot-install-todos.c, src/pilot-install-user.c,
+	  src/pilot-memos.c, src/pilot-nredir.c, src/pilot-port.c,
+	  src/pilot-read-expenses.c, src/pilot-read-ical.c,
+	  src/pilot-read-todos.c, src/pilot-reminders.c,
 	  src/pilot-schlep.c, src/read-expenses.c, src/read-ical.c,
 	  src/read-todos.c, src/reminders.c: Removed the global <getopt.h>
 	  dependancy. We should only be using a local getopt.h/getopt.c
@@ -10136,8 +10835,8 @@
 	  src/pilot-clip.c, src/pilot-csd.c, src/pilot-debug.c,
 	  src/pilot-debugsh.c, src/pilot-dedupe.c, src/pilot-getram.c,
 	  src/pilot-getrom.c, src/pilot-install-expenses.c,
-	  src/pilot-nredir.c, src/pilot-xfer.c: Merging from
-	  protocol-rewrite-branch
+	  src/pilot-install-memo.c, src/pilot-nredir.c, src/pilot-xfer.c:
+	  Merging from protocol-rewrite-branch
 
 2002-01-11 13:26  jpr
 
@@ -10488,8 +11187,11 @@
 	  src/money2qif.c, src/pi-csd.c, src/pi-nredir.c, src/pi-port.c,
 	  src/pilot-addresses.c, src/pilot-clip.c, src/pilot-csd.c,
 	  src/pilot-dlpsh.c, src/pilot-hinotes.c,
-	  src/pilot-install-expenses.c, src/pilot-memos.c,
-	  src/pilot-nredir.c, src/pilot-port.c, src/pilot-reminders.c,
+	  src/pilot-install-expenses.c, src/pilot-install-hinote.c,
+	  src/pilot-install-todos.c, src/pilot-install-user.c,
+	  src/pilot-memos.c, src/pilot-nredir.c, src/pilot-port.c,
+	  src/pilot-read-expenses.c, src/pilot-read-ical.c,
+	  src/pilot-read-todos.c, src/pilot-reminders.c,
 	  src/pilot-schlep.c, src/read-expenses.c, src/read-ical.c,
 	  src/read-todos.c, src/reminders.c: 2002-01-04  JP Rosevear
 	  <jpr@ximian.com>
@@ -10509,8 +11211,9 @@
 	  reminders.c, include/pi-config.h, include/pi-syspkt.h,
 	  libpisock/pi-file.c, src/memos.c, src/pi-csd.c, src/pilot-csd.c,
 	  src/pilot-debug.c, src/pilot-mail.c, src/pilot-memos.c,
-	  src/pilot-reminders.c, src/pilot-xfer.c, src/read-todos.c,
-	  src/reminders.c: 2002-01-03  JP Rosevear  <jpr@ximian.com>
+	  src/pilot-read-todos.c, src/pilot-reminders.c, src/pilot-xfer.c,
+	  src/read-todos.c, src/reminders.c: 2002-01-03  JP Rosevear
+	  <jpr@ximian.com>
 
 		  * configure.in: put termios cspeed check in a private
 	  section
@@ -10574,10 +11277,11 @@
 	  src/pilot-dedupe.c, src/pilot-file.c, src/pilot-getram.c,
 	  src/pilot-getrom.c, src/pilot-install-expenses.c,
 	  src/pilot-mail.c, src/pilot-port.c, src/pilot-prc.c,
-	  src/pilot-reminders.c, src/pilot-schlep.c, src/pilot-xfer.c,
-	  src/read-expenses.c, src/read-ical.c, src/read-todos.c,
-	  src/reminders.c: More code cleanups, function relocation,
-	  pilot_connect().
+	  src/pilot-read-expenses.c, src/pilot-read-ical.c,
+	  src/pilot-read-todos.c, src/pilot-reminders.c,
+	  src/pilot-schlep.c, src/pilot-xfer.c, src/read-expenses.c,
+	  src/read-ical.c, src/read-todos.c, src/reminders.c: More code
+	  cleanups, function relocation, pilot_connect().
 
 2001-12-31 11:20  desrod
 
@@ -10594,13 +11298,16 @@
 	  src/pilot-addresses.c, src/pilot-clip.c, src/pilot-csd.c,
 	  src/pilot-debug.c, src/pilot-debugsh.c, src/pilot-dedupe.c,
 	  src/pilot-getram.c, src/pilot-getrom.c, src/pilot-hinotes.c,
+	  src/pilot-install-datebook.c, src/pilot-install-hinote.c,
+	  src/pilot-install-memo.c, src/pilot-install-todos.c,
 	  src/pilot-mail.c, src/pilot-memos.c, src/pilot-nredir.c,
-	  src/pilot-port.c, src/pilot-reminders.c, src/pilot-schlep.c,
-	  src/read-expenses.c, src/read-ical.c, src/read-todos.c,
-	  src/reminders.c: Updated the conduits so they will at least
-	  build. Most of this is getting tossed anyway when we merge with
-	  HEAD. Commented out dumpdata() calls for now, they aren't
-	  working.
+	  src/pilot-port.c, src/pilot-read-expenses.c,
+	  src/pilot-read-ical.c, src/pilot-read-todos.c,
+	  src/pilot-reminders.c, src/pilot-schlep.c, src/read-expenses.c,
+	  src/read-ical.c, src/read-todos.c, src/reminders.c: Updated the
+	  conduits so they will at least build. Most of this is getting
+	  tossed anyway when we merge with HEAD. Commented out dumpdata()
+	  calls for now, they aren't working.
 
 2001-12-30 15:25  desrod
 
@@ -10620,9 +11327,12 @@
 	  src/money2qif.c, src/parsedate.c, src/pd-tty.c, src/pi-csd.c,
 	  src/pi-nredir.c, src/pi-port.c, src/pilot-addresses.c,
 	  src/pilot-csd.c, src/pilot-debugsh.c, src/pilot-dlpsh.c,
-	  src/pilot-hinotes.c, src/pilot-install-expenses.c,
-	  src/pilot-mail.c, src/pilot-memos.c, src/pilot-nredir.c,
-	  src/pilot-port.c, src/pilot-prc.c, src/pilot-reminders.c,
+	  src/pilot-hinotes.c, src/pilot-install-datebook.c,
+	  src/pilot-install-expenses.c, src/pilot-install-hinote.c,
+	  src/pilot-install-memo.c, src/pilot-mail.c, src/pilot-memos.c,
+	  src/pilot-nredir.c, src/pilot-port.c, src/pilot-prc.c,
+	  src/pilot-read-expenses.c, src/pilot-read-ical.c,
+	  src/pilot-read-todos.c, src/pilot-reminders.c,
 	  src/pilot-schlep.c, src/pilot-xfer.c, src/read-expenses.c,
 	  src/read-ical.c, src/read-todos.c, src/reminders.c,
 	  bindings/Perl/Makefile.PL.in, bindings/Perl/Pilot.pm,
@@ -10702,22 +11412,24 @@
 2001-12-23 09:00  desrod
 
 	* ChangeLog, dlpsh.c, install-user.c, libpisock/connect.c,
-	  src/dlpsh.c, src/install-user.c, src/pilot-dlpsh.c: Sometimes we
-	  go too far in one direction, and realize... DOH! Reverted.
+	  src/dlpsh.c, src/install-user.c, src/pilot-dlpsh.c,
+	  src/pilot-install-user.c: Sometimes we go too far in one
+	  direction, and realize... DOH! Reverted.
 
 2001-12-23 06:04  desrod
 
 	* dlpsh.c, install-user.c, src/dlpsh.c, src/install-user.c,
-	  src/pilot-dlpsh.c, ChangeLog, getopt.h, include/pi-dlp.h,
-	  libpisock/connect.c, src/getopt.h: Filling &User, &Sys, &Net
-	  pointers in libsock/connect.c now, cleaner. Updated getopt.h to
-	  the latest portable version.
+	  src/pilot-dlpsh.c, src/pilot-install-user.c, ChangeLog, getopt.h,
+	  include/pi-dlp.h, libpisock/connect.c, src/getopt.h: Filling
+	  &User, &Sys, &Net pointers in libsock/connect.c now, cleaner.
+	  Updated getopt.h to the latest portable version.
 
 2001-12-19 09:16  desrod
 
 	* ChangeLog, money2qif.c, pi-nredir.c, read-ical.c,
 	  src/money2qif.c, src/pi-nredir.c, src/pilot-nredir.c,
-	  src/read-ical.c: A few bugs from the last commit fixed. Bleh.
+	  src/pilot-read-ical.c, src/read-ical.c: A few bugs from the last
+	  commit fixed. Bleh.
 
 2001-12-19 07:45  desrod
 
@@ -10729,23 +11441,23 @@
 	* ChangeLog, money2qif.c, pi-nredir.c, pi-port.c, pilot-schlep.c,
 	  read-ical.c, read-todos.c, reminders.c, src/money2qif.c,
 	  src/pi-nredir.c, src/pi-port.c, src/pilot-nredir.c,
-	  src/pilot-port.c, src/pilot-reminders.c, src/pilot-schlep.c,
-	  src/read-ical.c, src/read-todos.c, src/reminders.c: Lots of
-	  movement in the code. 'Berkeley' style indenting implemented,
-	  changed the names of some types to be more 'human', as this
-	  codebase grows some more "hair", it should be easier, not harder
-	  to maintain!!
+	  src/pilot-port.c, src/pilot-read-ical.c, src/pilot-read-todos.c,
+	  src/pilot-reminders.c, src/pilot-schlep.c, src/read-ical.c,
+	  src/read-todos.c, src/reminders.c: Lots of movement in the code.
+	  'Berkeley' style indenting implemented, changed the names of some
+	  types to be more 'human', as this codebase grows some more
+	  "hair", it should be easier, not harder to maintain!!
 
 2001-12-18 19:02  desrod
 
-	* read-ical.c, src/read-ical.c: Removed some debug prints to
-	  identify an 'ical' problem.
+	* read-ical.c, src/pilot-read-ical.c, src/read-ical.c: Removed some
+	  debug prints to identify an 'ical' problem.
 
 2001-12-18 19:01  desrod
 
-	* ChangeLog, read-ical.c, src/read-ical.c: Reversed some changes
-	  from a 12/12 commit, need to clean up main() and pare it down a
-	  bit.. too large.
+	* ChangeLog, read-ical.c, src/pilot-read-ical.c, src/read-ical.c:
+	  Reversed some changes from a 12/12 commit, need to clean up
+	  main() and pare it down a bit.. too large.
 
 2001-12-15 07:50  desrod
 
@@ -10759,9 +11471,11 @@
 	  read-todos.c, reminders.c, src/addresses.c, src/dlpsh.c,
 	  src/hinotes.c, src/install-todos.c, src/install-user.c,
 	  src/pi-port.c, src/pilot-dlpsh.c, src/pilot-hinotes.c,
-	  src/pilot-port.c, src/pilot-reminders.c, src/pilot-schlep.c,
-	  src/read-ical.c, src/read-todos.c, src/reminders.c: Winding down
-	  to the final 0.10.1 release, more cleanups, relocation of code.
+	  src/pilot-install-todos.c, src/pilot-install-user.c,
+	  src/pilot-port.c, src/pilot-read-ical.c, src/pilot-read-todos.c,
+	  src/pilot-reminders.c, src/pilot-schlep.c, src/read-ical.c,
+	  src/read-todos.c, src/reminders.c: Winding down to the final
+	  0.10.1 release, more cleanups, relocation of code.
 
 2001-12-11 06:10  desrod
 
@@ -10771,10 +11485,11 @@
 2001-12-11 06:05  desrod
 
 	* ChangeLog, install-todos.c, pilot-schlep.c, src/install-todos.c,
-	  src/pilot-schlep.c: Updates for getopt(), main() fixes,
-	  pilot_connect(), and general vacuuming.  Still needs some more
-	  "polish" in areas, read-todos/install-todos are not yet siblings,
-	  pilot-schlep needs to stop using redirection.
+	  src/pilot-install-todos.c, src/pilot-schlep.c: Updates for
+	  getopt(), main() fixes, pilot_connect(), and general vacuuming.
+	  Still needs some more "polish" in areas, read-todos/install-todos
+	  are not yet siblings, pilot-schlep needs to stop using
+	  redirection.
 
 2001-12-10 23:24  desrod
 
@@ -10784,11 +11499,12 @@
 
 2001-12-08 21:00  desrod
 
-	* ChangeLog, install-user.c, src/install-user.c: install-user: More
-	  of the same. Cleaned up the $PILOTPORT parsing goop, moved things
-	  around, and made the -h and lack of any options make logical
-	  sense. Changed some of the options around a bit too, -n for
-	  netmask, -o for hostname (can't recycle -h on that one)
+	* ChangeLog, install-user.c, src/install-user.c,
+	  src/pilot-install-user.c: install-user: More of the same. Cleaned
+	  up the $PILOTPORT parsing goop, moved things around, and made the
+	  -h and lack of any options make logical sense. Changed some of
+	  the options around a bit too, -n for netmask, -o for hostname
+	  (can't recycle -h on that one)
 
 2001-12-08 18:51  jpr
 
@@ -11044,8 +11760,9 @@
 
 	* ChangeLog, aclocal.m4, dlpsh.c, install-user.c, parsedate.c,
 	  pilot-xfer.c, src/dlpsh.c, src/install-user.c, src/parsedate.c,
-	  src/pilot-dlpsh.c, src/pilot-xfer.c, include/pi-version.h,
-	  libpisock/connect.c, libpisock/pi-header.c, tests/Makefile.in:
+	  src/pilot-dlpsh.c, src/pilot-install-user.c, src/pilot-xfer.c,
+	  include/pi-version.h, libpisock/connect.c, libpisock/pi-header.c,
+	  tests/Makefile.in:
 	  A bunch of updates on this one, mostly in the userspace stuff,
 	  getopt, decremented pi-version, added a timer, moved around some
 	  things, gutted a bunch of things out. Fun fun fun!
@@ -11112,19 +11829,21 @@
 
 	* ChangeLog, Makefile.in, dlpsh.c, install-user.c, memos.c,
 	  pilot-file.c, src/dlpsh.c, src/install-user.c, src/memos.c,
-	  src/pilot-dlpsh.c, src/pilot-file.c, src/pilot-memos.c: Lots of
-	  changes here, mainly to install-user.c as a testing platform for
-	  the new argument stuff going in, added NetLanSync writes, still
-	  playing around with program flow. Not satisfied yet with it.
+	  src/pilot-dlpsh.c, src/pilot-file.c, src/pilot-install-user.c,
+	  src/pilot-memos.c: Lots of changes here, mainly to install-user.c
+	  as a testing platform for the new argument stuff going in, added
+	  NetLanSync writes, still playing around with program flow. Not
+	  satisfied yet with it.
 
 2001-11-05 19:13  desrod
 
 	* ChangeLog, Makefile.in, install-user.c, pilot-xfer.c,
 	  libpisock/connect.c, libpisock/dlp.c, libpisock/padp.c,
-	  libpisock/pi-file.c, src/install-user.c, src/pilot-xfer.c:
-	  Beginning the public migration to getopt_long() in all of the
-	  binaries which are passed arguments. Also cleaning out the
-	  redundant code, moving into external objects.
+	  libpisock/pi-file.c, src/install-user.c,
+	  src/pilot-install-user.c, src/pilot-xfer.c: Beginning the public
+	  migration to getopt_long() in all of the binaries which are
+	  passed arguments. Also cleaning out the redundant code, moving
+	  into external objects.
 
 2001-11-03 20:12  desrod
 
@@ -11189,13 +11908,16 @@
 	  src/money2qif.c, src/pi-csd.c, src/pi-nredir.c,
 	  src/pilot-addresses.c, src/pilot-csd.c, src/pilot-debugsh.c,
 	  src/pilot-dedupe.c, src/pilot-dlpsh.c, src/pilot-file.c,
-	  src/pilot-hinotes.c, src/pilot-memos.c, src/pilot-nredir.c,
+	  src/pilot-hinotes.c, src/pilot-install-datebook.c,
+	  src/pilot-install-memo.c, src/pilot-install-todos.c,
+	  src/pilot-install-user.c, src/pilot-memos.c, src/pilot-nredir.c,
 	  pilot-prc.c, pilot-schlep.c, pilot-xfer.c, read-expenses.c,
 	  read-todos.c, reminders.c, libpisock/dlp.c,
-	  libpisock/winserial.c, src/pilot-prc.c, src/pilot-reminders.c,
-	  src/pilot-schlep.c, src/pilot-xfer.c, src/read-expenses.c,
-	  src/read-todos.c, src/reminders.c:	   Two new patches from
-	  Bill Janssen and Oliver Schmidt added. Also
+	  libpisock/winserial.c, src/pilot-prc.c,
+	  src/pilot-read-expenses.c, src/pilot-read-todos.c,
+	  src/pilot-reminders.c, src/pilot-schlep.c, src/pilot-xfer.c,
+	  src/read-expenses.c, src/read-todos.c, src/reminders.c:	Two
+	  new patches from Bill Janssen and Oliver Schmidt added. Also
 	  cleaned up the declarations, vacuumed up some of the other dust.
 	  Added a missing Makefile.os2.in, incremented patch version.
 
@@ -11327,12 +12049,13 @@
 	  include/pi-iambicExpense.h, include/pi-version.h,
 	  libpisock/address.c, libpisock/cmp.c, libpisock/datebook.c,
 	  libpisock/dlp.c, src/iambicexample.cc, src/install-hinote.c,
-	  src/pilot-addresses.c, bindings/Perl/Pilot.xs, libpisock/memo.c,
-	  libpisock/os2serial.c, libpisock/serial.c, libpisock/slp.c,
-	  libpisock/socket.c, libpisock/sync.c, libpisock/syspkt.c,
-	  libpisock/todo.c, libpisock/unixserial.c, libpisock/util.c,
-	  libpisock/utils.c, libpisock/winserial.c, libpisync/sync.c:
-	    * tools/Perl5/Pilot.xs: Fixed a typo in 'creatDate' (Hadmut
+	  src/pilot-addresses.c, src/pilot-install-hinote.c,
+	  bindings/Perl/Pilot.xs, libpisock/memo.c, libpisock/os2serial.c,
+	  libpisock/serial.c, libpisock/slp.c, libpisock/socket.c,
+	  libpisock/sync.c, libpisock/syspkt.c, libpisock/todo.c,
+	  libpisock/unixserial.c, libpisock/util.c, libpisock/utils.c,
+	  libpisock/winserial.c, libpisync/sync.c:	   *
+	  tools/Perl5/Pilot.xs: Fixed a typo in 'creatDate' (Hadmut
 	  Danisch)
 
 		  * install-hinote.c: Fixed to include detection of notes >
@@ -11478,11 +12201,12 @@
 	  src/pi-port.c, src/pilot-addresses.c, src/pilot-clip.c,
 	  src/pilot-csd.c, src/pilot-debug.c, src/pilot-debugsh.c,
 	  src/pilot-dedupe.c, src/pilot-dlpsh.c, src/pilot-file.c,
-	  src/pilot-getram.c, src/pilot-getrom.c, src/pilot-mail.c,
-	  src/pilot-memos.c, src/pilot-port.c, src/pilot-prc.c,
+	  src/pilot-getram.c, src/pilot-getrom.c, src/pilot-install-memo.c,
+	  src/pilot-install-user.c, src/pilot-mail.c, src/pilot-memos.c,
+	  src/pilot-port.c, src/pilot-prc.c, src/pilot-read-ical.c,
 	  src/pilot-reminders.c, src/pilot-schlep.c, src/pilot-xfer.c,
-	  src/read-ical.c, src/reminders.c:   Beginning to document every
-	  function in the whole codebase, more
+	  src/read-ical.c, src/reminders.c:	   Beginning to document
+	  every function in the whole codebase, more
 		  small cleanups.
 
 2001-05-15 17:55  desrod
@@ -11507,10 +12231,13 @@
 	  src/pi-port.c, src/pilot-addresses.c, src/pilot-clip.c,
 	  src/pilot-csd.c, src/pilot-debug.c, src/pilot-debugsh.c,
 	  src/pilot-dlpsh.c, src/pilot-getram.c, src/pilot-getrom.c,
-	  src/pilot-hinotes.c, src/pilot-memos.c, src/pilot-nredir.c,
-	  src/pilot-port.c, pilot-dedupe.c, pilot-file.c, pilot-mail.c,
-	  pilot-prc.c, pilot-schlep.c, pilot-xfer.c, read-expenses.c,
-	  read-ical.c, read-todos.c, reminders.c, include/pi-address.h,
+	  src/pilot-hinotes.c, src/pilot-install-datebook.c,
+	  src/pilot-install-hinote.c, src/pilot-install-memo.c,
+	  src/pilot-install-todos.c, src/pilot-install-user.c,
+	  src/pilot-memos.c, src/pilot-nredir.c, src/pilot-port.c,
+	  pilot-dedupe.c, pilot-file.c, pilot-mail.c, pilot-prc.c,
+	  pilot-schlep.c, pilot-xfer.c, read-expenses.c, read-ical.c,
+	  read-todos.c, reminders.c, include/pi-address.h,
 	  include/pi-appinfo.h, include/pi-cmp.h, include/pi-config.h.in,
 	  include/pi-datebook.h, include/pi-dlp.h, include/pi-dlp.hxx,
 	  include/pi-expense.h, include/pi-file.h, include/pi-hinote.h,
@@ -11529,12 +12256,13 @@
 	  libpisock/serial.c, libpisock/slp.c, libpisock/socket.c,
 	  libpisock/sync.c, libpisock/syspkt.c, libpisock/todo.c,
 	  libpisync/sync.c, src/pilot-dedupe.c, src/pilot-file.c,
-	  src/pilot-mail.c, src/pilot-prc.c, src/pilot-reminders.c,
-	  src/pilot-schlep.c, src/pilot-xfer.c, src/read-expenses.c,
-	  src/read-ical.c, src/read-todos.c, src/reminders.c,
-	  libpisock/unixserial.c, libpisock/util.c, libpisock/utils.c,
-	  libpisock/winserial.c:    memos.c fix (Tamito KAJIYAMA), huge
-	  reformatting changes (hint:
+	  src/pilot-mail.c, src/pilot-prc.c, src/pilot-read-expenses.c,
+	  src/pilot-read-ical.c, src/pilot-read-todos.c,
+	  src/pilot-reminders.c, src/pilot-schlep.c, src/pilot-xfer.c,
+	  src/read-expenses.c, src/read-ical.c, src/read-todos.c,
+	  src/reminders.c, libpisock/unixserial.c, libpisock/util.c,
+	  libpisock/utils.c, libpisock/winserial.c:	    memos.c fix
+	  (Tamito KAJIYAMA), huge reformatting changes (hint:
 		  do not diff the codebase =), Makefile.in (John Marshall)
 
 2001-05-09 04:18  desrod
@@ -11564,21 +12292,26 @@
 	  src/pi-port.c, src/pilot-addresses.c, src/pilot-clip.c,
 	  src/pilot-csd.c, src/pilot-debugsh.c, src/pilot-dedupe.c,
 	  src/pilot-dlpsh.c, src/pilot-file.c, src/pilot-getram.c,
-	  src/pilot-getrom.c, src/pilot-hinotes.c, src/pilot-mail.c,
-	  src/pilot-memos.c, src/pilot-nredir.c, src/pilot-port.c,
-	  src/pilot-prc.c, src/pilot-reminders.c, src/pilot-schlep.c,
-	  src/pilot-xfer.c, src/read-expenses.c, src/read-ical.c,
-	  src/read-todos.c, src/reminders.c, include/pi-version.h,
-	  libpisock/address.c, libpisock/appinfo.c, libpisock/cmp.c,
-	  libpisock/datebook.c, libpisock/dlp.c, libpisock/expense.c,
-	  libpisock/hinote.c, libpisock/inet.c, libpisock/mail.c,
-	  libpisock/memo.c, libpisock/money.c, libpisock/os2serial.c,
-	  libpisock/padp.c, libpisock/pi-file.c, libpisock/pi-header.c,
-	  libpisock/serial.c, libpisock/slp.c, libpisock/socket.c,
-	  libpisock/sync.c, libpisock/syspkt.c, libpisock/todo.c,
-	  libpisock/unixserial.c, libpisock/util.c, libpisock/utils.c,
-	  libpisock/winserial.c, libpisync/sync.c: Preparing for a 0.9.5
-	  final release, check the ChangeLog for details
+	  src/pilot-getrom.c, src/pilot-hinotes.c,
+	  src/pilot-install-datebook.c, src/pilot-install-hinote.c,
+	  src/pilot-install-memo.c, src/pilot-install-todos.c,
+	  src/pilot-install-user.c, src/pilot-mail.c, src/pilot-memos.c,
+	  src/pilot-nredir.c, src/pilot-port.c, src/pilot-prc.c,
+	  src/pilot-read-expenses.c, src/pilot-read-ical.c,
+	  src/pilot-read-todos.c, src/pilot-reminders.c,
+	  src/pilot-schlep.c, src/pilot-xfer.c, src/read-expenses.c,
+	  src/read-ical.c, src/read-todos.c, src/reminders.c,
+	  include/pi-version.h, libpisock/address.c, libpisock/appinfo.c,
+	  libpisock/cmp.c, libpisock/datebook.c, libpisock/dlp.c,
+	  libpisock/expense.c, libpisock/hinote.c, libpisock/inet.c,
+	  libpisock/mail.c, libpisock/memo.c, libpisock/money.c,
+	  libpisock/os2serial.c, libpisock/padp.c, libpisock/pi-file.c,
+	  libpisock/pi-header.c, libpisock/serial.c, libpisock/slp.c,
+	  libpisock/socket.c, libpisock/sync.c, libpisock/syspkt.c,
+	  libpisock/todo.c, libpisock/unixserial.c, libpisock/util.c,
+	  libpisock/utils.c, libpisock/winserial.c, libpisync/sync.c:
+	  Preparing for a 0.9.5 final release, check the ChangeLog for
+	  details
 
 2001-03-30 19:34  jpr
 
@@ -11638,7 +12371,8 @@
 2001-03-04 20:16  desrod
 
 	* ChangeLog, Makefile.in, configure.in, install-user.c,
-	  doc/man/pilot-addresses.1, src/install-user.c:
+	  doc/man/pilot-addresses.1, src/install-user.c,
+	  src/pilot-install-user.c:
 		  Added man/pilot-addresses.1, tools/empty.in, applied John
 	  Marshall's fix
 	  for broken directory/Makefile creation. Must fix this when we
@@ -11683,9 +12417,9 @@
 
 	* ChangeLog, install-user.c, memos.c, pilot-addresses.c,
 	  pilot-xfer.c, sync-plan.PL, libpisock/dlp.c, src/install-user.c,
-	  src/memos.c, src/pilot-addresses.c, src/pilot-memos.c,
-	  src/pilot-xfer.c, src/sync-plan.PL, doc/man/install-memo.1,
-	  doc/man/pilot-xfer.1:
+	  src/memos.c, src/pilot-addresses.c, src/pilot-install-user.c,
+	  src/pilot-memos.c, src/pilot-xfer.c, src/sync-plan.PL,
+	  doc/man/install-memo.1, doc/man/pilot-xfer.1:
 		  Various fixes for the PILOTPORT detection, port naming
 	  conventions,
 	  sync-plan authentication, a few manpage updates, and some small
@@ -11784,8 +12518,8 @@
 
 2001-01-11 01:16  jpr
 
-	* ChangeLog, read-ical.c, src/read-ical.c: 2001-01-11  JP Rosevear
-	  <jpr@helixcode.com>
+	* ChangeLog, read-ical.c, src/pilot-read-ical.c, src/read-ical.c:
+	  2001-01-11  JP Rosevear  <jpr@helixcode.com>
 
 		  * read-ical.c (main): use ii instead of i to index repeat
 	  days in
@@ -11978,7 +12712,8 @@
 
 	* Makefile.in, dlpsh.c, install-datebook.c,
 	  bindings/Perl/Makefile.PL.in, bindings/Perl/Pilot.xs,
-	  src/dlpsh.c, src/install-datebook.c, src/pilot-dlpsh.c:
+	  src/dlpsh.c, src/install-datebook.c, src/pilot-dlpsh.c,
+	  src/pilot-install-datebook.c:
 		  Perl5 error output fix (wrong text displayed)
 
 		  Makefile.in updates for new paths (../../include, tools
@@ -12079,8 +12814,12 @@
 	  src/pi-nredir.c, src/pi-port.c, src/pilot-addresses.c,
 	  src/pilot-clip.c, src/pilot-csd.c, src/pilot-debug.c,
 	  src/pilot-dedupe.c, src/pilot-file.c, src/pilot-getram.c,
-	  src/pilot-getrom.c, src/pilot-mail.c, src/pilot-memos.c,
-	  src/pilot-nredir.c, src/pilot-port.c, src/pilot-prc.c,
+	  src/pilot-getrom.c, src/pilot-install-datebook.c,
+	  src/pilot-install-hinote.c, src/pilot-install-memo.c,
+	  src/pilot-install-todos.c, src/pilot-install-user.c,
+	  src/pilot-mail.c, src/pilot-memos.c, src/pilot-nredir.c,
+	  src/pilot-port.c, src/pilot-prc.c, src/pilot-read-expenses.c,
+	  src/pilot-read-ical.c, src/pilot-read-todos.c,
 	  src/pilot-reminders.c, src/pilot-schlep.c, src/pilot-xfer.c,
 	  src/read-expenses.c, src/read-ical.c, src/read-todos.c,
 	  src/reminders.c, src/validate.cc, include/pi-address.h,
@@ -12172,18 +12911,22 @@
 	  src/money2qif.c, src/parsedate.c, src/pd-tty.c, src/pi-csd.c,
 	  src/pi-getram.c, src/pi-getrom.c, src/pilot-csd.c,
 	  src/pilot-debugsh.c, src/pilot-dlpsh.c, src/pilot-getram.c,
-	  src/pilot-getrom.c, src/pilot-hinotes.c, src/pilot-memos.c,
-	  pi-nredir.c, pi-port.c, pilot-addresses.c, pilot-clip.c,
-	  pilot-debug.c, pilot-dedupe.c, pilot-file.c, pilot-mail.c,
-	  pilot-prc.c, pilot-schlep.c, pilot-xfer.c, read-expenses.c,
-	  read-ical.c, read-todos.c, reminders.c, sync-plan.PL,
-	  src/pi-nredir.c, src/pi-port.c, src/pilot-addresses.c,
-	  src/pilot-clip.c, src/pilot-debug.c, src/pilot-dedupe.c,
-	  src/pilot-file.c, src/pilot-mail.c, src/pilot-nredir.c,
-	  src/pilot-port.c, src/pilot-prc.c, src/pilot-reminders.c,
-	  src/pilot-schlep.c, src/pilot-xfer.c, src/read-expenses.c,
-	  src/read-ical.c, src/read-todos.c, src/reminders.c,
-	  src/sync-plan.PL:
+	  src/pilot-getrom.c, src/pilot-hinotes.c,
+	  src/pilot-install-datebook.c, src/pilot-install-hinote.c,
+	  src/pilot-install-memo.c, src/pilot-install-todos.c,
+	  src/pilot-install-user.c, src/pilot-memos.c, pi-nredir.c,
+	  pi-port.c, pilot-addresses.c, pilot-clip.c, pilot-debug.c,
+	  pilot-dedupe.c, pilot-file.c, pilot-mail.c, pilot-prc.c,
+	  pilot-schlep.c, pilot-xfer.c, read-expenses.c, read-ical.c,
+	  read-todos.c, reminders.c, sync-plan.PL, src/pi-nredir.c,
+	  src/pi-port.c, src/pilot-addresses.c, src/pilot-clip.c,
+	  src/pilot-debug.c, src/pilot-dedupe.c, src/pilot-file.c,
+	  src/pilot-mail.c, src/pilot-nredir.c, src/pilot-port.c,
+	  src/pilot-prc.c, src/pilot-read-expenses.c,
+	  src/pilot-read-ical.c, src/pilot-read-todos.c,
+	  src/pilot-reminders.c, src/pilot-schlep.c, src/pilot-xfer.c,
+	  src/read-expenses.c, src/read-ical.c, src/read-todos.c,
+	  src/reminders.c, src/sync-plan.PL:
 		  1. Added a 'mem' option to dlpsh. I will eventually add a
 		     'password' function, version (OS version), and some
 	  other
@@ -12468,7 +13211,11 @@
 	  src/install-hinote.c, src/install-memo.c, src/install-todos.c,
 	  src/install-user.c, src/memos.c, src/money2qif.c,
 	  src/pilot-addresses.c, src/pilot-dedupe.c, src/pilot-dlpsh.c,
-	  src/pilot-hinotes.c, src/pilot-mail.c, src/pilot-memos.c,
+	  src/pilot-hinotes.c, src/pilot-install-datebook.c,
+	  src/pilot-install-hinote.c, src/pilot-install-memo.c,
+	  src/pilot-install-todos.c, src/pilot-install-user.c,
+	  src/pilot-mail.c, src/pilot-memos.c, src/pilot-read-expenses.c,
+	  src/pilot-read-ical.c, src/pilot-read-todos.c,
 	  src/pilot-reminders.c, src/pilot-xfer.c, src/read-expenses.c,
 	  src/read-ical.c, src/read-todos.c, src/reminders.c,
 	  include/pi-dlp.h, include/pi-dlp.hxx, include/pi-sync.h,
@@ -12501,12 +13248,16 @@
 	  src/pi-nredir.c, src/pi-port.c, src/pilot-addresses.c,
 	  src/pilot-clip.c, src/pilot-csd.c, src/pilot-debug.c,
 	  src/pilot-getram.c, src/pilot-getrom.c, src/pilot-hinotes.c,
-	  src/pilot-memos.c, src/pilot-nredir.c, src/pilot-port.c,
-	  src/prc/getrom.prc, src/prc/getrom2.prc, pilot-dedupe.c,
-	  pilot-file.c, pilot-mail.c, pilot-prc.c, pilot-schlep.c,
-	  pilot-undelete.PL, pilot-xfer.c, read-expenses.c, read-ical.c,
-	  read-todos.c, reminders.c, validate.cc, src/pilot-dedupe.c,
-	  src/pilot-file.c, src/pilot-mail.c, src/pilot-prc.c,
+	  src/pilot-install-datebook.c, src/pilot-install-hinote.c,
+	  src/pilot-install-memo.c, src/pilot-install-todos.c,
+	  src/pilot-install-user.c, src/pilot-memos.c, src/pilot-nredir.c,
+	  src/pilot-port.c, src/prc/getrom.prc, src/prc/getrom2.prc,
+	  pilot-dedupe.c, pilot-file.c, pilot-mail.c, pilot-prc.c,
+	  pilot-schlep.c, pilot-undelete.PL, pilot-xfer.c, read-expenses.c,
+	  read-ical.c, read-todos.c, reminders.c, validate.cc,
+	  src/pilot-dedupe.c, src/pilot-file.c, src/pilot-mail.c,
+	  src/pilot-prc.c, src/pilot-read-expenses.c,
+	  src/pilot-read-ical.c, src/pilot-read-todos.c,
 	  src/pilot-reminders.c, src/pilot-schlep.c, src/pilot-undelete.PL,
 	  src/pilot-xfer.c, src/read-expenses.c, src/read-ical.c,
 	  src/read-todos.c, src/reminders.c, src/validate.cc,
@@ -12582,32 +13333,36 @@
 	  src/pi-nredir.c, src/pi-port.c, src/pilot-addresses.c,
 	  src/pilot-clip.c, src/pilot-csd.c, src/pilot-debug.c,
 	  src/pilot-dedupe.c, src/pilot-getram.c, src/pilot-getrom.c,
-	  src/pilot-hinotes.c, src/pilot-memos.c, src/pilot-nredir.c,
-	  src/pilot-port.c, src/prc/getrom.prc, src/prc/getrom2.prc,
-	  pilot-file.c, pilot-mail.c, pilot-prc.c, pilot-schlep.c,
-	  pilot-undelete.PL, pilot-xfer.c, read-expenses.c, read-ical.c,
-	  read-todos.c, reminders.c, validate.cc, src/pilot-file.c,
-	  src/pilot-mail.c, src/pilot-prc.c, src/pilot-reminders.c,
-	  src/pilot-schlep.c, src/pilot-undelete.PL, src/pilot-xfer.c,
-	  src/read-expenses.c, src/read-ical.c, src/read-todos.c,
-	  src/reminders.c, src/validate.cc, include/pi-address.h,
-	  include/pi-address.hxx, include/pi-appinfo.h,
-	  include/pi-appinfo.hxx, include/pi-args.h, include/pi-cmp.h,
-	  include/pi-config-win32.h, include/pi-config.h.in,
-	  include/pi-datebook.h, include/pi-datebook.hxx, include/pi-dlp.h,
-	  include/pi-dlp.hxx, include/pi-expense.h, include/pi-file.h,
-	  include/pi-header.h, include/pi-hinote.h,
-	  include/pi-iambicExpense.h, include/pi-iambicExpense.hxx,
-	  include/pi-inet.h, include/pi-inetserial.h, include/pi-macros.h,
-	  include/pi-mail.h, include/pi-memo.h, include/pi-memo.hxx,
-	  include/pi-money.h, include/pi-padp.h, include/pi-serial.h,
-	  include/pi-slp.h, include/pi-sockaddr-win32.h,
-	  include/pi-sockaddr.h.in, include/pi-socket.h,
-	  include/pi-source.h, include/pi-sync.h, include/pi-syspkt.h,
-	  include/pi-todo.h, include/pi-todo.hxx, include/pi-version.h,
-	  libpisock/.cvsignore, libpisock/Makefile.am, doc/man/Makefile.am,
-	  bindings/.cvsignore, tests/Makefile.in: 2000-10-03  JP Rosevear
-	  <jpr@helixcode.com>
+	  src/pilot-hinotes.c, src/pilot-install-datebook.c,
+	  src/pilot-install-hinote.c, src/pilot-install-memo.c,
+	  src/pilot-install-todos.c, src/pilot-install-user.c,
+	  src/pilot-memos.c, src/pilot-nredir.c, src/pilot-port.c,
+	  src/prc/getrom.prc, src/prc/getrom2.prc, pilot-file.c,
+	  pilot-mail.c, pilot-prc.c, pilot-schlep.c, pilot-undelete.PL,
+	  pilot-xfer.c, read-expenses.c, read-ical.c, read-todos.c,
+	  reminders.c, validate.cc, src/pilot-file.c, src/pilot-mail.c,
+	  src/pilot-prc.c, src/pilot-read-expenses.c,
+	  src/pilot-read-ical.c, src/pilot-read-todos.c,
+	  src/pilot-reminders.c, src/pilot-schlep.c, src/pilot-undelete.PL,
+	  src/pilot-xfer.c, src/read-expenses.c, src/read-ical.c,
+	  src/read-todos.c, src/reminders.c, src/validate.cc,
+	  include/pi-address.h, include/pi-address.hxx,
+	  include/pi-appinfo.h, include/pi-appinfo.hxx, include/pi-args.h,
+	  include/pi-cmp.h, include/pi-config-win32.h,
+	  include/pi-config.h.in, include/pi-datebook.h,
+	  include/pi-datebook.hxx, include/pi-dlp.h, include/pi-dlp.hxx,
+	  include/pi-expense.h, include/pi-file.h, include/pi-header.h,
+	  include/pi-hinote.h, include/pi-iambicExpense.h,
+	  include/pi-iambicExpense.hxx, include/pi-inet.h,
+	  include/pi-inetserial.h, include/pi-macros.h, include/pi-mail.h,
+	  include/pi-memo.h, include/pi-memo.hxx, include/pi-money.h,
+	  include/pi-padp.h, include/pi-serial.h, include/pi-slp.h,
+	  include/pi-sockaddr-win32.h, include/pi-sockaddr.h.in,
+	  include/pi-socket.h, include/pi-source.h, include/pi-sync.h,
+	  include/pi-syspkt.h, include/pi-todo.h, include/pi-todo.hxx,
+	  include/pi-version.h, libpisock/.cvsignore,
+	  libpisock/Makefile.am, doc/man/Makefile.am, bindings/.cvsignore,
+	  tests/Makefile.in: 2000-10-03  JP Rosevear  <jpr@helixcode.com>
 
 		  * Reorganize files and do the automake thing.
 		  include/*.h goes to libsock/
@@ -12670,17 +13425,21 @@
 	  src/pilot-clip.c, src/pilot-csd.c, src/pilot-debug.c,
 	  src/pilot-debugsh.c, src/pilot-dedupe.c, src/pilot-dlpsh.c,
 	  src/pilot-file.c, src/pilot-getram.c, src/pilot-getrom.c,
-	  src/pilot-hinotes.c, src/pilot-mail.c, src/pilot-memos.c,
-	  src/pilot-nredir.c, src/pilot-port.c, src/pilot-reminders.c,
-	  src/pilot-schlep.c, src/pilot-xfer.c, src/read-expenses.c,
-	  src/read-ical.c, src/read-todos.c, src/reminders.c,
-	  src/sync-plan.PL, src/validate.cc, include/pi-appinfo.h,
-	  include/pi-dlp.h, include/pi-dlp.hxx, include/pi-header.h,
-	  tests/packers.c: More source tweaks, tried to clean up places
-	  where argv[1] was, instead of char *port; Added some more
-	  cleanliness to pi_bind in the programs which didn't have it.
-	  Still much more to go, at least without breaking much of the code
-	  anyway
+	  src/pilot-hinotes.c, src/pilot-install-datebook.c,
+	  src/pilot-install-hinote.c, src/pilot-install-memo.c,
+	  src/pilot-install-todos.c, src/pilot-install-user.c,
+	  src/pilot-mail.c, src/pilot-memos.c, src/pilot-nredir.c,
+	  src/pilot-port.c, src/pilot-read-expenses.c,
+	  src/pilot-read-ical.c, src/pilot-read-todos.c,
+	  src/pilot-reminders.c, src/pilot-schlep.c, src/pilot-xfer.c,
+	  src/read-expenses.c, src/read-ical.c, src/read-todos.c,
+	  src/reminders.c, src/sync-plan.PL, src/validate.cc,
+	  include/pi-appinfo.h, include/pi-dlp.h, include/pi-dlp.hxx,
+	  include/pi-header.h, tests/packers.c: More source tweaks, tried
+	  to clean up places where argv[1] was, instead of char *port;
+	  Added some more cleanliness to pi_bind in the programs which
+	  didn't have it. Still much more to go, at least without breaking
+	  much of the code anyway
 
 2000-09-03 23:06  desrod
 
@@ -12696,30 +13455,34 @@
 	  src/install-user.c, src/kittykiller.c, src/memos.c,
 	  src/money2qif.c, src/parsedate.c, src/parsedate.y, src/pd-tty.c,
 	  src/pi-csd.c, src/pilot-csd.c, src/pilot-debugsh.c,
-	  src/pilot-dlpsh.c, src/pilot-hinotes.c, src/pilot-memos.c,
-	  pi-getram.c, pi-getrom.c, pi-nredir.c, pi-port.c,
-	  pilot-addresses.c, pilot-clip.c, pilot-debug.c, pilot-dedupe.c,
-	  pilot-file.c, pilot-mail.c, pilot-prc.c, pilot-schlep.c,
-	  pilot-xfer.c, read-expenses.c, read-ical.c, read-todos.c,
-	  reminders.c, include/pi-dlp.h, include/pi-dlp.hxx,
-	  include/pi-header.h, include/pi-memo.hxx,
-	  include/pi-sockaddr.h.in, include/pi-version.h,
-	  libpisock/address.c, libpisock/appinfo.c, libpisock/cmp.c,
-	  libpisock/datebook.c, libpisock/dlp.c, libpisock/expense.c,
-	  libpisock/hinote.c, libpisock/inet.c, libpisock/mail.c,
-	  libpisock/memo.c, libpisock/money.c, libpisock/os2serial.c,
-	  libpisock/padp.c, libpisock/pi-file.c, libpisock/serial.c,
-	  libpisock/slp.c, libpisock/sync.c, libpisock/syspkt.c,
-	  libpisock/todo.c, libpisock/unixserial.c, libpisock/utils.c,
-	  libpisock/winserial.c, libpisync/sync.c, src/pi-getram.c,
-	  src/pi-getrom.c, src/pi-nredir.c, src/pi-port.c,
+	  src/pilot-dlpsh.c, src/pilot-hinotes.c,
+	  src/pilot-install-datebook.c, src/pilot-install-hinote.c,
+	  src/pilot-install-memo.c, src/pilot-install-todos.c,
+	  src/pilot-install-user.c, src/pilot-memos.c, pi-getram.c,
+	  pi-getrom.c, pi-nredir.c, pi-port.c, pilot-addresses.c,
+	  pilot-clip.c, pilot-debug.c, pilot-dedupe.c, pilot-file.c,
+	  pilot-mail.c, pilot-prc.c, pilot-schlep.c, pilot-xfer.c,
+	  read-expenses.c, read-ical.c, read-todos.c, reminders.c,
+	  include/pi-dlp.h, include/pi-dlp.hxx, include/pi-header.h,
+	  include/pi-memo.hxx, include/pi-sockaddr.h.in,
+	  include/pi-version.h, libpisock/address.c, libpisock/appinfo.c,
+	  libpisock/cmp.c, libpisock/datebook.c, libpisock/dlp.c,
+	  libpisock/expense.c, libpisock/hinote.c, libpisock/inet.c,
+	  libpisock/mail.c, libpisock/memo.c, libpisock/money.c,
+	  libpisock/os2serial.c, libpisock/padp.c, libpisock/pi-file.c,
+	  libpisock/serial.c, libpisock/slp.c, libpisock/sync.c,
+	  libpisock/syspkt.c, libpisock/todo.c, libpisock/unixserial.c,
+	  libpisock/utils.c, libpisock/winserial.c, libpisync/sync.c,
+	  src/pi-getram.c, src/pi-getrom.c, src/pi-nredir.c, src/pi-port.c,
 	  src/pilot-addresses.c, src/pilot-clip.c, src/pilot-debug.c,
 	  src/pilot-dedupe.c, src/pilot-file.c, src/pilot-getram.c,
 	  src/pilot-getrom.c, src/pilot-mail.c, src/pilot-nredir.c,
-	  src/pilot-port.c, src/pilot-prc.c, src/pilot-reminders.c,
-	  src/pilot-schlep.c, src/pilot-xfer.c, src/read-expenses.c,
-	  src/read-ical.c, src/read-todos.c, src/reminders.c,
-	  doc/man/pilot-link.7, doc/man/pilot-xfer.1, doc/man/read-ical.1:
+	  src/pilot-port.c, src/pilot-prc.c, src/pilot-read-expenses.c,
+	  src/pilot-read-ical.c, src/pilot-read-todos.c,
+	  src/pilot-reminders.c, src/pilot-schlep.c, src/pilot-xfer.c,
+	  src/read-expenses.c, src/read-ical.c, src/read-todos.c,
+	  src/reminders.c, doc/man/pilot-link.7, doc/man/pilot-xfer.1,
+	  doc/man/read-ical.1:
 	  A ton of changes in this release. Below is a small list:
 
 		  Here's a short list of what I've done (by no means
@@ -12959,9 +13722,10 @@
 	  parsedate.y, pi-csd.c, pilot-debug.c, src/ietf2datebook.PL,
 	  src/install-user.c, src/parsedate.c, src/parsedate.y,
 	  src/pi-csd.c, src/pilot-csd.c, src/pilot-debug.c,
-	  include/pi-config.h.in, libpisock/dlp.c, libpisock/slp.c: This is
-	  the debug output patched version and also includes the rolled in
-	  slp patch which will stop those pi_accept timeout errors.
+	  src/pilot-install-user.c, include/pi-config.h.in,
+	  libpisock/dlp.c, libpisock/slp.c: This is the debug output
+	  patched version and also includes the rolled in slp patch which
+	  will stop those pi_accept timeout errors.
 
 2000-07-30 20:18  desrod
 
@@ -12969,9 +13733,9 @@
 	  configure, configure.in, ietf2datebook.PL, install-hinote.c,
 	  kittykiller.c, pilot-xfer.c, doc/README-Win32.txt,
 	  src/ietf2datebook.PL, src/install-hinote.c, src/kittykiller.c,
-	  src/pilot-xfer.c, include/pi-appinfo.hxx,
-	  include/pi-config-win32.h, include/pi-datebook.hxx,
-	  include/pi-dlp.hxx, include/pi-macros.h,
+	  src/pilot-install-hinote.c, src/pilot-xfer.c,
+	  include/pi-appinfo.hxx, include/pi-config-win32.h,
+	  include/pi-datebook.hxx, include/pi-dlp.hxx, include/pi-macros.h,
 	  include/pi-sockaddr-win32.h, include/pi-socket.h,
 	  include/pi-source.h, include/pi-version.h, libpisock/cmp.c,
 	  libpisock/dlp.c, libpisock/inet.c, libpisock/os2serial.c,
@@ -13032,13 +13796,15 @@
 	  sync-plan.PL, src/getopt.c, src/hinotes.c, src/ietf2datebook.PL,
 	  src/install-datebook.c, src/install-hinote.c, src/install-memo.c,
 	  src/pi-csd.c, src/pi-getrom.c, src/pilot-csd.c,
-	  src/pilot-getrom.c, src/pilot-hinotes.c, src/read-ical.c,
-	  src/read-todos.c, src/sync-plan.PL, include/pi-address.hxx,
-	  include/pi-hinote.h, include/pi-source.h, include/pi-version.h,
-	  libpisock/dlp.c, libpisock/hinote.c, libpisock/inet.c,
-	  libpisock/pi-file.c, libpisock/serial.c,
-	  doc/man/install-hinote.1: Jan 14, 1999    Kenneth Albanowski
-	  0.9.1
+	  src/pilot-getrom.c, src/pilot-hinotes.c,
+	  src/pilot-install-datebook.c, src/pilot-install-hinote.c,
+	  src/pilot-install-memo.c, src/pilot-read-ical.c,
+	  src/pilot-read-todos.c, src/read-ical.c, src/read-todos.c,
+	  src/sync-plan.PL, include/pi-address.hxx, include/pi-hinote.h,
+	  include/pi-source.h, include/pi-version.h, libpisock/dlp.c,
+	  libpisock/hinote.c, libpisock/inet.c, libpisock/pi-file.c,
+	  libpisock/serial.c, doc/man/install-hinote.1: Jan 14, 1999
+	  Kenneth Albanowski	  0.9.1
 
 		  Hi-Notes support (in 'hinotes' and 'install-hinote',
 	  courtesy of Bill
@@ -13066,15 +13832,15 @@
 	* COPYING.LIB, ChangeLog, Makefile.in, Makefile.os2, README,
 	  ietf2datebook.PL, pi-getram.c, pi-getrom.c, read-todos.c,
 	  src/ietf2datebook.PL, src/pi-getram.c, src/pi-getrom.c,
-	  src/pilot-getram.c, src/pilot-getrom.c, src/read-todos.c,
-	  include/pi-version.h, libpisock/address.c, libpisock/appinfo.c,
-	  libpisock/cmp.c, libpisock/datebook.c, libpisock/dlp.c,
-	  libpisock/expense.c, libpisock/inet.c, libpisock/mail.c,
-	  libpisock/memo.c, libpisock/os2serial.c, libpisock/padp.c,
-	  libpisock/pi-file.c, libpisock/serial.c, libpisock/slp.c,
-	  libpisock/socket.c, libpisock/syspkt.c, libpisock/todo.c,
-	  libpisock/unixserial.c, libpisock/utils.c: Aug 23,  1998
-	  Kenneth Albanowski	  0.9.0
+	  src/pilot-getram.c, src/pilot-getrom.c, src/pilot-read-todos.c,
+	  src/read-todos.c, include/pi-version.h, libpisock/address.c,
+	  libpisock/appinfo.c, libpisock/cmp.c, libpisock/datebook.c,
+	  libpisock/dlp.c, libpisock/expense.c, libpisock/inet.c,
+	  libpisock/mail.c, libpisock/memo.c, libpisock/os2serial.c,
+	  libpisock/padp.c, libpisock/pi-file.c, libpisock/serial.c,
+	  libpisock/slp.c, libpisock/socket.c, libpisock/syspkt.c,
+	  libpisock/todo.c, libpisock/unixserial.c, libpisock/utils.c: Aug
+	  23,  1998   Kenneth Albanowski      0.9.0
 
 		  Please note a significant change: the license for the
 	  pisock library,
@@ -13193,9 +13959,9 @@
 	* ChangeLog, README, ietf2datebook.PL, install-memo.c,
 	  os2configure.cmd, pi-nredir.c, pilot-xfer.c,
 	  src/ietf2datebook.PL, src/install-memo.c, src/pi-nredir.c,
-	  src/pilot-nredir.c, src/pilot-xfer.c, include/pi-version.h,
-	  libpisock/os2serial.c, libpisock/utils.c: Feb 27,  1998   Kenneth
-	  Albanowski 0.8.11
+	  src/pilot-install-memo.c, src/pilot-nredir.c, src/pilot-xfer.c,
+	  include/pi-version.h, libpisock/os2serial.c, libpisock/utils.c:
+	  Feb 27,  1998   Kenneth Albanowski 0.8.11
 
 		  Sorry, no time for detail:
 
@@ -13224,40 +13990,41 @@
 	  getopt.c, getopt.h, getopt1.c, ietf2datebook.PL, install-memo.c,
 	  memos.c, pilot-xfer.c, src/getopt.c, src/getopt.h, src/getopt1.c,
 	  src/ietf2datebook.PL, src/install-memo.c, src/memos.c,
-	  src/pilot-memos.c, src/pilot-xfer.c, include/pi-version.h,
-	  libpisock/dlp.c: Dec 14,  1997   Kenenth Albanowski 0.8.9
-	  Configuration changed:	   - added Python configuration
-	  patches by Bill Janssen	      <janssen@parc.xerox.com>.
-	  Library changes: 	   - Modified emulation of DLP
-	  NextRecInCat function.	  Utility changes:	      -
-	  added GNU (glibc2) getopt, changed pilot-xfer to use long
-	  options.	      - install-memos getopt tweak	      -
-	  added patches by Jay Sekora <js@aq.org> to improve memos
-	  - added Ian Goldberg's sensible name escape patches for
-	  pilot-xfer		  (so that a database with a slash or
-	  equals in the name is translated		to something safe.)
-		     - added slightly modified patches by Simon Burge
-		 <simonb@telstra.com.au> so that pilot-xfer does not have
-	  to back	       up the entire Pilot each time. (added sync
-	  and update modes).
+	  src/pilot-install-memo.c, src/pilot-memos.c, src/pilot-xfer.c,
+	  include/pi-version.h, libpisock/dlp.c: Dec 14,  1997	 Kenenth
+	  Albanowski 0.8.9	   Configuration changed:	    - added
+	  Python configuration patches by Bill Janssen
+	  <janssen@parc.xerox.com>.	     Library changes:		 -
+	  Modified emulation of DLP NextRecInCat function.	    Utility
+	  changes:	      - added GNU (glibc2) getopt, changed
+	  pilot-xfer to use long options.	     - install-memos getopt
+	  tweak 	   - added patches by Jay Sekora <js@aq.org> to
+	  improve memos 	   - added Ian Goldberg's sensible name
+	  escape patches for pilot-xfer 	     (so that a database
+	  with a slash or equals in the name is translated		to
+	  something safe.)	      - added slightly modified patches by
+	  Simon Burge		   <simonb@telstra.com.au> so that
+	  pilot-xfer does not have to back		up the entire Pilot
+	  each time. (added sync and update modes).
 
 2000-07-30 20:05  desrod
 
 	* ChangeLog, Makefile.in, Makefile.os2, configure, configure.in,
 	  ietf2datebook.PL, install-memo.c, pi-nredir.c, pilot-debug.c,
 	  src/ietf2datebook.PL, src/install-memo.c, src/pi-nredir.c,
-	  src/pilot-debug.c, src/pilot-nredir.c, include/pi-config.h.in,
-	  include/pi-sockaddr.h.in, include/pi-socket.h,
-	  include/pi-version.h, libpisock/padp.c, libpisock/utils.c: Dec
-	  7,  1997   Kenneth Albanowski 0.8.8	      Configuration
-	  changes:	     - add sa_len member to pi_sockaddr, to match
-	  OS	       - include compatability code for putenv
-	  Library changes:	     - Modified PADP code to better cope
-	  with the timeout response of		   PalmOS 2.0. (The result
-	  is _not_ faster response, but less		 confusion.)
-	  Utility changes:	      - pilot-debug has minimal feature
-	  support	    - install-memo has several new options,
-	  provided by Paul Traina	      <pst@Shockwave.COM>.
+	  src/pilot-debug.c, src/pilot-install-memo.c, src/pilot-nredir.c,
+	  include/pi-config.h.in, include/pi-sockaddr.h.in,
+	  include/pi-socket.h, include/pi-version.h, libpisock/padp.c,
+	  libpisock/utils.c: Dec  7,  1997   Kenneth Albanowski 0.8.8
+	  Configuration changes:	     - add sa_len member to
+	  pi_sockaddr, to match OS	     - include compatability code
+	  for putenv	     Library changes:		- Modified PADP
+	  code to better cope with the timeout response of
+	  PalmOS 2.0. (The result is _not_ faster response, but less
+	  confusion.)	   Utility changes:	      - pilot-debug
+	  has minimal feature support		- install-memo has several
+	  new options, provided by Paul Traina
+	  <pst@Shockwave.COM>.
 
 2000-07-30 20:04  desrod
 
@@ -13286,11 +14053,13 @@
 	  src/pi-getram.c, src/pi-getrom.c, src/pi-nredir.c, src/pi-port.c,
 	  src/pilot-addresses.c, src/pilot-clip.c, src/pilot-debugsh.c,
 	  src/pilot-dedupe.c, src/pilot-dlpsh.c, src/pilot-getram.c,
-	  src/pilot-getrom.c, src/pilot-mail.c, src/pilot-memos.c,
-	  src/pilot-nredir.c, src/pilot-port.c, src/pilot-reminders.c,
-	  src/pilot-schlep.c, src/pilot-xfer.c, src/read-expenses.c,
-	  src/read-ical.c, src/read-todos.c, src/reminders.c,
-	  include/pi-config.h.in, include/pi-socket.h,
+	  src/pilot-getrom.c, src/pilot-install-memo.c,
+	  src/pilot-install-todos.c, src/pilot-mail.c, src/pilot-memos.c,
+	  src/pilot-nredir.c, src/pilot-port.c, src/pilot-read-expenses.c,
+	  src/pilot-read-ical.c, src/pilot-read-todos.c,
+	  src/pilot-reminders.c, src/pilot-schlep.c, src/pilot-xfer.c,
+	  src/read-expenses.c, src/read-ical.c, src/read-todos.c,
+	  src/reminders.c, include/pi-config.h.in, include/pi-socket.h,
 	  libpisock/datebook.c, libpisock/expense.c, libpisock/pi-file.c,
 	  libpisock/socket.c: Sep  14, 1997   Kenneth Albanowski 0.8.6
 	  Configuration changes:	      - skip sys/select.h if it is
@@ -13345,10 +14114,10 @@
 
 	* ChangeLog, ietf2datebook.PL, pi-csd.c, read-ical.c,
 	  src/ietf2datebook.PL, src/pi-csd.c, src/pilot-csd.c,
-	  src/read-ical.c, include/pi-socket.h, libpisock/dlp.c: Aug 17,
-	  1997	  Kenneth Albanowski 0.8.2	   Utility changes:
-	  - read-ical: still more oops.	     - pi-csd: scrap
-	  ifr_netmask.
+	  src/pilot-read-ical.c, src/read-ical.c, include/pi-socket.h,
+	  libpisock/dlp.c: Aug 17, 1997    Kenneth Albanowski 0.8.2
+	  Utility changes:	     - read-ical: still more oops.
+	  - pi-csd: scrap ifr_netmask.
 
 2000-07-30 19:57  desrod
 
@@ -13357,41 +14126,42 @@
 	  pilot-mail.c, pilot-undelete.PL, pilot-undelete.pl, pilot-xfer.c,
 	  read-expenses.c, read-ical.c, reminders.c, src/ietf2datebook.PL,
 	  src/install-datebook.c, src/pi-csd.c, src/pi-nredir.c,
-	  src/pilot-csd.c, src/pilot-mail.c, src/pilot-nredir.c,
-	  src/pilot-reminders.c, src/pilot-undelete.PL, src/pilot-xfer.c,
-	  src/read-expenses.c, src/read-ical.c, src/reminders.c,
-	  include/pi-datebook.h, include/pi-dlp.h, include/pi-expense.h,
-	  include/pi-mail.h, include/pi-socket.h, libpisock/datebook.c,
-	  libpisock/expense.c, libpisock/inet.c, libpisock/mail.c,
-	  libpisock/memo.c, libpisock/pi-file.c, libpisock/utils.c,
-	  doc/man/ietf2datebook.1, doc/man/install-datebook.1,
-	  tests/packers.c: Aug 9, 1997		   Kenneth Albanowski 0.8.1
-		  Configuration changes:	   - A few tweaks for Java
-	  and OS/2.	     Pisocket library changes:		  - For
-	  datebook packer code: repeatOn split into repeatDay and
-	  repeatDays.		 - Fixed pi-file crash on records larger
-	  then 64K. (Note that the Pilot	      itself cannot deal
-	  with records larger then 64K!)	    - pi-csd now tries to
-	  cope better with missing ifr_netmask. 	   - pi-nredir:
-	  setenv scrapped.	      - pilot-mail: Added x-mailer header,
-	  and avoid preprending dashes to	       signature if it
-	  already has them.	       - pilot-xfer: tried to fix optind.
-	  Again.	    - read-ical: oops.		Utility changes:
-		  - Added installdatebook and ietf2datebook, both provided
-	  by Tero	       Kivinen <kivinen@ssh.fi> 	 Java
-	  binding changes:	      - Now compiles with JDK 1.1.
-	  - All standard Pilot databases support with complete
-	  packer/unpacker	       support. 	   - File access
-	  added.	    - All enumeration record values changed over to
-	  enumeration objects.		  - All bit-fields replaced with
-	  individual items.	     Perl 5 binding changes:		-
-	  All enumeration record values changed over to text values.
-	  - Support for mail preferences added.	       - Expense
-	  database supported.		 - All bit-fields replaced with
-	  individual items.	       - Open command accepts text mode
-	  ("rxws") as well as numeric.		Python binding changes:
-		 - All enumeration record values changed over to text
-	  values.
+	  src/pilot-csd.c, src/pilot-install-datebook.c, src/pilot-mail.c,
+	  src/pilot-nredir.c, src/pilot-read-expenses.c,
+	  src/pilot-read-ical.c, src/pilot-reminders.c,
+	  src/pilot-undelete.PL, src/pilot-xfer.c, src/read-expenses.c,
+	  src/read-ical.c, src/reminders.c, include/pi-datebook.h,
+	  include/pi-dlp.h, include/pi-expense.h, include/pi-mail.h,
+	  include/pi-socket.h, libpisock/datebook.c, libpisock/expense.c,
+	  libpisock/inet.c, libpisock/mail.c, libpisock/memo.c,
+	  libpisock/pi-file.c, libpisock/utils.c, doc/man/ietf2datebook.1,
+	  doc/man/install-datebook.1, tests/packers.c: Aug 9, 1997
+	  Kenneth Albanowski 0.8.1	      Configuration changes:
+	  - A few tweaks for Java and OS/2.		Pisocket library
+	  changes:	      - For datebook packer code: repeatOn split
+	  into repeatDay and repeatDays.	    - Fixed pi-file crash
+	  on records larger then 64K. (Note that the Pilot
+	  itself cannot deal with records larger then 64K!)	       -
+	  pi-csd now tries to cope better with missing ifr_netmask.
+	  - pi-nredir: setenv scrapped.	      - pilot-mail: Added
+	  x-mailer header, and avoid preprending dashes to
+	  signature if it already has them.	       - pilot-xfer: tried
+	  to fix optind. Again. 	   - read-ical: oops.
+	  Utility changes:	      - Added installdatebook and
+	  ietf2datebook, both provided by Tero		    Kivinen
+	  <kivinen@ssh.fi>	    Java binding changes:	     - Now
+	  compiles with JDK 1.1.	    - All standard Pilot databases
+	  support with complete packer/unpacker 	     support.
+	  - File access added.	       - All enumeration record
+	  values changed over to enumeration objects.		 - All
+	  bit-fields replaced with individual items.	      Perl 5
+	  binding changes:	      - All enumeration record values
+	  changed over to text values.		  - Support for mail
+	  preferences added.		- Expense database supported.
+	  - All bit-fields replaced with individual items.
+	  - Open command accepts text mode ("rxws") as well as numeric.
+	  Python binding changes:		  - All enumeration record
+	  values changed over to text values.
 
 2000-07-30 19:54  desrod
 
@@ -13406,7 +14176,10 @@
 	  src/pd-tty.c, src/pi-csd.c, src/pi-getrom.c, src/pi-nredir.c,
 	  src/pilot-addresses.c, src/pilot-csd.c, src/pilot-debug.c,
 	  src/pilot-dlpsh.c, src/pilot-file.c, src/pilot-getrom.c,
-	  src/pilot-mail.c, src/pilot-memos.c, src/pilot-nredir.c,
+	  src/pilot-install-memo.c, src/pilot-install-todos.c,
+	  src/pilot-install-user.c, src/pilot-mail.c, src/pilot-memos.c,
+	  src/pilot-nredir.c, src/pilot-read-expenses.c,
+	  src/pilot-read-ical.c, src/pilot-read-todos.c,
 	  src/pilot-reminders.c, src/pilot-xfer.c, src/read-expenses.c,
 	  src/read-ical.c, src/read-todos.c, src/reminders.c,
 	  src/validate.cc, include/pi-address.h, include/pi-appinfo.h,
@@ -13508,9 +14281,9 @@
 	* ChangeLog, Makefile.in, Makefile.os2, configure, configure.in,
 	  pi-csd.c, pi-nredir.c, read-ical.c, src/pi-csd.c,
 	  src/pi-nredir.c, src/pilot-csd.c, src/pilot-nredir.c,
-	  src/read-ical.c, include/pi-config.h.in, include/pi-socket.h,
-	  libpisock/inet.c, libpisock/serial.c, libpisock/socket.c: Jul 26,
-	  1997	  Kenneth Albanowski 0.7.6
+	  src/pilot-read-ical.c, src/read-ical.c, include/pi-config.h.in,
+	  include/pi-socket.h, libpisock/inet.c, libpisock/serial.c,
+	  libpisock/socket.c: Jul 26, 1997    Kenneth Albanowski 0.7.6
 
 		  Configuration changes:
 		    - No more complaints if the Java Development Kit isn't
@@ -13554,10 +14327,10 @@
 
 	* ChangeLog, Makefile.in, Makefile.os2, configure, configure.in,
 	  pilot-mail.c, pilot-undelete.pl, pilot-xfer.c, read-ical.c,
-	  src/pilot-mail.c, src/pilot-xfer.c, src/read-ical.c,
-	  include/pi-config.h.in, include/pi-mail.h, include/pi-socket.h,
-	  libpisock/dlp.c, libpisock/mail.c: Jul 22, 1997    Kenneth
-	  Albanowski 0.7.5
+	  src/pilot-mail.c, src/pilot-read-ical.c, src/pilot-xfer.c,
+	  src/read-ical.c, include/pi-config.h.in, include/pi-mail.h,
+	  include/pi-socket.h, libpisock/dlp.c, libpisock/mail.c: Jul 22,
+	  1997	  Kenneth Albanowski 0.7.5
 
 		  Configuration changes:
 		    - Uninstalled binaries should better cope with symlinks
@@ -13730,12 +14503,12 @@
 	* ChangeLog, Makefile.in, Makefile.os2, install-user.c,
 	  parsedate.c, parsedate.y, pilot-file.c, pilot-xfer.c,
 	  read-ical.c, sync-memodir.c, src/install-user.c, src/parsedate.c,
-	  src/parsedate.y, src/pilot-file.c, src/pilot-xfer.c,
-	  src/read-ical.c, include/pi-dlp.h, include/pi-file.h,
-	  include/pi-socket.h, libpisock/dlp.c, libpisock/padp.c,
-	  libpisock/pi-file.c, libpisock/serial.c, libpisock/slp.c,
-	  libpisock/socket.c, libpisock/unixserial.c: Jun 22, 1997
-	  Kenneth Albanowski 0.7.1
+	  src/parsedate.y, src/pilot-file.c, src/pilot-install-user.c,
+	  src/pilot-read-ical.c, src/pilot-xfer.c, src/read-ical.c,
+	  include/pi-dlp.h, include/pi-file.h, include/pi-socket.h,
+	  libpisock/dlp.c, libpisock/padp.c, libpisock/pi-file.c,
+	  libpisock/serial.c, libpisock/slp.c, libpisock/socket.c,
+	  libpisock/unixserial.c: Jun 22, 1997	  Kenneth Albanowski 0.7.1
 
 		  Added Ian's patches to install man-pages, and dump
 	  records in
@@ -13826,7 +14599,10 @@
 	  src/parsedate.c, src/parsedate.y, src/pi-port.c,
 	  src/pilot-addresses.c, src/pilot-clip.c, src/pilot-debug.c,
 	  src/pilot-debugsh.c, src/pilot-dedupe.c, src/pilot-dlpsh.c,
-	  src/pilot-mail.c, src/pilot-memos.c, src/pilot-port.c,
+	  src/pilot-install-memo.c, src/pilot-install-todos.c,
+	  src/pilot-install-user.c, src/pilot-mail.c, src/pilot-memos.c,
+	  src/pilot-port.c, src/pilot-read-expenses.c,
+	  src/pilot-read-ical.c, src/pilot-read-todos.c,
 	  src/pilot-reminders.c, src/pilot-schlep.c, src/pilot-xfer.c,
 	  src/read-expenses.c, src/read-ical.c, src/read-todos.c,
 	  src/reminders.c, src/prc/getrom2.prc, include/pi-config.h.in,
@@ -14050,18 +14826,21 @@
 	  src/install-todos.c, src/install-user.c, src/memos.c,
 	  src/parsedate.c, src/parsedate.y, src/pilot-addresses.c,
 	  src/pilot-debug.c, src/pilot-debugsh.c, src/pilot-dedupe.c,
-	  src/pilot-dlpsh.c, src/pilot-mail.c, src/pilot-memos.c,
-	  src/pilot-prc.c, src/pilot-reminders.c, src/pilot-schlep.c,
-	  src/pilot-xfer.c, src/read-expenses.c, src/read-ical.c,
-	  src/read-todos.c, src/reminders.c, include/pi-address.h,
-	  include/pi-appinfo.h, include/pi-config.h.in,
-	  include/pi-datebook.h, include/pi-dlp.h, include/pi-file.h,
-	  include/pi-macros.h, include/pi-memo.h, include/pi-socket.h,
-	  include/pi-source.h, include/pi-todo.h, libpisock/address.c,
-	  libpisock/datebook.c, libpisock/dlp.c, libpisock/memo.c,
-	  libpisock/pi-file.c, libpisock/serial.c, libpisock/slp.c,
-	  libpisock/socket.c, libpisock/syspkt.c, libpisock/utils.c: Mar 4,
-	  1997	   Kenneth Albanowski 0.6.1
+	  src/pilot-dlpsh.c, src/pilot-install-memo.c,
+	  src/pilot-install-todos.c, src/pilot-install-user.c,
+	  src/pilot-mail.c, src/pilot-memos.c, src/pilot-prc.c,
+	  src/pilot-read-expenses.c, src/pilot-read-ical.c,
+	  src/pilot-read-todos.c, src/pilot-reminders.c,
+	  src/pilot-schlep.c, src/pilot-xfer.c, src/read-expenses.c,
+	  src/read-ical.c, src/read-todos.c, src/reminders.c,
+	  include/pi-address.h, include/pi-appinfo.h,
+	  include/pi-config.h.in, include/pi-datebook.h, include/pi-dlp.h,
+	  include/pi-file.h, include/pi-macros.h, include/pi-memo.h,
+	  include/pi-socket.h, include/pi-source.h, include/pi-todo.h,
+	  libpisock/address.c, libpisock/datebook.c, libpisock/dlp.c,
+	  libpisock/memo.c, libpisock/pi-file.c, libpisock/serial.c,
+	  libpisock/slp.c, libpisock/socket.c, libpisock/syspkt.c,
+	  libpisock/utils.c: Mar 4, 1997     Kenneth Albanowski 0.6.1
 
 		  Perl5 support nearly complete. Documentation less so.
 		  Python support nearly complete. Documentation less so.
@@ -14089,8 +14868,8 @@
 	  pilot-debug.c, pilot-mail.c, pilot-xfer.c, read-expenses.c,
 	  validate.cc, src/ccexample.cc, src/parsedate.c, src/parsedate.y,
 	  src/pd-tty.c, src/pilot-debug.c, src/pilot-mail.c,
-	  src/pilot-xfer.c, src/read-expenses.c, src/validate.cc,
-	  include/pi-address.h, include/pi-appinfo.h,
+	  src/pilot-read-expenses.c, src/pilot-xfer.c, src/read-expenses.c,
+	  src/validate.cc, include/pi-address.h, include/pi-appinfo.h,
 	  include/pi-config.h.in, include/pi-datebook.h,
 	  include/pi-expense.h, include/pi-macros.h, include/pi-memo.h,
 	  include/pi-todo.h, libpisock/address.c, libpisock/cmp.c,
@@ -14148,9 +14927,9 @@
 	  pilot-addresses.c, pilot-debug.c, pilot-dedupe.c, pilot-mail.c,
 	  src/install-user.c, src/parsedate.c, src/parsedate.y,
 	  src/pilot-addresses.c, src/pilot-debug.c, src/pilot-dedupe.c,
-	  src/pilot-mail.c, include/pi-dlp.h, include/pi-mail.h,
-	  include/pi-padp.h, include/pi-source.h, include/pi-syspkt.h: Apr
-	  13, 1997    Kenneth Albanowski 0.5.6
+	  src/pilot-install-user.c, src/pilot-mail.c, include/pi-dlp.h,
+	  include/pi-mail.h, include/pi-padp.h, include/pi-source.h,
+	  include/pi-syspkt.h: Apr 13, 1997    Kenneth Albanowski 0.5.6
 
 	      New pilot-mail excutable to directly support transmission and
 	  reception
@@ -14187,11 +14966,11 @@
 	  pilot-debug.c, pilot-dedupe.c, pilot-schlep.c, pilot-xfer.c,
 	  sync-memodir.c, src/debugsh.c, src/dlpsh.c, src/getrom.c,
 	  src/install-user.c, src/pilot-debug.c, src/pilot-debugsh.c,
-	  src/pilot-dedupe.c, src/pilot-dlpsh.c, src/pilot-schlep.c,
-	  src/pilot-xfer.c, include/pi-cmp.h, include/pi-config.h.in,
-	  include/pi-dlp.h, include/pi-expense.h, include/pi-mail.h,
-	  include/pi-socket.h, include/pi-source.h: Apr 4, 1997
-	  Kenneth Albanowski 0.5.5
+	  src/pilot-dedupe.c, src/pilot-dlpsh.c, src/pilot-install-user.c,
+	  src/pilot-schlep.c, src/pilot-xfer.c, include/pi-cmp.h,
+	  include/pi-config.h.in, include/pi-dlp.h, include/pi-expense.h,
+	  include/pi-mail.h, include/pi-socket.h, include/pi-source.h: Apr
+	  4, 1997	      Kenneth Albanowski 0.5.5
 
 	      Added Ron Nicholson's <rhn@waltz.engr.sgi.com> patch for
 	  user-id setting
@@ -14313,10 +15092,11 @@
 	  pilot-addresses.c, pilot-dedupe.c, pilot-xfer.c, read-ical.c,
 	  sync-memodir.c, src/debugsh.c, src/getrom.c, src/install-memo.c,
 	  src/memos.c, src/pilot-addresses.c, src/pilot-debugsh.c,
-	  src/pilot-dedupe.c, src/pilot-memos.c, src/pilot-xfer.c,
-	  src/read-ical.c, src/prc/getrom.prc, include/pi-dlp.h,
-	  include/pi-macros.h, include/pi-source.h, include/pi-sync.h: Feb
-	  23, 1997    Kenneth Albanowski 0.5.1
+	  src/pilot-dedupe.c, src/pilot-install-memo.c, src/pilot-memos.c,
+	  src/pilot-read-ical.c, src/pilot-xfer.c, src/read-ical.c,
+	  src/prc/getrom.prc, include/pi-dlp.h, include/pi-macros.h,
+	  include/pi-source.h, include/pi-sync.h: Feb 23, 1997	  Kenneth
+	  Albanowski 0.5.1
 
 		  Added getrom executable, and included getrom.prc from
 	  CoPilot
@@ -14349,17 +15129,20 @@
 	  src/install-memo.c, src/install-todos.c, src/install-user.c,
 	  src/memos.c, src/pilot-addresses.c, src/pilot-debugsh.c,
 	  src/pilot-dedupe.c, src/pilot-dlpsh.c, src/pilot-file.c,
-	  src/pilot-memos.c, src/pilot-reminders.c, src/pilot-xfer.c,
-	  src/read-ical.c, src/read-todos.c, src/reminders.c,
-	  include/address.h, include/cmp.h, include/datebook.h,
-	  include/dlp.h, include/memo.h, include/padp.h,
-	  include/pi-address.h, include/pi-cmp.h, include/pi-datebook.h,
-	  include/pi-dlp.h, include/pi-file.h, include/pi-macros.h,
-	  include/pi-memo.h, include/pi-padp.h, include/pi-serial.h,
-	  include/pi-slp.h, include/pi-socket.h, include/pi-source.h,
-	  include/pi-sync.h, include/pi-syspkt.h, include/pi-todo.h,
-	  include/slp.h, include/sync.h, include/syspkt.h, include/todo.h,
-	  doc/man/pilot-xfer.1: Feb  5, 1997	Kenneth Albanowski 0.5.0
+	  src/pilot-install-memo.c, src/pilot-install-todos.c,
+	  src/pilot-install-user.c, src/pilot-memos.c,
+	  src/pilot-read-ical.c, src/pilot-read-todos.c,
+	  src/pilot-reminders.c, src/pilot-xfer.c, src/read-ical.c,
+	  src/read-todos.c, src/reminders.c, include/address.h,
+	  include/cmp.h, include/datebook.h, include/dlp.h, include/memo.h,
+	  include/padp.h, include/pi-address.h, include/pi-cmp.h,
+	  include/pi-datebook.h, include/pi-dlp.h, include/pi-file.h,
+	  include/pi-macros.h, include/pi-memo.h, include/pi-padp.h,
+	  include/pi-serial.h, include/pi-slp.h, include/pi-socket.h,
+	  include/pi-source.h, include/pi-sync.h, include/pi-syspkt.h,
+	  include/pi-todo.h, include/slp.h, include/sync.h,
+	  include/syspkt.h, include/todo.h, doc/man/pilot-xfer.1: Feb  5,
+	  1997	  Kenneth Albanowski 0.5.0
 
 		  Rearranged header files so they should be cleaner to
 	  externally use.
@@ -14392,9 +15175,10 @@
 	  config.guess, config.sub, configure, configure.in, dlpsh.c,
 	  install-memo.c, install-sh, pilot-addresses.c, pilot-xfer.c,
 	  src/addresses.c, src/dlpsh.c, src/install-memo.c,
-	  src/pilot-addresses.c, src/pilot-dlpsh.c, src/pilot-xfer.c,
-	  include/address.h, include/pi-config.h.in, include/pi-socket.h:
-	  Jan 18, 1997	  Kenneth Albanowski 0.4.3
+	  src/pilot-addresses.c, src/pilot-dlpsh.c,
+	  src/pilot-install-memo.c, src/pilot-xfer.c, include/address.h,
+	  include/pi-config.h.in, include/pi-socket.h: Jan 18, 1997
+	  Kenneth Albanowski 0.4.3
 
 		  Modified configure support for NeXT and OS/2.
 		  Added pilot-addresses program, a program designed to
@@ -14438,6 +15222,7 @@
 
 	* ChangeLog, Makefile.in, Makefile.os2, configure, configure.in,
 	  install-user.c, pilot-xfer.c, read-ical.c, src/install-user.c,
+	  src/pilot-install-user.c, src/pilot-read-ical.c,
 	  src/pilot-xfer.c, src/read-ical.c, include/dlp.h,
 	  include/pi-socket.h, include/syspkt.h: Dec 30, 1996	 Kenneth
 	  Albanowski 0.4.1
@@ -14542,10 +15327,11 @@
 	  dlpsh.c, install-pdb.c, install-prc.c, pilot-file.c,
 	  pilot-xfer.c, read-ical.c, retrieve-pdb.c, retrieve-prc.c,
 	  sync-memodir.c, src/dlpsh.c, src/pilot-dlpsh.c, src/pilot-file.c,
-	  src/pilot-xfer.c, src/read-ical.c, include/dlp.h, include/pdb.h,
-	  include/pi-config.h.in, include/pi-file.h, include/pi-socket.h,
-	  include/prc.h, include/sync.h, doc/man/pilot-xfer.1: Dec 22, 1996
-	     Kenneth Albanowski 0.4.0
+	  src/pilot-read-ical.c, src/pilot-xfer.c, src/read-ical.c,
+	  include/dlp.h, include/pdb.h, include/pi-config.h.in,
+	  include/pi-file.h, include/pi-socket.h, include/prc.h,
+	  include/sync.h, doc/man/pilot-xfer.1: Dec 22, 1996	Kenneth
+	  Albanowski 0.4.0
 
 	      Removed {install,retrieve}-{pdb,prc} packages, replaced with
 		 pilot-xfer, which also includes general backup and listing
@@ -14617,7 +15403,9 @@
 	  retrieve-prc.c, test-acceptor.c, test-connector.c,
 	  src/addresses.c, src/debugsh.c, src/dlpsh.c, src/install-memo.c,
 	  src/install-todos.c, src/install-user.c, src/memos.c,
-	  src/pilot-debugsh.c, src/pilot-dlpsh.c, src/pilot-memos.c,
+	  src/pilot-debugsh.c, src/pilot-dlpsh.c, src/pilot-install-memo.c,
+	  src/pilot-install-todos.c, src/pilot-install-user.c,
+	  src/pilot-memos.c, src/pilot-read-ical.c, src/pilot-read-todos.c,
 	  src/pilot-reminders.c, src/read-ical.c, src/read-todos.c,
 	  src/reminders.c, include/cmp.h, include/padp.h,
 	  include/pi-config.h.in, include/pi-serial.h, include/pi-socket.h,
@@ -14633,11 +15421,13 @@
 	* ChangeLog, Makefile, dlpsh.c, install-pdb.c, install-prc.c,
 	  install-todos.c, read-ical.c, read-todos.c, reminders.c,
 	  retrieve-pdb.c, retrieve-prc.c, todos.c, src/dlpsh.c,
-	  src/install-todos.c, src/pilot-dlpsh.c, src/pilot-reminders.c,
-	  src/read-ical.c, src/read-todos.c, src/reminders.c,
-	  include/cmp.h, include/dlp.h, include/padp.h, include/pdb.h,
-	  include/pi-serial.h, include/pi-socket.h, include/prc.h,
-	  doc/man/read-ical.1: Nov 25, 1996    Kenneth Albanowski 0.3.1
+	  src/install-todos.c, src/pilot-dlpsh.c,
+	  src/pilot-install-todos.c, src/pilot-read-ical.c,
+	  src/pilot-read-todos.c, src/pilot-reminders.c, src/read-ical.c,
+	  src/read-todos.c, src/reminders.c, include/cmp.h, include/dlp.h,
+	  include/padp.h, include/pdb.h, include/pi-serial.h,
+	  include/pi-socket.h, include/prc.h, doc/man/read-ical.1: Nov 25,
+	  1996	  Kenneth Albanowski 0.3.1
 
 	      Integrated Ulrich Hertlein's SunOS patches (in slightly
 	  changed form).
@@ -14704,7 +15494,8 @@
 	* ChangeLog, Makefile, dlpsh.c, install-memo.c, install-prc.c,
 	  install-user.c, test-acceptor.c, test-connector.c, test-debug.c,
 	  src/dlpsh.c, src/install-memo.c, src/install-user.c,
-	  src/pilot-dlpsh.c, include/dlp.h, include/padp.h,
+	  src/pilot-dlpsh.c, src/pilot-install-memo.c,
+	  src/pilot-install-user.c, include/dlp.h, include/padp.h,
 	  include/pi-serial.h, include/pi-socket.h, include/syspkt.h,
 	  doc/man/dlpsh.1, doc/man/install-memo.1: Oct 24, 1996    D. Jeff
 	  Dionne 0.2.3
@@ -14729,9 +15520,9 @@
 
 	* ChangeLog, Makefile, install-memo.c, install-prc.c,
 	  install-user.c, test-acceptor.c, test-connector.c,
-	  src/install-memo.c, src/install-user.c, include/cmp.h,
-	  include/dlp.h, include/prc.h: Oct 19, 1996	D. Jeff Dionne
-	  0.2.2
+	  src/install-memo.c, src/install-user.c, src/pilot-install-memo.c,
+	  src/pilot-install-user.c, include/cmp.h, include/dlp.h,
+	  include/prc.h: Oct 19, 1996	 D. Jeff Dionne 0.2.2
 
 		  Integrated a patch from Kenneth Albanowski
 		    - More DLP code.
@@ -14745,10 +15536,11 @@
 	  dlp.h, install-memo.c, install-prc.c, install-user.c, padp.c,
 	  padp.h, pi-socket.h, prc.h, prcread.c, serial.c, slp.c, slp.h,
 	  socket.c, test_c.c, test_s.c, utils.c, src/install-memo.c,
-	  src/install-user.c, include/cmp.h, include/dlp.h, include/padp.h,
-	  include/pi-socket.h, include/prc.h, include/slp.h,
-	  doc/man/install-memo.1, doc/man/install-user.1: Oct 16, 1996
-	  D. Jeff Dionne 0.2.1
+	  src/install-user.c, src/pilot-install-memo.c,
+	  src/pilot-install-user.c, include/cmp.h, include/dlp.h,
+	  include/padp.h, include/pi-socket.h, include/prc.h,
+	  include/slp.h, doc/man/install-memo.1, doc/man/install-user.1:
+	  Oct 16, 1996	  D. Jeff Dionne 0.2.1
 
 		  moved the parts of libpisock.a to a seperate directory
 		  moved the include files to a seperate directory
@@ -14762,8 +15554,8 @@
 
 	* COPYING, Makefile, cmp.c, cmp.h, dlp.c, dlp.h, install-memo.c,
 	  install-prc.c, pi-socket.h, serial.c, socket.c, test_c.c,
-	  test_s.c, src/install-memo.c: Oct 15, 1996	D. Jeff Dionne
-	  0.2.0
+	  test_s.c, src/install-memo.c, src/pilot-install-memo.c: Oct 15,
+	  1996	  D. Jeff Dionne 0.2.0
 
 		  Integrated 2 patches for DLP from Kenneth Albanowski
 		  Integrated 1 patch for CMP from Kenneth Albanowski
