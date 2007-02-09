@@ -28,6 +28,12 @@
 extern "C" {
 #endif
 
+#if defined(sun) && defined(__SVR4)
+#define u_int8_t uint8_t
+#define u_int16_t uint16_t
+#define u_int32_t uint32_t
+#endif
+
 #define PI_USB_DEV     1
 
 	struct pi_usb_data;
