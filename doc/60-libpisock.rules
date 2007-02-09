@@ -1,45 +1,45 @@
 # udev rules file for pilot-link's libpisock library, enabled for libusb
 #
-BUS!="usb", ACTION!="add", GOTO="libpisock_rules_end"
+SUBSYSTEMS!="usb", ACTION!="add", GOTO="libpisock_rules_end"
 
 # Sony handheld devices
-SYSFS{idVendor}=="054c", SYSFS{idProduct}=="0038", GROUP="dialout", MODE="0664"
-SYSFS{idVendor}=="054c", SYSFS{idProduct}=="0066", GROUP="dialout", MODE="0664"
-SYSFS{idVendor}=="054c", SYSFS{idProduct}=="0095", GROUP="dialout", MODE="0664"
-SYSFS{idVendor}=="054c", SYSFS{idProduct}=="009a", GROUP="dialout", MODE="0664"
-SYSFS{idVendor}=="054c", SYSFS{idProduct}=="00da", GROUP="dialout", MODE="0664"
-SYSFS{idVendor}=="054c", SYSFS{idProduct}=="00e9", GROUP="dialout", MODE="0664"
-SYSFS{idVendor}=="054c", SYSFS{idProduct}=="0144", GROUP="dialout", MODE="0664"
-SYSFS{idVendor}=="054c", SYSFS{idProduct}=="0169", GROUP="dialout", MODE="0664"
+ATTRS{idVendor}=="054c", ATTRS{idProduct}=="0038", GROUP="dialout", MODE="0664"
+ATTRS{idVendor}=="054c", ATTRS{idProduct}=="0066", GROUP="dialout", MODE="0664"
+ATTRS{idVendor}=="054c", ATTRS{idProduct}=="0095", GROUP="dialout", MODE="0664"
+ATTRS{idVendor}=="054c", ATTRS{idProduct}=="009a", GROUP="dialout", MODE="0664"
+ATTRS{idVendor}=="054c", ATTRS{idProduct}=="00da", GROUP="dialout", MODE="0664"
+ATTRS{idVendor}=="054c", ATTRS{idProduct}=="00e9", GROUP="dialout", MODE="0664"
+ATTRS{idVendor}=="054c", ATTRS{idProduct}=="0144", GROUP="dialout", MODE="0664"
+ATTRS{idVendor}=="054c", ATTRS{idProduct}=="0169", GROUP="dialout", MODE="0664"
 
 # Handspring handheld devices
-SYSFS{idVendor}=="082d", SYSFS{idProduct}=="0100", GROUP="dialout", MODE="0664"
-SYSFS{idVendor}=="082d", SYSFS{idProduct}=="0200", GROUP="dialout", MODE="0664"
-SYSFS{idVendor}=="082d", SYSFS{idProduct}=="0300", GROUP="dialout", MODE="0664"
+ATTRS{idVendor}=="082d", ATTRS{idProduct}=="0100", GROUP="dialout", MODE="0664"
+ATTRS{idVendor}=="082d", ATTRS{idProduct}=="0200", GROUP="dialout", MODE="0664"
+ATTRS{idVendor}=="082d", ATTRS{idProduct}=="0300", GROUP="dialout", MODE="0664"
 
 # Palm, Inc. and palmOne handheld devices
-SYSFS{idVendor}=="04e8", SYSFS{idProduct}=="6601", GROUP="dialout", MODE="0664"
-SYSFS{idVendor}=="04e8", SYSFS{idProduct}=="8001", GROUP="dialout", MODE="0664"
-SYSFS{idVendor}=="0830", SYSFS{idProduct}=="0001", GROUP="dialout", MODE="0664"
-SYSFS{idVendor}=="0830", SYSFS{idProduct}=="0002", GROUP="dialout", MODE="0664"
-SYSFS{idVendor}=="0830", SYSFS{idProduct}=="0003", GROUP="dialout", MODE="0664"
-SYSFS{idVendor}=="0830", SYSFS{idProduct}=="0020", GROUP="dialout", MODE="0664"
-SYSFS{idVendor}=="0830", SYSFS{idProduct}=="0031", GROUP="dialout", MODE="0664"
-SYSFS{idVendor}=="0830", SYSFS{idProduct}=="0040", GROUP="dialout", MODE="0664"
-SYSFS{idVendor}=="0830", SYSFS{idProduct}=="0050", GROUP="dialout", MODE="0664"
-SYSFS{idVendor}=="0830", SYSFS{idProduct}=="0060", GROUP="dialout", MODE="0664"
-SYSFS{idVendor}=="0830", SYSFS{idProduct}=="0061", GROUP="dialout", MODE="0664"
-SYSFS{idVendor}=="0830", SYSFS{idProduct}=="0070", GROUP="dialout", MODE="0664"
-SYSFS{idVendor}=="0830", SYSFS{idProduct}=="0080", GROUP="dialout", MODE="0664"
+ATTRS{idVendor}=="04e8", ATTRS{idProduct}=="6601", GROUP="dialout", MODE="0664"
+ATTRS{idVendor}=="04e8", ATTRS{idProduct}=="8001", GROUP="dialout", MODE="0664"
+ATTRS{idVendor}=="0830", ATTRS{idProduct}=="0001", GROUP="dialout", MODE="0664"
+ATTRS{idVendor}=="0830", ATTRS{idProduct}=="0002", GROUP="dialout", MODE="0664"
+ATTRS{idVendor}=="0830", ATTRS{idProduct}=="0003", GROUP="dialout", MODE="0664"
+ATTRS{idVendor}=="0830", ATTRS{idProduct}=="0020", GROUP="dialout", MODE="0664"
+ATTRS{idVendor}=="0830", ATTRS{idProduct}=="0031", GROUP="dialout", MODE="0664"
+ATTRS{idVendor}=="0830", ATTRS{idProduct}=="0040", GROUP="dialout", MODE="0664"
+ATTRS{idVendor}=="0830", ATTRS{idProduct}=="0050", GROUP="dialout", MODE="0664"
+ATTRS{idVendor}=="0830", ATTRS{idProduct}=="0060", GROUP="dialout", MODE="0664"
+ATTRS{idVendor}=="0830", ATTRS{idProduct}=="0061", GROUP="dialout", MODE="0664"
+ATTRS{idVendor}=="0830", ATTRS{idProduct}=="0070", GROUP="dialout", MODE="0664"
+ATTRS{idVendor}=="0830", ATTRS{idProduct}=="0080", GROUP="dialout", MODE="0664"
 
 # Garmin iQue 3600
-SYSFS{idVendor}=="091e", SYSFS{idProduct}=="0004", GROUP="dialout", MODE="0664"
-SYSFS{idVendor}=="0c88", SYSFS{idProduct}=="0021", GROUP="dialout", MODE="0664"
+ATTRS{idVendor}=="091e", ATTRS{idProduct}=="0004", GROUP="dialout", MODE="0664"
+ATTRS{idVendor}=="0c88", ATTRS{idProduct}=="0021", GROUP="dialout", MODE="0664"
 
 # Tapwave Zodiac 1 & 2
-SYSFS{idVendor}=="12ef", SYSFS{idProduct}=="0100", GROUP="dialout", MODE="0664"
+ATTRS{idVendor}=="12ef", ATTRS{idProduct}=="0100", GROUP="dialout", MODE="0664"
 
 # Unknown device (can someone confirm?)
-SYSFS{idVendor}=="4766", SYSFS{idProduct}=="0001", GROUP="dialout", MODE="0664"
+ATTRS{idVendor}=="4766", ATTRS{idProduct}=="0001", GROUP="dialout", MODE="0664"
 
 LABEL="libpisock_rules_end"
