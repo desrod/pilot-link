@@ -19,7 +19,7 @@ python-build: Python/setup.py
 	cd $(srcdir)/Python && $(PYTHON) setup.py build
 
 python-install: python-build
-	cd $(srcdir)/Python && $(PYTHON) setup.py install --prefix=$(prefix)
+	cd $(srcdir)/Python && $(PYTHON) setup.py install --root=$(DESTDIR) --prefix=$(prefix)
 
 python-clean: Python/setup.py
 	-cd $(srcdir)/Python && $(PYTHON) setup.py clean 
@@ -53,7 +53,7 @@ perl-uninstall: Perl/Makefile
 	cd Perl && $(MAKE) uninstall
 
 perl-clean: Perl/Makefile
-	cd Perl && $(MAKE) veryclean
+	cd Perl && $(MAKE) realclean && rm Makefile.PL
 
 if WITH_PERL
 PERL_ALL = perl-build
