@@ -29,16 +29,13 @@
     <refsect1>
         <title>target device</title>
         <para>
-            The /dev/pilot fallback has been removed in v0.12.  The environment variable
-            <userinput>$PILOTPORT</userinput> can be set in your shell, to save specifying the port each time. A serial
-            device specified on the command-line will be used regardless of any
-            <userinput>$PILOTPORT</userinput> setting. If <userinput>$PILOTPORT</userinput> is not set,
-            and <option>-p</option> is not supplied, all conduits in <emphasis>pilot-link</emphasis>
-            will print the usage information.  The default connection rate is 9600 baud. You are welcome to try higher
-            baud rates (19200, 38400, 57600 or higher) by setting the
-            <userinput>$PILOTRATE</userinput> environment variable, but various machines have various limitations. (Be
-            careful about values higher than 115200 on older Linux boxes if you've been using setserial to change the
-            multiplier).  
+            The /dev/pilot fallback has been removed in v0.12.  The environment variable <userinput>$PILOTPORT</userinput> can be set in your shell,
+            to save specifying the port each time. A serial device specified on the command-line will be used regardless of any
+            <userinput>$PILOTPORT</userinput> setting. If <userinput>$PILOTPORT</userinput> is not set, and <option>-p</option> is not supplied, all
+            conduits in <emphasis>pilot-link</emphasis> will print the usage information.  The default connection rate is 9600 baud. You are welcome
+            to try higher baud rates (19200, 38400, 57600 or higher) by setting the <userinput>$PILOTRATE</userinput> environment variable, but
+            various machines have various limitations. (Be careful about values higher than 115200 on older Linux boxes if you've been using
+            setserial to change the multiplier).
         </para>
     </refsect1>
     <refsect1>
