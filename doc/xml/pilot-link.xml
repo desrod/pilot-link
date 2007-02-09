@@ -289,19 +289,19 @@
         <title>Perl Scripts</title>
         <para>(Available from the source code, not always installed from packages).</para>
         <refsect2>
-            <title>ietf2datebook.PL</title>
+            <title>pilot-ietf2datebook.pl</title>
             <para>
                 Converts IETF agenda format to install-datebook format 
             </para>
         </refsect2>
         <refsect2>
-            <title>pilot-undelete.PL</title>
+            <title>pilot-undelete.pl</title>
             <para>
                 Turn previously archived records into normal (non-archived) records by resetting the "dirty" bit.
             </para>
         </refsect2>
         <refsect2>
-            <title>sync-plan.PL</title>
+            <title>pilot-sync-plan.pl</title>
             <para>
                 completely synchronize the Palm datebook with the "plan" calendar via
                 netplan, including authenticating
@@ -406,11 +406,11 @@
         <title>see also</title>
         <para>
             <filename>pilot-addresses</filename>(1), <filename>pilot-dlpsh</filename>(1),
-            <filename>pilot-hinotes</filename>(1), <filename>ietf2datebook</filename>(1),
-            <filename>install-datebook</filename>(1),
+            <filename>pilot-hinotes</filename>(1), <filename>pilot-ietf2datebook</filename>(1),
+            <filename>pilot-install-datebook</filename>(1),
             <filename>pilot-install-expenses</filename>(1),
-            <filename>install-hinote</filename>(1), <filename>install-memo</filename>(1),
-            <filename>pilot-install-netsync</filename>(1), <filename>install-user</filename>(1),
+            <filename>pilot-install-hinote</filename>(1), <filename>pilot-install-memo</filename>(1),
+            <filename>pilot-install-netsync</filename>(1), <filename>pilot-install-user</filename>(1),
             <filename>pilot-getrom</filename>(1), <filename>pilot-getram</filename>(1),
             <filename>pilot-addresses</filename>(1), <filename>pilot-xfer</filename>(1),
             <filename>pilot-read-ical</filename>(1), <filename>pilot-read-notepad</filename>(1),

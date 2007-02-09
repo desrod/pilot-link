@@ -16,7 +16,7 @@ Major Issues
         - pilot-xfer -f fix (support '-f FooDB' as 'FooDB.p{db|rc|qa}
 	  - Split out "Sync" from Backup function
 
-	- "strict-ify" sync-plan.PL
+	- "strict-ify" pilot-sync-plan.pl
 
 
 	Fixed/Closed
@@ -106,7 +106,7 @@ New Features
 	- Standard output format for the "4 Magic Buttons". XML? csv?
 	  iCal/vCard?
 	
-	- Teach sync-plan about the other repetition types that are
+	- Teach pilot-sync-plan.pl about the other repetition types that are
 	  convertable from Plan to Pilot.
 
 	- pilot-xfer --daemon. Would be a good test to get it listening on a

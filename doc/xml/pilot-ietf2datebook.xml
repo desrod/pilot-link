@@ -1,12 +1,12 @@
 <!-- $Id$ -->
-<refentry id="ietf2datebook">
+<refentry id="pilot-ietf2datebook">
     <refmeta>
-        <refentrytitle>ietf2datebook</refentrytitle>
+        <refentrytitle>pilot-ietf2datebook</refentrytitle>
         <manvolnum>1</manvolnum>
         <refmiscinfo>Copyright FSF 1996-2007</refmiscinfo>
     </refmeta>
     <refnamediv>
-        <refname>ietf2datebook</refname>
+        <refname>pilot-ietf2datebook</refname>
         <refpurpose>
             Converts IETF agenda format to <emphasis>install-datebook</emphasis> format
         </refpurpose>
@@ -18,17 +18,17 @@
     <refsect1>
         <title>Synopsis</title>
         <para>
-            <emphasis>ietf2datebook</emphasis> &lt; ietf-agenda &gt; datebook.txt
+            <emphasis>pilot-ietf2datebook</emphasis> &lt; ietf-agenda &gt; datebook.txt
         </para>
     </refsect1>
     <refsect1>
         <title>Description</title>
         <para>
-            <emphasis>ietf2datebook</emphasis> is a Perl script that converts IETF
+            <emphasis>pilot-ietf2datebook</emphasis> is a Perl script that converts IETF
             (<filename>http://www.ietf.org</filename>) agenda to format suitable for the
             <filename>install-datebook</filename> program. The agenda file is given to it as standard input and the
             output file is sent to standard output. Please remove all headers and footers from the agenda file before
-            giving it to <emphasis>ietf2datebook</emphasis>.
+            giving it to <emphasis>pilot-ietf2datebook</emphasis>.
         </para>
     </refsect1>
     <refsect1>
@@ -45,7 +45,7 @@
     <refsect1>
         <title>Author</title>
         <para>
-            <emphasis>ietf2datebook</emphasis> was originally written by Tero Kivinen
+            <emphasis>pilot-ietf2datebook</emphasis> was originally written by Tero Kivinen
             <email>kivinen@iki.fi</email>
         </para>
         <para>

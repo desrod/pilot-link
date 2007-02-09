@@ -50,10 +50,10 @@ bin_PROGRAMS =			\
 	pilot-xfer
 
 if WITH_PERL
-PERLSCRIPTS = 		\
-	ietf2datebook	\
-	pilot-undelete	\
-	sync-plan
+PERLSCRIPTS =			\
+	pilot-ietf2datebook	\
+	pilot-undelete		\
+	pilot-sync-plan
 else
 PERLSCRIPTS =
 endif
@@ -327,15 +327,15 @@ pilot_read_veo_LDADD =		\
 	$(PNG_LIBS) 		\
 	$(top_builddir)/libpisock/libpisock.la
 
-ietf2datebook: ietf2datebook.PL
+pilot-ietf2datebook: pilot-ietf2datebook.pl
 	$(PERL) $< > $@
 	chmod +x $@
 
-pilot-undelete: pilot-undelete.PL
+pilot-undelete: pilot-undelete.pl
 	$(PERL) $< > $@
 	chmod +x $@
 
-sync-plan: sync-plan.PL
+pilot-sync-plan: pilot-sync-plan.pl
 	$(PERL) $< > $@
 	chmod +x $@
 
@@ -344,7 +344,7 @@ endif
 
 EXTRA_DIST = 				\
 	ccexample.cc			\
-	ietf2datebook.PL		\
+	pilot-ietf2datebook.pl		\
 	kittykiller.c			\
 	parsedate.y			\
 	pd-tty.c			\
@@ -383,10 +383,10 @@ EXTRA_DIST = 				\
 	pilot-reminders.c		\
 	pilot-schlep.c			\
 	pilot-treofoto.c		\
-	pilot-undelete.PL		\
+	pilot-undelete.pl		\
 	pilot-wav.c			\
 	pilot-xfer.c			\
-	sync-plan.PL			\
+	pilot-sync-plan.pl		\
 	validate.cc
 
 # Magic to update Makefile from Makefile.am
