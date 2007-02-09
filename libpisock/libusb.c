@@ -45,6 +45,10 @@
 
 #include <usb.h>
 
+#if defined(sun) && defined(__SVR4)
+#define __FUNCTION__ __func__
+#endif
+
 static int u_open(struct pi_socket *ps, struct pi_sockaddr *addr, size_t addrlen);
 static int u_close(struct pi_socket *ps);
 static ssize_t u_write(struct pi_socket *ps, const unsigned char *buf, size_t len, 
