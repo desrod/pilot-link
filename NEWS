@@ -1,4 +1,32 @@
 --------------------------------------------------------------------------
+pilot-link 0.12.2, "Dance With the Devil" aka "Distraction", 02-09-2007
+--------------------------------------------------------------------------
+5 months since the last release (0.12.1) and we have another release! This
+one is mostly a maintenance release, but there are some new things in here.
+
+Major Features:
+        * More cleanup in libpisock and documentation, addition of some new
+          (working :) BlueZ support, new udev rules, expanded OS5 Contacts
+          support, expanded OS X support and a lot more!
+
+Other Features:
+        * No major features in this release, mostly bug fixes and minor
+          tweaks here and there. The website has also been refreshed with
+          new content and a completely new layout. All source files are now
+          version-tracked in the header.
+
+Bug Fixes: 
+        * Python support was broken, fixed now, doh! Palm T|X over libusb
+          has been fixed (we hope) with this release. Of course we need
+          testers to validate that. All of userland is renamed now to avoid
+          some namespace pollution. Documentation is all current with
+          respect to this release, all manpages are in XML source format
+          (requires xsltproc to process), and much more.
+
+Check the ChangeLog for the full details if you're interested. 
+
+
+--------------------------------------------------------------------------
 pilot-link 0.12.1, "Fresh Air", 09-04-2006
 --------------------------------------------------------------------------
 3 years since the last release, then 1 week from that release until this
