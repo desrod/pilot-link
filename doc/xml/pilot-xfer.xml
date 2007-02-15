@@ -26,8 +26,8 @@
         
         <para>
             <emphasis>pilot-xfer</emphasis> [<option>-p</option>
-            lt;<userinput>port</userinput>&gt;] [<option>-e</option>
-            lt;<filename>file</filename>&gt;] [<option>-b</option>]
+            &lt;<userinput>port</userinput>&gt;] [<option>-e</option>
+            &lt;<filename>file</filename>&gt;] [<option>-b</option>]
             [<option>-u</option>] [<option>-s</option>]
             &lt;<filename>directory</filename>&gt;
         </para>
@@ -36,8 +36,8 @@
         
         <para>
             <emphasis>pilot-xfer</emphasis> [<option>-p</option>
-            lt;<userinput>port</userinput>&gt;] [<option>-r</option>
-            lt;<userinput>directory</userinput>&gt;] [<option>-l</option>]
+            &lt;<userinput>port</userinput>&gt;] [<option>-r</option>
+            &lt;<userinput>directory</userinput>&gt;] [<option>-l</option>]
             [<option>-L</option>] [<option>-P</option>] [<option>-f</option>
             &lt;<userinput>dbname</userinput>&gt;] [<option>-d</option>
             &lt;<userinput>dbname</userinput>&gt;] [<option>-i</option>
@@ -76,7 +76,7 @@
                     
                     <listitem>
                         <para>
-                            Archives files which have been removed from the Palm to lt;<filename>dir</filename>&gt;
+                            Archives files which have been removed from the Palm to &lt;<filename>dir</filename>&gt;
                             instead of just deleting
                             (unlinking) them.
                         </para>
