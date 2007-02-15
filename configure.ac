@@ -350,8 +350,9 @@ PKG_CHECK_MODULES(BLUEZ, bluez, have_bluez=yes, AC_MSG_RESULT(no))
 
 AC_MSG_CHECKING([for BlueZ bluetooth support])
 AC_ARG_WITH(bluez,
-                AC_HELP_STRING([--with-bluez],
-                        [Enable usage of BlueZ]),,
+                AC_HELP_STRING([--with-bluez], 
+			[Enable usage of BlueZ]), 
+			use_bluez="${withval}",
                 use_bluez=auto)
 if test "x$use_bluez" != "xno"; then
         if test "x$have_bluez" = xno && test "x$use_bluez" = xyes; then
