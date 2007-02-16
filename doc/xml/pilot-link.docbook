@@ -1,5 +1,5 @@
-<!-- $Id$ -->
 <?xml version="1.0"?>
+<!-- $Id$ -->
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook V4.1//EN"
  "http://www.oasis-open.org/docbook/xml/4.1/docbookx.dtd" [
 <!ENTITY ietf2 SYSTEM "ietf2datebook.xml">
