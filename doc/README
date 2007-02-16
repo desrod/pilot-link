@@ -1,0 +1,25 @@
+$Id$
+======================================================================
+README
+Author: David A. Desrosiers
+Updated: Fri Feb 16 13:11:17 EST 2007
+======================================================================
+
+The various pieces of documentation for pilot-link can be found here.
+
+Below this tree, you will find various README documents describing how to
+configure or connect your Palm device using various methods (such as usb or
+libusb).
+
+I have written many HOWTO documents describing how to use your Palm in
+various situations, such as over bluetooth, with Evolution, over the network
+and so on. You can find those here: 
+
+	http://howto.pilot-link.org/
+
+The manpages are also found here as well. We are keeping them in XML format
+for easy maintenance, and these XML sources can be found in CVS, or
+publically via the web-view of CVS at the following link:
+
+	http://cvs.pilot-link.org/index.cgi/doc/xml/
+

@@ -1,3 +1,5 @@
+# $Id$
+#
 # Autoconf breaks distcheck when passing in these variables. To get it
 # to "mostly" build, use the following:
 #

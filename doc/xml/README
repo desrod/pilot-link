@@ -1,45 +1,42 @@
+$Id$
+
 README
-
-pilot-link automated documentation conversion
-**The manpage files are generated automatically**
-**Only edit the files in this xml/ directory!**
-
+==============================
+pilot-link automated documentation conversion The manpage files are
+generated automatically Only edit the files in this xml directory! If
+you edit the troff pages directly, the changes you make WILL be lost.
 ==============================
 
-The pilot-link.docbook should only be edited directly when
-adding or removing subpages from the documentation.
+The pilot-link.docbook should only be edited directly when adding or
+removing subpages from the documentation.
 
 Documentation generation:
 =========================
 
-To generate new documentation after modifying files in
-xml/, just use make.
+To generate new documentation after modifying files in xml/, just use
+make from this tree.
 
-./autogen.sh checks to see if the manpages have been created
-each time it is run, so that work on the rest of the tree
-is not delayed and so that the make dist tarball does not require
-xsltproc to build. If cd doc/ && make does not generate the man
-pages it is probably because you have run ./autogen.sh since the
-manpages were created. To create new manpages, delete the old 
-manpages in doc/man first, then run ./autogen.sh and finally
-make.
+./autogen.sh checks to see if the manpages have been created each time
+it is run, so that work on the rest of the tree is not delayed and so
+that the make dist tarball does not require xsltproc to build. If cd
+doc/ && make does not generate the man pages it is probably because you
+have run ./autogen.sh since the manpages were created. To create new
+manpages, delete the old manpages in doc/man first, then run
+./autogen.sh and finally make.
 
 Pilot-link customisations:
 ==========================
 
-Pilot-link uses a customised manpage XSL stylesheet for
-aesthetic reasons only. Other stylesheets can be used
-for other outputs, as long as the installed manpages
-use the customised XSL.
+Pilot-link uses a customised manpage XSL stylesheet for aesthetic
+reasons only. Other stylesheets can be used for other outputs, as long
+as the installed manpages use the customised XSL.
 
-The Makefile process uses automake substitution to configure
-xsltproc and generate the XSL and catalog files.
-Make then writes out the manpages using 
-xsltproc -o ../man/ <pathtoXSL> pilot-link.docbook
+The Makefile process uses automake substitution to configure xsltproc
+and generate the XSL and catalog files. Make then writes out the
+manpages using xsltproc -o ../man/ <pathtoXSL> pilot-link.docbook
 
-Depending on your installation, xsltproc will use the
--nonet option to avoid requesting validation data from
-the internet or may avoid validation altogether with the
--novalid option. If your installation uses -novalid, ensure
-you check the XML files for validity after making changes!
-
+Depending on your installation, xsltproc will use the nonet option to
+avoid requesting validation data from the internet or may avoid
+validation altogether with the novalid option. If your installation
+uses -novalid, ensure you check the XML files for validity after making
+changes!
