@@ -638,14 +638,14 @@ fi
 dnl *************************************
 dnl ElectricFence (optional)
 dnl *************************************
-use_efence=no
+msg_efence=no
 AC_ARG_WITH(efence, [  --with-efence           use ElectricFence,          [[default=no]]],
 	, with_efence=no)
 
 if test "x$with_efence" != "xno"; then
 	AC_CHECK_LIB(efence, malloc, LIBS="$LIBS -lefence")
         if test "$ac_cv_lib_efence_malloc" = yes; then
-                use_efence=true
+                msg_efence=true
         else
                 echo "Unable to locate ElectricFence malloc() debugging library!"
                 echo "Please download from ftp://ftp.perens.com/pub/ElectricFence/"
@@ -694,17 +694,18 @@ dnl *************************************
 AM_CONDITIONAL(BUILD_XML,[test ! -d "{$srcdir}/CVS"])
 if test -d "${srcdir}/CVS" ; then
 
-AC_CHECK_PROG(XSLTPROC,xsltproc,xsltproc)
-
-AC_MSG_CHECKING([if xsltproc is recent enough])
-if test "$($XSLTPROC --version | awk '/^libxslt/{print $2}')" -lt 10024 ; then 
-	AC_MSG_RESULT([version 1.0.24 or newer required])
-	exit 1
-else
-	AC_MSG_RESULT(yes)
+AC_ARG_ENABLE([xsltproc], [AC_HELP_STRING([--enable-xsltproc], 
+	[Use xsltproc to build documentation [default=no]])],, 
+[enable_xsltproc=no])
+if test x"$enable_xsltproc" = x"yes"; then
+  AC_PATH_PROG([XSLTPROC], [xsltproc], [no])
+  if test x"$XSLTPROC" = x"no"; then
+    enable_xsltproc=no
+  fi
 fi
-fi
+AM_CONDITIONAL([ENABLE_XSLTPROC], [test x"$enable_xsltproc" = x"yes"])
 
+fi
 
 # now let's test to see if we can find the docbook-xsl stuff
 XSLTPROC_FLAGS="--nonet"
@@ -797,7 +798,7 @@ AC_MSG_RESULT([
   Direct USB support...... : $msg_usb
   BlueZ support........... : $msg_bluez
   Thread-safe libpisock... : $msg_threads
-  ElectricFence checks.... : $use_efence
+  ElectricFence checks.... : $msg_efence
   CPPFLAGS................ : $CPPFLAGS
   CFLAGS.................. : $CFLAGS
 
