@@ -1,4 +1,3 @@
-
 /*
  * Portions of this file are copied or derivered from various files in the
  * tcl8.0b1 distribution. 
@@ -17,11 +16,14 @@
 #include <stdio.h>
 #include <errno.h>
 #include <tcl.h>
-#include <pi-source.h>
-#include <pi-socket.h>
-#include <pi-dlp.h>
-#include <pi-memo.h>
-#include <pi-buffer.h>
+
+#include "pi-source.h"
+#include "pi-socket.h"
+#include "pi-dlp.h"
+#include "pi-memo.h"
+#include "pi-buffer.h"
+#include "pi-userland.h"
+
 
 #if TCL_MAJOR_VERSION >= 8
 # define Objects
@@ -168,7 +170,7 @@ int MemoPackCmd(Tcl_Interp * interp, char * rec, char * buf, int len)
 	  /* It didn't fit in their fixed size buffer */
 	  used = 0;
 	}
-	pi_record_free(record);
+	pi_buffer_free(record);
 	return used;
 }
 
@@ -708,12 +710,8 @@ CreateSocket(Tcl_Interp * interp, int protocol, char * remote, int server)
 	}
 	printf("addr = %ld\n", (long)addr);
 
-	if (server) {
-		result = pi_bind(sock, (struct sockaddr*)addr, alen);
-		pi_listen(sock, 1);
-	} else {
-      result = pi_connect(sock, (struct sockaddr*)addr, alen);
-	}
+	result = plu_connect();
+	pi_listen(sock, 1);
 	printf(" result = %d\n", result);
 
    return statePtr;
@@ -984,7 +982,7 @@ bindCmd(ClientData clientData, Tcl_Interp * interp, int argc, char * argv[])
 		addr->pi_family = family;
 	}
 	
-	result = pi_bind(s, (struct sockaddr*)addr, alen);
+	result = plu_connect();
 	
 	if (addr)
 		free(addr);
@@ -1125,7 +1123,7 @@ GetRecordCmd(ClientData clientData, Tcl_Interp * interp, int argc, char *argv[])
 		return TCL_ERROR;
 	}
 	
-	result = dlp_ReadRecordByIndex(tcl_socket(interp, argv[1]), handle, index, buf, &id_, &len, &attr, &cat);
+	result = dlp_ReadRecordByIndex(tcl_socket(interp, argv[1]), handle, index, buf, &id_, &attr, &cat);
 	
 	if (result<0) {
 		Tcl_SetResult(interp, dlp_strerror(result), TCL_STATIC);
