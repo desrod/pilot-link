@@ -242,7 +242,7 @@
     <refsect1>
         <title>See Also</title>
         <para>
-            <emphasis>pilot-link</emphasis>(7).
+            <emphasis>pilot-install-todos</emphasis>(1), <emphasis>pilot-link</emphasis>(7).
         </para>
     </refsect1>
 </refentry>

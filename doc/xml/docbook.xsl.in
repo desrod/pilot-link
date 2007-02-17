@@ -1,5 +1,5 @@
-<!-- $Id$ -->
 <?xml version='1.0'?>
+<!-- $Id$ -->
 <!-- vim:set sts=2 shiftwidth=2 syntax=sgml: -->
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
                 version='1.0'>
