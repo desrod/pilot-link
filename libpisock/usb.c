@@ -421,8 +421,13 @@ pi_usb_accept(pi_socket_t *ps, struct sockaddr *addr, size_t *addrlen)
 #endif
 
 	result = data->impl.poll(ps, timeout);
-	if (result <= 0)
-		return result;
+	if (result <= 0) {
+		if (result == 0) {
+			return(PI_ERR_SOCK_LISTENER);
+		} else {
+			return result;
+		}
+	}
 
 	pi_socket_init(ps);
 
