@@ -127,7 +127,7 @@
             <variablelist>
                 <varlistentry>
                     <term>
-                        <option>-p</option>, <option>--port</option> lt;<userinput>port</userinput>&gt;
+                        <option>-p</option>, <option>--port</option> &lt;<userinput>port</userinput>&gt;
                     </term>
                     <listitem>
                         <para>
