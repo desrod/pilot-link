@@ -1,5 +1,6 @@
 # This is free software, licensed under the GNU Public License V2.
 # See the file COPYING for details.
+
 AC_INIT(include/pi-version.h.in)
 
 dnl Initialize maintainer mode
@@ -30,7 +31,6 @@ AC_SUBST(PILOT_LINK_MINOR)
 AC_SUBST(PILOT_LINK_PATCH)
 VERSION="$PILOT_LINK_VERS.$PILOT_LINK_MAJOR.$PILOT_LINK_MINOR$PILOT_LINK_PATCH"
 
-
 dnl ******************************
 dnl Pilot Link Library Version
 dnl libpisock.so.CURRENT.AGE.REVISION
@@ -38,8 +38,8 @@ dnl Please see the following URL for details:
 dnl http://sources.redhat.com/autobook/autobook/autobook_91.html
 dnl ******************************
 PISOCK_CURRENT=9
-PISOCK_REVISION=1
-PISOCK_AGE=0
+PISOCK_REVISION=2
+PISOCK_AGE=1
 
 AC_SUBST(PISOCK_CURRENT)
 AC_SUBST(PISOCK_REVISION)
@@ -179,8 +179,6 @@ AC_CHECK_FUNC(connect, tcl_checkSocket=0, tcl_checkSocket=1)
 if test "$tcl_checkSocket" = 1; then
         AC_CHECK_LIB(socket, main, LIBS="$LIBS -lsocket", tcl_checkBoth=1)
 fi
-
-
 
 if test "$tcl_checkBoth" = 1; then
         tk_oldLibs=$LIBS
@@ -344,30 +342,16 @@ dnl BlueZ Support
 dnl ******************************
 have_bluez=no
 use_bluez=no
-msg_bluez=no
 
-PKG_CHECK_MODULES(BLUEZ, bluez, have_bluez=yes, AC_MSG_RESULT(no))
-
-AC_MSG_CHECKING([for BlueZ bluetooth support])
-AC_ARG_WITH(bluez,
-                AC_HELP_STRING([--with-bluez], 
-			[Enable usage of BlueZ]), 
-			use_bluez="${withval}",
-                use_bluez=auto)
-if test "x$use_bluez" != "xno"; then
-        if test "x$have_bluez" = xno && test "x$use_bluez" = xyes; then
-                AC_MSG_ERROR([BlueZ explicitly requested but no support found])
-        fi
-        if test "x$have_bluez" = xyes; then
-                AC_DEFINE(HAVE_BLUEZ, 1, [Define if we have BlueZ bluetooth support])
-                AC_MSG_RESULT([enabled])
-                msg_bluez="yes"
-        else
-                AC_MSG_RESULT([not found])
-        fi
+if $use_bluez; then
+	BLUEZ_CFLAGS
+	BLUEZ_LIBS
 fi
 
-AM_CONDITIONAL(WITH_BLUEZ, test x$have_bluez = "xyes")
+AC_SUBST(BLUEZ_CFLAGS)
+AC_SUBST(BLUEZ_LIBS)
+
+AM_CONDITIONAL(WITH_BLUEZ, $use_bluez)
 
 
 dnl *********************************
@@ -573,7 +557,9 @@ AM_CONDITIONAL(WITH_JAVA, $use_java)
 if $use_java; then
 #	msg_java=yes
 	JAVA_VERSION=`java -version 2>&1 | grep '^java version' | awk -F\" '{print $2}'`
+	# " This is here to stop the errors from mismatched quotes. 
 fi
+
 
 AC_SUBST(JAVA)
 AC_SUBST(JAVAC)
@@ -593,14 +579,14 @@ if $use_tcl; then
 	PILOT_LINK_PROG_WISH
 fi
 
-AC_SUBST(TCL_INCLUDES)
-AC_SUBST(TCL_LIB_FILE)
-AC_SUBST(TCL_LIB_FLAG)
-AC_SUBST(TCL_LIB_SPEC)
-AC_SUBST(TCL_LIBS)
-AC_SUBST(TCL_VERSION)
-AC_SUBST(TCLSH_PROG)
-AC_SUBST(WISH_PROG)
+#AC_SUBST(TCL_INCLUDES)
+#AC_SUBST(TCL_LIB_FILE)
+#AC_SUBST(TCL_LIB_FLAG)
+#AC_SUBST(TCL_LIB_SPEC)
+#AC_SUBST(TCL_LIBS)
+#AC_SUBST(TCL_VERSION)
+#AC_SUBST(TCLSH_PROG)
+#AC_SUBST(WISH_PROG)
 
 AM_CONDITIONAL(WITH_TCL, $use_tcl)
 
@@ -796,7 +782,7 @@ AC_MSG_RESULT([
   Build for host.......... : $host
   Extra Warnings.......... : $set_compile_warnings
   Direct USB support...... : $msg_usb
-  BlueZ support........... : $msg_bluez
+  BlueZ support........... : $use_bluez
   Thread-safe libpisock... : $msg_threads
   ElectricFence checks.... : $msg_efence
   CPPFLAGS................ : $CPPFLAGS
