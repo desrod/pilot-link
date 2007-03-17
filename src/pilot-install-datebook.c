@@ -50,6 +50,8 @@ int main(int argc, const char *argv[])
 		*fields[4];
 	
 	pi_buffer_t *Appointment_buf;
+	Appointment_buf 	= pi_buffer_new (0xffff);
+
 	FILE 	*f = NULL;
 
 	struct 	PilotUser User;
