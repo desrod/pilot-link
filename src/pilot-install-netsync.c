@@ -59,7 +59,7 @@ int main(int argc, char *argv[])
 	poptSetOtherOptionHelp(po," [-p port] <netsync options>\n\n"
 		"   Assigns your Palm device NetSync information\n\n"
 		"   Example:\n"
-		"      -p /dev/pilot -e -n \"localhost\" -a 127.0.0.1 -m 255.255.255.0\n\n");
+		"      -p usb: -e -n \"NEPTUNE\" -a 10.0.1.10 -m 255.255.255.0\n\n");
 
 	if (argc < 2) {
 		poptPrintUsage(po,stderr,0);

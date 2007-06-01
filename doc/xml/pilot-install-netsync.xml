@@ -186,11 +186,11 @@
         <title>Example</title>
         <para>
             <option>-p</option>
-            <filename>/dev/pilot</filename>
+            <filename>usb:</filename>
             <option>-H</option>
-            <userinput>"localhost"</userinput>
+            <userinput>"NEPTUNE"</userinput>
             <option>-a</option>
-            <userinput>127.0.0.1</userinput>
+            <userinput>10.0.1.10</userinput>
             <option>-n</option>
             <userinput>255.255.255.0</userinput>
         </para>
