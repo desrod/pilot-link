@@ -747,15 +747,15 @@ int main(int argc, const char *argv[])
                 return -1;
         }
 
-        if (info.romVersion > 0x0500) {
+        if (info.romVersion > 0x05003000) {
                 printf("PalmOS 5.x (Garnet) and later devices are not currently supported by this\n"
                        "tool. The data format of the AddressBook has changed. The legacy format is\n"
                        "called \"Classic\" and PalmOS 5.x and later uses \"Extended\" databases with a\n"
                        "different structure. Your Palm has \"Contacts\", and this tool reads the\n"
-                       "\"AddressBook\" database.\n\n"
+                       "\"AddressBook\" database. (Found: %x)\n\n"
 
                        "Due to this change, pilot-addresses and other tools must be rewritten to\n"
-                       "compensate. Sorry about the inconvenience.\n\n");
+                       "compensate. Sorry about the inconvenience.\n\n", info.romVersion);
                 return -1;
         }
 
