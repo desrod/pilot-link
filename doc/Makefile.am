@@ -1,5 +1,7 @@
 if BUILD_XML
+if ENABLE_XSLTPROC
 SUBDIRS = xml man
+endif
 else
 SUBDIRS = man
 endif

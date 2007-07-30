@@ -681,7 +681,8 @@ AM_CONDITIONAL(BUILD_XML,[test ! -d "{$srcdir}/CVS"])
 if test -d "${srcdir}/CVS" ; then
 
 AC_ARG_ENABLE([xsltproc], [AC_HELP_STRING([--enable-xsltproc], 
-	[Use xsltproc to build documentation [default=no]])],, 
+	[Use xsltproc to build documentation [default=no]])],
+	[enable_xsltproc="$enableval"],
 [enable_xsltproc=no])
 if test x"$enable_xsltproc" = x"yes"; then
   AC_PATH_PROG([XSLTPROC], [xsltproc], [no])
