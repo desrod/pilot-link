@@ -50,8 +50,8 @@ dnl ******************************
 dnl Pilot Link Sync Library Version
 dnl libpisync.so
 dnl ******************************
-PISYNC_CURRENT=0
-PISYNC_REVISION=2
+PISYNC_CURRENT=1
+PISYNC_REVISION=3
 PISYNC_AGE=0
 
 AC_SUBST(PISYNC_CURRENT)
