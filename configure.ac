@@ -218,6 +218,7 @@ AC_MSG_RESULT($enable_conduits)
 dnl ******************************
 dnl PNG Support
 dnl ******************************
+msg_png=no
 if test "x$enable_conduits" != "xno"; then
 	have_png=no
 
@@ -252,6 +253,7 @@ if test "x$enable_conduits" != "xno"; then
 			if test "$have_png" = yes; then
 				AC_DEFINE(HAVE_PNG, 1, [Define if we have PNG support])
 				have_png=yes
+				msg_png=yes
 			fi
 		fi
 	fi
