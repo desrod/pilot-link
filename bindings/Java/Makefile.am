@@ -67,6 +67,8 @@ java_classes= \
 	datebooktst.class	\
 	adrtest.class
 
+$(java_classes): java_compile
+
 java_compile: $(java_files)
 	$(JAVAC) -d . $(java_files)
 
