@@ -30,13 +30,6 @@
 
 poptContext po;
 
-#ifndef HAVE_BASENAME
-/* Yes, this isn't efficient... scanning the string twice */
-#define basename(s) (strrchr((s), '/') == NULL ? (s) : strrchr((s), '/') + 1)
-#endif
-
-
-
 typedef struct {
 	char **filenames;
 	unsigned int filenames_allocated;
@@ -100,20 +93,11 @@ int install_memo(int sd, int db, int category, int add_title, char *filename)
 	char *memo_buf = NULL;
 	int memo_size, preamble;
 
-	if (!filename) return 1;
-
 	/* Check the file still exists and its size. */
 	if (stat(filename, &sbuf) <0) {
 		fprintf(stderr,"   ERROR: Unable to open %s (%s)\n\n",
 			filename, strerror(errno));
 		return 1;
-	}
-
-	/* When adding the title, we only want the filename, not the full
-	   path. */
-	tmp = strrchr (filename, '/');
-	if (tmp) {
-		filename = tmp + 1;
 	}
 
 	memo_size = sbuf.st_size;
@@ -146,7 +130,6 @@ int install_memo(int sd, int db, int category, int add_title, char *filename)
 
 	dlp_WriteRecord(sd, db, 0, 0, category, memo_buf, -1, 0);
 	free(memo_buf);
-
 
 	if ((memo_size < 65490) && (memo_size > 4096)) {
 		fprintf(stderr, "   WARNING: `%s'\n", filename);
@@ -226,12 +209,12 @@ int main(int argc, char *argv[])
 	if (replace && !category_name) {
 		fprintf(stderr,"   ERROR: memo category required when specifying replace\n");
 		return 1;
-	}
+	} 
+	
 	if (!check_filenames(&memos)) {
-		fprintf(stderr,"   ERROR: must specify a file with -f filename\n");
+		fprintf(stderr,"   ERROR: must specify an existing file with -f filename\n");
 		return 1;
 	}
-
 
 	sd = plu_connect();
 	if (sd < 0)
