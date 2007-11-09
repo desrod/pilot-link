@@ -174,14 +174,23 @@
         </para>
     </refsect1>
     <refsect1>
-        <title>Reporting Bugs</title>
-        
-        <para>We have an online bug tracker. Using this is the only way to ensure that your bugs are recorded and that
-            we can track them until they are resolved or closed. Reporting bugs via email, while easy, is not very
-            useful in terms of accountability. Please point your browser to
-            <ulink url="http://bugs.pilot-link.org">http://bugs.pilot-link.org</ulink> and report your bugs and issues
-            there.
-        </para>
+        <title>Bugs</title>
+        <refsect2>
+            <title>Known Bugs</title>
+            <para>
+                <emphasis>pilot-read-todos</emphasis> does not support Notes attached to ToDo items at this time.
+            </para>
+        </refsect2>
+        <refsect2>
+            <title>Reporting Bugs</title>
+
+            <para>We have an online bug tracker. Using this is the only way to ensure that your bugs are recorded and
+                that we can track them until they are resolved or closed. Reporting bugs via email, while easy, is not
+                very useful in terms of accountability. Please point your browser to
+                <ulink url="http://bugs.pilot-link.org">http://bugs.pilot-link.org</ulink> and report your bugs and
+                issues there.
+            </para>
+        </refsect2>
     </refsect1>
     <refsect1>
         <title>Copyright</title>
