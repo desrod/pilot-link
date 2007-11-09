@@ -95,8 +95,7 @@ int
  * Returns:     Modified character, 'c'
  *
  ***********************************************************************/
-int inchar(FILE * in)
-{
+int inchar(FILE * in) {
 	int 	c;	/* switch */
 
 	c = getc(in);
@@ -154,8 +153,7 @@ int inchar(FILE * in)
  *              array, and should be preserved.
  *
  ***********************************************************************/
-int read_field(char *dest, FILE *in, size_t length)
-{
+int read_field(char *dest, FILE *in, size_t length) {
 	int 	c;
 
 	if (length<=1) return -1;
@@ -229,8 +227,7 @@ int read_field(char *dest, FILE *in, size_t length)
  * Returns:     Nothing
  *
  ***********************************************************************/
-void outchar(char c, FILE * out)
-{
+void outchar(char c, FILE * out) {
 		switch (c) {
 		case '"':
 			putc('"', out);
@@ -284,8 +281,7 @@ void outchar(char c, FILE * out)
  * Returns:
  *
  ***********************************************************************/
-int write_field(FILE * out, const char *source, enum terminators more)
-{
+int write_field(FILE * out, const char *source, enum terminators more) {
 	putc('"', out);
 
 	while (*source) {
@@ -312,8 +308,7 @@ int write_field(FILE * out, const char *source, enum terminators more)
  * Returns:
  *
  ***********************************************************************/
-int match_phone(char *buf, struct AddressAppInfo *aai)
-{
+int match_phone(char *buf, struct AddressAppInfo *aai) {
 	int 	i;
 
 	for (i = 0; i < 8; i++)
@@ -334,8 +329,7 @@ int match_phone(char *buf, struct AddressAppInfo *aai)
  * Returns:
  *
  ***********************************************************************/
-int read_file(FILE *f, int sd, int db, struct AddressAppInfo *aai)
-{
+int read_file(FILE *f, int sd, int db, struct AddressAppInfo *aai) {
 	int 	i	= -1,
 		l,
 		attribute,
@@ -490,8 +484,10 @@ int read_file(FILE *f, int sd, int db, struct AddressAppInfo *aai)
  *
  ***********************************************************************/
 
-void write_record_CSV(FILE *out, const struct AddressAppInfo *aai, const struct Address *addr, const int attribute, const int category)
-{
+void write_record_CSV(FILE *out, const struct AddressAppInfo *aai, 
+        const struct Address *addr, const int attribute, 
+        const int category) {
+        
 	int j;
 	char buffer[16];
 
@@ -526,8 +522,7 @@ void write_record_CSV(FILE *out, const struct AddressAppInfo *aai, const struct 
 		term_newline);
 }
 
-void write_record_human(struct AddressAppInfo *aai, struct Address *addr, const int category)
-{
+void write_record_human(struct AddressAppInfo *aai, struct Address *addr, const int category) {
 	int i;
 
 	printf("Category: %s\n", aai->category.name[category]);
@@ -549,8 +544,7 @@ void write_record_human(struct AddressAppInfo *aai, struct Address *addr, const 
 	printf("\n");
 }
 
-int write_file(FILE *out, int sd, int db, struct AddressAppInfo *aai, int human)
-{
+int write_file(FILE *out, int sd, int db, struct AddressAppInfo *aai, int human) {
 	int 	i,
 		j,
 		attribute,
@@ -615,9 +609,7 @@ int write_file(FILE *out, int sd, int db, struct AddressAppInfo *aai, int human)
 }
 
 
-int main(int argc, const char *argv[])
-{
-
+int main(int argc, const char *argv[]) {
 	int 	c,			/* switch */
 		db,
 		l,
@@ -678,7 +670,7 @@ int main(int argc, const char *argv[])
 
 	while ((c = poptGetNextOpt(po)) >= 0) {
 		switch (c) {
-		/* these are the mode-setters. delete-all does it through
+		/* These are the mode-setters. delete-all does it through
 		 * popt hooks, since it doesn't take an argument.
 		 *
 		 * Special case is that you can mix -w and -d to write the
@@ -748,15 +740,16 @@ int main(int argc, const char *argv[])
         }
 
         if (info.romVersion > 0x05003000) {
-                printf("PalmOS 5.x (Garnet) and later devices are not currently supported by this\n"
-                       "tool. The data format of the AddressBook has changed. The legacy format is\n"
-                       "called \"Classic\" and PalmOS 5.x and later uses \"Extended\" databases with a\n"
-                       "different structure. Your Palm has \"Contacts\", and this tool reads the\n"
-                       "\"AddressBook\" database. (Found: %x)\n\n"
+                printf("   PalmOS 5.x (Garnet) and later devices are not currently supported by this\n"
+                       "   tool. The data format of the AddressBook has changed. The legacy format\n"
+                       "   is called \"Classic\" and PalmOS 5.x and later uses \"Extended\" databases\n"
+                       "   with a different structure. Your Palm has \"Contacts\", and this tool reads\n"
+                       "   the \"AddressBook\" database. (Found OS version: %x)\n\n"
 
-                       "Due to this change, pilot-addresses and other tools must be rewritten to\n"
-                       "compensate. Sorry about the inconvenience.\n\n", info.romVersion);
-                return -1;
+                       "   Due to this change, pilot-addresses and other tools must be rewritten to\n"
+                       "   compensate. Sorry about the inconvenience.\n\n", info.romVersion);
+
+		/* return -1; FIXME: Need to adjust this to clealy detect OS version and rewrite */
         }
 
 	/* Open the AddressDB.pdb database, store access handle in db */
