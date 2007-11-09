@@ -343,17 +343,38 @@ dnl ******************************
 dnl BlueZ Support
 dnl ******************************
 have_bluez=no
-use_bluez=no
+use_bluez=auto
 
-if $use_bluez; then
-	BLUEZ_CFLAGS
-	BLUEZ_LIBS
+AC_ARG_WITH(bluez,
+		AC_HELP_STRING([--with-bluez],
+			[Enable use of BlueZ]),
+		[use_bluez="$withval"])
+if test "$use_bluez" != "no" ; then
+	PKG_CHECK_MODULES([BLUEZ],[bluez],[
+		have_bluez=yes
+		use_bluez=yes
+	],[
+		AC_MSG_RESULT([no pkgconfig package])
+		AC_BLUEZ([
+			have_bluez=yes
+			use_bluez=yes
+		],[
+			test "$use_bluez" != "no" -a "$use_bluez" != "auto" \
+			&& AC_MSG_ERROR([BlueZ explicitly requested, but no library found]) 
+			use_bluez=no
+			have_bluez=no
+		])
+	])
 fi
 
-AC_SUBST(BLUEZ_CFLAGS)
-AC_SUBST(BLUEZ_LIBS)
+if test "$use_bluez" = "yes" ; then
+	AC_DEFINE([HAVE_BLUEZ],[1],[Define if we build with BlueZ])
+	AC_SUBST([BLUEZ_CFLAGS])
+	AC_SUBST([BLUEZ_LIBS])
+fi
 
-AM_CONDITIONAL(WITH_BLUEZ, $use_bluez)
+AM_CONDITIONAL([WITH_BLUEZ],[test "$use_bluez" = "yes"])
+
 
 
 dnl *********************************
