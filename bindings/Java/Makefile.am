@@ -81,16 +81,16 @@ java_pisock: java_compile java_lib java_jar
 install: all
 	ARCH=""; \
 	for a in i386 amd64 ppc; do \
-		if [ -e ${JAVABASE}/jre/lib/${a} ]; then \
-			 ARCH="${a}"; \
-			 break; \
+		if [ -e ${JAVABASE}/jre/lib/$${a} ]; then \
+			ARCH="$${a}"; \
+			break; \
 		fi; \
 	done; \
-	if [ -n "${ARCH}" ]; then \
+	if [ -n "$${ARCH}" ]; then \
 		echo "Unknown architecture. Copy lipijsock.so to ${JAVABASE}/jre/lib/ARCH/"; \
 	else \
-		mkdir -p "$(DESTDIR)${JAVABASE}/jre/lib/${ARCH}" && \
-		cp libjpisock.so "$(DESTDIR)${JAVABASE}/jre/lib/${ARCH}"; \
+		mkdir -p "$(DESTDIR)${JAVABASE}/jre/lib/$${ARCH}" && \
+		cp libjpisock.so "$(DESTDIR)${JAVABASE}/jre/lib/$${ARCH}"; \
 		echo "done."; \
 	fi
  
