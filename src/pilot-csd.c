@@ -48,7 +48,8 @@
 #include "pi-userland.h"
 #include "pi-debug.h"
 
-char hostname[130];
+static char hostname_[130];		/* buffer fetch_host() can write to. */
+static char *hostname = hostname_;	/* pointer poptGetNextOpt() can change. */
 struct in_addr address, netmask;
 
 #ifdef HAVE_SA_LEN
