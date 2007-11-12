@@ -2200,29 +2200,38 @@ openPort(port)
 	OUTPUT:
 	RETVAL
 
-SV *
+void
 accept(socket)
 	int	socket
-	CODE:
+	PPCODE:
 	{
 		struct pi_sockaddr a;
 		size_t len = sizeof(struct pi_sockaddr);
 		int result;
 		result = pi_accept(socket, (struct sockaddr*)&a, &len);
+		EXTEND(SP, 1);
 		if (result < 0) {
-			RETVAL = newSViv(result);
+			PUSHs(sv_newmortal());
 		} else {
 			PDA__Pilot__DLP * x = malloc(sizeof(PDA__Pilot__DLP));
 			SV * sv = newSViv((IV)(void*)x);
 			x->errnop = 0;
 			x->socket = result;
-			RETVAL = newRV(sv);
-			SvREFCNT_dec(sv);
-			sv_bless(RETVAL, gv_stashpv("PDA::Pilot::DLPPtr",0));
+			SV * rv = newRV_noinc(sv);
+			sv_bless(rv, gv_stashpv("PDA::Pilot::DLPPtr",0));
+			PUSHs(sv_2mortal(rv));
 		}
+		/* In list context, return error code as a second value */
+		if (GIMME_V == G_ARRAY) {
+		        EXTEND(SP, 1);
+			if (result < 0) {
+				PUSHs(sv_2mortal(newSViv(result)));
+			} else {
+				PUSHs(sv_newmortal());
+			}
+		}
+			
 	}
-	OUTPUT:
-	RETVAL
 
 MODULE = PDA::Pilot		PACKAGE = PDA::Pilot::DLP::DBPtr
 
@@ -2568,7 +2577,7 @@ getRecords(self)
 	{
 		int result = dlp_ReadOpenDBInfo(self->socket, self->handle, &RETVAL);
 		if (result < 0) {
-			RETVAL = -1;
+			RETVAL = newSVsv(&sv_undef);
 			self->errnop = result;
 		}
 	}
