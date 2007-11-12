@@ -1,4 +1,28 @@
 --------------------------------------------------------------------------
+pilot-link 0.12.3, "Can-of-Raid" (aka "Bug-Squash" release), 11-12-2007
+--------------------------------------------------------------------------
+Here you go, another pilot-link release. This one fixes quite a few issues: 
+
+Bug Fixes:
+	* Fix for Sony NR70 devices not being detected properly
+	* BlueZ detection fix
+	* XSLT manpage autogeneration fixes
+	* Perl bindings build error, remove autoconfiscated files from
+	  releases
+	* Java bindings build errors, remove autoconfiscated Makefile
+	* Renamed pilot-treofoto and pilot-650foto to pilot-foto-treo600 and
+	  pilot-foto-treo650
+	* Added missing manpages for pilot-foto-treo6xx
+	* Fixed OS5 failures with pilot-addresses.c
+	* Updated pilot-install-memo.c to allow installation of files
+	  outside the current working directory
+	* Fix for pi_usb_accept, adding PI_ERR_SOCK_LISTENER from Matt
+	  Davey's patch (closing #1782)
+
+Check the ChangeLog for the details on all fixes for this release
+
+
+--------------------------------------------------------------------------
 pilot-link 0.12.2, "Dance With the Devil" aka "Distraction", 02-09-2007
 --------------------------------------------------------------------------
 5 months since the last release (0.12.1) and we have another release! This
