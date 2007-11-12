@@ -184,6 +184,7 @@ int main(int argc, const char *argv[])
 		size_t 	len;
 
 		pif = pi_file_open(filename);
+
 		if (!pif) {
 			fprintf(stderr, "   ERROR: %s\n", strerror(errno));
 			fprintf(stderr, "   Does %s exist?\n\n", filename);
