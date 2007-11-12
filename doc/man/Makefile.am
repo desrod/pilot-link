@@ -32,7 +32,8 @@ man_MANS =				\
 	pilot-read-veo.1		\
 	pilot-reminders.1		\
 	pilot-schlep.1			\
-	pilot-treofoto.1		\
+	pilot-foto-treo600.1		\
+	pilot-foto-treo650.1		\
 	pilot-wav.1			\
 	pilot-xfer.1
 
