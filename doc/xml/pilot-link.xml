@@ -175,9 +175,15 @@
             </para>
         </refsect2>
         <refsect2>
-            <title>pilot-treofoto</title>
+            <title>pilot-foto-treo600</title>
             <para>
-                Copies Treo foto databases to current directory and extracts .jpg files from them.
+                Copies Treo 600 foto databases to current directory and extracts .jpg files from them.
+            </para>
+        </refsect2>
+        <refsect2>
+            <title>pilot-foto-treo650</title>
+            <para>
+                Copies Treo 600 images and videos to the current directory
             </para>
         </refsect2>
         <refsect2>

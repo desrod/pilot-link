@@ -13,7 +13,6 @@ INCLUDES = 			\
 noinst_LTLIBRARIES = libpiuserland.la
 
 bin_PROGRAMS =			\
-	pilot-650foto		\
 	pilot-addresses		\
 	pilot-clip		\
 	pilot-csd		\
@@ -45,7 +44,8 @@ bin_PROGRAMS =			\
 	pilot-read-veo		\
 	pilot-reminders		\
 	pilot-schlep		\
-	pilot-treofoto		\
+	pilot-foto-treo600	\
+	pilot-foto-treo650	\
 	pilot-wav		\
 	pilot-xfer
 
@@ -254,16 +254,16 @@ pilot_schlep_LDADD = 		\
 	$(POPT_LIBS)		\
 	$(top_builddir)/libpisock/libpisock.la
 
-pilot_treofoto_SOURCES = 		\
-	pilot-treofoto.c
-pilot_treofoto_LDADD = 		\
+pilot_foto_treo600_SOURCES = 	\
+	pilot-foto-treo600.c
+pilot_foto_treo600_LDADD = 	\
 	libpiuserland.la	\
 	$(POPT_LIBS)		\
 	$(top_builddir)/libpisock/libpisock.la
 
-pilot_650foto_SOURCES = 		\
-	pilot-650foto.c
-pilot_650foto_LDADD = 		\
+pilot_foto_treo650_SOURCES = 	\
+	pilot-foto-treo650.c
+pilot_foto_treo650_LDADD = 	\
 	libpiuserland.la	\
 	$(POPT_LIBS)		\
 	$(top_builddir)/libpisock/libpisock.la
@@ -348,7 +348,6 @@ EXTRA_DIST = 				\
 	kittykiller.c			\
 	parsedate.y			\
 	pd-tty.c			\
-	pilot-650foto.c			\
 	pilot-addresses.c		\
 	pilot-clip.c			\
 	pilot-csd.c			\
@@ -382,7 +381,8 @@ EXTRA_DIST = 				\
 	pilot-read-veo.c		\
 	pilot-reminders.c		\
 	pilot-schlep.c			\
-	pilot-treofoto.c		\
+	pilot-foto-treo600.c		\
+	pilot-foto-treo650.c		\
 	pilot-undelete.pl		\
 	pilot-wav.c			\
 	pilot-xfer.c			\

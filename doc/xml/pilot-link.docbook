@@ -35,7 +35,8 @@
 <!ENTITY pilotreadveo SYSTEM "pilot-read-veo.xml">
 <!ENTITY pilotreminders SYSTEM "pilot-reminders.xml">
 <!ENTITY pilotschlep SYSTEM "pilot-schlep.xml">
-<!ENTITY pilottreofoto SYSTEM "pilot-treofoto.xml">
+<!ENTITY pilotfototreo600 SYSTEM "pilot-foto-treo600.xml">
+<!ENTITY pilotfototreo650 SYSTEM "pilot-foto-treo650.xml">
 <!ENTITY pilotwav SYSTEM "pilot-wav.xml">
 <!ENTITY pilotxfer SYSTEM "pilot-xfer.xml">
  ]>
@@ -75,7 +76,8 @@
 &pilotreadveo;
 &pilotreminders;
 &pilotschlep;
-&pilottreofoto;
+&pilotfototreo600;
+&pilotfototreo650;
 &pilotwav;
 &pilotxfer;
 </chapter>
