@@ -701,7 +701,7 @@ dnl *************************************
 dnl Check for xsltproc
 dnl *************************************
 AM_CONDITIONAL(BUILD_XML,[test ! -d "{$srcdir}/CVS"])
-if test -d "${srcdir}/CVS" ; then
+# if test -d "${srcdir}/CVS" ; then
 
 AC_ARG_ENABLE([xsltproc], [AC_HELP_STRING([--enable-xsltproc], 
 	[Use xsltproc to build documentation [default=no]])],
@@ -715,7 +715,7 @@ if test x"$enable_xsltproc" = x"yes"; then
 fi
 AM_CONDITIONAL([ENABLE_XSLTPROC], [test x"$enable_xsltproc" = x"yes"])
 
-fi
+# fi
 
 # now let's test to see if we can find the docbook-xsl stuff
 XSLTPROC_FLAGS="--nonet"
