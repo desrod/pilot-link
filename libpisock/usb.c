@@ -810,7 +810,8 @@ pi_usb_dev_t known_devices[] = {
 	{
 		.vendor 	= 0x0830,
 		.product 	= 0x0061,
-		.idstr 		= "Zire 31, 72",
+		.idstr		= "Zire 31, 72, Z22",
+		.flags		= USB_INIT_TAPWAVE,
 	},
 
 	{
