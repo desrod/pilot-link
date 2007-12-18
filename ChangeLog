@@ -1,3 +1,28 @@
+2007-11-22 17:19  desrod
+
+	* libpisock/usb.c: Implementing a Zire 22 fix from Tom Billiet
+
+2007-11-12 13:42  desrod
+
+	* configure.ac: Bump for 0.12.4
+
+2007-11-12 13:01  desrod
+
+	* configure.ac: [no log message]
+
+2007-11-12 12:56  desrod
+
+	* bindings/Perl/Pilot.xs: Added Aaron's fixes (oof! This has been
+	  in the queue for awhile. Sorry Aaron). This closes bug #1448.
+
+2007-11-12 12:30  desrod
+
+	* NEWS: Bump for 0.12.3 release
+
+2007-11-12 11:58  desrod
+
+	* ChangeLog: Bump ChangeLog to current
+
 2007-11-12 11:28  desrod
 
 	* doc/xml/: pilot-foto-treo600.xml, pilot-foto-treo650.xml: Adding
