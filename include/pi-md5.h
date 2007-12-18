@@ -13,8 +13,20 @@
 #ifndef MD5_H
 #define MD5_H
 
+#include "config.h"
+#if HAVE_INTTYPES_H
+#include <inttypes.h>
+#endif
+#if HAVE_STDINT_H
+#include <stdint.h>
+#endif
+#ifdef HAVE_INTTYPES_H || HAVE_STDINT_H
+#define UINT8 uint8_t
+#define UINT32 uint32_t
+#else
 #define UINT8 unsigned char
-#define UINT32 unsigned long
+#define UINT32 unsigned int
+#endif
 
 struct MD5Context {
 	UINT32 buf[4];
