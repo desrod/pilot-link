@@ -167,19 +167,19 @@ add_hotsync(sdp_session_t *session,
 }
 
 static int
-register_sdp (uint32_t *handle, int *channel, sdp_session_t *sess)
+register_sdp (uint32_t *handle, int *channel, sdp_session_t **sess)
 {
 	svc_info_t si;
 	bdaddr_t interface;
 
 	bacpy (&interface, BDADDR_ANY);
-	sess = sdp_connect (&interface, BDADDR_LOCAL, 0);
+	*sess = sdp_connect (&interface, BDADDR_LOCAL, 0);
 
-	if (!sess)
+	if (*sess == NULL)
 		return -1;
 	memset (&si, 0, sizeof(si));
 	si.name = "HOTSYNC";
-	return add_hotsync (sess, 0, &interface, &si, handle, channel);
+	return add_hotsync (*sess, 0, &interface, &si, handle, channel);
 }
 
 static int
@@ -325,7 +325,7 @@ pi_bluetooth_protocol (pi_device_t *dev)
 static void
 pi_bluetooth_register_hotsync_sdp (struct pi_bluetooth_data *data)
 {
-	if (register_sdp (&data->handle, &data->channel, data->sess) < 0) {
+	if (register_sdp (&data->handle, &data->channel, &data->sess) < 0) {
 		data->channel = -1;
 		data->handle = 0;
 		data->sess = NULL;
