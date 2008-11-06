@@ -16,6 +16,7 @@ dnl Limit to a specific ac version
 dnl ******************************
 AC_PREREQ(2.53)
 AM_CONFIG_HEADER(config.h)
+AM_CONFIG_HEADER(include/pi-md5.h)
 
 dnl ******************************
 dnl Pilot Link Version
