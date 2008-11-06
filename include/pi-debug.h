@@ -25,10 +25,6 @@
 extern "C" {
 #endif
 
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
-
 #include "pi-args.h"
 
 #define PI_DBG_NONE 0x000

@@ -23,10 +23,6 @@
 #ifndef _PILOT_THREADSAFE_H
 #define _PILOT_THREADSAFE_H
 
-#ifdef HAVE_CONFIG_H
-	#include <config.h>
-#endif
-
 #if HAVE_PTHREAD
 
 	#include <pthread.h>
