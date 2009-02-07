@@ -1,3 +1,5 @@
+# Makefile for pilot-link headers
+
 c_headers = 			\
 	pi-address.h		\
 	pi-appinfo.h		\
@@ -51,4 +53,3 @@ c_headerdir=$(includedir)
 EXTRA_DIST = 			\
 	$(c_headers)		\
 	$(c_privheaders)
-
