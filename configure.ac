@@ -2,6 +2,7 @@
 # See the file COPYING for details.
 
 AC_INIT(include/pi-version.h.in)
+AC_CONFIG_MACRO_DIR([m4])
 
 dnl Initialize maintainer mode
 AM_MAINTAINER_MODE
