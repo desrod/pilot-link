@@ -266,10 +266,16 @@ pack_Contact (Contact_t *c, pi_buffer_t *buf, contactsType type)
 			destlen += (strlen(c->entry[v]) + 1);
 		}
 	}
-	if (c->birthdayFlag)
+
+	if (c->birthdayFlag) {
 		destlen += 3;
-	if (c->reminder != -1)
-		destlen += 2;
+		if (c->reminder != -1) {
+			destlen += 2;
+		} else {
+			destlen += 1;
+		}
+	}
+
 	if (c->picture != NULL) {
 		if (type == contacts_v11 && c->pictype == cpic_jpeg)
 			destlen += c->picture->used + 8;
