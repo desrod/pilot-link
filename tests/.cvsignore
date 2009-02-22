@@ -7,3 +7,5 @@ dlp-test
 packers
 versamail-test
 vfs-test
+locationdb-test
+calendardb-test

@@ -55,6 +55,9 @@ libpisock_la_SOURCES =  \
 	expense.c	\
 	hinote.c	\
 	inet.c		\
+	location.c	\
+	blob.c	\
+	calendar.c	\
 	mail.c		\
 	md5.c		\
 	memo.c		\

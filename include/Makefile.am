@@ -1,6 +1,8 @@
 # Makefile for pilot-link headers
 
 c_headers = 			\
+	pi-location.h		\
+	pi-blob.h		\
 	pi-address.h		\
 	pi-appinfo.h		\
 	pi-args.h		\

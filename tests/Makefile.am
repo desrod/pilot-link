@@ -4,10 +4,22 @@ INCLUDES = 			\
 	$(POPT_INCLUDES)
 
 noinst_PROGRAMS =		\
+    calendardb-test \
+    locationdb-test \
 	contactsdb-test		\
 	dlp-test		\
 	versamail-test		\
 	vfs-test
+
+calendardb_test_SOURCES =	\
+	calendardb-test.c
+calendardb_test_LDADD =		\
+	$(top_builddir)/libpisock/libpisock.la
+
+locationdb_test_SOURCES =	\
+	locationdb-test.c
+locationdb_test_LDADD =		\
+	$(top_builddir)/libpisock/libpisock.la
 
 contactsdb_test_SOURCES =	\
 	contactsdb-test.c
