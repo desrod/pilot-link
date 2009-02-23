@@ -193,21 +193,19 @@ print_appblock (int sd, int db, struct ContactAppInfo *cai)
 	/* Fair enough for a test to print opaque data.. */
 	if (cai->internal != NULL) {
 		printf ("\nInternal data (opaque)\n");
-		hexprint (cai->internal->data, cai->internal->used, 0, 0);
+		hexprint ((unsigned char *)cai->internal, sizeof(cai->internal), 0, 0);
 	}
 
-	if (cai->labels != NULL && cai->labels->used % 16 == 0) {
-		printf ("\nField labels (also \"opaque\")");
-		i = 0;
-		for (j = 0; j < cai->labels->used; j += 16)
-		{
-			if (i%4 == 0)
-				printf ("\n ");
-			printf ("%02i:%-16s ", i++, cai->labels->data + j);
-		}
-		if (i%4 != 0)
-			printf ("\n");
-	}
+	printf ("\nField labels");
+	i = 0;
+	for (j = 0; j < cai->num_labels; j++)
+	  {
+	    if (i%4 == 0)
+	      printf ("\n ");
+	    printf ("%02i:%-16s ", i++, cai->labels[j]);
+	  }
+	if (i%4 != 0)
+	  printf ("\n");
 	
 	printf ("\nCountry: %i\n", cai->country);
 
@@ -302,8 +300,8 @@ print_records (int sd, int db, struct ContactAppInfo *cai)
 					c.birthday.tm_mon + 1,
 					c.birthday.tm_mday);
 
-			if (c.reminder != -1)
-				printf (" (%i day reminder)", c.reminder);
+			if (c.reminder)
+				printf (" (%i day reminder)", c.advance);
 			puts ("");
 		}
 
@@ -312,19 +310,17 @@ print_records (int sd, int db, struct ContactAppInfo *cai)
 			char fname[25];
 			FILE *f;
 
-			snprintf (fname, 24, "rec-%lu.%s",
-					(uint32_t)recid,
-					c.pictype == cpic_jpeg ? "jpeg" : "img");
+			snprintf (fname, 24, "rec-%lu.jpeg",
+					(uint32_t)recid);
 			printf (" Picture        : %s\n", fname);
 			f = fopen (fname, "wb");
 			if (f) {
-				fwrite (c.picture->data, c.picture->used, 1, f);
+				fwrite (c.picture->data, c.picture->length, 1, f);
 				fclose (f);
 			}
 #else
-			printf (" Picture        : %s (%zu bytes)\n",
-					c.pictype == cpic_jpeg ? "JPEG" : "Unknown format",
-					c.picture->used);
+			printf (" Picture        : JPEG (%zu bytes)\n",
+					c.picture->length);
 #endif /* SAVE_PICTURES */
 		}
 

@@ -1,3 +1,8 @@
+2009-02-23  nicholas
+
+	* libpisock/contacts.c, include/pi-contact.h: Unfork from jpilot's
+	implementation.
+
 2007-11-22 17:19  desrod
 
 	* libpisock/usb.c: Implementing a Zire 22 fix from Tom Billiet
