@@ -698,6 +698,7 @@ pi_usb_dev_t known_devices[] = {
 		.vendor 	= 0x054c,
 		.product 	= 0x0169,
 		.idstr 		= "Sony TJ",
+		.flags 		= USB_INIT_SONY_CLIE,
 	},
 
 	/* AlphaSmart */
