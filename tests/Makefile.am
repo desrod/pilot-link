@@ -4,8 +4,8 @@ INCLUDES = 			\
 	$(POPT_INCLUDES)
 
 noinst_PROGRAMS =		\
-    calendardb-test \
-    locationdb-test \
+	calendardb-test 	\
+	locationdb-test 	\
 	contactsdb-test		\
 	dlp-test		\
 	versamail-test		\
@@ -26,28 +26,27 @@ contactsdb_test_SOURCES =	\
 contactsdb_test_LDADD =		\
 	$(top_builddir)/libpisock/libpisock.la
 
-dlp_test_SOURCES =	\
+dlp_test_SOURCES =		\
 	dlp-test.c
-dlp_test_LDADD =	\
+dlp_test_LDADD =		\
 	$(top_builddir)/libpisock/libpisock.la
 
-vfs_test_SOURCES =	\
+vfs_test_SOURCES =		\
 	vfs-test.c
-vfs_test_LDADD =	\
+vfs_test_LDADD =		\
 	$(top_builddir)/libpisock/libpisock.la
 
 versamail_test_SOURCES =	\
 	versamail-test.c
-versamail_test_LDADD =	\
+versamail_test_LDADD =		\
 	$(top_builddir)/libpisock/libpisock.la
 
-check_PROGRAMS =  \
+check_PROGRAMS =  		\
 	packers
 
-packers_SOURCES = \
+packers_SOURCES = 		\
 	packers.c
-packers_LDADD = \
+packers_LDADD = 		\
 	$(top_builddir)/libpisock/libpisock.la
 
 TESTS = packers
-

@@ -1,32 +1,35 @@
 # Makefile for pilot-link headers
 
 c_headers = 			\
-	pi-location.h		\
-	pi-blob.h		\
 	pi-address.h		\
 	pi-appinfo.h		\
 	pi-args.h		\
-	pi-bluetooth.h	\
+	pi-blob.h		\
+	pi-bluetooth.h		\
 	pi-buffer.h		\
+	pi-calendar.h		\
 	pi-cmp.h		\
 	pi-contact.h		\
 	pi-datebook.h		\
 	pi-debug.h		\
 	pi-dlp.h		\
 	pi-error.h		\
-	pi-foto.h		\
 	pi-expense.h		\
 	pi-file.h		\
+	pi-foto.h		\
 	pi-header.h		\
 	pi-hinote.h		\
 	pi-inet.h		\
+	pi-location.h		\
 	pi-macros.h		\
 	pi-mail.h		\
 	pi-md5.h		\
 	pi-memo.h		\
 	pi-money.h		\
 	pi-net.h		\
+	pi-notepad.h		\
 	pi-padp.h		\
+	pi-palmpix.h		\
 	pi-serial.h		\
 	pi-slp.h		\
 	pi-sockaddr.h		\
@@ -35,9 +38,7 @@ c_headers = 			\
 	pi-sync.h		\
 	pi-sys.h		\
 	pi-syspkt.h		\
-	pi-threadsafe.h	\
-	pi-notepad.h		\
-	pi-palmpix.h		\
+	pi-threadsafe.h		\
 	pi-todo.h		\
 	pi-usb.h		\
 	pi-util.h		\
