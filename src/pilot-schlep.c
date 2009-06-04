@@ -39,7 +39,7 @@ static int Fetch(int sd, char *filename)
 		fd;
 	pi_buffer_t *buffer;
 
-	fd = open(filename, O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR | O_TRUNC);
+	fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
 	if (fd < 0)
 		return -1;
 
