@@ -138,7 +138,7 @@ pi_serial_open(pi_socket_t *ps, struct pi_sockaddr *addr, size_t addrlen)
 
 #ifndef NO_SERIAL_TRACE
 	if (ps->debuglog) {
-		ps->debugfd = open(ps->debuglog, O_WRONLY | O_CREAT, 0666);
+		ps->debugfd = open(ps->debuglog, O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR);
 
 		/* This sequence is magic used by my trace analyzer - kja */
 		write(ps->debugfd, "\0\1\0\0\0\0\0\0\0\0", 10);

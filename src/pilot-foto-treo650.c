@@ -235,7 +235,7 @@ static void
 
 			    if( !strcmp( index,".jpg" ) ||  !strcmp( index,".3gp" ))
 			      {
-				 fd = open( infos[i].name, O_CREAT | O_TRUNC | O_RDWR, 00666 );
+				 fd = open( infos[i].name, O_CREAT | O_TRUNC | O_RDWR, S_IRUSR | S_IWUSR);
 				 pi_file_retrieve_VFS( fd, sd, file, buf );
 				 close(fd);
 			      }

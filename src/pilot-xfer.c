@@ -851,7 +851,7 @@ palm_fetch_VFS(const char *dbname, const char *vfspath)
 	fflush(stdout);
 
 	/* Calculate basename, perhaps? */
-	fd = open(dbname,O_WRONLY | O_CREAT | O_TRUNC,0666);
+	fd = open(dbname,O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
 	if (fd < 0) {
 		fprintf(stderr,"\n   Cannot open local file for '%s'.\n",dbname);
 		return;

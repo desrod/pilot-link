@@ -130,7 +130,7 @@ int do_get_rom(int sd,const char *filename)
 		printf("   Generating %s\n", name);
 	}
 
-	file = open(name, O_RDWR | O_CREAT, 0666);
+	file = open(name, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
 
 	offset = lseek(file, 0, SEEK_END);
 	offset &= ~255;
@@ -247,7 +247,7 @@ int do_get_ram(int sd, const char *filename)
 		printf("   Generating %s\n", name);
 	}
 
-	file = open(name, O_RDWR | O_CREAT, 0666);
+	file = open(name, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
 
 	offset = lseek(file, 0, SEEK_END);
 	offset &= ~255;
