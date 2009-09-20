@@ -45,6 +45,7 @@
 #define noteFlag 	16
 #define exceptFlag 	8
 #define descFlag 	4
+#define locFlag 	2
 
 /***********************************************************************
  *
@@ -406,6 +407,13 @@ unpack_CalendarEvent(CalendarEvent_t *a, const pi_buffer_t *buf, calendarType ty
 		a->note = 0;
 	}
 
+	if (iflags & locFlag) {
+		a->location = strdup((char *)p2);
+		p2 += strlen((char *)p2) + 1;
+	} else {
+		a->location = 0;
+	}
+
 	/* initialize the blobs to NULL */
 	for (i=0; i<MAX_BLOBS; ++i) {
 		a->blob[i]=NULL;
@@ -413,16 +421,6 @@ unpack_CalendarEvent(CalendarEvent_t *a, const pi_buffer_t *buf, calendarType ty
 
 	if(p2 - buf->data < buf->used) {
 		uint8_t blob_count;
-		
-		if(p2[0] == 0x42 && p2[1] == 0x64) {
-			/* this is the start of a blob, skip over location */
-			a->location = NULL;
-		} else {
-			/* location */
-			a->location = strdup((char *)p2);
-			//printf("Found location %s\n", a->location);
-			p2 += strlen(a->location) + 1;
-		}
 		
 		/* read the blobs */
 		a->tz = NULL;
@@ -467,7 +465,6 @@ unpack_CalendarEvent(CalendarEvent_t *a, const pi_buffer_t *buf, calendarType ty
 			return -1;
 		}
 	} else {
-		a->location = NULL;
 		a->tz = NULL;
 	}
 	
@@ -510,6 +507,8 @@ pack_CalendarEvent(const CalendarEvent_t *a, pi_buffer_t *buf, calendarType type
 		destlen += strlen(a->note) + 1;
 	if (a->description)
 		destlen += strlen(a->description) + 1;
+	if (a->location)
+		destlen += strlen(a->location) + 1;
 
 	pi_buffer_expect (buf, destlen);
 	buf->used = destlen;	
@@ -613,18 +612,19 @@ pack_CalendarEvent(const CalendarEvent_t *a, pi_buffer_t *buf, calendarType type
 		pos += strlen(pos) + 1;
 	}
 
+	if (a->location != NULL) {
+		iflags |= locFlag;
+
+		strcpy(pos, a->location);
+		pos += strlen(pos) + 1;
+	}
+
 	set_byte(buf->data + 6, iflags);
 	set_byte(buf->data + 7, 0);	/* gapfill */
 
 	/* Calendar stuff */
 	uint8_t blob_index;
 	size_t offset = buf->used;
-	if(NULL != a->location) {
-		offset = buf->used;
-		pi_buffer_expect(buf, buf->used + strlen(a->location)+1);
-		buf->used = buf->used + strlen(a->location)+1;
-		strcpy((char *)(buf->data+offset), a->location);
-	}
 
 	//write out the blobs
 	for(blob_index = 0; blob_index < MAX_BLOBS; ++blob_index) {
