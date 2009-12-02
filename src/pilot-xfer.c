@@ -709,7 +709,7 @@ pi_file_retrieve_VFS(const int fd, const char *basename, const int socket, const
 	char         rpath[vfsMAXFILENAME];
 	int          rpathlen = vfsMAXFILENAME;
 	FileRef      file;
-	long         attributes;
+	unsigned long attributes;
 	pi_buffer_t  *buffer;
 	ssize_t      readsize,writesize;
 	int          filesize;
@@ -1193,7 +1193,7 @@ static int pi_file_install_VFS(const int fd, const char *basename, const int soc
 	char        rpath[vfsMAXFILENAME];
 	int         rpathlen = vfsMAXFILENAME;
 	FileRef     file;
-	long        attributes;
+	unsigned long attributes;
 	char        *filebuffer = NULL;
 	long        volume = -1;
 	long        used,
