@@ -1087,7 +1087,7 @@ palm_restore(const char *dirname)
 				break;
 		}
 
-		if (sbuf.st_size > Card.ramFree)
+		if ((unsigned long)sbuf.st_size > Card.ramFree)
 		{
 			fprintf(stderr, "\n\n");
 			fprintf(stderr, "   Insufficient space to install this file on your Palm.\n");
@@ -1228,7 +1228,7 @@ static int pi_file_install_VFS(const int fd, const char *basename, const int soc
 	/* Calculate free space but leave last 64k free on card */
 	freespace  = total - used - 65536 ;
 
-	if (sbuf.st_size > freespace)
+	if ((unsigned long)sbuf.st_size > freespace)
 	{
 		fprintf(stderr, "\n\n");
 		fprintf(stderr, "   Insufficient space to install this file on your Palm.\n");
@@ -1431,7 +1431,7 @@ static void palm_install_internal(const char *filename)
 			break;
 	}
 
-	if (sbuf.st_size > Card.ramFree)
+	if ((unsigned long)sbuf.st_size > Card.ramFree)
 	{
 		fprintf(stderr, "   ERROR: Insufficient space to install this file on your Palm.\n");
 		fprintf(stderr, "          We needed %lu and only had %lu available..\n\n",
