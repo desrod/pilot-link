@@ -1319,6 +1319,14 @@ static int pi_file_install_VFS(const int fd, const char *basename, const int soc
 		return bad_vfs_path;
 	}
 
+	/* If the file already exists we want to truncate it so if we write a smaller file
+	 * the tail of the previous file won't show */
+	if (dlp_VFSFileResize(socket, file, 0) < 0)
+	{
+		fprintf(stderr,"   Cannot truncate file size to 0 '%s'.\n",rpath);
+		/* Non-fatal error, continue */
+	}
+
 #define FBUFSIZ 65536
 	filebuffer = (char *)malloc(FBUFSIZ);
 	if (NULL == filebuffer)
@@ -1367,6 +1375,7 @@ static int pi_file_install_VFS(const int fd, const char *basename, const int soc
 cleanup:
 	free(filebuffer);
 	dlp_VFSFileClose(socket,file);
+   
 	close(fd);
 	return sbuf.st_size;
 }
