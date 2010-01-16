@@ -115,7 +115,14 @@ void parse(pi_file_t *pf)
   // dump the appinfo
   dump(app_info, app_info_size);
 
-  result = unpack_CalendarAppInfo(&cab, app_info, app_info_size);
+  pi_buf = pi_buffer_new(0);
+  pi_buf->data = app_info;
+  pi_buf->used = app_info_size;
+  pi_buf->allocated = app_info_size;
+   
+  result = unpack_CalendarAppInfo(&cab, pi_buf);
+
+  pi_buffer_free(pi_buf);
 
   /* print out the standard app info stuff and see if it's right */
   /* not really useful for Calendar, all names are custom
@@ -207,7 +214,7 @@ void parse(pi_file_t *pf)
       
       if(pi_buf->used != test->used) {
         int i;
-        printf("Error: Different record sizes unpack: %d pack: %d last byte unpack: 0x%02X pack: 0x%02X\n", pi_buf->used, test->used, pi_buf->data[pi_buf->used-1], test->data[test->used-1]);
+        printf("Error: Different record sizes unpack: %ld pack: %ld last byte unpack: 0x%02X pack: 0x%02X\n", pi_buf->used, test->used, pi_buf->data[pi_buf->used-1], test->data[test->used-1]);
         for(i=0; i<pi_buf->used; ++i) {
           if(pi_buf->data[i] != test->data[i]) {
             printf("Error: Byte %d is different unpack: 0x%02X pack: 0x%02X\n", i, pi_buf->data[i], test->data[i]);
