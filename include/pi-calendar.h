@@ -116,11 +116,9 @@ extern "C" {
 	extern int pack_CalendarEvent
 	    PI_ARGS((const CalendarEvent_t *event, pi_buffer_t *record, calendarType type));
 	extern int unpack_CalendarAppInfo
-	  PI_ARGS((CalendarAppInfo_t *appinfo, const unsigned char *AppInfo,
-		     size_t len));
+	  PI_ARGS((CalendarAppInfo_t *appinfo, pi_buffer_t *buf));
 	extern int pack_CalendarAppInfo
-	  PI_ARGS((const CalendarAppInfo_t *appinfo, unsigned char *AppInfo,
-		     size_t len));
+	  PI_ARGS((const CalendarAppInfo_t *appinfo, pi_buffer_t *buf));
 
 	extern int copy_CalendarEvent
 	PI_ARGS((const CalendarEvent_t *source, CalendarEvent_t *dest));

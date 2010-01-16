@@ -461,7 +461,7 @@ unpack_CalendarEvent(CalendarEvent_t *a, const pi_buffer_t *buf, calendarType ty
 			}
 		}
 		if(p2 - buf->data < buf->used) {
-			printf("Extra data found %d bytes\n", (buf->used - (p2 - buf->data)));
+			printf("Extra data found %ld bytes\n", (buf->used - (p2 - buf->data)));
 			return -1;
 		}
 	} else {
@@ -624,7 +624,6 @@ pack_CalendarEvent(const CalendarEvent_t *a, pi_buffer_t *buf, calendarType type
 
 	/* Calendar stuff */
 	uint8_t blob_index;
-	size_t offset = buf->used;
 
 	//write out the blobs
 	for(blob_index = 0; blob_index < MAX_BLOBS; ++blob_index) {
@@ -651,11 +650,14 @@ pack_CalendarEvent(const CalendarEvent_t *a, pi_buffer_t *buf, calendarType type
  *
  ***********************************************************************/
 int
-unpack_CalendarAppInfo(CalendarAppInfo_t *ai,
-	const unsigned char *record, size_t len)
+unpack_CalendarAppInfo(CalendarAppInfo_t *ai, pi_buffer_t *buf)
 {
-	int 	i;
+	int 		i;
+	int 		len;
+	unsigned char 	*record;
 
+	len = buf->used;
+	record = buf->data;
 	i = unpack_CategoryAppInfo(&ai->category, record, len);
 	if (!i)
 		return 0;
@@ -689,11 +691,12 @@ unpack_CalendarAppInfo(CalendarAppInfo_t *ai,
  *
  ***********************************************************************/
 int
-pack_CalendarAppInfo(const CalendarAppInfo_t *ai,
-	unsigned char *record, size_t len)
+pack_CalendarAppInfo(const CalendarAppInfo_t *ai, pi_buffer_t *buf)
 {
 	int 	i;
-	unsigned char *start = record;
+	int 	len = buf->used;
+	unsigned char *start = buf->data;
+	unsigned char *record = buf->data;
 
 	i = pack_CategoryAppInfo(&ai->category, record, len);
 	if (!record)
