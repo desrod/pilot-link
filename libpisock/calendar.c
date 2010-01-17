@@ -644,8 +644,7 @@ pack_CalendarEvent(const CalendarEvent_t *a, pi_buffer_t *buf, calendarType type
  *
  * Parameters:  CalendarAppInfo_t*, char* to record, record length
  *
- * Returns:     The necessary length of the buffer if record is NULL,
- *		or 0 on error, the length of the data used from the 
+ * Returns:     0 on error, the length of the data used from the 
  *		buffer otherwise
  *
  ***********************************************************************/
@@ -655,25 +654,30 @@ unpack_CalendarAppInfo(CalendarAppInfo_t *ai, pi_buffer_t *buf)
 	int 		i;
 	int 		len;
 	unsigned char 	*record;
+	int		used;
 
 	len = buf->used;
 	record = buf->data;
-	i = unpack_CategoryAppInfo(&ai->category, record, len);
-	if (!i)
+	used = unpack_CategoryAppInfo(&ai->category, record, len);
+	if (!used)
 		return 0;
-	record += i;
-	len -= i;
+	record += used;
+	len -= used;
 	if (len < 2)
 		return 0;
 	ai->startOfWeek = get_byte(record);
+	// alignment byte
+	record += 2;
+	used += 2;
 
 	for(i=0; i<18; ++i) {
 		ai->internal[i] = get_byte(record);
-		record += 1;
+		record++;
+		used++;
 	}
 	ai->type = calendar_v1;
-	
-	return i + 2;
+
+	return used;
 }
 
 /***********************************************************************
@@ -694,29 +698,35 @@ int
 pack_CalendarAppInfo(const CalendarAppInfo_t *ai, pi_buffer_t *buf)
 {
 	int 	i;
-	int 	len = buf->used;
-	unsigned char *start = buf->data;
-	unsigned char *record = buf->data;
+	int 	len;
+	unsigned char *record;
 
-	i = pack_CategoryAppInfo(&ai->category, record, len);
-	if (!record)
-		return i + 2;
-	if (!i)
-		return i;
-	record 	+= i;
-	len 	-= i;
+	if (!buf) {
+		return 298;
+	}
+
+	/* AppInfo size should be 298, 300 will do */
+	len = 300;
+	pi_buffer_expect(buf, 300);
+	buf->used = pack_CategoryAppInfo(&ai->category, buf->data, buf->allocated);
+	if (!buf->used)
+		return 0;
+	record 	= buf->data + buf->used;
+	len 	-= buf->used;
 	if (len < 2)
 		return 0;
 	set_short(record, 0);
 	set_byte(record, ai->startOfWeek);
 	record += 2;
+	buf->used += 2;
 
 	for(i=0; i<18; ++i) {
 		set_byte(record, ai->internal[i]);
-		record += 1;
+		record ++;
+		buf->used ++;
 	}
 		    
-	return (record - start);
+	return (record - buf->data);
 }
 
 /* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */
