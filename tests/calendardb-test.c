@@ -121,6 +121,17 @@ void parse(pi_file_t *pf)
   pi_buf->allocated = app_info_size;
    
   result = unpack_CalendarAppInfo(&cab, pi_buf);
+  printf("unpack_CalendarAppInfo returned %d\n", result);
+
+  pi_buf->data=NULL;
+  pi_buf->used = 0;
+  pi_buf->allocated = 0;
+
+  result = pack_CalendarAppInfo(&cab, pi_buf);
+  printf("pack_CalendarAppInfo returned %d\n", result);
+
+  // dump the appinfo
+  dump(pi_buf->data, pi_buf->used);
 
   pi_buffer_free(pi_buf);
 
