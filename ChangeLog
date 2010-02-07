@@ -1,3 +1,68 @@
+2010-01-16 19:38  judd
+
+	* libpisock/calendar.c: Made code actually work with pi_buffer_t
+	  parameters.
+
+2010-01-16 19:37  judd
+
+	* tests/calendardb-test.c: Added code to test pack_CalendarAppInfo
+
+2010-01-16 17:54  judd
+
+	* tests/calendardb-test.c: Changed to pass a pi_buffer_t into
+	  unpack_CalendarAppInfo
+
+2010-01-16 17:29  judd
+
+	* include/pi-calendar.h, libpisock/calendar.c: Changed
+	  pack_CalendarAppInfo, and unpack_CalendarAppInfo to use
+	  pi_buffer_t to match the APIs of the other applications.
+
+2009-12-10 20:48  judd
+
+	* src/pilot-xfer.c: If a file is installed to VFS with the same
+	  filename as an existing file the tail of the previous file is
+	  still intact and at the end of the file.  I added a
+	  dlp_VFSFileResize call to truncate the file size to zero before
+	  writing the new file.
+
+2009-12-01 23:20  judd
+
+	* src/pilot-xfer.c: fixed minor signed/unsigned compiler warnings
+
+2009-12-01 23:15  judd
+
+	* src/pilot-xfer.c: Fixed signed/unsigned comparisons that failed
+	  with cards larger than 4G or so.  The code would incorrectly
+	  decide there wasn't enough free space to install.
+
+2009-09-20 17:07  judd
+
+	* libpisock/calendar.c: location flag was not being used.  Added
+	  location flag and proper use of it.
+
+2009-06-04 09:38  desrod
+
+	* src/pilot-schlep.c: Oops, stupid mistake. creat(2) is always the
+	  last param. :)
+
+	  (Coding-on-the-train)--
+
+2009-06-04 09:32  desrod
+
+	* libpisock/os2serial.c, src/pilot-xfer.c, src/pilot-addresses.c,
+	  src/pilot-foto-treo600.c, src/pilot-foto-treo650.c,
+	  src/pilot-schlep.c, src/pilot-csd.c, src/pilot-getrom.c,
+	  src/pilot-install-memo.c, src/pilot-read-todos.c: Cleaner O_CREAT
+	  modes (done right!) Writing explicit numbers for file permissions
+	  is bad practice. Not only is it not portable, it also requires
+	  that everyone who reads your source to remember what the bits
+	  mean.
+
+2009-05-25 00:43  desrod
+
+	* ChangeLog: Pushing ChangeLog back upstream
+
 2009-05-25 00:40  desrod
 
 	* include/Makefile.am, tests/Makefile.am: Last-minute fixes before
