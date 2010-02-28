@@ -1,10 +1,3 @@
-2008-05-03 16:23  desrod
-
-	* libpisock/bluetooth.c: Add minor fix for reported segfault when
-	  closing down bluetooth connection.
-
-	  This closes bug #1872
-
 2007-12-17 22:03  judd
 
 	* include/pi-md5.h: UINT32 was broken on 64-bit systems.  This
