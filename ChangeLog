@@ -1,34 +1,3 @@
-2009-06-04 09:32  desrod
-
-	* libpisock/os2serial.c, src/pilot-xfer.c, src/pilot-addresses.c,
-	  src/pilot-foto-treo600.c, src/pilot-foto-treo650.c,
-	  src/pilot-schlep.c, src/pilot-csd.c, src/pilot-getrom.c,
-	  src/pilot-install-memo.c, src/pilot-read-todos.c: Cleaner O_CREAT
-	  modes (done right!) Writing explicit numbers for file permissions
-	  is bad practice. Not only is it not portable, it also requires
-	  that everyone who reads your source to remember what the bits
-	  mean.
-
-2009-05-25 00:43  desrod
-
-	* ChangeLog: Pushing ChangeLog back upstream
-
-2009-05-25 00:40  desrod
-
-	* include/Makefile.am, tests/Makefile.am: Last-minute fixes before
-	  releasing 0.12.4
-
-2009-05-25 00:19  desrod
-
-	* libpisock/usb.c: Fix for Sony SJ-22 device sync (fixes bug #1957
-	  filed at bugs.pilot-link.org)
-
-2009-05-25 00:16  desrod
-
-	* doc/xml/pilot-xfer.xml: Updated documentation to reflect a
-	  cleaner layout and output (closes bug #1913 in the bugtracker at
-	  bugs.pilot-link.org
-
 2009-02-23 06:59  nicholas
 
 	* ChangeLog, include/pi-contact.h, libpisock/contact.c,
