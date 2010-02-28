@@ -1,7 +1,3 @@
-2009-02-22 17:54  nicholas
-
-	* bindings/Python/.cvsignore: Add generated file to .cvsignore
-
 2009-02-22 03:08  nicholas
 
 	* include/Makefile.am, include/pi-blob.h, include/pi-calendar.h,
