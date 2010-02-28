@@ -1,9 +1,5 @@
 2008-11-05 20:14  judd
 
-	* configure.ac: Added pi-md5.h.in
-
-2008-11-05 20:14  judd
-
 	* include/pi-md5.h.in: generates pi-md5.h
 
 2008-11-05 20:13  judd
