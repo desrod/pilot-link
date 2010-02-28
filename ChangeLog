@@ -1,8 +1,3 @@
-2009-02-21 17:22  desrod
-
-	* libpisock/contact.c: Minor fix for a buffer size miscalculation
-	  (from Nicholas Piper)
-
 2009-02-07 11:09  desrod
 
 	* include/Makefile.am: Adding missing newline at the end of the
