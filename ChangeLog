@@ -1,25 +1,3 @@
-2009-12-01 23:20  judd
-
-	* src/pilot-xfer.c: fixed minor signed/unsigned compiler warnings
-
-2009-12-01 23:15  judd
-
-	* src/pilot-xfer.c: Fixed signed/unsigned comparisons that failed
-	  with cards larger than 4G or so.  The code would incorrectly
-	  decide there wasn't enough free space to install.
-
-2009-09-20 17:07  judd
-
-	* libpisock/calendar.c: location flag was not being used.  Added
-	  location flag and proper use of it.
-
-2009-06-04 09:38  desrod
-
-	* src/pilot-schlep.c: Oops, stupid mistake. creat(2) is always the
-	  last param. :)
-
-	  (Coding-on-the-train)--
-
 2009-06-04 09:32  desrod
 
 	* libpisock/os2serial.c, src/pilot-xfer.c, src/pilot-addresses.c,
