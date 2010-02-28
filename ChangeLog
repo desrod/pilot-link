@@ -1,36 +1,3 @@
-2010-02-06 23:52  desrod
-
-	* ChangeLog, configure.ac, include/pi-md5.h.in: Just cleaning up
-	  and tagging 0.12.5
-
-2010-01-16 19:38  judd
-
-	* libpisock/calendar.c: Made code actually work with pi_buffer_t
-	  parameters.
-
-2010-01-16 19:37  judd
-
-	* tests/calendardb-test.c: Added code to test pack_CalendarAppInfo
-
-2010-01-16 17:54  judd
-
-	* tests/calendardb-test.c: Changed to pass a pi_buffer_t into
-	  unpack_CalendarAppInfo
-
-2010-01-16 17:29  judd
-
-	* include/pi-calendar.h, libpisock/calendar.c: Changed
-	  pack_CalendarAppInfo, and unpack_CalendarAppInfo to use
-	  pi_buffer_t to match the APIs of the other applications.
-
-2009-12-10 20:48  judd
-
-	* src/pilot-xfer.c: If a file is installed to VFS with the same
-	  filename as an existing file the tail of the previous file is
-	  still intact and at the end of the file.  I added a
-	  dlp_VFSFileResize call to truncate the file size to zero before
-	  writing the new file.
-
 2009-12-01 23:20  judd
 
 	* src/pilot-xfer.c: fixed minor signed/unsigned compiler warnings
