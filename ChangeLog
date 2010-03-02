@@ -1,8 +1,3 @@
-2007-11-09 09:43  desrod
-
-	* bindings/Java/Makefile.am: Update to allow parallel builds of
-	  pilot-link's Java bindings. This closes bug #1802.
-
 2007-11-09 09:40  desrod
 
 	* bindings/Java/Makefile.am: Updated Java bindings to fix unescaped
