@@ -1,8 +1,3 @@
-2007-12-17 22:03  judd
-
-	* include/pi-md5.h: UINT32 was broken on 64-bit systems.  This
-	  should fix it on most systems.
-
 2007-12-17 20:56  desrod
 
 	* ChangeLog: Increment ChangeLog to test/validate an LDAP
