@@ -1,7 +1,3 @@
-2007-11-12 13:01  desrod
-
-	* configure.ac: [no log message]
-
 2007-11-12 12:56  desrod
 
 	* bindings/Perl/Pilot.xs: Added Aaron's fixes (oof! This has been
