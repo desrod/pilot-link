@@ -1,9 +1,3 @@
-2007-11-09 09:07  desrod
-
-	* src/pilot-csd.c: Minor fix for -H issue by Philipp Matthias Hahn.
-	  This closes #1824 in the pilot-link bugtracker and #430808 in the
-	  Debian BTS.
-
 2007-11-09 08:59  desrod
 
 	* libpisock/usb.c: Fix for Sony NR70 devices by Serguei Miridonov.
