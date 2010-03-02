@@ -1,9 +1,3 @@
-2007-11-12 09:38  desrod
-
-	* doc/: man/Makefile.am, xml/pilot-650foto.xml,
-	  xml/pilot-treofoto.xml: Removing legacy manpages for renamed
-	  conduits
-
 2007-11-12 09:26  desrod
 
 	* src/: pilot-650foto.c, pilot-read-todos.c, pilot-treofoto.c:
