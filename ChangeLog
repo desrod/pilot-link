@@ -1,9 +1,3 @@
-2007-11-09 11:01  desrod
-
-	* src/pilot-addresses.c: Fix for devices > OS5. Instead of bailing
-	  out, we'll just report a warning for now until I can rewrite
-	  this.
-
 2007-11-09 10:48  desrod
 
 	* src/pilot-install-memo.c: Fix for installing files to Memo Pad
