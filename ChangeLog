@@ -1,17 +1,3 @@
-2007-11-09 09:40  desrod
-
-	* bindings/Java/Makefile.am: Updated Java bindings to fix unescaped
-	  vars. This prevents accidental installation of the Java bindings.
-
-2007-11-09 09:35  desrod
-
-	* configure.ac, m4/bluez.m4: Update to fix the BlueZ detection,
-	  also add a --without-bluez option to explicitly disable BlueZ for
-	  builds on systems where BlueZ is detected.
-
-	  This also closes bug #17795 and Debian bug 413051 in the Debian
-	  BTS
-
 2007-11-09 09:07  desrod
 
 	* src/pilot-csd.c: Minor fix for -H issue by Philipp Matthias Hahn.
