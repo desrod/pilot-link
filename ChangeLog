@@ -1,9 +1,3 @@
-2007-11-12 11:25  desrod
-
-	* doc/xml/pilot-link.docbook, doc/xml/pilot-link.xml,
-	  src/Makefile.am: Updated for new conduit renames and new manpages
-	  to follow them
-
 2007-11-12 09:38  desrod
 
 	* doc/: man/Makefile.am, xml/pilot-650foto.xml,
