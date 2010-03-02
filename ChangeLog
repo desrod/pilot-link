@@ -1,12 +1,3 @@
-2007-11-12 09:26  desrod
-
-	* src/: pilot-650foto.c, pilot-read-todos.c, pilot-treofoto.c:
-	  Replaced pilot-650foto.c with pilot-foto-treo650.c and
-	  pilot-treofoto.c with pilot-foto-treo600.c.
-
-	  Fixed pilot-read-todos.c to allow reading files from outside its
-	  own directory
-
 2007-11-09 11:01  desrod
 
 	* src/pilot-addresses.c: Fix for devices > OS5. Instead of bailing
