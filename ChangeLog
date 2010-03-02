@@ -1,8 +1,3 @@
-2007-11-12 12:56  desrod
-
-	* bindings/Perl/Pilot.xs: Added Aaron's fixes (oof! This has been
-	  in the queue for awhile. Sorry Aaron). This closes bug #1448.
-
 2007-11-12 12:30  desrod
 
 	* NEWS: Bump for 0.12.3 release
