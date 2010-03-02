@@ -1,12 +1,3 @@
-2007-12-17 20:56  desrod
-
-	* ChangeLog: Increment ChangeLog to test/validate an LDAP
-	  permission issue with LockDir
-
-2007-11-22 17:19  desrod
-
-	* libpisock/usb.c: Implementing a Zire 22 fix from Tom Billiet
-
 2007-11-12 13:42  desrod
 
 	* configure.ac: Bump for 0.12.4
