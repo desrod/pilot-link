@@ -8,32 +8,26 @@ We will only accept changes into pilot-link if they comply with the proper
 licensing. There are many companies using pilot-link in their core products
 and are complying with the license. There are also others companies who don't
 believe that adhering to the licensing is that important, and violate the
-license instead. Please do not be one of these companies.
+license instead. Please do not be one of those companies.
 
-This code is under active development. If you would like to contribute to the
+If you would like to contribute to the
 project, you can contact me, David A. Desrosiers, via email by sending an
 email to desrod@gnu-designs.com.
-
-We can also be reached on Internet Relay Chat, "irc", at irc.pilot-link.org
-in the channel #pilot-link. I go by the name "setuid" there, and there are a
-dozen or more helpful users and other developers that hang out there on a
-regular basis.
 
 From the main pilot-link website, you will find many links to helpful
 documents, HOWTOs, complementary projects that use pilot-link, and other
 resources to help you get the best use out of your Palm device on your
 platform of choice; Linux, BSD or Mac OS X.
 
-	Main website........: http://www.pilot-link.org/
-	HOWTO Documents.....: http://howto.pilot-link.org/
-	Code documentation..: http://doxygen.pilot-link.org/
-	Reporting bugs......: http://bugs.pilot-link.org/
-	Mailing lists.......: http://lists.pilot-link.org/
+	Main website........: http://www.pilot-link.org/ (defunct)
+	HOWTO Documents.....: http://howto.pilot-link.org/ (defunct)
+	Code documentation..: http://doxygen.pilot-link.org/ (defunct)
+	Reporting bugs......: http://bugs.pilot-link.org/ (defunct)
+	Mailing lists.......: http://lists.pilot-link.org/ (defunct)
 
-We also have several mailing list that you can join. There are mailing lists
-for development-specific talk, general talk, announcements and commits. On
-the mailing list webpage, you will have the ability to subscribe and read the
-past lists archives and posts from thousands of other users.
+We also had several mailing list that you could have joined. There were mailing lists
+for development-specific talk, general talk, announcements and commits. If you would
+like access to mailing list archives, please request them from project management.
 
 The architecture of pilot-link
 ------------------------------
