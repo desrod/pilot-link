@@ -1056,7 +1056,7 @@ dlp_ReadDBList(int sd, int cardno, int flags, int start, pi_buffer_t *info)
 
 	pi_buffer_clear (info);
 	
-	/* `multiple' only supported in DLP 1.2 and above */
+	/* 'multiple' only supported in DLP 1.2 and above */
 	if (pi_version(sd) < 0x0102)
 		flags &= ~dlpDBListMultiple;
 
@@ -2755,7 +2755,7 @@ dlp_ReadResourceByIndex(int sd, int dbhandle, unsigned int resindex, pi_buffer_t
 	TraceX(dlp_ReadResourceByIndex,"resindex=%d",resindex);
 	pi_reset_errors(sd);
 
-	/* TapWave (DLP 1.4) implements a `large' version of dlpFuncReadResource,
+	/* TapWave (DLP 1.4) implements a 'large' version of dlpFuncReadResource,
 	 * which can return resources >64k
 	 */
 	if (pi_version(sd) >= 0x0104) {
@@ -2853,7 +2853,7 @@ dlp_WriteResource(int sd, int dbhandle, unsigned long type, int resID,
 	TraceX(dlp_WriteResource,"'%4.4s' #%d",(const char *)&type,resID);
 	pi_reset_errors(sd);
 
-	/* TapWave (DLP 1.4) implements a `large' version of dlpFuncWriteResource,
+	/* TapWave (DLP 1.4) implements a 'large' version of dlpFuncWriteResource,
 	 * which can store records >64k
 	 */
 	if (pi_version(sd) >= 0x0104) {
@@ -3681,7 +3681,7 @@ dlp_ReadRecordByIndex(int sd, int dbhandle, int recindex, pi_buffer_t *buffer,
 	TraceX(dlp_ReadRecordByIndex,"recindex=%d",recindex);
 	pi_reset_errors(sd);
 
-	/* TapWave (DLP 1.4) implements a `large' version of dlpFuncReadRecord,
+	/* TapWave (DLP 1.4) implements a 'large' version of dlpFuncReadRecord,
 	 * which can return records >64k
 	 */
 	if (pi_version(sd) >= 0x0104) {

@@ -2,7 +2,7 @@
 # Run this to generate all the initial makefiles, etc.
 
 PKG_NAME=pilot-link
-srcdir=`dirname $0`
+srcdir=$(dirname $0)
 test -z "$srcdir" && srcdir=.
 
 DIE=0
@@ -11,7 +11,7 @@ DIE=0
   echo
   echo "**Error**: You must have \`autoconf' installed to compile $PKG_NAME."
   echo "Download the appropriate package for your distribution or get the source."
-  echo "Get ftp://ftp.gnu.org/pub/gnu/autoconf/autoconf-2.50.tar.gz"
+  echo "Get ftp://ftp.gnu.org/pub/gnu/autoconf/autoconf-2.69.tar.xz"
   echo "(or a newer version if it is available)"
   DIE=1
 }
@@ -21,7 +21,7 @@ DIE=0
   (libtool --version) < /dev/null > /dev/null 2>&1 || {
     echo
     echo "**Error**: You must have \`libtool' installed to compile $PKG_NAME."
-    echo "Get ftp://ftp.gnu.org/pub/gnu/libtool/libtool-1.5.tar.gz"
+    echo "Get ftp://ftp.gnu.org/pub/gnu/libtool/libtool-2.4.tar.xz"
     echo "(or a newer version if it is available)"
     DIE=1
   }

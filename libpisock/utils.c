@@ -212,7 +212,7 @@ int inet_aton(const char *cp, struct in_addr *addr)
 	register u_int 		*pp = parts;
 
 	for (;;) {
-		/* Collect number up to ``.''. Values are specified as for
+		/* Collect number up to ''.''. Values are specified as for
 		   C: 0x=hex, 0=octal, other=decimal. */
 		val 	= 0;
 		base 	= 10;

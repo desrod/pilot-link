@@ -23,8 +23,8 @@ dnl ******************************
 dnl Pilot Link Version
 dnl ******************************
 PILOT_LINK_VERS=0
-PILOT_LINK_MAJOR=12
-PILOT_LINK_MINOR=5
+PILOT_LINK_MAJOR=13
+PILOT_LINK_MINOR=0
 PILOT_LINK_PATCH=
 
 AC_SUBST(PILOT_LINK_VERS)
@@ -39,9 +39,9 @@ dnl libpisock.so.CURRENT.AGE.REVISION
 dnl Please see the following URL for details:
 dnl http://sources.redhat.com/autobook/autobook/autobook_91.html
 dnl ******************************
-PISOCK_CURRENT=9
-PISOCK_REVISION=2
-PISOCK_AGE=0
+PISOCK_CURRENT=10
+PISOCK_REVISION=0
+PISOCK_AGE=1
 
 AC_SUBST(PISOCK_CURRENT)
 AC_SUBST(PISOCK_REVISION)
@@ -63,8 +63,8 @@ AC_SUBST(PISYNC_AGE)
 dnl Eat -Werror so configure will run properly, if the user provided it
 enable_werror=no
 save_CFLAGS="$CFLAGS"
-CFLAGS=`echo $save_CFLAGS | sed -e s/-Werror//g`
-CXXFLAGS=`echo $save_CXXFLAGS | sed -e s/-Werror//g`
+CFLAGS=$(echo $save_CFLAGS | sed -e s/-Werror//g)
+CXXFLAGS=$(echo $save_CXXFLAGS | sed -e s/-Werror//g)
 if test "x$CFLAGS" != "x$save_CFLAGS"; then
 	dnl -Werror was set; treat it as implicit --enable-werror below
 	enable_werror="yes"
@@ -145,12 +145,12 @@ AC_DEFINE_UNQUOTED(NULL_DEVICE, "$null_device",
 AC_SUBST(PIC_LIBS)
 
 dnl ******************************
-dnl Check if this was CVS source
+dnl Check if this was from git source
 dnl ******************************
-if test -d "${srcdir}/CVS" ; then
-       PL_FROM_CVS=yes
+if test -d "${srcdir}/.git" ; then
+       PL_FROM_GIT=yes
 fi
-AM_CONDITIONAL(CVS_BUILD,[test -d "${srcdir}/CVS"])
+AM_CONDITIONAL(GIT_BUILD,[test -d "${srcdir}/.git"])
 
 dnl ******************************
 dnl Pilot Link Checks
@@ -362,7 +362,7 @@ if test "$use_bluez" != "no" ; then
 			use_bluez=yes
 		],[
 			test "$use_bluez" != "no" -a "$use_bluez" != "auto" \
-			&& AC_MSG_ERROR([BlueZ explicitly requested, but no library found]) 
+			&& AC_MSG_ERROR([BlueZ explicitly requested, but no library found])
 			use_bluez=no
 			have_bluez=no
 		])
@@ -538,7 +538,7 @@ if test "x$PERL" != "x"; then
 		use_perl=false
 	else
 		AC_MSG_RESULT(yes);
-		PERL_VERSION=`$PERL -e 'print $]'`
+		PERL_VERSION=$($PERL -e 'print $]')
 		use_perl=true
 	fi
 fi
@@ -567,7 +567,7 @@ fi
 
 if test "x$JAVA" != "x" && test "x$JAVAC" != "x" && test "x$JAR" != "x"; then
 	AC_MSG_CHECKING(for Java Development Kit)
-	JAVABASE=`echo "$JAVAC" | sed -e "s/\/bin\/javac//"`
+	JAVABASE=$(echo "$JAVAC" | sed -e "s/\/bin\/javac//")
 	if test -f "$JAVABASE/include/jni.h"; then
 		use_java=true
 		AC_MSG_RESULT(looks good)
@@ -581,8 +581,8 @@ AM_CONDITIONAL(WITH_JAVA, $use_java)
 
 if $use_java; then
 #	msg_java=yes
-	JAVA_VERSION=`java -version 2>&1 | grep '^java version' | awk -F\" '{print $2}'`
-	# " This is here to stop the errors from mismatched quotes. 
+	JAVA_VERSION=$(java -version 2>&1 | grep '^java version' | awk -F\" '{print $2}')
+	# " This is here to stop the errors from mismatched quotes.
 fi
 
 
@@ -624,7 +624,7 @@ AC_ARG_WITH(python,   [  --with-python=pybase    use Python,                 [[d
         , with_python=no)
 
 if test "x$with_python" != "xno"; then
-        AC_PATH_PROGS(PYTHON, [python])
+        AC_PATH_PROGS(PYTHON, [python3])
         if test "x$PYTHON" != "x"; then
 		AM_CHECK_PYTHON
 	fi
@@ -688,7 +688,7 @@ if test "$set_debug" = "yes"; then
 	AC_DEFINE(PI_DEBUG, 1, [Define if we have debugging enabled])
 else
 	echo "disabled"
-	CFLAGS=`echo "$CFLAGS" | sed -e "s/-g //"`
+	CFLAGS=$(echo "$CFLAGS" | sed -e "s/-g //")
 fi
 
 
@@ -702,10 +702,10 @@ AC_ARG_ENABLE(profile,
 dnl *************************************
 dnl Check for xsltproc
 dnl *************************************
-AM_CONDITIONAL(BUILD_XML,[test ! -d "{$srcdir}/CVS"])
-# if test -d "${srcdir}/CVS" ; then
+AM_CONDITIONAL(BUILD_XML,[test ! -d "{$srcdir}/.git"])
+# if test -d "${srcdir}/.git" ; then
 
-AC_ARG_ENABLE([xsltproc], [AC_HELP_STRING([--enable-xsltproc], 
+AC_ARG_ENABLE([xsltproc], [AC_HELP_STRING([--enable-xsltproc],
 	[Use xsltproc to build documentation [default=no]])],
 	[enable_xsltproc="$enableval"],
 [enable_xsltproc=no])
@@ -723,9 +723,9 @@ AM_CONDITIONAL([ENABLE_XSLTPROC], [test x"$enable_xsltproc" = x"yes"])
 XSLTPROC_FLAGS="--nonet"
 AC_SUBST(XML_CATALOG)
 AC_SUBST(XSLTPROC_FLAGS)
-AC_SUBST(DOCBOOK_ROOT)  
+AC_SUBST(DOCBOOK_ROOT)
 AC_SUBST(CAT_ENTRY_START)
-AC_SUBST(CAT_ENTRY_END)  
+AC_SUBST(CAT_ENTRY_END)
 AC_SUBST(XSLTPROC)
 
 dnl *************************************
@@ -739,11 +739,12 @@ AC_ARG_ENABLE(compile-warnings,
 	      set_compile_warnings=yes)
 
 if test "$GCC" = "yes" -a "$set_compile_warnings" != "no"; then
+
 	CFLAGS="$CFLAGS \
 		-std=gnu99 -g -Wshadow -Wall -W -Waggregate-return -Wcast-align 	\
 		-Wcast-qual -Wnested-externs -Wpointer-arith -Wundef -Winline	\
 		-Wbad-function-cast -pedantic -O0"
-
+	dnl CFLAGS=$(printf %s "$CFLAGS" | awk -v RS= -v ORS= '!arr[$0]++')
 fi
 
 case "$host" in
@@ -794,7 +795,7 @@ AC_OUTPUT([
 	doc/xml/catalog.xml
 	doc/xml/docbook.xsl
 	doc/man/Makefile
-	
+
 tests/Makefile
 	darwin/Makefile
 ])
@@ -833,14 +834,14 @@ AC_MSG_RESULT([
   Perl support............ : $use_perl	$PERL_VERSION
 ])
 
-if [[ x"$PL_FROM_CVS" = xyes ]]; then
+if [[ x"$PL_FROM_GIT" = xyes ]]; then
   echo " .----- NOTICE ------------------------------------------------."
-  echo " |         You are using pilot-link from CVS source.           |"
+  echo " |         You are using pilot-link from source.               |"
   echo " |                                                             |"
   echo " | This is likely to be unstable, or contain some incomplete   |"
   echo " | features, or just plain not work at all. Use it at your own |"
   echo " | risk. Please help us to fix any bugs you find, by reporting |"
-  echo " | them back to us via email or at http://bugs.pilot-link.org/ |"
+  echo " | them at: https://github.com/desrod/pilot-link/issues        |"
   echo " \`-------------------------------------------------------------'"
   echo ""
 fi

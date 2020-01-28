@@ -17,8 +17,8 @@
 what=libpisock
 libs=../libpisock/.libs/libpisock.a
 linkflags="-framework Carbon -framework System -framework IOKit"
-gcc_version=`gcc --version | sed -e '2,$ d
-s/.*) \([[:digit:]+]\).[[:digit:]+].[[:digit:]+].*/\1/g'`
+gcc_version=$(gcc --version | sed -e '2,$ d
+s/.*) \([[:digit:]+]\).[[:digit:]+].[[:digit:]+].*/\1/g')
 if [ $gcc_version != 4 ];
 then
 	linkflags="$linkflags -lgcc";
