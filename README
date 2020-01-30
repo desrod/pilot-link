@@ -10,14 +10,15 @@ and are complying with the license. There are also others companies who don't
 believe that adhering to the licensing is that important, and violate the
 license instead. Please do not be one of these companies.
 
-This code is under active development. If you would like to contribute to the
-project, you can contact me, David A. Desrosiers, via email by sending an
-email to desrod@gnu-designs.com.
+If you would like to contribute to the project, you can contact me, David A. 
+Desrosiers, via email by sending an email to david.a.desrosiers@gmail.com.
 
-We can also be reached on Internet Relay Chat, "irc", at irc.pilot-link.org
-in the channel #pilot-link. I go by the name "setuid" there, and there are a
-dozen or more helpful users and other developers that hang out there on a
-regular basis.
+We can also be reached on Internet Relay Chat, "irc", in the #pilot-link
+channel on Freenode.  I go by the name "setuid" there.  During peak
+development years, there were a dozen or more helpful users and other
+developers that hang out there on a regular basis.  Development has fallen
+off as the platform has mostly been deprecated, except for a few dedicated
+users.
 
 From the main pilot-link website, you will find many links to helpful
 documents, HOWTOs, complementary projects that use pilot-link, and other
@@ -26,9 +27,6 @@ platform of choice; Linux, BSD or Mac OS X.
 
 	Main website........: http://www.pilot-link.org/
 	HOWTO Documents.....: http://howto.pilot-link.org/
-	Code documentation..: http://doxygen.pilot-link.org/
-	Reporting bugs......: http://bugs.pilot-link.org/
-	Mailing lists.......: http://lists.pilot-link.org/
 
 We also have several mailing list that you can join. There are mailing lists
 for development-specific talk, general talk, announcements and commits. On

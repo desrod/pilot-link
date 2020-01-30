@@ -46,7 +46,6 @@ static int
    pi_buffer_t  *buffer;
    ssize_t      readsize,writesize;
    int          filesize;
-   int          original_filesize;
    int          written_so_far;
    pi_progress_t progress;
 
@@ -78,7 +77,6 @@ static int
      }
 
    dlp_VFSFileSize(socket,file,&filesize);
-   original_filesize = filesize;
 
    memset(&progress, 0, sizeof(progress));
    progress.type = PI_PROGRESS_RECEIVE_VFS;

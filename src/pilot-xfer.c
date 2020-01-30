@@ -332,7 +332,7 @@ palm_backup(const char *dirname, unsigned long int flags, int unsaved,
 
 	char		**orig_files    = NULL,
 				*name,
-				synclog[70];
+				synclog[512];
 
 	const char	*synctext       = (flags & UPDATE) ? "Synchronizing" : "Backing up";
 	DIR		*dir;
@@ -713,7 +713,7 @@ pi_file_retrieve_VFS(const int fd, const char *basename, const int socket, const
 	pi_buffer_t  *buffer;
 	ssize_t      readsize,writesize;
 	int          filesize;
-	int          original_filesize;
+	// int          original_filesize;
 	int          written_so_far;
 	pi_progress_t progress;
 
@@ -762,7 +762,6 @@ pi_file_retrieve_VFS(const int fd, const char *basename, const int socket, const
 	}
 
 	dlp_VFSFileSize(socket,file,&filesize);
-	original_filesize = filesize;
 
 	memset(&progress, 0, sizeof(progress));
 	progress.type = PI_PROGRESS_RECEIVE_VFS;
@@ -1631,7 +1630,7 @@ palm_list_internal(unsigned long int flags)
 					j,
 					dbcount	= 0;
 	struct DBInfo	info;
-	char			synclog[68];
+	char			synclog[512];
 	pi_buffer_t		*buffer;
 
 	printf("   Reading list of databases in RAM%s...\n",
@@ -2303,7 +2302,6 @@ main(int argc, const char *argv[])
 		                *dirname        = NULL;
 	unsigned long int	sync_flags	= 0;
 	palm_op_t		palm_operation	= palm_op_noop;
-	const char		*gracias	= "\n   Thank you for using pilot-link.\n";
 
 	const char		**rargv;	/* for scanning remaining arguments */
 	int			rargc;
@@ -2478,7 +2476,6 @@ main(int argc, const char *argv[])
 					fprintf(stderr, "   ERROR: '%s' is not a directory or does not exist.\n"
 							"   Please supply a directory name when performing a "
 							"backup or restore and try again.\n\n", dirname);
-					fprintf(stderr,gracias);
 					return 1;
 				}
 			}
@@ -2488,13 +2485,11 @@ main(int argc, const char *argv[])
 			if (rargc > 0)
 			{
 				fprintf(stderr,"   ERROR: Do not pass additional arguments to -busrlLC.\n");
-				fprintf(stderr,gracias);
 				return 1;
 			}
 			break;
 		case palm_op_noop:
 			fprintf(stderr,"   ERROR: Must specify one of -bursimfdlC.\n");
-			fprintf(stderr,gracias);
 			return 1;
 			break;
 		case palm_op_merge:
@@ -2580,7 +2575,6 @@ main(int argc, const char *argv[])
 		palm_purge();
 
 	pi_close(sd);
-	puts(gracias);
 	return 0;
 }
 

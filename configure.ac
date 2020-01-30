@@ -739,12 +739,11 @@ AC_ARG_ENABLE(compile-warnings,
 	      set_compile_warnings=yes)
 
 if test "$GCC" = "yes" -a "$set_compile_warnings" != "no"; then
-
 	CFLAGS="$CFLAGS \
 		-std=gnu99 -g -Wshadow -Wall -W -Waggregate-return -Wcast-align 	\
 		-Wcast-qual -Wnested-externs -Wpointer-arith -Wundef -Winline	\
 		-Wbad-function-cast -pedantic -O0"
-	dnl CFLAGS=$(printf %s "$CFLAGS" | awk -v RS= -v ORS= '!arr[$0]++')
+	dnl CFLAGS=$(printf %s "$CFLAGS" | awk -v RS='[ \t\r\n\v\f]+' -v ORS=' ' '!arr[$0]++')
 fi
 
 case "$host" in
