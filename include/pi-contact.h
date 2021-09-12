@@ -46,6 +46,7 @@
 #include <pi-args.h>
 #include <pi-appinfo.h>
 #include <pi-buffer.h>
+#include <pi-blob.h>
 #include <time.h>
 
 #define MAX_CONTACT_VERSION 11
@@ -58,7 +59,6 @@
 /* Blob types, or blob creator IDs, can range from BD00 - Bd09 for Contacts */
 #define BLOB_TYPE_PICTURE_ID "Bd00"
 #define BLOB_TYPE_ANNIVERSARY_ID "Bd01"
-#define MAX_CONTACT_BLOBS 10
 
 #ifdef __cplusplus
 extern "C" {
@@ -118,13 +118,6 @@ enum {
    contPicture
 };
 
-struct ContactBlob {
-   /* type ranges from "Bd00" - "Bd09" */
-   char type[4];
-   int length;
-   unsigned char *data;
-};
-
 struct ContactPicture {
    /* The picture pointer is only for convienience and
     * will point to the 3rd byte of the last picture blob.
@@ -146,7 +139,7 @@ struct Contact {
    int advanceUnits;    
    struct tm birthday;
    char *entry[39];
-   struct ContactBlob *blob[MAX_CONTACT_BLOBS];
+   Blob_t *blob[MAX_BLOBS];
    struct ContactPicture *picture;
    int anniversaryFlag;
    struct tm anniversary;
@@ -185,7 +178,7 @@ extern void free_ContactAppInfo
     PI_ARGS((struct ContactAppInfo *));
 
 extern int Contact_add_blob
-    PI_ARGS((struct Contact *, struct ContactBlob *));
+    PI_ARGS((struct Contact *, Blob_t *));
 extern int Contact_add_picture
     PI_ARGS((struct Contact *, struct ContactPicture *));
 

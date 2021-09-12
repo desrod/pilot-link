@@ -27,6 +27,7 @@
 #include <string.h>
 
 #include "pi-macros.h"
+#include "pi-blob.h"
 #include "pi-contact.h"
  
 
@@ -48,7 +49,7 @@ void free_Contact(struct Contact *c)
    for (i = 0; i < NUM_CONTACT_ENTRIES; i++)
       if (c->entry[i])
          free(c->entry[i]);
-   for (i = 0; i < MAX_CONTACT_BLOBS; i++) {
+   for (i = 0; i < MAX_BLOBS; i++) {
       if (c->blob[i]) {
          if (c->blob[i]->data)
             free(c->blob[i]->data);
@@ -97,7 +98,7 @@ int unpack_Contact(struct Contact *c, pi_buffer_t *buf, contactsType type)
    record = Pbuf = buf->data;
    len = buf->used;
 
-   for (i=0; i<MAX_CONTACT_BLOBS; i++) {
+   for (i=0; i<MAX_BLOBS; i++) {
       c->blob[i]=NULL;
    }
    c->picture=NULL;
@@ -198,11 +199,11 @@ int unpack_Contact(struct Contact *c, pi_buffer_t *buf, contactsType type)
    /* A blob of size zero would take 6 bytes */
    blob_count=0;
    while (len >= 6) {
-      if (blob_count >= MAX_CONTACT_BLOBS) {
+      if (blob_count >= MAX_BLOBS) {
          /* Too many blobs were found. */
          return (Pbuf - record);
       }
-      c->blob[blob_count] = malloc(sizeof(struct ContactBlob));
+      c->blob[blob_count] = malloc(sizeof(Blob_t));
       strncpy(c->blob[blob_count]->type, (char *)Pbuf, 4);
       c->blob[blob_count]->length = get_short(Pbuf+4);
       c->blob[blob_count]->data = malloc(c->blob[blob_count]->length);
@@ -294,7 +295,7 @@ int pack_Contact(struct Contact *c, pi_buffer_t *buf, contactsType type)
    }
 
    /* Check for blobs */
-   for (i=0; i<MAX_CONTACT_BLOBS; i++) {
+   for (i=0; i<MAX_BLOBS; i++) {
       if (c->blob[i]) {
          destlen += c->blob[i]->length + 6;
       }
@@ -377,7 +378,7 @@ int pack_Contact(struct Contact *c, pi_buffer_t *buf, contactsType type)
    set_byte(record + 16, companyOffset);
 
    /* Pack blobs */
-   for (i=0; i<MAX_CONTACT_BLOBS; i++) {
+   for (i=0; i<MAX_BLOBS; i++) {
       if (c->blob[i]) {
          memcpy(Pbuf, c->blob[i]->type, 4);
          Pbuf += 4;
@@ -405,16 +406,16 @@ int pack_Contact(struct Contact *c, pi_buffer_t *buf, contactsType type)
  *             1 on other error
  *
  ***********************************************************************/
-int Contact_add_blob(struct Contact *c, struct ContactBlob *blob)
+int Contact_add_blob(struct Contact *c, Blob_t *blob)
 {
    int i;
 
-   for (i=0; i<MAX_CONTACT_BLOBS; i++) {
+   for (i=0; i<MAX_BLOBS; i++) {
       if (c->blob[i]) {
          continue;
       }
 
-      c->blob[i] = malloc(sizeof(struct ContactBlob));
+      c->blob[i] = malloc(sizeof(Blob_t));
       if (!c->blob[i]) return EXIT_FAILURE;
 
       c->blob[i]->data = malloc(blob->length);
@@ -449,12 +450,12 @@ int Contact_add_picture(struct Contact *c, struct ContactPicture *p)
    if ((!p) || (p->length<1) || (!p->data)) {
       return EXIT_FAILURE;
    }
-   for (i=0; i<MAX_CONTACT_BLOBS; i++) {
+   for (i=0; i<MAX_BLOBS; i++) {
       if (c->blob[i]) {
          continue;
       }
 
-      c->blob[i] = malloc(sizeof(struct ContactBlob));
+      c->blob[i] = malloc(sizeof(Blob_t));
       if (!c->blob[i]) return EXIT_FAILURE;
 
       c->blob[i]->data = malloc(p->length + 2);
