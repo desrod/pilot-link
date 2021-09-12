@@ -57,6 +57,7 @@
 
 /* Blob types, or blob creator IDs, can range from BD00 - Bd09 for Contacts */
 #define BLOB_TYPE_PICTURE_ID "Bd00"
+#define BLOB_TYPE_ANNIVERSARY_ID "Bd01"
 #define MAX_CONTACT_BLOBS 10
 
 #ifdef __cplusplus
@@ -147,6 +148,10 @@ struct Contact {
    char *entry[39];
    struct ContactBlob *blob[MAX_CONTACT_BLOBS];
    struct ContactPicture *picture;
+   int anniversaryFlag;
+   struct tm anniversary;
+   int anniversaryReminder;
+   int anniversaryReminderDays;
 };
 
 struct ContactAppInfo {

@@ -189,6 +189,12 @@ int unpack_Contact(struct Contact *c, pi_buffer_t *buf, contactsType type)
       c->advance = 0;
    }
 
+   /* clear out anniversary */
+   c->anniversaryFlag = 0;
+   memset(&(c->anniversary), 0, sizeof(c->anniversary));
+   c->anniversaryReminder = 0;
+   c->anniversaryReminderDays = 0;
+
    /* A blob of size zero would take 6 bytes */
    blob_count=0;
    while (len >= 6) {
@@ -210,6 +216,22 @@ int unpack_Contact(struct Contact *c, pi_buffer_t *buf, contactsType type)
          c->picture->dirty = get_short(c->blob[blob_count]->data);
          c->picture->length = c->blob[blob_count]->length - 2;
          c->picture->data = c->blob[blob_count]->data + 2;
+      } else if(0 == strncmp(c->blob[blob_count]->type, BLOB_TYPE_ANNIVERSARY_ID, 4)) {
+         unsigned short int data;
+
+         c->anniversaryFlag = 1;
+
+         data = (unsigned short int)get_short(c->blob[blob_count]->data);
+         c->anniversary.tm_year = (data >> 9) + 4;
+         c->anniversary.tm_mon = ((data >> 5) & 15) - 1;
+         c->anniversary.tm_mday = data & 31;
+         c->anniversary.tm_isdst = -1;
+
+         /* TODO: not sure what data+2 is, it's always null for me */
+         c->anniversaryReminder = get_byte(c->blob[blob_count]->data + 3);
+         c->anniversaryReminderDays = get_byte(c->blob[blob_count]->data + 4);
+      } else {
+         printf("Found unknown blob type: 0x%x\n", c->blob[blob_count]->type);
       }
 
       Pbuf += 6;
