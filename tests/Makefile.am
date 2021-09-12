@@ -10,7 +10,7 @@ noinst_PROGRAMS =		\
 	dlp-test		\
 	versamail-test		\
 	vfs-test		\
-	contactsdb-jps
+	contactsdb-test
 
 contactsdb_jps_SOURCES =	\
 	contactsdb-jps.c
