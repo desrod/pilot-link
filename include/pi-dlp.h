@@ -1578,7 +1578,7 @@ struct dlpResponse {
 	 *
 	 * Supported on Palm OS 4.0 and later. At the beginning you set
 	 * @p dirIterator to #vfsIteratorStart, then call this function
-	 * repeatedly until it returns an error code of the iterator becomes
+	 * repeatedly until it returns an error code or the iterator becomes
 	 * #vfsIteratorStop.
 	 *
 	 * @bug On some early OS 5 devices like Tungsten T and Sony NX70, NX73 this
