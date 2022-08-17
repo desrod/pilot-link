@@ -9,7 +9,13 @@ noinst_PROGRAMS =		\
 	contactsdb-test		\
 	dlp-test		\
 	versamail-test		\
-	vfs-test
+	vfs-test		\
+	contactsdb-test
+
+contactsdb_jps_SOURCES =	\
+	contactsdb-jps.c
+contactsdb_jps_LDADD =		\
+	$(top_builddir)/libpisock/libpisock.la
 
 calendardb_test_SOURCES =	\
 	calendardb-test.c
