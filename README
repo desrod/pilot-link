@@ -1,46 +1,53 @@
-pilot-link -- Palm Handheld Glue - http://www.pilot-link.org
+pilot-link -- Palm Handheld Glue -- https://github.com/desrod/pilot-link
 
 The code and other related files in this distribution are licensed under the
 GNU General Public License or "GPL", and the GNU Lesser Public License, or
 "LGPL". See http://www.fsf.org/copyleft/lesser.html for a copy of the LGPL.
-
 We will only accept changes into pilot-link if they comply with the proper
-licensing. There are many companies using pilot-link in their core products
-and are complying with the license. There are also others companies who don't
-believe that adhering to the licensing is that important, and violate the
-license instead. Please do not be one of these companies.
+licensing.
 
-This code is under active development. If you would like to contribute to the
-project, you can contact me, David A. Desrosiers, via email by sending an
-email to desrod@gnu-designs.com.
+Although no new Palm OS devices have been released in years, this code is
+still maintained. Please do send in bug reports, feature requests, and
+code contributions.
 
-We can also be reached on Internet Relay Chat, "irc", at irc.pilot-link.org
-in the channel #pilot-link. I go by the name "setuid" there, and there are a
-dozen or more helpful users and other developers that hang out there on a
+Bugs and requests...: https://github.com/desrod/pilot-link/issues
+Code contributions..: https://github.com/desrod/pilot-link/pulls?q=is:pr
+
+If you are unwilling to use GitHub, you may instead contact me, David A.
+Desrosiers, project maintainer, via email at <desrod@gnu-designs.com>.
+
+We used to be reachable on Internet Relay Chat, "irc", at irc.pilot-link.org
+in the channel #pilot-link. I used the name "setuid" there, and there were a
+dozen or more helpful users and other developers that hung out there on a
 regular basis.
 
-From the main pilot-link website, you will find many links to helpful
+From the archived pilot-link website, you can find many links to helpful
 documents, HOWTOs, complementary projects that use pilot-link, and other
 resources to help you get the best use out of your Palm device on your
 platform of choice; Linux, BSD or Mac OS X.
 
-	Main website........: http://www.pilot-link.org/
-	HOWTO Documents.....: http://howto.pilot-link.org/
-	Code documentation..: http://doxygen.pilot-link.org/
-	Reporting bugs......: http://bugs.pilot-link.org/
-	Mailing lists.......: http://lists.pilot-link.org/
+Main website........: https://web.archive.org/web/2016/http://www.pilot-link.org/
+HOWTO Documents.....: https://web.archive.org/web/2010/http://howto.pilot-link.org/
+Code documentation..: https://web.archive.org/web/2010/http://doxygen.pilot-link.org/
 
-We also have several mailing list that you can join. There are mailing lists
-for development-specific talk, general talk, announcements and commits. On
-the mailing list webpage, you will have the ability to subscribe and read the
-past lists archives and posts from thousands of other users.
+We also have a discussion area you can visit. We welcome both
+development-specific talk and general talk.
+
+Discussions.........: https://github.com/desrod/pilot-link/discussions
+
+Using the mailing list archive, you may read old discussions from thousands
+of past users.
+
+List archive........: https://web.archive.org/web/2015/http://lists.pilot-link.org/
 
 The architecture of pilot-link
 ------------------------------
+
 There are several core parts of pilot-link: 
 
-	the libraries
+	The libraries
 	-------------
+
 	pilot-link communicates with Palm handhelds using several methods and
 	functions specific to these devices.  In order to facilitate these
 	communications, the functions are stored in a library, which other
@@ -53,9 +60,9 @@ There are several core parts of pilot-link:
 	The standard library for pilot-link is written in the C language, and
 	is very easy to understand and extend if you need to do so.
 
-
-	the conduits
+	The conduits
 	------------
+
 	In pilot-link, there is also the notion of "conduits", that can be
 	used to communicate directly with your Palm handheld.  These
 	"conduits" are the actual applications that you run directly. These
@@ -64,8 +71,7 @@ There are several core parts of pilot-link:
 	These "conduits" are found in the 'src' subdirectory of the project
 	tree.
 
-
-	the language bindings
+	The language bindings
 	---------------------
 
 	Along with the powerful libraries and conduits, pilot-link also
@@ -84,11 +90,11 @@ There are several core parts of pilot-link:
 	Our hope is that more bindings will be added in the future, such as
 	Ruby or Objective C.
 
-
-	the tests
+	The tests
 	---------
+
 	In order to make sure the code in pilot-link does what it should, we
-	also include quite a bit of regression tests to check to make sure
+	also include quite a few regression tests to check to make sure
 	each function we use is operating properly. These tests will check
 	each of these functions and report any errors or success as they are
 	run.
@@ -96,6 +102,7 @@ There are several core parts of pilot-link:
 
 Building the project
 --------------------
+
 	pilot-link is developed primarily on Debian GNU/Linux and FreeBSD. It
 	is expected to build cleanly on any POSIX-compliant platform. Some
 	users have reported success building it under Cygwin on Windows. It
@@ -103,9 +110,9 @@ Building the project
 	development environment installed and configured on your machine.
 	Each of these will be explained in detail below.
 
-
 Building pilot-link on Linux/Unix systems
 -----------------------------------------
+
 	PLEASE READ THIS CAREFULLY! The worst thing you can do is the
 	overly-common misuse of "configure, make, make install" to build and
 	install pilot-link.  There are so many customizations you can make to
@@ -160,9 +167,9 @@ Building pilot-link on Linux/Unix systems
 	machine first. If you are running a current Linux or Unix system,
 	these common tools are probably packaged for you.
 
-
 Building pilot-link on OS/2 
 ---------------------------
+
 	pilot-link on OS/2 only supports serial devices. USB is unsupported
 	at this time. We would like volunteers to help us out porting
 	pilot-link to work with USB on that platform. If you are skilled and
@@ -191,9 +198,9 @@ Building pilot-link on OS/2
 	or else run pilot-debug in the pilot-link source directory if you
 	want the fancy images for the Remote UI window.
 
-
 Building pilot-link on Apple OSX/Darwin
 ---------------------------------------
+
 	To build pilot-link on Apple OSX ("Darwin") systems, you will need to
 	make sure you have some development tools installed first. These can
 	all be found in the "Fink" package repository hosted on SourceForge.
@@ -262,21 +269,22 @@ Building pilot-link on Apple OSX/Darwin
 
 	This should list the record and resource databases found on your Palm
 	handheld device.
-
 	
 Building pilot-link on Cygwin under Windows
 -------------------------------------------
+
 	FIXME: Unsupported at this time, but may run under Cygwin talking to
 	COM1 through the Cygwin virtual serial port bridging.
 
 
 Some usage notes about pilot-link
 ---------------------------------
+	
 	read-ical and sync-ical will only run if you have ical-2.x installed
 	and in the path.
 	
 	sync-plan is a full syncronization program, though it has some
-	interesting quirks and requirements. You must running netplan from
+	interesting quirks and requirements. You must run netplan from
 	plan-1.6.1 (probably available at
 	<http://www.in-berlin.de/User/bitrot>). Future or later versions may
 	work, but I cannot gaurantee this. Sync-plan does _not_ check the
@@ -313,6 +321,7 @@ Some usage notes about pilot-link
 
 Debugging notes
 ---------------
+
 	Please see doc/README.debugging for more detailed information
 	describing how to debug pilot-link's core protocols and interfaces.
 	Debugging pilot-link will allow us to make pilot-link work better on
@@ -321,6 +330,7 @@ Debugging notes
 
 USB Notes
 ---------
+	
 	Please see doc/README.usb for more detailed information on
 	configuring your system to use USB-enabled Palm handheld devices
 	using the standard Linux "visor" kernel module.
@@ -331,6 +341,7 @@ USB Notes
 
 FreeBSD Notes
 -------------
+	
 	Please see doc/README.freebsd for more detailed information on
 	setting up pilot-link to work with FreeBSD systems. In FreeBSD, you
 	may have to set your ACLOCAL_FLAGS="-I /usr/local/share/aclocal/"
@@ -349,6 +360,7 @@ FreeBSD Notes
 
 Embedding information
 ---------------------
+	
 	As of 0.5.0, the headers in pilot-link have been rearranged slightly
 	so that it should be easier and more reliable to use the libpisock.a
 	library in external applications.
@@ -364,23 +376,24 @@ Embedding information
 
 Reporting Bugs
 --------------
-	Any bugs you find with pilot-link can be easily reported in the
-	online bug-tracking system found at http://bugs.pilot-link.org. From
-	there, any issues reported can be updated, audited, commented on, and
-	resolved. You can also attach files and patches any other relevant
-	items to each bug report, to help our team solve the issues or add
-	the features you report.
+	
+	Please visit https://github.com/desrod/pilot-link/issues to report any
+	bugs you find with pilot-link. From there, any issue reported can be
+	updated, audited, commented on, and resolved. You can also attach 
+	other relevant items to each bug report, to help the team solve the
+	issues or add the features you have requested.
 	
 	PLEASE NOTE 
 	-----------
-		Please check the existing bugs in the system FIRST
+	
+		Please check the existing issues in the system FIRST
 		before reporting your bug. There may be an identical
-		report from another user that matches your bug. If
+		report from another user that matches your issue. If
 		you find one that is similar, please add your notes
 		and details to that existing report. Please try to be
 		as specific as possible.
 
-	If your bug is unique, and does not appear in the system, please fill
+	If your issue is unique, and does not appear in the system, please fill
 	out a new bug report and remember to be as detailed as possible when
 	filling it out. Make sure to include your operating system, version
 	of pilot-link, Palm handheld type and the PalmOS version running on
@@ -392,6 +405,7 @@ Reporting Bugs
 
 License notes
 -------------
+
 	The utility programs, otherwise known collectively as "conduits"
 	(pilot-xfer, dlpsh, sync-plan, etc.) are licensed for use under the
 	GPL. For more information, please see the file COPYING included in
@@ -406,9 +420,10 @@ License notes
 	the copyright notices in the individual files for more information on
 	their individual copyrights.
 
----------------------
+
 Happy Hacking,
-The pilot-link Team
----------------------
+--The pilot-link Team
+
+
 pilot-link was originally written by Kenneth Albanowski <kjahds@kjahds.com>
 and others.
