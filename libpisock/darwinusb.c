@@ -1958,6 +1958,7 @@ pi_usb_impl_init (struct pi_usb_impl *impl)
 	impl->wait_for_device	= u_wait_for_device;
 	impl->changebaud	= u_changebaud;
 	impl->control_request	= NULL;   /* that is, until we factor out common code */
+	impl->interrupt_read = NULL;
 }
 
 /* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */

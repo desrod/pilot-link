@@ -1035,6 +1035,15 @@ USB_configure_generic (pi_usb_data_t *dev, u_int8_t *input_pipe, u_int8_t *outpu
 	u_int32_t flags = dev->dev.flags;
 
 	ret = dev->impl.control_request (dev, 0xc2, PALM_GET_EXT_CONNECTION_INFORMATION, 0, 0, &ci, sizeof (ci), 0);
+
+	if (ret == 0) {
+		// empty response from PALM_GET_EXT_CONNECTION_INFORMATION, try interrupt (fixes Treo 90)
+		unsigned char buf[64];
+		ret = dev->impl.interrupt_read (dev, 0x82, &buf, sizeof (buf), 0);
+		// 6 first bytes seem to indicate a vendor id, we don't use that yet
+		memcpy(&ci, (buf+6), sizeof (ci));
+	}
+
 	if (ret < 0) {
 		LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "usb: PALM_GET_EXT_CONNECTION_INFORMATION failed (err=%08x)\n", ret));
 	} else {
