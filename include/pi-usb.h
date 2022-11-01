@@ -55,6 +55,8 @@ extern "C" {
 		int (*control_request) PI_ARGS((struct pi_usb_data *usb_data,
 			int request_type, int request, int value, int reqindex,
 			void *data, int size, int timeout));
+		int (*interrupt_read) PI_ARGS((struct pi_usb_data *usb_data,
+			int ep, void *data, int size, int timeout));
 	} pi_usb_impl_t;
 
 #define USB_INIT_NONE		(1<<0)

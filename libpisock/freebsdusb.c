@@ -68,6 +68,7 @@ void pi_usb_impl_init (struct pi_usb_impl *impl)
 	impl->read 	= u_read;
 	impl->flush	= u_flush;
 	impl->poll 	= u_poll;
+	impl->interrupt_read = NULL;
 }
 
 

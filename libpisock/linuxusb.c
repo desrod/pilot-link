@@ -66,6 +66,7 @@ void pi_usb_impl_init (struct pi_usb_impl *impl)
 						 * as USB serial adapters redirect to serial ports
 						 */
 	impl->control_request	= NULL;
+	impl->interrupt_read = NULL;
 }
 
 
