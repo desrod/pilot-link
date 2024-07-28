@@ -1,0 +1,19 @@
+<map id="setStartMileage" name="setStartMileage">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,137,118,162"/>
+<area shape="rect" id="Node000002" href="$classorg_1_1gnu_1_1pilotlink_1_1FTB3TripRecord.html#abe13ce69d8b5f3fda91e2bb3267f6758" title=" " alt="" coords="232,112,306,137"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="118,140,216,128,217,133,119,145"/>
+<area shape="rect" id="Node000009" href="$classorg_1_1gnu_1_1pilotlink_1_1Record.html#a667aebfc6d24f4879385226edbbeea88" title=" " alt="" coords="166,161,372,186"/>
+<area shape="poly" id="edge8_Node000001_Node000009" title=" " alt="" coords="119,154,150,157,150,163,118,159"/>
+<area shape="rect" id="Node000003" href="$classorg_1_1gnu_1_1pilotlink_1_1Record.html#abf381f08b2aa72dfa6ed2e8a54af488a" title=" " alt="" coords="420,5,600,46"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="299,108,419,57,437,49,439,54,421,61,301,113"/>
+<area shape="rect" id="Node000005" href="$classorg_1_1gnu_1_1pilotlink_1_1Record.html#a5b834585d8808738b441dde9b6e28eab" title=" " alt="" coords="420,71,600,111"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="306,117,404,103,405,108,307,122"/>
+<area shape="rect" id="Node000007" href="$classorg_1_1gnu_1_1pilotlink_1_1Record.html#afdbbd4e4b7dcb97ee9395c94ffea93df" title=" " alt="" coords="420,136,600,177"/>
+<area shape="poly" id="edge6_Node000002_Node000007" title=" " alt="" coords="307,127,405,140,404,145,306,132"/>
+<area shape="rect" id="Node000008" href="$classorg_1_1gnu_1_1pilotlink_1_1Record.html#ab43e8f349ae29a421f40bb78f08e6748" title=" " alt="" coords="420,201,600,242"/>
+<area shape="poly" id="edge7_Node000002_Node000008" title=" " alt="" coords="307,126,340,133,373,146,388,156,398,166,422,186,433,192,430,197,418,191,394,170,385,160,371,151,338,139,306,131"/>
+<area shape="rect" id="Node000004" href="$classorg_1_1gnu_1_1pilotlink_1_1Record.html#a4628b1fec2e22d1c8c6d6f40c3e0389f" title=" " alt="" coords="648,5,829,46"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="601,23,633,23,633,28,601,28"/>
+<area shape="rect" id="Node000006" href="$classorg_1_1gnu_1_1pilotlink_1_1Record.html#afe5f9648050c7fd54c54a300b811a280" title=" " alt="" coords="648,71,829,111"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="601,88,633,88,633,94,601,94"/>
+</map>

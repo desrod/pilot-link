@@ -1,0 +1,12 @@
+<map id="deleteRecordById" name="deleteRecordById">
+<area shape="rect" id="Node000001" title=" " alt="" coords="175,80,300,106"/>
+<area shape="poly" id="edge1_Node000001_Node000001" title=" " alt="" coords="266,67,256,61,237,59,219,61,210,65,208,71,213,78,208,81,203,71,206,62,218,56,237,53,258,56,269,63"/>
+<area shape="rect" id="Node000002" href="$classadrtest.html#a75988cf84fc6ee7a2ebff36e363021aa" title=" " alt="" coords="19,5,113,31"/>
+<area shape="poly" id="edge2_Node000001_Node000002" title=" " alt="" coords="194,76,126,45,100,34,102,29,128,40,196,71"/>
+<area shape="rect" id="Node000003" href="$classdatebooktst.html#a75988cf84fc6ee7a2ebff36e363021aa" title=" " alt="" coords="5,55,127,80"/>
+<area shape="poly" id="edge3_Node000001_Node000003" title=" " alt="" coords="159,84,127,79,127,74,159,79"/>
+<area shape="rect" id="Node000004" href="$classMidiMgr.html#a75988cf84fc6ee7a2ebff36e363021aa" title=" " alt="" coords="17,104,115,130"/>
+<area shape="poly" id="edge4_Node000001_Node000004" title=" " alt="" coords="160,106,116,113,115,107,159,101"/>
+<area shape="rect" id="Node000005" href="$classtest.html#a75988cf84fc6ee7a2ebff36e363021aa" title=" " alt="" coords="28,153,104,179"/>
+<area shape="poly" id="edge5_Node000001_Node000005" title=" " alt="" coords="195,115,128,145,102,155,100,150,126,140,192,110"/>
+</map>

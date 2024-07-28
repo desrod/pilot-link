@@ -1,0 +1,9 @@
+<map id="setBuffer" name="setBuffer">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,46,80,72"/>
+<area shape="rect" id="Node000002" href="$classorg_1_1gnu_1_1pilotlink_1_1AppInfo.html#a69c07bc15b81967619d683239078e3f5" title=" " alt="" coords="128,39,325,79"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="80,56,112,56,112,62,80,62"/>
+<area shape="rect" id="Node000003" href="$classorg_1_1gnu_1_1pilotlink_1_1Record.html#aafb957ecdca3b130690a7757730b5e51" title=" " alt="" coords="374,5,555,46"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="325,43,359,38,359,43,326,48"/>
+<area shape="rect" id="Node000004" href="$classorg_1_1gnu_1_1pilotlink_1_1AppInfo.html#ad9dd12b7b9ba0e11765a732597756b89" title=" " alt="" coords="373,71,556,111"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="326,70,358,74,357,79,325,75"/>
+</map>

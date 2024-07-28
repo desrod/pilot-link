@@ -1,0 +1,23 @@
+<map id="src/pilot&#45;foto.c" name="src/pilot&#45;foto.c">
+<area shape="rect" id="Node000001" title=" " alt="" coords="387,5,492,31"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,79,63,105"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="387,29,251,49,79,81,78,76,250,43,387,23"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="86,79,147,105"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="387,32,163,81,162,76,386,27"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="170,79,234,105"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="400,34,249,79,248,74,398,29"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="258,79,322,105"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="415,34,330,74,328,70,413,29"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="346,79,426,105"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="433,33,406,68,402,65,428,30"/>
+<area shape="rect" id="Node000007" title=" " alt="" coords="450,79,535,105"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="450,30,477,65,472,68,446,33"/>
+<area shape="rect" id="Node000008" title=" " alt="" coords="560,79,623,105"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="466,29,553,70,550,74,464,34"/>
+<area shape="rect" id="Node000009" title=" " alt="" coords="647,79,733,105"/>
+<area shape="poly" id="edge8_Node000001_Node000009" title=" " alt="" coords="483,29,634,72,632,77,481,34"/>
+<area shape="rect" id="Node000010" title=" " alt="" coords="757,79,826,105"/>
+<area shape="poly" id="edge9_Node000001_Node000010" title=" " alt="" coords="492,26,743,76,741,81,491,32"/>
+<area shape="rect" id="Node000011" title=" " alt="" coords="849,79,944,105"/>
+<area shape="poly" id="edge10_Node000001_Node000011" title=" " alt="" coords="492,24,834,76,833,81,491,29"/>
+</map>

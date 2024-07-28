@@ -1,0 +1,15 @@
+<map id="getBuffer" name="getBuffer">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,112,80,137"/>
+<area shape="rect" id="Node000002" href="$classorg_1_1gnu_1_1pilotlink_1_1Record.html#abf381f08b2aa72dfa6ed2e8a54af488a" title=" " alt="" coords="128,5,308,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="56,109,87,83,126,57,138,51,141,55,129,61,90,88,59,113"/>
+<area shape="rect" id="Node000004" href="$classorg_1_1gnu_1_1pilotlink_1_1Record.html#a5b834585d8808738b441dde9b6e28eab" title=" " alt="" coords="128,71,308,111"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="80,115,112,108,113,114,81,120"/>
+<area shape="rect" id="Node000006" href="$classorg_1_1gnu_1_1pilotlink_1_1Record.html#afdbbd4e4b7dcb97ee9395c94ffea93df" title=" " alt="" coords="128,136,308,177"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="81,128,113,134,112,140,80,134"/>
+<area shape="rect" id="Node000007" href="$classorg_1_1gnu_1_1pilotlink_1_1Record.html#ab43e8f349ae29a421f40bb78f08e6748" title=" " alt="" coords="128,201,308,242"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="60,135,91,161,129,186,141,192,139,197,126,191,88,165,57,140"/>
+<area shape="rect" id="Node000003" href="$classorg_1_1gnu_1_1pilotlink_1_1Record.html#a4628b1fec2e22d1c8c6d6f40c3e0389f" title=" " alt="" coords="356,5,536,46"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="308,23,340,23,340,28,308,28"/>
+<area shape="rect" id="Node000005" href="$classorg_1_1gnu_1_1pilotlink_1_1Record.html#afe5f9648050c7fd54c54a300b811a280" title=" " alt="" coords="356,71,536,111"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="308,88,340,88,340,94,308,94"/>
+</map>

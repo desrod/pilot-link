@@ -1,0 +1,7 @@
+<map id="USB_configure_device" name="USB_configure_device">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,31,160,56"/>
+<area shape="rect" id="Node000002" href="$usb_8c.html#aa1cb6ff0bde9621ce55136945a97ca13" title=" " alt="" coords="208,5,366,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="160,31,192,27,192,33,160,37"/>
+<area shape="rect" id="Node000003" href="$usb_8c.html#a6654f0635e3510f0304fbf663b47f14b" title=" " alt="" coords="215,55,359,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="160,50,200,55,199,60,160,55"/>
+</map>

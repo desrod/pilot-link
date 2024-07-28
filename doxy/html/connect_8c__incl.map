@@ -1,0 +1,23 @@
+<map id="libpisock/connect.c" name="libpisock/connect.c">
+<area shape="rect" id="Node000001" title=" " alt="" coords="380,5,513,31"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,79,66,105"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="379,31,245,50,82,81,81,76,245,45,379,25"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="89,79,152,105"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="386,34,168,81,167,76,385,29"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="177,79,241,105"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="407,34,257,79,255,74,405,29"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="265,79,326,105"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="422,34,336,74,334,70,419,29"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="351,79,440,105"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="440,33,415,68,411,65,436,30"/>
+<area shape="rect" id="Node000007" title=" " alt="" coords="464,79,532,105"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="457,30,483,65,478,68,453,33"/>
+<area shape="rect" id="Node000008" title=" " alt="" coords="556,79,635,105"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="473,29,558,70,555,74,470,34"/>
+<area shape="rect" id="Node000009" title=" " alt="" coords="660,79,745,105"/>
+<area shape="poly" id="edge8_Node000001_Node000009" title=" " alt="" coords="490,29,645,72,644,77,489,34"/>
+<area shape="rect" id="Node000010" title=" " alt="" coords="769,79,832,105"/>
+<area shape="poly" id="edge9_Node000001_Node000010" title=" " alt="" coords="514,28,755,76,754,81,513,34"/>
+<area shape="rect" id="Node000011" title=" " alt="" coords="856,79,940,105"/>
+<area shape="poly" id="edge10_Node000001_Node000011" title=" " alt="" coords="514,26,660,46,841,76,840,81,659,51,513,31"/>
+</map>

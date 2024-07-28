@@ -1,0 +1,9 @@
+<map id="getSize" name="getSize">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,46,71,72"/>
+<area shape="rect" id="Node000002" href="$classorg_1_1gnu_1_1pilotlink_1_1AddressRecord.html#abe13ce69d8b5f3fda91e2bb3267f6758" title=" " alt="" coords="119,46,193,72"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="71,56,103,56,103,62,71,62"/>
+<area shape="rect" id="Node000003" href="$classorg_1_1gnu_1_1pilotlink_1_1Record.html#afdbbd4e4b7dcb97ee9395c94ffea93df" title=" " alt="" coords="241,5,421,46"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="193,49,225,43,226,48,194,55"/>
+<area shape="rect" id="Node000004" href="$classorg_1_1gnu_1_1pilotlink_1_1Record.html#ab43e8f349ae29a421f40bb78f08e6748" title=" " alt="" coords="241,71,421,111"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="194,63,226,69,225,74,193,68"/>
+</map>

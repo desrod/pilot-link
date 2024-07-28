@@ -1,0 +1,17 @@
+<map id="pi_file_get_info" name="pi_file_get_info">
+<area shape="rect" id="Node000001" title=" " alt="" coords="247,80,355,106"/>
+<area shape="rect" id="Node000002" href="$pilot-file_8c.html#a217dbf8b442f20279ea00b898af96f52" title=" " alt="" coords="126,5,176,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="259,75,175,33,177,28,261,70"/>
+<area shape="rect" id="Node000003" href="$pilot-xfer_8c.html#a89a164fe454bd7b404587ed46e844067" title=" " alt="" coords="103,55,199,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="231,84,199,78,200,73,232,78"/>
+<area shape="rect" id="Node000005" href="$pilot-foto_8c.html#a8e9b5c3f2fa776bf17b633b74890bcff" title=" " alt="" coords="109,104,193,130"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="232,107,194,113,193,108,231,101"/>
+<area shape="rect" id="Node000007" href="$pilot-wav_8c.html#aa2811f6abf8e3ded01a04d2cb656122e" title=" " alt="" coords="105,153,196,179"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="261,115,180,155,178,150,258,111"/>
+<area shape="rect" id="Node000004" href="$pilot-xfer_8c.html#ac0f2228420376f4db7e1274f2b41667c" title=" " alt="" coords="5,55,55,80"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="87,70,55,70,55,65,87,65"/>
+<area shape="rect" id="Node000006" href="$pilot-foto_8c.html#ac0f2228420376f4db7e1274f2b41667c" title=" " alt="" coords="5,104,55,130"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="93,120,55,120,55,114,93,114"/>
+<area shape="rect" id="Node000008" href="$pilot-wav_8c.html#ac0f2228420376f4db7e1274f2b41667c" title=" " alt="" coords="5,153,55,179"/>
+<area shape="poly" id="edge7_Node000007_Node000008" title=" " alt="" coords="90,169,55,169,55,164,90,164"/>
+</map>

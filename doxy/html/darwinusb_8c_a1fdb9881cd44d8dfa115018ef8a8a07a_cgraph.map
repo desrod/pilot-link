@@ -1,0 +1,11 @@
+<map id="read_generic_connection_information" name="read_generic_connection_information">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,27,171,68"/>
+<area shape="rect" id="Node000002" href="$darwinusb_8c.html#a6bf0b49b7f893ca4dd2b2a7739c59aec" title=" " alt="" coords="255,5,365,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="171,34,239,25,240,30,171,39"/>
+<area shape="rect" id="Node000003" href="$darwinusb_8c.html#a0cc85622030ec13870fc90026ace908b" title=" " alt="" coords="219,55,401,96"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="171,55,203,59,203,65,171,61"/>
+<area shape="rect" id="Node000004" href="$debug_8c.html#ac942525fcc03cc9c77dfe0628ade03b9" title=" " alt="" coords="449,63,544,88"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="402,73,433,73,433,78,402,78"/>
+<area shape="rect" id="Node000005" href="$debug_8c.html#a11a6e0b0ea23a401ca6ce613d8664238" title=" " alt="" coords="592,63,683,88"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="545,73,577,73,577,78,545,78"/>
+</map>

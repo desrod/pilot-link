@@ -1,0 +1,9 @@
+<map id="pi_socket_recognize" name="pi_socket_recognize">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,55,146,80"/>
+<area shape="rect" id="Node000002" href="$threadsafe_8c.html#a57e2304ed7e93f453b4fc66dff84c7c6" title=" " alt="" coords="201,5,306,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="124,51,189,33,191,38,125,57"/>
+<area shape="rect" id="Node000003" href="$threadsafe_8c.html#a099d75170599d86ab20348b2af1e4da8" title=" " alt="" coords="194,55,313,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="146,65,178,65,178,70,146,70"/>
+<area shape="rect" id="Node000004" href="$socket_8c.html#a42a997ae220c4f9cc036af1af32b03f6" title=" " alt="" coords="199,104,308,130"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="125,78,191,97,189,102,124,84"/>
+</map>

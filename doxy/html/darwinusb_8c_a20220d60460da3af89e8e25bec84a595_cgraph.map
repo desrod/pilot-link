@@ -1,0 +1,12 @@
+<map id="u_poll" name="u_poll">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,31,61,56"/>
+<area shape="rect" id="Node000002" href="$darwinusb_8c.html#a6b11be685f613bf98fd2492cd26c7ce6" title=" " alt="" coords="309,31,426,56"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="61,41,294,41,294,46,61,46"/>
+<area shape="rect" id="Node000005" href="$darwinusb_8c.html#a7ae745d90757c279ff496b669e7dfff4" title=" " alt="" coords="109,56,261,82"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="61,45,94,51,93,56,61,51"/>
+<area shape="rect" id="Node000003" href="$darwinusb_8c.html#a173addd105f622a77d8797cad4a33a68" title=" " alt="" coords="474,5,609,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="427,32,459,28,459,33,427,38"/>
+<area shape="rect" id="Node000004" href="$darwinusb_8c.html#a7974faab5165fb2b558c2f0f08e921ae" title=" " alt="" coords="491,55,592,80"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="427,49,476,56,475,61,427,54"/>
+<area shape="poly" id="edge5_Node000005_Node000002" title=" " alt="" coords="261,56,293,51,294,56,262,61"/>
+</map>

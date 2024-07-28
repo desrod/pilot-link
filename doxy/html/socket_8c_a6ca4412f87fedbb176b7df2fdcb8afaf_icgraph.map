@@ -1,0 +1,9 @@
+<map id="pi_watchdog" name="pi_watchdog">
+<area shape="rect" id="Node000001" title=" " alt="" coords="313,31,407,56"/>
+<area shape="rect" id="Node000002" href="$pisock__wrap_8c.html#acb8d23ec7565ce700b648113dfc7e42a" title=" " alt="" coords="116,5,252,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="298,37,252,31,253,25,298,32"/>
+<area shape="rect" id="Node000003" href="$pilot-dlpsh_8c.html#aa717822cd0f53afbfa1bebb15305719a" title=" " alt="" coords="103,55,265,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="298,55,266,59,265,54,297,49"/>
+<area shape="rect" id="Node000004" href="$pilot-dlpsh_8c.html#ac0f2228420376f4db7e1274f2b41667c" title=" " alt="" coords="5,55,55,80"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="87,70,55,70,55,65,87,65"/>
+</map>

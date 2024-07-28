@@ -1,0 +1,9 @@
+<map id="getDoubleLongAt" name="getDoubleLongAt">
+<area shape="rect" id="Node000001" title=" " alt="" coords="386,46,507,72"/>
+<area shape="rect" id="Node000002" href="$classorg_1_1gnu_1_1pilotlink_1_1Record.html#a619c706f00acb0ccfa38ec033ee11ba6" title=" " alt="" coords="245,46,338,72"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="370,62,338,62,338,56,370,56"/>
+<area shape="rect" id="Node000003" href="$classorg_1_1gnu_1_1pilotlink_1_1FTB3TripRecord.html#abeb8aa07abb11374f318b8eda80ae72e" title=" " alt="" coords="16,5,186,46"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="229,51,186,43,187,38,230,46"/>
+<area shape="rect" id="Node000004" href="$classorg_1_1gnu_1_1pilotlink_1_1FTB3VehicleRecord.html#abeb8aa07abb11374f318b8eda80ae72e" title=" " alt="" coords="5,71,197,111"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="229,72,197,77,197,72,229,67"/>
+</map>

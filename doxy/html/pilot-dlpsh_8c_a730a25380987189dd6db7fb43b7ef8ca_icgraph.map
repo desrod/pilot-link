@@ -1,0 +1,12 @@
+<map id="strtoke" name="strtoke">
+<area shape="rect" id="Node000001" title=" " alt="" coords="480,31,542,56"/>
+<area shape="rect" id="Node000002" href="$pilot-dlpsh_8c.html#a8369bdeef1ec559bb0161cec9349b316" title=" " alt="" coords="315,31,432,56"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="465,46,433,46,433,41,465,41"/>
+<area shape="rect" id="Node000003" href="$pilot-dlpsh_8c.html#a456e1b58a713bf36ea9ca793f946c7bf" title=" " alt="" coords="103,5,267,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="299,36,267,32,268,27,300,31"/>
+<area shape="rect" id="Node000005" href="$pilot-dlpsh_8c.html#aa717822cd0f53afbfa1bebb15305719a" title=" " alt="" coords="104,55,266,80"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="300,56,267,60,266,54,299,50"/>
+<area shape="rect" id="Node000004" href="$pilot-dlpsh_8c.html#ac0f2228420376f4db7e1274f2b41667c" title=" " alt="" coords="5,31,55,56"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="88,37,56,42,55,37,87,31"/>
+<area shape="poly" id="edge5_Node000005_Node000004" title=" " alt="" coords="88,55,54,50,55,45,89,50"/>
+</map>

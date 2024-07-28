@@ -1,0 +1,10 @@
+<map id="u_read_i" name="u_read_i">
+<area shape="rect" id="Node000001" title=" " alt="" coords="276,31,346,56"/>
+<area shape="rect" id="Node000002" href="$libusb_8c.html#a20220d60460da3af89e8e25bec84a595" title=" " alt="" coords="170,5,226,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="260,35,225,27,226,22,261,30"/>
+<area shape="rect" id="Node000004" href="$libusb_8c.html#a8c4b6061f971ce2de3b2f581a87f3751" title=" " alt="" coords="168,55,228,80"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="261,57,229,64,228,59,260,52"/>
+<area shape="rect" id="Node000003" href="$libusb_8c.html#a21b4c9d5b57f1d4a8f6b08b170b1d29f" title=" " alt="" coords="5,31,120,56"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="155,29,121,35,120,30,154,24"/>
+<area shape="poly" id="edge4_Node000004_Node000003" title=" " alt="" coords="152,62,119,56,120,51,153,57"/>
+</map>

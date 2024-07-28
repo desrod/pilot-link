@@ -1,0 +1,38 @@
+var sync_8c =
+[
+    [ "_RecordQueue", "struct__RecordQueue.html", "struct__RecordQueue" ],
+    [ "_RecordQueueList", "struct__RecordQueueList.html", "struct__RecordQueueList" ],
+    [ "DesktopCheck", "sync_8c.html#a5e2eacbe92cab69e1cce365aa75220a9", null ],
+    [ "ErrorCheck", "sync_8c.html#a6fb823edf4b5436180683c526b0cee13", null ],
+    [ "PilotCheck", "sync_8c.html#a7b869db8c8521e8dd8fe3ee6d4b00055", null ],
+    [ "RecordQueue", "sync_8c.html#a669bf226150e8699b3feff8a21e41fed", null ],
+    [ "RecordQueueList", "sync_8c.html#a0b16640796e15c05b5530f0afd85108d", null ],
+    [ "RecordModifier", "sync_8c.html#a1e471b93bc91e82ac3d1f909f48ed67e", [
+      [ "PILOT", "sync_8c.html#a1e471b93bc91e82ac3d1f909f48ed67ea91a2db79fc127c2c2be4f04b8335428c", null ],
+      [ "DESKTOP", "sync_8c.html#a1e471b93bc91e82ac3d1f909f48ed67ea753bf2fe209fe929b5fce88692cc475a", null ],
+      [ "BOTH", "sync_8c.html#a1e471b93bc91e82ac3d1f909f48ed67ea627abe5a430420baf29ebe1940a7f2fb", null ]
+    ] ],
+    [ "add_record_queue", "sync_8c.html#a249cff22ea54f7528f2203b84e3f2cfd", null ],
+    [ "close_db", "sync_8c.html#a4da84f763499ff2e4b596b2a5af326e4", null ],
+    [ "delete_both", "sync_8c.html#a526b8481bdf88770e2dc8a7310a85349", null ],
+    [ "free_record_queue_list", "sync_8c.html#ab0df0893ade9a1cf91413293bbce7f8f", null ],
+    [ "open_db", "sync_8c.html#a80cf4083d89f2bbbb690cac4f0a91329", null ],
+    [ "store_record_on_pilot", "sync_8c.html#a7b748eca1c84122591aef28c9275d6c6", null ],
+    [ "sync_CopyDesktopRecord", "sync_8c.html#ae5aab39cec04557173b36575b6fd3b75", null ],
+    [ "sync_CopyFromPilot", "sync_8c.html#a3f044352c470ccb49b564cb5acf2fa49", null ],
+    [ "sync_CopyPilotRecord", "sync_8c.html#aabeac04daf52aaf0690218f90e6f7444", null ],
+    [ "sync_CopyToPilot", "sync_8c.html#a3f24e7e51e701abebc65910b2c5b7d3a", null ],
+    [ "sync_FreeDesktopRecord", "sync_8c.html#a76f5ecd0308468eee83e127b8e906b45", null ],
+    [ "sync_FreePilotRecord", "sync_8c.html#a4c791708798c9a56dd4aed014f61b276", null ],
+    [ "sync_MergeFromPilot", "sync_8c.html#a958c686dd90c33804f9387da29517c61", null ],
+    [ "sync_MergeFromPilot_fast", "sync_8c.html#a71c1c4b50eec9aadf22ad8049035884d", null ],
+    [ "sync_MergeFromPilot_process", "sync_8c.html#a7d809497bd9130ad641573b666f36613", null ],
+    [ "sync_MergeFromPilot_slow", "sync_8c.html#ac768dcd91e4eb74341bdd676384b86d8", null ],
+    [ "sync_MergeToPilot", "sync_8c.html#a40e9f2f81d70c01fa8823aebba9f5464", null ],
+    [ "sync_MergeToPilot_fast", "sync_8c.html#a2bc3a631f4864f1e3ae1bde6db8f1854", null ],
+    [ "sync_MergeToPilot_slow", "sync_8c.html#a740db02b308ca65273e62c8c62d846b5", null ],
+    [ "sync_NewDesktopRecord", "sync_8c.html#a76b1fb4374076cd1309ae75745583ce1", null ],
+    [ "sync_NewPilotRecord", "sync_8c.html#a4617d270e117f6f0b6d9d238cd6951c8", null ],
+    [ "sync_record", "sync_8c.html#a86c0f82bff1c05eb1cf8cf20885dea70", null ],
+    [ "sync_Synchronize", "sync_8c.html#af4954eac68b509e9efdf18467a58c59c", null ]
+];

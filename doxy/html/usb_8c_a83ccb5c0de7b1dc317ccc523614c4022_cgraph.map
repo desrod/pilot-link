@@ -1,0 +1,25 @@
+<map id="pi_usb_protocol" name="pi_usb_protocol">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,80,118,106"/>
+<area shape="rect" id="Node000002" href="$usb_8c.html#a64528aca8631671c5c77a83e708d465f" title=" " alt="" coords="171,5,302,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="87,77,165,40,179,34,180,39,167,45,89,82"/>
+<area shape="rect" id="Node000009" href="$usb_8c.html#a470267a34402645ffa55f66393f01a0c" title=" " alt="" coords="166,104,306,130"/>
+<area shape="poly" id="edge8_Node000001_Node000009" title=" " alt="" coords="119,98,151,102,150,108,118,103"/>
+<area shape="rect" id="Node000010" href="$usb_8c.html#a111d017a3682ded12d1c710af0c7a1a7" title=" " alt="" coords="166,153,307,179"/>
+<area shape="poly" id="edge9_Node000001_Node000010" title=" " alt="" coords="90,104,167,140,181,145,179,150,165,145,88,109"/>
+<area shape="rect" id="Node000011" href="$usb_8c.html#a48251b09b739c1818ec4673882ea408b" title=" " alt="" coords="171,55,302,80"/>
+<area shape="poly" id="edge10_Node000001_Node000011" title=" " alt="" coords="118,82,156,76,156,82,119,87"/>
+<area shape="rect" id="Node000003" href="$pilot-read-palmpix_8c.html#a0d1b4ddc8dbaeec0961a8c824afd9ebd" title=" " alt="" coords="380,5,419,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="302,16,365,16,365,21,302,21"/>
+<area shape="rect" id="Node000004" href="$socket_8c.html#a415df518818c6813556c5607b29e833e" title=" " alt="" coords="355,55,444,80"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="282,29,341,47,339,52,281,34"/>
+<area shape="rect" id="Node000005" href="$socket_8c.html#a32b1327c018fb882e8283498858bf8a0" title=" " alt="" coords="492,55,598,80"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="445,65,477,65,477,70,445,70"/>
+<area shape="rect" id="Node000006" href="$threadsafe_8c.html#a57e2304ed7e93f453b4fc66dff84c7c6" title=" " alt="" coords="653,5,758,31"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="589,51,646,34,647,39,590,57"/>
+<area shape="rect" id="Node000007" href="$threadsafe_8c.html#a099d75170599d86ab20348b2af1e4da8" title=" " alt="" coords="646,55,765,80"/>
+<area shape="poly" id="edge6_Node000005_Node000007" title=" " alt="" coords="598,65,630,65,630,70,598,70"/>
+<area shape="rect" id="Node000008" href="$socket_8c.html#ad3e27d0710fe93c314822a548da2286d" title=" " alt="" coords="662,104,749,130"/>
+<area shape="poly" id="edge7_Node000005_Node000008" title=" " alt="" coords="590,78,648,97,647,102,589,84"/>
+<area shape="poly" id="edge11_Node000011_Node000003" title=" " alt="" coords="281,51,365,26,366,31,282,57"/>
+<area shape="poly" id="edge12_Node000011_Node000004" title=" " alt="" coords="302,65,340,65,340,70,302,70"/>
+</map>

@@ -1,0 +1,9 @@
+<map id="connection_for_socket" name="connection_for_socket">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,31,158,56"/>
+<area shape="rect" id="Node000002" href="$darwinusb_8c.html#a6b11be685f613bf98fd2492cd26c7ce6" title=" " alt="" coords="206,31,323,56"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="158,41,190,41,190,46,158,46"/>
+<area shape="rect" id="Node000003" href="$darwinusb_8c.html#a173addd105f622a77d8797cad4a33a68" title=" " alt="" coords="371,5,505,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="323,32,355,28,356,33,324,38"/>
+<area shape="rect" id="Node000004" href="$darwinusb_8c.html#a7974faab5165fb2b558c2f0f08e921ae" title=" " alt="" coords="388,55,489,80"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="324,49,372,56,372,61,323,54"/>
+</map>

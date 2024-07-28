@@ -1,0 +1,33 @@
+<map id="_wrap_pi_recv" name="_wrap_pi_recv">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,153,111,179"/>
+<area shape="rect" id="Node000002" href="$pilot-read-palmpix_8c.html#a0d1b4ddc8dbaeec0961a8c824afd9ebd" title=" " alt="" coords="237,5,276,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="64,152,98,97,125,66,157,40,189,26,221,19,222,24,191,31,160,44,129,70,103,100,68,154"/>
+<area shape="rect" id="Node000003" href="$pi-buffer_8c.html#af440579d61c8649154b0f0512c285606" title=" " alt="" coords="206,55,306,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="71,151,108,120,157,89,190,77,192,82,160,94,111,124,75,155"/>
+<area shape="rect" id="Node000004" href="$pi-buffer_8c.html#a6775d9fcdb4fb3e02ce032337e1d10dc" title=" " alt="" coords="205,104,308,130"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="110,150,158,138,190,130,191,135,159,143,112,156"/>
+<area shape="rect" id="Node000005" href="$socket_8c.html#aaa2992e844d3a1447f54a342dced4fa0" title=" " alt="" coords="225,153,288,179"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="111,164,209,164,209,169,111,169"/>
+<area shape="rect" id="Node000011" href="$pisock__wrap_8c.html#abd77d34d7f6d10b54843fd4a02715a03" title=" " alt="" coords="206,203,307,228"/>
+<area shape="poly" id="edge10_Node000001_Node000011" title=" " alt="" coords="112,177,159,189,191,197,190,202,158,194,110,182"/>
+<area shape="rect" id="Node000014" href="$pisock__wrap_8c.html#adf3400d98d2627c3f018946e4a7e9e1d" title=" " alt="" coords="159,252,354,278"/>
+<area shape="poly" id="edge13_Node000001_Node000014" title=" " alt="" coords="75,177,111,208,160,238,173,244,171,249,157,243,108,212,71,181"/>
+<area shape="rect" id="Node000016" href="$pisock__wrap_8c.html#a97cc175489df6f613005a4973d4fd0d0" title=" " alt="" coords="201,301,312,327"/>
+<area shape="poly" id="edge15_Node000001_Node000016" title=" " alt="" coords="68,178,103,232,129,262,160,288,187,301,185,305,157,292,125,266,98,235,64,181"/>
+<area shape="rect" id="Node000006" href="$socket_8c.html#a32b1327c018fb882e8283498858bf8a0" title=" " alt="" coords="428,104,533,130"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="288,157,412,129,413,134,289,162"/>
+<area shape="rect" id="Node000010" href="$socket_8c.html#a73c92624f86d6b9ff6bc7d316e72c64c" title=" " alt="" coords="432,153,530,179"/>
+<area shape="poly" id="edge9_Node000005_Node000010" title=" " alt="" coords="288,164,416,164,416,169,288,169"/>
+<area shape="rect" id="Node000007" href="$threadsafe_8c.html#a57e2304ed7e93f453b4fc66dff84c7c6" title=" " alt="" coords="619,55,725,80"/>
+<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="533,101,604,82,605,87,534,106"/>
+<area shape="rect" id="Node000008" href="$threadsafe_8c.html#a099d75170599d86ab20348b2af1e4da8" title=" " alt="" coords="612,104,732,130"/>
+<area shape="poly" id="edge7_Node000006_Node000008" title=" " alt="" coords="534,114,597,114,597,120,534,120"/>
+<area shape="rect" id="Node000009" href="$socket_8c.html#ad3e27d0710fe93c314822a548da2286d" title=" " alt="" coords="628,153,716,179"/>
+<area shape="poly" id="edge8_Node000006_Node000009" title=" " alt="" coords="534,128,614,149,613,154,533,133"/>
+<area shape="rect" id="Node000012" href="$pisock__wrap_8c.html#a082d3a5d476e92537e80e908f8f5428a" title=" " alt="" coords="421,203,540,228"/>
+<area shape="poly" id="edge11_Node000011_Node000012" title=" " alt="" coords="307,213,406,213,406,218,307,218"/>
+<area shape="rect" id="Node000013" href="$pisock__wrap_8c.html#aca3c78b106b24b292a156d1f2e9d6bf7" title=" " alt="" coords="607,203,737,228"/>
+<area shape="poly" id="edge12_Node000012_Node000013" title=" " alt="" coords="541,213,592,213,592,218,541,218"/>
+<area shape="rect" id="Node000015" href="$pisock__wrap_8c.html#a41e8e3f07bd0f6952fa4aed604822081" title=" " alt="" coords="402,252,559,293"/>
+<area shape="poly" id="edge14_Node000014_Node000015" title=" " alt="" coords="354,266,386,267,386,272,354,271"/>
+</map>

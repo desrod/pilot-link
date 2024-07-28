@@ -1,0 +1,22 @@
+var searchData=
+[
+  ['main_5fpdb_5fname_0',['MAIN_PDB_NAME',['../pilot-foto-treo600_8c.html#ab9c6ac23a59e2f9f8d80fff7b5b1c5b2',1,'pilot-foto-treo600.c']]],
+  ['max_1',['max',['../pilot-read-screenshot_8c.html#affe776513b24d84b39af8ab0930fef7f',1,'max:&#160;pilot-read-screenshot.c'],['../pilot-read-veo_8c.html#affe776513b24d84b39af8ab0930fef7f',1,'max:&#160;pilot-read-veo.c'],['../palmpix_8c.html#affe776513b24d84b39af8ab0930fef7f',1,'max:&#160;palmpix.c']]],
+  ['max_5fauto_5fread_5fsize_2',['MAX_AUTO_READ_SIZE',['../darwinusb_8c.html#af0de01b4bd1f5311a37a36b33f27e39a',1,'darwinusb.c']]],
+  ['max_5fread_5fsize_3',['MAX_READ_SIZE',['../libusb_8c.html#a6a92c281d7a60ee42f44160e14f5aba6',1,'libusb.c']]],
+  ['max_5fresource_5fsize_4',['MAX_RESOURCE_SIZE',['../libjpisock_8c.html#a52dae0ee4063edd7dcc7485bb996765b',1,'libjpisock.c']]],
+  ['maxdirnamelen_5',['MAXDIRNAMELEN',['../pilot-hinotes_8c.html#a9b77e4505117ad4aaed1f6b5a4c35df2',1,'MAXDIRNAMELEN:&#160;pilot-hinotes.c'],['../pilot-memos_8c.html#a9b77e4505117ad4aaed1f6b5a4c35df2',1,'MAXDIRNAMELEN:&#160;pilot-memos.c']]],
+  ['maxexclude_6',['MAXEXCLUDE',['../pilot-xfer_8c.html#a0b7bed2edd8216539128aa7d303ff4dd',1,'pilot-xfer.c']]],
+  ['md5step_7',['MD5STEP',['../md5_8c.html#ac73d2be8c5c464c7566f290300d2d756',1,'md5.c']]],
+  ['media_5fflash_8',['MEDIA_FLASH',['../pilot-xfer_8c.html#a3ee60989d02ddcd813de015a9f41abf3',1,'pilot-xfer.c']]],
+  ['media_5fmask_9',['MEDIA_MASK',['../pilot-xfer_8c.html#ae49a0d77eb4f9accbad0c53d91f23266',1,'pilot-xfer.c']]],
+  ['media_5fpath_10',['MEDIA_PATH',['../pilot-foto-treo650_8c.html#aefb4f6201aeacd1bbc4a0582ceb09141',1,'pilot-foto-treo650.c']]],
+  ['media_5fram_11',['MEDIA_RAM',['../pilot-xfer_8c.html#a8d1d6e41d2626c5473e00763170bb06f',1,'pilot-xfer.c']]],
+  ['media_5from_12',['MEDIA_ROM',['../pilot-xfer_8c.html#ad3c762711a191d8448aa16725f956aa3',1,'pilot-xfer.c']]],
+  ['media_5fvfs_13',['MEDIA_VFS',['../pilot-xfer_8c.html#aec5a68a841885dc2e2586db7f4f4e206',1,'pilot-xfer.c']]],
+  ['media_5fvolume_14',['MEDIA_VOLUME',['../pilot-foto-treo650_8c.html#a2975555277d9af6697b0acaac1a3ef59',1,'pilot-foto-treo650.c']]],
+  ['memo_5fdirectory_15',['MEMO_DIRECTORY',['../pilot-hinotes_8c.html#aca231ba385c53a54d685022bbbdf1755',1,'MEMO_DIRECTORY:&#160;pilot-hinotes.c'],['../pilot-memos_8c.html#aca231ba385c53a54d685022bbbdf1755',1,'MEMO_DIRECTORY:&#160;pilot-memos.c']]],
+  ['memo_5fmbox_5fstdout_16',['MEMO_MBOX_STDOUT',['../pilot-hinotes_8c.html#a105f484e5846e37eb8f3248a34b737e0',1,'MEMO_MBOX_STDOUT:&#160;pilot-hinotes.c'],['../pilot-memos_8c.html#a105f484e5846e37eb8f3248a34b737e0',1,'MEMO_MBOX_STDOUT:&#160;pilot-memos.c']]],
+  ['min_17',['min',['../pilot-read-screenshot_8c.html#ac6afabdc09a49a433ee19d8a9486056d',1,'min:&#160;pilot-read-screenshot.c'],['../pilot-read-veo_8c.html#ac6afabdc09a49a433ee19d8a9486056d',1,'min:&#160;pilot-read-veo.c'],['../palmpix_8c.html#ac6afabdc09a49a433ee19d8a9486056d',1,'min:&#160;palmpix.c']]],
+  ['mixin_5fmask_18',['MIXIN_MASK',['../pilot-xfer_8c.html#a7abbb6d644ac1f762a5c505311834feb',1,'pilot-xfer.c']]]
+];

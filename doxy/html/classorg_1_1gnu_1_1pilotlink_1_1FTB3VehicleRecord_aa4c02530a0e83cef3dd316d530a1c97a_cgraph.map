@@ -1,0 +1,9 @@
+<map id="setNote" name="setNote">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,38,73,64"/>
+<area shape="rect" id="Node000002" href="$classorg_1_1gnu_1_1pilotlink_1_1FTB3VehicleRecord.html#abe13ce69d8b5f3fda91e2bb3267f6758" title=" " alt="" coords="187,13,261,38"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="73,44,171,30,171,35,74,49"/>
+<area shape="rect" id="Node000004" href="$classorg_1_1gnu_1_1pilotlink_1_1Record.html#a667aebfc6d24f4879385226edbbeea88" title=" " alt="" coords="121,62,327,88"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="74,53,106,57,105,62,73,58"/>
+<area shape="rect" id="Node000003" href="$classorg_1_1gnu_1_1pilotlink_1_1Record.html#ab43e8f349ae29a421f40bb78f08e6748" title=" " alt="" coords="375,5,555,46"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="261,23,360,23,360,28,261,28"/>
+</map>

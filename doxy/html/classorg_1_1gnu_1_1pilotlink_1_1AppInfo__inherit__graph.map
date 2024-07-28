@@ -1,0 +1,9 @@
+<map id="AppInfo" name="AppInfo">
+<area shape="rect" id="Node000001" title=" " alt="" coords="228,5,407,524"/>
+<area shape="rect" id="Node000002" href="$classorg_1_1gnu_1_1pilotlink_1_1AddressAppInfo.html" title=" " alt="" coords="5,572,197,1080"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="225,512,200,577,195,576,220,510"/>
+<area shape="rect" id="Node000003" href="$classorg_1_1gnu_1_1pilotlink_1_1DatebookAppInfo.html" title=" " alt="" coords="221,729,413,923"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="320,539,320,729,315,729,315,539"/>
+<area shape="rect" id="Node000004" href="$classorg_1_1gnu_1_1pilotlink_1_1RawAppInfo.html" title=" " alt="" coords="437,706,616,946"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="414,517,485,705,480,707,409,519"/>
+</map>

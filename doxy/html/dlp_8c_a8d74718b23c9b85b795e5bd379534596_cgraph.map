@@ -1,0 +1,15 @@
+<map id="dlp_AbortSync" name="dlp_AbortSync">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,55,112,80"/>
+<area shape="poly" id="edge1_Node000001_Node000001" title=" " alt="" coords="32,56,27,46,30,36,41,30,59,28,77,31,87,37,84,42,76,36,58,33,43,35,34,40,32,45,37,53"/>
+<area shape="rect" id="Node000002" href="$socket_8c.html#a32b1327c018fb882e8283498858bf8a0" title=" " alt="" coords="315,55,420,80"/>
+<area shape="poly" id="edge2_Node000001_Node000002" title=" " alt="" coords="112,65,300,65,300,70,112,70"/>
+<area shape="rect" id="Node000006" href="$socket_8c.html#a4abe9b686262eeec637d6990e57d8f6a" title=" " alt="" coords="160,80,267,106"/>
+<area shape="poly" id="edge6_Node000001_Node000006" title=" " alt="" coords="113,74,145,79,144,84,112,79"/>
+<area shape="rect" id="Node000003" href="$threadsafe_8c.html#a57e2304ed7e93f453b4fc66dff84c7c6" title=" " alt="" coords="475,5,581,31"/>
+<area shape="poly" id="edge3_Node000002_Node000003" title=" " alt="" coords="411,51,468,34,470,39,413,57"/>
+<area shape="rect" id="Node000004" href="$threadsafe_8c.html#a099d75170599d86ab20348b2af1e4da8" title=" " alt="" coords="468,55,588,80"/>
+<area shape="poly" id="edge4_Node000002_Node000004" title=" " alt="" coords="421,65,453,65,453,70,421,70"/>
+<area shape="rect" id="Node000005" href="$socket_8c.html#ad3e27d0710fe93c314822a548da2286d" title=" " alt="" coords="484,104,572,130"/>
+<area shape="poly" id="edge5_Node000002_Node000005" title=" " alt="" coords="413,78,471,97,469,102,411,84"/>
+<area shape="poly" id="edge7_Node000006_Node000002" title=" " alt="" coords="267,81,299,76,300,81,268,87"/>
+</map>

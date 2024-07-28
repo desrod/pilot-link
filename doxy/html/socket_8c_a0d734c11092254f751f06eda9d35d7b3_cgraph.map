@@ -1,0 +1,13 @@
+<map id="pi_protocol" name="pi_protocol">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,80,90,106"/>
+<area shape="rect" id="Node000002" href="$socket_8c.html#a32b1327c018fb882e8283498858bf8a0" title=" " alt="" coords="154,55,259,80"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="90,83,138,76,139,81,91,89"/>
+<area shape="rect" id="Node000006" href="$socket_8c.html#aaeefde34eb00f88065ce7a51dd03a8e6" title=" " alt="" coords="138,104,275,130"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="91,97,123,101,122,107,90,102"/>
+<area shape="rect" id="Node000003" href="$threadsafe_8c.html#a57e2304ed7e93f453b4fc66dff84c7c6" title=" " alt="" coords="330,5,435,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="254,51,319,33,320,38,256,57"/>
+<area shape="rect" id="Node000004" href="$threadsafe_8c.html#a099d75170599d86ab20348b2af1e4da8" title=" " alt="" coords="323,55,442,80"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="259,65,308,65,308,70,259,70"/>
+<area shape="rect" id="Node000005" href="$socket_8c.html#ad3e27d0710fe93c314822a548da2286d" title=" " alt="" coords="339,104,426,130"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="256,78,325,98,324,103,254,84"/>
+</map>

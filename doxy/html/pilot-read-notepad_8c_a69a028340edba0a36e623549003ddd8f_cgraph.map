@@ -1,0 +1,15 @@
+<map id="output_picture" name="output_picture">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,80,109,106"/>
+<area shape="rect" id="Node000002" href="$notepad_8c.html#a4088f73ac300deaa57f4b0643c10d212" title=" " alt="" coords="164,5,266,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="82,77,156,40,166,35,168,40,158,45,84,82"/>
+<area shape="rect" id="Node000003" href="$userland_8c.html#a7edcd640bc7750f5279f3351f02e43c9" title=" " alt="" coords="157,55,273,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="109,82,141,77,141,82,110,87"/>
+<area shape="rect" id="Node000005" href="$pilot-read-notepad_8c.html#aedef3114ecca546d3f450e041d07a1b5" title=" " alt="" coords="166,104,264,130"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="110,98,151,104,150,110,109,103"/>
+<area shape="rect" id="Node000006" href="$pilot-read-notepad_8c.html#ab406a2d3a9663191a06002e2f1631fdc" title=" " alt="" coords="174,153,256,179"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="85,104,158,140,168,144,166,149,156,145,83,109"/>
+<area shape="rect" id="Node000004" href="$utils_8c.html#a5ffaef3fc3f7ddb9856ccd4bcb79e9bc" title=" " alt="" coords="328,55,386,80"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="273,65,313,65,313,70,273,70"/>
+<area shape="rect" id="Node000007" href="$pilot-read-notepad_8c.html#a3b2e251f62190799d6151bf4355b9595" title=" " alt="" coords="321,153,393,179"/>
+<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="256,164,305,164,305,169,256,169"/>
+</map>

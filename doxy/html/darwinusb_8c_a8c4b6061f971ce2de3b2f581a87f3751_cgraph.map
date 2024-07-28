@@ -1,0 +1,24 @@
+<map id="u_read" name="u_read">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,104,66,130"/>
+<area shape="rect" id="Node000002" href="$darwinusb_8c.html#a6b11be685f613bf98fd2492cd26c7ce6" title=" " alt="" coords="115,29,232,55"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="53,101,112,64,122,59,124,64,115,68,56,106"/>
+<area shape="rect" id="Node000005" href="$pi-buffer_8c.html#aed67e3ff08313fa288837c0d685adaa4" title=" " alt="" coords="114,79,234,104"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="66,109,98,103,99,108,67,114"/>
+<area shape="rect" id="Node000006" href="$pi-buffer_8c.html#aacd28fae920c743be86733c6ab3c1238" title=" " alt="" coords="290,129,408,155"/>
+<area shape="poly" id="edge6_Node000001_Node000006" title=" " alt="" coords="66,117,275,134,275,139,66,122"/>
+<area shape="rect" id="Node000007" href="$socket_8c.html#a415df518818c6813556c5607b29e833e" title=" " alt="" coords="129,180,218,206"/>
+<area shape="poly" id="edge7_Node000001_Node000007" title=" " alt="" coords="61,128,115,159,136,170,133,175,112,163,59,133"/>
+<area shape="rect" id="Node000003" href="$darwinusb_8c.html#a173addd105f622a77d8797cad4a33a68" title=" " alt="" coords="282,5,416,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="233,31,266,27,267,32,234,37"/>
+<area shape="rect" id="Node000004" href="$darwinusb_8c.html#a7974faab5165fb2b558c2f0f08e921ae" title=" " alt="" coords="298,55,400,80"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="234,48,284,55,283,61,233,53"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="222,102,288,122,287,127,220,108"/>
+<area shape="rect" id="Node000008" href="$socket_8c.html#a32b1327c018fb882e8283498858bf8a0" title=" " alt="" coords="296,180,402,206"/>
+<area shape="poly" id="edge8_Node000007_Node000008" title=" " alt="" coords="219,190,281,190,281,196,219,196"/>
+<area shape="rect" id="Node000009" href="$threadsafe_8c.html#a57e2304ed7e93f453b4fc66dff84c7c6" title=" " alt="" coords="471,131,577,156"/>
+<area shape="poly" id="edge9_Node000008_Node000009" title=" " alt="" coords="397,177,460,159,462,164,398,182"/>
+<area shape="rect" id="Node000010" href="$threadsafe_8c.html#a099d75170599d86ab20348b2af1e4da8" title=" " alt="" coords="464,180,584,206"/>
+<area shape="poly" id="edge10_Node000008_Node000010" title=" " alt="" coords="402,190,448,190,448,196,402,196"/>
+<area shape="rect" id="Node000011" href="$socket_8c.html#ad3e27d0710fe93c314822a548da2286d" title=" " alt="" coords="480,229,568,255"/>
+<area shape="poly" id="edge11_Node000008_Node000011" title=" " alt="" coords="398,204,466,223,464,228,397,209"/>
+</map>

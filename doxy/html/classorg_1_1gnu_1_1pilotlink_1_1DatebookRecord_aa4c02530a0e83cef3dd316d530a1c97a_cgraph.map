@@ -1,0 +1,16 @@
+<map id="setNote" name="setNote">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,100,73,125"/>
+<area shape="rect" id="Node000002" href="$classorg_1_1gnu_1_1pilotlink_1_1DatebookRecord.html#abe13ce69d8b5f3fda91e2bb3267f6758" title=" " alt="" coords="187,74,261,100"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="73,105,171,92,171,97,74,110"/>
+<area shape="rect" id="Node000007" href="$classorg_1_1gnu_1_1pilotlink_1_1Record.html#a667aebfc6d24f4879385226edbbeea88" title=" " alt="" coords="121,124,327,149"/>
+<area shape="poly" id="edge7_Node000001_Node000007" title=" " alt="" coords="74,114,106,118,105,124,73,119"/>
+<area shape="rect" id="Node000003" href="$classorg_1_1gnu_1_1pilotlink_1_1Record.html#a4628b1fec2e22d1c8c6d6f40c3e0389f" title=" " alt="" coords="603,5,784,46"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="246,71,303,43,338,29,374,19,429,11,484,7,588,10,588,16,484,13,429,16,376,24,340,34,305,48,249,76"/>
+<area shape="rect" id="Node000004" href="$classorg_1_1gnu_1_1pilotlink_1_1Record.html#abf381f08b2aa72dfa6ed2e8a54af488a" title=" " alt="" coords="375,33,555,74"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="261,79,359,66,360,71,262,85"/>
+<area shape="rect" id="Node000005" href="$classorg_1_1gnu_1_1pilotlink_1_1Record.html#aa7aa5db899601e4737745c548717829d" title=" " alt="" coords="375,99,555,139"/>
+<area shape="poly" id="edge5_Node000002_Node000005" title=" " alt="" coords="262,89,360,102,359,108,261,95"/>
+<area shape="rect" id="Node000006" href="$classorg_1_1gnu_1_1pilotlink_1_1Record.html#ab43e8f349ae29a421f40bb78f08e6748" title=" " alt="" coords="375,164,555,205"/>
+<area shape="poly" id="edge6_Node000002_Node000006" title=" " alt="" coords="262,89,295,96,328,109,343,118,353,128,377,149,388,155,385,159,373,153,349,132,340,123,326,113,293,101,261,94"/>
+<area shape="poly" id="edge4_Node000004_Node000003" title=" " alt="" coords="555,40,587,36,588,41,556,45"/>
+</map>

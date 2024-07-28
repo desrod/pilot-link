@@ -1,0 +1,7 @@
+<map id="FTB3TripRecord" name="FTB3TripRecord">
+<area shape="rect" id="Node000001" title=" " alt="" coords="73,1141,251,1695"/>
+<area shape="rect" id="Node000002" href="$classorg_1_1gnu_1_1pilotlink_1_1Record.html" title=" " alt="" coords="5,5,185,1063"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="139,1077,144,1141,138,1141,134,1078"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="209,501,251,567"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="231,566,220,775,201,1063,195,1124,190,1123,195,1062,215,774,226,566"/>
+</map>

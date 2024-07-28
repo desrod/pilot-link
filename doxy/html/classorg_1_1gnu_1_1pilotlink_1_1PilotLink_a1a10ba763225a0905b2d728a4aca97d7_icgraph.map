@@ -1,0 +1,12 @@
+<map id="writeRecord" name="writeRecord">
+<area shape="rect" id="Node000001" title=" " alt="" coords="321,55,412,80"/>
+<area shape="poly" id="edge5_Node000001_Node000001" title=" " alt="" coords="393,42,384,36,367,33,351,35,342,40,340,46,345,53,340,56,335,46,338,36,349,30,367,28,386,31,396,37"/>
+<area shape="rect" id="Node000002" href="$classdatebooktst.html#a75988cf84fc6ee7a2ebff36e363021aa" title=" " alt="" coords="152,5,273,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="309,52,254,34,256,29,311,47"/>
+<area shape="rect" id="Node000003" href="$classtest.html#a75988cf84fc6ee7a2ebff36e363021aa" title=" " alt="" coords="175,55,250,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="305,70,250,70,250,65,305,65"/>
+<area shape="rect" id="Node000004" href="$classorg_1_1gnu_1_1pilotlink_1_1PilotLink.html#abdc184ab852f7494f2c5585176c2edde" title=" " alt="" coords="153,104,272,130"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="311,88,256,106,254,101,309,83"/>
+<area shape="rect" id="Node000005" href="$classMidiMgr.html#a75988cf84fc6ee7a2ebff36e363021aa" title=" " alt="" coords="5,104,104,130"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="138,120,104,120,104,114,138,114"/>
+</map>

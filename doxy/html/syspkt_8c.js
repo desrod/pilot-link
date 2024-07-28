@@ -1,0 +1,25 @@
+var syspkt_8c =
+[
+    [ "DoRPC", "syspkt_8c.html#a09e924e712e1538a4838136c4874ed3c", null ],
+    [ "InvertRPC", "syspkt_8c.html#a1fc4123893b679d1063548b150e5342c", null ],
+    [ "PackRPC", "syspkt_8c.html#a8d9588d3d9c10a6470f60ec1158319ec", null ],
+    [ "RPC", "syspkt_8c.html#a3dd3fb2816518fe159da889a1a868dca", null ],
+    [ "RPC_Int_Void", "syspkt_8c.html#ae69ab83909ee3284c76c8a2dedd56540", null ],
+    [ "RPC_Ptr_Void", "syspkt_8c.html#a336c889b0466da587152a137cf2752b5", null ],
+    [ "sys_Continue", "syspkt_8c.html#a1af43f37804a6985f7f6c6bcef623346", null ],
+    [ "sys_Find", "syspkt_8c.html#a5cf45bfdbf1eb690727d1d24374ad5c8", null ],
+    [ "sys_GetTrapBreaks", "syspkt_8c.html#adc0400c6fbb378913c1c10658d43dda0", null ],
+    [ "sys_PackRegisters", "syspkt_8c.html#a4d3ce499c302409fc2cbcae351c7c8d8", null ],
+    [ "sys_QueryState", "syspkt_8c.html#a927d0d557f5acb49f47471ff6f1dc7e6", null ],
+    [ "sys_ReadMemory", "syspkt_8c.html#a1a7aad36022bce1fc0bcc8f05df755bf", null ],
+    [ "sys_RemoteEvent", "syspkt_8c.html#a2bd168aecc209206a5c39f9bb4b0e816", null ],
+    [ "sys_RPC", "syspkt_8c.html#abebb0faa35c3035234bbb24ac92f6402", null ],
+    [ "sys_SetBreakpoints", "syspkt_8c.html#ae31b7c869ca59098a9dde2d0895a44f4", null ],
+    [ "sys_SetTrapBreaks", "syspkt_8c.html#a2a7110fc45d6f55efae7e131029338a3", null ],
+    [ "sys_Step", "syspkt_8c.html#ad3ebf01f1449a7b87fc7b4fd0d407cbc", null ],
+    [ "sys_ToggleDbgBreaks", "syspkt_8c.html#af1852632aca065cb1f1020e3e573cf63", null ],
+    [ "sys_UnpackRegisters", "syspkt_8c.html#ade75e4cccb3104ca76e1174b37761791", null ],
+    [ "sys_UnpackState", "syspkt_8c.html#ad75d7777928809cab4d3cc67f08af1d1", null ],
+    [ "sys_WriteMemory", "syspkt_8c.html#a22491e1e2931663a9a7f05db03be6405", null ],
+    [ "UninvertRPC", "syspkt_8c.html#a89142545c93afa489d7106b8ae6f2fa0", null ]
+];

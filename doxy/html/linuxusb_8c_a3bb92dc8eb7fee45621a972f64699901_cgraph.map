@@ -1,0 +1,17 @@
+<map id="u_read_buf" name="u_read_buf">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,31,91,56"/>
+<area shape="rect" id="Node000002" href="$pi-buffer_8c.html#aed67e3ff08313fa288837c0d685adaa4" title=" " alt="" coords="139,5,259,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="91,34,123,28,124,33,91,39"/>
+<area shape="rect" id="Node000004" href="$socket_8c.html#a415df518818c6813556c5607b29e833e" title=" " alt="" coords="154,55,244,80"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="91,48,139,55,138,61,91,53"/>
+<area shape="rect" id="Node000003" href="$pi-buffer_8c.html#aacd28fae920c743be86733c6ab3c1238" title=" " alt="" coords="307,5,424,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="259,16,292,16,292,21,259,21"/>
+<area shape="rect" id="Node000005" href="$socket_8c.html#a32b1327c018fb882e8283498858bf8a0" title=" " alt="" coords="313,55,418,80"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="244,65,298,65,298,70,244,70"/>
+<area shape="rect" id="Node000006" href="$threadsafe_8c.html#a57e2304ed7e93f453b4fc66dff84c7c6" title=" " alt="" coords="479,5,585,31"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="411,51,471,33,472,39,412,57"/>
+<area shape="rect" id="Node000007" href="$threadsafe_8c.html#a099d75170599d86ab20348b2af1e4da8" title=" " alt="" coords="472,55,592,80"/>
+<area shape="poly" id="edge6_Node000005_Node000007" title=" " alt="" coords="419,65,456,65,456,70,419,70"/>
+<area shape="rect" id="Node000008" href="$socket_8c.html#ad3e27d0710fe93c314822a548da2286d" title=" " alt="" coords="488,104,576,130"/>
+<area shape="poly" id="edge7_Node000005_Node000008" title=" " alt="" coords="412,78,474,97,473,102,411,84"/>
+</map>

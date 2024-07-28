@@ -1,0 +1,14 @@
+<map id="DecodeRow" name="DecodeRow">
+<area shape="rect" id="Node000001" title=" " alt="" coords="395,55,489,80"/>
+<area shape="rect" id="Node000002" href="$palmpix_8c.html#afe520f02b884a2936d171a9a5cf4b2e1" title=" " alt="" coords="228,55,347,80"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="380,70,348,70,348,65,380,65"/>
+<area shape="rect" id="Node000003" href="$pilot-read-palmpix_8c.html#a7eb0becdcbe836e7bd1b05cb94656a96" title=" " alt="" coords="122,5,161,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="232,52,160,27,162,22,234,47"/>
+<area shape="rect" id="Node000004" href="$pilot-read-palmpix_8c.html#a0070a4bd7ecc9520a486baf6989da9f7" title=" " alt="" coords="107,55,176,80"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="212,70,177,70,177,65,212,65"/>
+<area shape="rect" id="Node000006" href="$pilot-read-palmpix_8c.html#a592b58a761314c5eaed3265c9857ea4e" title=" " alt="" coords="103,104,180,130"/>
+<area shape="poly" id="edge5_Node000002_Node000006" title=" " alt="" coords="234,88,181,106,180,101,232,83"/>
+<area shape="rect" id="Node000005" href="$pilot-read-palmpix_8c.html#a217dbf8b442f20279ea00b898af96f52" title=" " alt="" coords="5,80,55,106"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="92,81,56,90,54,85,91,76"/>
+<area shape="poly" id="edge6_Node000006_Node000005" title=" " alt="" coords="87,108,55,101,56,95,88,103"/>
+</map>

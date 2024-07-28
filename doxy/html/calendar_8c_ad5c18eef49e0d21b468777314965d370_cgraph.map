@@ -1,0 +1,10 @@
+<map id="copy_CalendarEvent" name="copy_CalendarEvent">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,55,148,80"/>
+<area shape="rect" id="Node000002" href="$blob_8c.html#ac23b25e5235f9387c8364364c89cf45c" title=" " alt="" coords="211,5,286,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="123,51,196,30,197,36,125,57"/>
+<area shape="rect" id="Node000003" href="$location_8c.html#a98b147b5c1dc5a39a66a24bf54134343" title=" " alt="" coords="196,55,302,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="148,65,180,65,180,70,148,70"/>
+<area shape="rect" id="Node000004" href="$utils_8c.html#a5ffaef3fc3f7ddb9856ccd4bcb79e9bc" title=" " alt="" coords="350,80,407,106"/>
+<area shape="poly" id="edge4_Node000001_Node000004" title=" " alt="" coords="130,78,196,90,269,94,334,93,334,98,269,99,195,95,129,84"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="303,75,335,82,334,87,302,81"/>
+</map>

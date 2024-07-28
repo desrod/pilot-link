@@ -1,0 +1,9 @@
+<map id="resetVars" name="resetVars">
+<area shape="rect" id="Node000001" title=" " alt="" coords="173,55,249,80"/>
+<area shape="rect" id="Node000002" href="$classorg_1_1gnu_1_1pilotlink_1_1DatebookRecord.html#a205ccbc8de34452d62807198a06269ab" title=" " alt="" coords="5,5,125,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="157,52,105,34,106,29,159,47"/>
+<area shape="rect" id="Node000003" href="$classorg_1_1gnu_1_1pilotlink_1_1DatebookRecord.html#adae5e3da35dd4c504d4a59a538e660e7" title=" " alt="" coords="5,55,125,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="157,70,125,70,125,65,157,65"/>
+<area shape="rect" id="Node000004" href="$classorg_1_1gnu_1_1pilotlink_1_1DatebookRecord.html#aff85b6a6344f96f3b1657acf641bd816" title=" " alt="" coords="28,104,102,130"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="159,88,103,107,102,102,157,83"/>
+</map>

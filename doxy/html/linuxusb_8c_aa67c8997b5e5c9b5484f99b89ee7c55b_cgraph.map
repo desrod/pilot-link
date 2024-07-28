@@ -1,0 +1,13 @@
+<map id="u_poll" name="u_poll">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,55,61,80"/>
+<area shape="rect" id="Node000002" href="$socket_8c.html#a415df518818c6813556c5607b29e833e" title=" " alt="" coords="109,55,198,80"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="61,65,93,65,93,70,61,70"/>
+<area shape="rect" id="Node000003" href="$socket_8c.html#a32b1327c018fb882e8283498858bf8a0" title=" " alt="" coords="246,55,351,80"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="199,65,231,65,231,70,199,70"/>
+<area shape="rect" id="Node000004" href="$threadsafe_8c.html#a57e2304ed7e93f453b4fc66dff84c7c6" title=" " alt="" coords="406,5,512,31"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="342,51,399,34,401,39,344,57"/>
+<area shape="rect" id="Node000005" href="$threadsafe_8c.html#a099d75170599d86ab20348b2af1e4da8" title=" " alt="" coords="399,55,519,80"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="352,65,384,65,384,70,352,70"/>
+<area shape="rect" id="Node000006" href="$socket_8c.html#ad3e27d0710fe93c314822a548da2286d" title=" " alt="" coords="415,104,503,130"/>
+<area shape="poly" id="edge5_Node000003_Node000006" title=" " alt="" coords="344,78,402,97,400,102,342,84"/>
+</map>

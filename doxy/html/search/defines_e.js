@@ -1,0 +1,25 @@
+var searchData=
+[
+  ['pair_0',['pair',['../address_8c.html#a4a228f49a30f09ef05548b421868a382',1,'pair:&#160;address.c'],['../contact_8c.html#a4a228f49a30f09ef05548b421868a382',1,'pair:&#160;contact.c']]],
+  ['palm_5fget_5fext_5fconnection_5finformation_1',['PALM_GET_EXT_CONNECTION_INFORMATION',['../darwinusb_8c.html#a22b08ff484c0cfd3cc9536dd3aee44db',1,'darwinusb.c']]],
+  ['phs_5fquiet_5fwm_5fclose_2',['PHS_QUIET_WM_CLOSE',['../kittykiller_8c.html#a01241728a10e165297f42c7b32311661',1,'kittykiller.c']]],
+  ['pi_5fhdr_5fsize_3',['PI_HDR_SIZE',['../pi-file_8c.html#abaaa1b2ec997861b74b1f0573929c630',1,'pi-file.c']]],
+  ['pi_5fmktag_4',['pi_mktag',['../pilot-read-screenshot_8c.html#a56f4cab6c835364ae1eefcce920b32f6',1,'pi_mktag:&#160;pilot-read-screenshot.c'],['../pilot-read-veo_8c.html#a56f4cab6c835364ae1eefcce920b32f6',1,'pi_mktag:&#160;pilot-read-veo.c'],['../pi-file_8c.html#a56f4cab6c835364ae1eefcce920b32f6',1,'pi_mktag:&#160;pi-file.c']]],
+  ['pi_5fnet_5ftimeout_5',['PI_NET_TIMEOUT',['../net_8c.html#a8490cece6f735d9351836466119034d9',1,'net.c']]],
+  ['pi_5fpadp_5frx_5fblock_5fto_6',['PI_PADP_RX_BLOCK_TO',['../padp_8c.html#a20e2d41e3952ef750d12a2b5aeb30309',1,'padp.c']]],
+  ['pi_5fpadp_5frx_5fsegment_5fto_7',['PI_PADP_RX_SEGMENT_TO',['../padp_8c.html#afc3f1fdfdbc1328778eacd5bdbb80125',1,'padp.c']]],
+  ['pi_5fpadp_5ftx_5fretries_8',['PI_PADP_TX_RETRIES',['../padp_8c.html#a1d8e906ece01d212ca4a60bdb54ad005',1,'padp.c']]],
+  ['pi_5fpadp_5ftx_5ftimeout_9',['PI_PADP_TX_TIMEOUT',['../padp_8c.html#a813bcf1003675a89ffbf0d426640c5c7',1,'padp.c']]],
+  ['pi_5frecord_5fent_5fsize_10',['PI_RECORD_ENT_SIZE',['../pi-file_8c.html#aa6eb338e2ca63ba9fcc6081c792b03b3',1,'pi-file.c']]],
+  ['pi_5fresource_5fent_5fsize_11',['PI_RESOURCE_ENT_SIZE',['../pi-file_8c.html#afb72315a3070c6adfbaa60bcb8f28d00',1,'pi-file.c']]],
+  ['pilot_5fcharset_12',['PILOT_CHARSET',['../util_8c.html#a767a76f3d8369a3ba92a80c126a0479b',1,'util.c']]],
+  ['pilot_5ftime_5fdelta_13',['PILOT_TIME_DELTA',['../pi-file_8c.html#ad1bddf78f2f2c12aa47b8de64516f928',1,'pi-file.c']]],
+  ['pilotcheck_14',['PilotCheck',['../sync_8c.html#a7b869db8c8521e8dd8fe3ee6d4b00055',1,'sync.c']]],
+  ['product_5fhandspring_5fvisor_15',['PRODUCT_HANDSPRING_VISOR',['../darwinusb_8c.html#a68c5b2c34f6ab445699a6beb3a93bce3',1,'darwinusb.c']]],
+  ['product_5fpalmconnect_5fusb_16',['PRODUCT_PALMCONNECT_USB',['../darwinusb_8c.html#a601606e0ac4526dd03b88b1b864d046f',1,'darwinusb.c']]],
+  ['product_5fsony_5fclie_5f3_5f5_17',['PRODUCT_SONY_CLIE_3_5',['../darwinusb_8c.html#a6bbfd6236e2726b2c5922ba25d1711db',1,'darwinusb.c']]],
+  ['purge_18',['PURGE',['../pilot-xfer_8c.html#a1a8797c156b7ed7beaefab0074a96942',1,'pilot-xfer.c']]],
+  ['put_5fstr_5ffrom_19',['PUT_STR_FROM',['../versamail_8c.html#adbcd00ea5e8ae47def25593cde0b037b',1,'versamail.c']]],
+  ['pyobject_5fdel_20',['PyObject_Del',['../pisock__wrap_8c.html#a5777895532ba038acdbde39ef6f78a82',1,'pisock_wrap.c']]],
+  ['pyos_5fsnprintf_21',['PyOS_snprintf',['../pisock__wrap_8c.html#aaf424b640ab3bb23906652e73030992b',1,'pisock_wrap.c']]]
+];

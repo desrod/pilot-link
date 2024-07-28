@@ -1,0 +1,51 @@
+<map id="_swig_setattr" name="_swig_setattr">
+<area shape="rect" id="Node000001" title=" " alt="" coords="260,733,359,759"/>
+<area shape="rect" id="Node000002" href="$classpisock_1_1CardInfo.html#a79ab0e81aa407d44d1a60053fa9a26ef" title=" " alt="" coords="27,5,190,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="306,717,303,576,292,374,280,270,263,176,240,98,225,68,210,45,189,30,192,26,214,42,230,65,245,96,268,174,285,270,297,374,309,576,311,717"/>
+<area shape="rect" id="Node000003" href="$classpisock_1_1CardInfoPtr.html#a27be18a2db6ca9fefa81acd871d85dca" title=" " alt="" coords="42,55,175,96"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="305,718,300,589,286,406,274,313,258,227,236,157,224,130,210,109,194,96,174,87,177,82,197,91,214,106,228,127,241,155,263,226,279,312,292,406,306,588,310,718"/>
+<area shape="rect" id="Node000004" href="$classpisock_1_1DBInfo.html#a79ab0e81aa407d44d1a60053fa9a26ef" title=" " alt="" coords="32,120,185,146"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="305,718,299,598,284,430,272,344,256,267,235,203,223,178,210,160,184,143,187,139,214,156,228,176,240,201,261,265,277,343,290,429,305,597,310,718"/>
+<area shape="rect" id="Node000005" href="$classpisock_1_1DBInfoPtr.html#a27be18a2db6ca9fefa81acd871d85dca" title=" " alt="" coords="43,170,174,210"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="304,718,296,610,279,463,266,388,251,320,232,263,210,225,193,212,174,202,176,198,196,207,214,222,237,261,256,318,272,387,284,462,301,610,309,718"/>
+<area shape="rect" id="Node000006" href="$classpisock_1_1DBSizeInfo.html#a79ab0e81aa407d44d1a60053fa9a26ef" title=" " alt="" coords="41,235,176,276"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="303,718,293,623,275,495,262,430,247,371,230,323,210,291,194,278,175,269,177,264,197,273,214,287,234,321,252,370,267,429,280,494,299,622,308,718"/>
+<area shape="rect" id="Node000007" href="$classpisock_1_1DBSizeInfoPtr.html#a27be18a2db6ca9fefa81acd871d85dca" title=" " alt="" coords="33,300,184,341"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="302,718,290,635,271,527,243,423,227,383,210,356,183,337,186,333,214,352,232,381,248,422,276,526,296,634,307,718"/>
+<area shape="rect" id="Node000008" href="$classpisock_1_1NetSyncInfo.html#a79ab0e81aa407d44d1a60053fa9a26ef" title=" " alt="" coords="38,366,179,406"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="305,718,301,657,287,577,275,535,259,494,237,455,210,421,195,410,178,401,180,396,198,405,214,418,242,453,264,492,280,534,293,576,306,656,311,717"/>
+<area shape="rect" id="Node000009" href="$classpisock_1_1NetSyncInfoPtr.html#a27be18a2db6ca9fefa81acd871d85dca" title=" " alt="" coords="30,431,187,472"/>
+<area shape="poly" id="edge8_Node000001_Node000009" title=" " alt="" coords="303,718,295,669,279,607,251,542,233,513,210,487,186,470,188,466,213,483,237,510,256,540,284,605,300,668,308,718"/>
+<area shape="rect" id="Node000010" href="$classpisock_1_1pi__socket__list__t.html#a79ab0e81aa407d44d1a60053fa9a26ef" title=" " alt="" coords="37,496,180,537"/>
+<area shape="poly" id="edge9_Node000001_Node000010" title=" " alt="" coords="299,719,288,682,270,637,244,591,210,552,179,534,182,529,213,548,248,588,275,634,293,680,304,718"/>
+<area shape="rect" id="Node000011" href="$classpisock_1_1pi__socket__list__tPtr.html#a27be18a2db6ca9fefa81acd871d85dca" title=" " alt="" coords="37,562,180,602"/>
+<area shape="poly" id="edge10_Node000001_Node000011" title=" " alt="" coords="293,721,260,668,237,641,210,618,179,601,182,597,213,613,240,637,264,665,297,718"/>
+<area shape="rect" id="Node000012" href="$classpisock_1_1pi__socket__t.html#a79ab0e81aa407d44d1a60053fa9a26ef" title=" " alt="" coords="41,627,176,668"/>
+<area shape="poly" id="edge11_Node000001_Node000012" title=" " alt="" coords="278,726,246,704,210,683,175,669,177,664,213,678,249,699,281,721"/>
+<area shape="rect" id="Node000013" href="$classpisock_1_1pi__socket__tPtr.html#a27be18a2db6ca9fefa81acd871d85dca" title=" " alt="" coords="33,692,184,733"/>
+<area shape="poly" id="edge12_Node000001_Node000013" title=" " alt="" coords="244,738,184,728,185,723,245,733"/>
+<area shape="rect" id="Node000014" href="$classpisock_1_1PilotUser.html#a79ab0e81aa407d44d1a60053fa9a26ef" title=" " alt="" coords="45,758,172,798"/>
+<area shape="poly" id="edge13_Node000001_Node000014" title=" " alt="" coords="245,759,173,771,172,765,244,754"/>
+<area shape="rect" id="Node000015" href="$classpisock_1_1PilotUserPtr.html#a27be18a2db6ca9fefa81acd871d85dca" title=" " alt="" coords="40,823,177,864"/>
+<area shape="poly" id="edge14_Node000001_Node000015" title=" " alt="" coords="280,771,249,792,213,813,179,827,177,822,211,808,246,788,277,766"/>
+<area shape="rect" id="Node000016" href="$classpisock_1_1SysInfo.html#a79ab0e81aa407d44d1a60053fa9a26ef" title=" " alt="" coords="30,888,187,914"/>
+<area shape="poly" id="edge15_Node000001_Node000016" title=" " alt="" coords="297,774,264,827,241,855,213,878,189,890,186,885,210,873,237,851,260,824,293,771"/>
+<area shape="rect" id="Node000017" href="$classpisock_1_1SysInfoPtr.html#a27be18a2db6ca9fefa81acd871d85dca" title=" " alt="" coords="44,938,173,978"/>
+<area shape="poly" id="edge16_Node000001_Node000017" title=" " alt="" coords="303,774,291,809,272,851,247,892,213,928,195,940,174,949,172,944,192,936,210,924,242,889,268,848,286,807,298,773"/>
+<area shape="rect" id="Node000018" href="$classpisock_1_1VFSAnyMountParam.html#a79ab0e81aa407d44d1a60053fa9a26ef" title=" " alt="" coords="13,1003,204,1044"/>
+<area shape="poly" id="edge17_Node000001_Node000018" title=" " alt="" coords="307,775,299,822,282,880,254,940,236,968,213,992,196,1005,193,1001,210,988,231,964,249,937,277,878,293,820,302,774"/>
+<area shape="rect" id="Node000019" href="$classpisock_1_1VFSAnyMountParamPtr.html#a27be18a2db6ca9fefa81acd871d85dca" title=" " alt="" coords="5,1068,212,1109"/>
+<area shape="poly" id="edge18_Node000001_Node000019" title=" " alt="" coords="310,775,305,833,290,908,278,949,262,988,240,1025,214,1057,197,1070,194,1066,210,1054,236,1022,257,985,273,947,285,907,300,832,305,774"/>
+<area shape="rect" id="Node000020" href="$classpisock_1_1VFSDirInfo.html#a79ab0e81aa407d44d1a60053fa9a26ef" title=" " alt="" coords="42,1134,175,1174"/>
+<area shape="poly" id="edge19_Node000001_Node000020" title=" " alt="" coords="307,774,295,854,275,958,247,1057,231,1096,214,1123,196,1136,176,1146,174,1141,193,1132,210,1119,227,1093,242,1055,269,957,289,853,302,774"/>
+<area shape="rect" id="Node000021" href="$classpisock_1_1VFSDirInfoPtr.html#a27be18a2db6ca9fefa81acd871d85dca" title=" " alt="" coords="34,1199,183,1240"/>
+<area shape="poly" id="edge20_Node000001_Node000021" title=" " alt="" coords="308,775,298,867,279,990,251,1109,234,1155,214,1188,185,1208,182,1204,210,1184,229,1153,246,1107,274,989,292,866,303,774"/>
+<area shape="rect" id="Node000022" href="$classpisock_1_1VFSInfo.html#a79ab0e81aa407d44d1a60053fa9a26ef" title=" " alt="" coords="28,1264,189,1290"/>
+<area shape="poly" id="edge21_Node000001_Node000022" title=" " alt="" coords="309,774,301,879,285,1023,272,1095,256,1162,237,1216,214,1253,190,1269,187,1265,210,1250,232,1214,251,1160,267,1094,279,1022,296,879,304,774"/>
+<area shape="rect" id="Node000023" href="$classpisock_1_1VFSInfoPtr.html#a27be18a2db6ca9fefa81acd871d85dca" title=" " alt="" coords="43,1314,174,1354"/>
+<area shape="poly" id="edge22_Node000001_Node000023" title=" " alt="" coords="310,775,303,889,286,1047,274,1128,258,1201,238,1262,214,1304,196,1318,176,1328,174,1323,193,1314,210,1300,233,1260,253,1200,269,1127,281,1046,297,889,304,775"/>
+<area shape="rect" id="Node000024" href="$classpisock_1_1VFSSlotMountParam.html#a79ab0e81aa407d44d1a60053fa9a26ef" title=" " alt="" coords="13,1379,204,1420"/>
+<area shape="poly" id="edge23_Node000001_Node000024" title=" " alt="" coords="310,775,305,901,290,1078,278,1168,261,1251,240,1320,228,1347,214,1368,199,1381,196,1377,210,1364,223,1344,235,1318,256,1250,273,1167,285,1077,299,900,305,775"/>
+<area shape="rect" id="Node000025" href="$classpisock_1_1VFSSlotMountParamPtr.html#a27be18a2db6ca9fefa81acd871d85dca" title=" " alt="" coords="15,1444,202,1485"/>
+<area shape="poly" id="edge24_Node000001_Node000025" title=" " alt="" coords="311,774,307,912,294,1108,282,1210,265,1303,243,1380,229,1410,214,1433,199,1446,196,1442,210,1430,224,1407,238,1378,260,1301,277,1209,289,1108,302,912,305,774"/>
+</map>

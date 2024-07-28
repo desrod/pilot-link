@@ -1,0 +1,48 @@
+<map id="device_added" name="device_added">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,169,107,195"/>
+<area shape="rect" id="Node000002" href="$darwinusb_8c.html#ab10d2c139ee0772df628b5e705368986" title=" " alt="" coords="175,20,288,45"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="62,167,96,113,122,82,153,54,160,50,163,55,156,59,126,85,100,116,66,170"/>
+<area shape="rect" id="Node000003" href="$darwinusb_8c.html#ab97608baf2dc20e00693ea3d28b1c5fe" title=" " alt="" coords="175,69,288,95"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="69,167,105,136,153,104,164,99,166,103,156,108,109,140,72,171"/>
+<area shape="rect" id="Node000004" href="$darwinusb_8c.html#a44db8313ee840eece0ab14aa96ca9bf9" title=" " alt="" coords="172,118,291,144"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="102,166,169,146,171,151,104,171"/>
+<area shape="rect" id="Node000012" href="$darwinusb_8c.html#a6378ac6f6b9262ad7cba19de626cd74b" title=" " alt="" coords="155,220,308,245"/>
+<area shape="poly" id="edge15_Node000001_Node000012" title=" " alt="" coords="104,193,171,212,169,218,102,198"/>
+<area shape="rect" id="Node000013" href="$darwinusb_8c.html#a1760782cd564351de8fb058afe311e05" title=" " alt="" coords="374,270,503,296"/>
+<area shape="poly" id="edge16_Node000001_Node000013" title=" " alt="" coords="71,193,107,226,130,242,156,255,207,271,260,280,359,285,359,291,259,286,205,276,154,260,127,247,103,230,67,197"/>
+<area shape="rect" id="Node000017" href="$darwinusb_8c.html#ad2b23562cd53b9fee904b9ad45ab2889" title=" " alt="" coords="386,221,492,247"/>
+<area shape="poly" id="edge20_Node000001_Node000017" title=" " alt="" coords="107,183,201,191,308,205,371,216,370,221,308,210,200,197,107,188"/>
+<area shape="rect" id="Node000018" href="$darwinusb_8c.html#a9a37658b034e10d52a5affda2c28a26d" title=" " alt="" coords="189,346,274,372"/>
+<area shape="poly" id="edge23_Node000001_Node000018" title=" " alt="" coords="69,194,105,243,157,300,199,335,196,339,153,304,101,246,64,197"/>
+<area shape="rect" id="Node000005" href="$darwinusb_8c.html#a6bf0b49b7f893ca4dd2b2a7739c59aec" title=" " alt="" coords="605,46,716,72"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="289,116,306,105,322,86,328,65,336,44,355,26,388,12,422,5,458,3,494,5,562,19,617,38,615,43,560,24,493,11,458,8,423,10,389,17,357,31,340,47,333,67,326,88,310,109,291,120"/>
+<area shape="rect" id="Node000006" href="$darwinusb_8c.html#a75b8e770479707f2ca65619e5e15248b" title=" " alt="" coords="374,41,504,67"/>
+<area shape="poly" id="edge5_Node000004_Node000006" title=" " alt="" coords="279,115,307,105,331,91,355,77,373,70,375,75,357,82,333,96,309,110,281,120"/>
+<area shape="rect" id="Node000007" href="$darwinusb_8c.html#a1fdb9881cd44d8dfa115018ef8a8a07a" title=" " alt="" coords="356,156,521,197"/>
+<area shape="poly" id="edge7_Node000004_Node000007" title=" " alt="" coords="292,142,341,153,340,158,291,147"/>
+<area shape="rect" id="Node000011" href="$darwinusb_8c.html#a90eff23f2e0b0132dbb82d4cbfeb4cc0" title=" " alt="" coords="363,91,514,132"/>
+<area shape="poly" id="edge12_Node000004_Node000011" title=" " alt="" coords="291,123,347,117,348,123,292,128"/>
+<area shape="poly" id="edge6_Node000006_Node000005" title=" " alt="" coords="504,53,590,55,589,60,504,58"/>
+<area shape="poly" id="edge8_Node000007_Node000005" title=" " alt="" coords="493,153,520,141,577,109,626,79,628,83,579,114,523,146,495,158"/>
+<area shape="rect" id="Node000008" href="$darwinusb_8c.html#a0cc85622030ec13870fc90026ace908b" title=" " alt="" coords="569,156,752,197"/>
+<area shape="poly" id="edge9_Node000007_Node000008" title=" " alt="" coords="522,174,554,174,554,179,522,179"/>
+<area shape="rect" id="Node000009" href="$debug_8c.html#ac942525fcc03cc9c77dfe0628ade03b9" title=" " alt="" coords="819,164,914,189"/>
+<area shape="poly" id="edge10_Node000008_Node000009" title=" " alt="" coords="752,174,804,174,804,179,752,179"/>
+<area shape="rect" id="Node000010" href="$debug_8c.html#a11a6e0b0ea23a401ca6ce613d8664238" title=" " alt="" coords="982,164,1072,189"/>
+<area shape="poly" id="edge11_Node000009_Node000010" title=" " alt="" coords="915,174,966,174,966,179,915,179"/>
+<area shape="poly" id="edge13_Node000011_Node000005" title=" " alt="" coords="514,91,589,73,591,78,515,96"/>
+<area shape="poly" id="edge14_Node000011_Node000009" title=" " alt="" coords="515,113,627,123,752,142,811,156,809,162,751,147,627,129,515,118"/>
+<area shape="rect" id="Node000014" href="$darwinusb_8c.html#a6b11be685f613bf98fd2492cd26c7ce6" title=" " alt="" coords="602,321,719,347"/>
+<area shape="poly" id="edge17_Node000013_Node000014" title=" " alt="" coords="499,294,587,315,586,320,498,299"/>
+<area shape="rect" id="Node000015" href="$darwinusb_8c.html#a173addd105f622a77d8797cad4a33a68" title=" " alt="" coords="800,345,934,371"/>
+<area shape="poly" id="edge18_Node000014_Node000015" title=" " alt="" coords="720,338,785,346,784,351,719,343"/>
+<area shape="rect" id="Node000016" href="$darwinusb_8c.html#a7974faab5165fb2b558c2f0f08e921ae" title=" " alt="" coords="816,296,918,321"/>
+<area shape="poly" id="edge19_Node000014_Node000016" title=" " alt="" coords="719,324,800,314,801,319,720,329"/>
+<area shape="poly" id="edge21_Node000017_Node000008" title=" " alt="" coords="491,218,564,199,565,204,492,223"/>
+<area shape="poly" id="edge22_Node000017_Node000009" title=" " alt="" coords="492,230,611,223,751,206,810,192,811,197,752,211,612,229,492,235"/>
+<area shape="poly" id="edge24_Node000018_Node000014" title=" " alt="" coords="274,354,586,336,587,341,274,359"/>
+<area shape="rect" id="Node000019" href="$darwinusb_8c.html#a657fc918c5800dab2a0fbdf7e4a97d73" title=" " alt="" coords="380,372,497,397"/>
+<area shape="poly" id="edge25_Node000018_Node000019" title=" " alt="" coords="275,369,365,382,365,387,274,375"/>
+<area shape="poly" id="edge26_Node000019_Node000014" title=" " alt="" coords="496,369,586,348,587,353,498,374"/>
+<area shape="poly" id="edge27_Node000019_Node000018" title=" " alt="" coords="390,374,289,361,290,356,391,369"/>
+</map>

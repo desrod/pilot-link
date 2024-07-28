@@ -1,0 +1,28 @@
+var searchData=
+[
+  ['mailsorttypenames_0',['MailSortTypeNames',['../mail_8c.html#ac4eae5602636a936381c4fb6b8475e20',1,'mail.c']]],
+  ['mailsynctypenames_1',['MailSyncTypeNames',['../mail_8c.html#a2e3aa89915f10d980921980768d26ccf',1,'mail.c']]],
+  ['main_5fjmp_2',['main_jmp',['../pilot-dlpsh_8c.html#a034d563156ce41022434178862704041',1,'pilot-dlpsh.c']]],
+  ['majorversion_3',['majorVersion',['../pilot-debug_8c.html#a5f09360e1698d89ff72536138b980eee',1,'pilot-debug.c']]],
+  ['manufacturer_4',['manufacturer',['../classpisock_1_1CardInfo.html#ae7cfb1b198238a9b0f774f5aba233044',1,'pisock::CardInfo']]],
+  ['maxblock_5',['maxblock',['../structdb.html#a8f856a72a00c9dca44805910fef5acf3',1,'db']]],
+  ['maxrecsize_6',['maxRecSize',['../classorg_1_1gnu_1_1pilotlink_1_1SysInfo.html#a0e69d1d5f6ca7522fbd21f7199c761a1',1,'org.gnu.pilotlink.SysInfo.maxRecSize'],['../classpisock_1_1SysInfo.html#a4a73ba8e62cf973ff43d190370a8b818',1,'pisock.SysInfo.maxRecSize'],['../classpisock_1_1DBSizeInfo.html#a4a73ba8e62cf973ff43d190370a8b818',1,'pisock.DBSizeInfo.maxRecSize']]],
+  ['maxrecsize_7',['maxrecsize',['../classpisock_1_1pi__socket__t.html#afda3a88980947d12eb9e8d6a4b791a70',1,'pisock::pi_socket_t']]],
+  ['mdate_8',['mdate',['../structpdb__t.html#aa3bdc73fd95e46114e02fa5545a1583a',1,'pdb_t']]],
+  ['mediatype_9',['mediaType',['../classpisock_1_1VFSInfo.html#af442461882c02edbe4fcf96a49087b43',1,'pisock::VFSInfo']]],
+  ['memo_10',['memo',['../classorg_1_1gnu_1_1pilotlink_1_1MemoRecord.html#a4673e75acd54705dedef4433b4bc6706',1,'org::gnu::pilotlink::MemoRecord']]],
+  ['memos_11',['memos',['../pilot-install-memo_8c.html#af9a674cef33f1f3a29073161e75f7294',1,'pilot-install-memo.c']]],
+  ['metavar_12',['metavar',['../namespacepisocktests.html#a6d8a64ff78fc562acbd80da81ed531b2',1,'pisocktests']]],
+  ['midi_13',['midi',['../classorg_1_1gnu_1_1pilotlink_1_1MidiRecord.html#aa31c741e92bfcd52266b6e237a0d5e1d',1,'org::gnu::pilotlink::MidiRecord']]],
+  ['minorversion_14',['minorVersion',['../pilot-debug_8c.html#a4458ac09e131ab5a837ec46056a8d9c1',1,'pilot-debug.c']]],
+  ['miscflags_15',['miscFlags',['../classorg_1_1gnu_1_1pilotlink_1_1DBInfo.html#a9d6e8b9cbc12c431be5c3d829ab46505',1,'org.gnu.pilotlink.DBInfo.miscFlags'],['../classpisock_1_1DBInfo.html#af2a9a46aaacbb7e23d47afc633ed6cf2',1,'pisock.DBInfo.miscFlags']]],
+  ['mode_16',['mode',['../pd-tty_8c.html#a1ea5d0cb93f22f7d0fdf804bd68c3326',1,'pd-tty.c']]],
+  ['modifydate_17',['modifyDate',['../classorg_1_1gnu_1_1pilotlink_1_1DBInfo.html#a25c23e98e3014998f6b03a11eb0b2b23',1,'org.gnu.pilotlink.DBInfo.modifyDate'],['../classpisock_1_1DBInfo.html#a5557b92e44bf24f8ecff21ab248b5381',1,'pisock.DBInfo.modifyDate']]],
+  ['modno_18',['modno',['../structpdb__t.html#a40bcbdbe0fe6272a2dc26b9371e2ff7b',1,'pdb_t']]],
+  ['modnum_19',['modnum',['../classorg_1_1gnu_1_1pilotlink_1_1DBInfo.html#acc49b0baf65545a525f5319284985944',1,'org.gnu.pilotlink.DBInfo.modnum'],['../classpisock_1_1DBInfo.html#a175029dc4a73263b9027c36dc9bf1988',1,'pisock.DBInfo.modnum']]],
+  ['month_20',['Month',['../pilot-reminders_8c.html#a5fa9a9d1f67bd60f2e530b6d05c32e28',1,'pilot-reminders.c']]],
+  ['monthlycost_21',['monthlyCost',['../classorg_1_1gnu_1_1pilotlink_1_1FTB3VehicleRecord.html#a4a1a6720cd6a4d329ed9164cd4a8d4b9',1,'org::gnu::pilotlink::FTB3VehicleRecord']]],
+  ['months_22',['months',['../ccexample_8cc.html#a9878e6d5a52b0b77dd7857ae80601910',1,'ccexample.cc']]],
+  ['more_23',['more',['../classorg_1_1gnu_1_1pilotlink_1_1DBInfo.html#a8854393de98878b8ac8113f3764c8ce6',1,'org.gnu.pilotlink.DBInfo.more'],['../classpisock_1_1DBInfo.html#a5453dae252cb54545c0ed2219acf2bcb',1,'pisock.DBInfo.more'],['../classpisock_1_1CardInfo.html#a5453dae252cb54545c0ed2219acf2bcb',1,'pisock.CardInfo.more']]],
+  ['mountclass_24',['mountClass',['../classpisock_1_1VFSAnyMountParam.html#ac264fe92704409d7b5458ed0b3d3cd53',1,'pisock.VFSAnyMountParam.mountClass'],['../classpisock_1_1VFSInfo.html#ac264fe92704409d7b5458ed0b3d3cd53',1,'pisock.VFSInfo.mountClass']]]
+];

@@ -1,0 +1,9 @@
+<map id="read_visor_connection_information" name="read_visor_connection_information">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,23,157,64"/>
+<area shape="rect" id="Node000002" href="$darwinusb_8c.html#a6bf0b49b7f893ca4dd2b2a7739c59aec" title=" " alt="" coords="205,5,315,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="157,30,189,25,190,31,157,35"/>
+<area shape="rect" id="Node000003" href="$debug_8c.html#ac942525fcc03cc9c77dfe0628ade03b9" title=" " alt="" coords="212,55,308,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="157,51,197,56,196,62,157,56"/>
+<area shape="rect" id="Node000004" href="$debug_8c.html#a11a6e0b0ea23a401ca6ce613d8664238" title=" " alt="" coords="363,55,453,80"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="308,65,347,65,347,70,308,70"/>
+</map>

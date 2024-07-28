@@ -1,0 +1,10 @@
+<map id="check_romversion" name="check_romversion">
+<area shape="rect" id="Node000001" title=" " alt="" coords="240,31,367,56"/>
+<area shape="rect" id="Node000002" href="$pilot-getrom_8c.html#a16b6c113ebaaf096fa74c2e8949ea40c" title=" " alt="" coords="103,5,192,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="224,33,192,28,193,23,225,28"/>
+<area shape="rect" id="Node000004" href="$pilot-getrom_8c.html#a1d8f79b16f99255230068f8d6d442136" title=" " alt="" coords="103,55,192,80"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="225,58,193,63,192,58,224,53"/>
+<area shape="rect" id="Node000003" href="$pilot-getrom_8c.html#ac0f2228420376f4db7e1274f2b41667c" title=" " alt="" coords="5,31,55,56"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="88,34,55,41,54,36,87,28"/>
+<area shape="poly" id="edge4_Node000004_Node000003" title=" " alt="" coords="87,58,54,51,55,46,88,53"/>
+</map>

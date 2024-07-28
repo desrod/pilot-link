@@ -1,0 +1,21 @@
+<map id="u_read" name="u_read">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,31,66,56"/>
+<area shape="rect" id="Node000002" href="$pi-buffer_8c.html#aacd28fae920c743be86733c6ab3c1238" title=" " alt="" coords="415,5,533,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="65,29,113,16,189,7,266,4,400,9,400,14,266,10,190,12,114,21,67,34"/>
+<area shape="rect" id="Node000003" href="$socket_8c.html#a415df518818c6813556c5607b29e833e" title=" " alt="" coords="262,80,352,106"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="67,52,114,66,183,78,247,86,247,91,182,84,113,71,65,57"/>
+<area shape="rect" id="Node000008" href="$linuxusb_8c.html#a3bb92dc8eb7fee45621a972f64699901" title=" " alt="" coords="114,31,199,56"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="66,41,98,41,98,46,66,46"/>
+<area shape="rect" id="Node000004" href="$socket_8c.html#a32b1327c018fb882e8283498858bf8a0" title=" " alt="" coords="421,80,527,106"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="352,90,406,90,406,96,352,96"/>
+<area shape="rect" id="Node000005" href="$threadsafe_8c.html#a57e2304ed7e93f453b4fc66dff84c7c6" title=" " alt="" coords="588,31,693,56"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="519,77,579,59,580,64,521,82"/>
+<area shape="rect" id="Node000006" href="$threadsafe_8c.html#a099d75170599d86ab20348b2af1e4da8" title=" " alt="" coords="581,80,700,106"/>
+<area shape="poly" id="edge5_Node000004_Node000006" title=" " alt="" coords="527,90,565,90,565,96,527,96"/>
+<area shape="rect" id="Node000007" href="$socket_8c.html#ad3e27d0710fe93c314822a548da2286d" title=" " alt="" coords="597,129,684,155"/>
+<area shape="poly" id="edge6_Node000004_Node000007" title=" " alt="" coords="521,104,583,122,581,127,519,109"/>
+<area shape="poly" id="edge10_Node000008_Node000003" title=" " alt="" coords="199,54,252,72,250,77,197,60"/>
+<area shape="rect" id="Node000009" href="$pi-buffer_8c.html#aed67e3ff08313fa288837c0d685adaa4" title=" " alt="" coords="247,31,367,56"/>
+<area shape="poly" id="edge8_Node000008_Node000009" title=" " alt="" coords="199,41,232,41,232,46,199,46"/>
+<area shape="poly" id="edge9_Node000009_Node000002" title=" " alt="" coords="367,32,400,27,400,32,368,37"/>
+</map>

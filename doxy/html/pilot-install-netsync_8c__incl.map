@@ -1,0 +1,19 @@
+<map id="src/pilot&#45;install&#45;netsync.c" name="src/pilot&#45;install&#45;netsync.c">
+<area shape="rect" id="Node000001" title=" " alt="" coords="335,5,501,31"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,79,66,105"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="335,34,219,54,82,81,81,76,218,48,335,29"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="90,79,179,105"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="371,34,195,78,193,73,369,29"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="203,79,300,105"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="391,34,295,75,293,70,389,29"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="324,79,406,105"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="411,33,385,68,381,65,407,30"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="430,79,516,105"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="429,30,457,65,452,68,425,33"/>
+<area shape="rect" id="Node000007" title=" " alt="" coords="540,79,603,105"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="445,29,533,70,531,75,443,34"/>
+<area shape="rect" id="Node000008" title=" " alt="" coords="627,79,711,105"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="461,29,613,72,611,77,460,34"/>
+<area shape="rect" id="Node000009" title=" " alt="" coords="734,79,830,105"/>
+<area shape="poly" id="edge8_Node000001_Node000009" title=" " alt="" coords="481,29,720,76,719,81,480,34"/>
+</map>

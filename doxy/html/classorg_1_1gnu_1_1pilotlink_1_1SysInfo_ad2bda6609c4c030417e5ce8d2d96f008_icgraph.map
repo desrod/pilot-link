@@ -1,0 +1,11 @@
+<map id="getRomVersion" name="getRomVersion">
+<area shape="rect" id="Node000001" title=" " alt="" coords="167,80,278,106"/>
+<area shape="rect" id="Node000002" href="$classadrtest.html#a75988cf84fc6ee7a2ebff36e363021aa" title=" " alt="" coords="15,5,109,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="180,75,118,45,94,34,96,29,120,40,182,70"/>
+<area shape="rect" id="Node000003" href="$classMidiMgr.html#a75988cf84fc6ee7a2ebff36e363021aa" title=" " alt="" coords="13,55,111,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="151,84,111,78,112,73,152,79"/>
+<area shape="rect" id="Node000004" href="$classtest.html#a75988cf84fc6ee7a2ebff36e363021aa" title=" " alt="" coords="24,104,100,130"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="152,106,101,114,100,109,151,101"/>
+<area shape="rect" id="Node000005" href="$classTestTodos.html#a8b260eecbaabcef8473fd87ada040682" title=" " alt="" coords="5,153,119,179"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="181,115,120,145,96,155,94,150,118,140,179,110"/>
+</map>

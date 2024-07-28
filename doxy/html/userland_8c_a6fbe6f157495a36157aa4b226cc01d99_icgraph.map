@@ -1,0 +1,10 @@
+<map id="plu_findcategory" name="plu_findcategory">
+<area shape="rect" id="Node000001" title=" " alt="" coords="221,56,337,82"/>
+<area shape="rect" id="Node000002" href="$pilot-install-memo_8c.html#a0ddf1224851353fc92bfbff6f499fa97" title=" " alt="" coords="113,5,162,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="226,53,162,29,164,24,228,48"/>
+<area shape="rect" id="Node000003" href="$pilot-addresses_8c.html#ac0f2228420376f4db7e1274f2b41667c" title=" " alt="" coords="5,81,55,107"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="206,79,55,94,55,89,206,74"/>
+<area shape="rect" id="Node000004" href="$pilot-addresses_8c.html#a583e3d8ca07f041caf9e6e628dcb9d00" title=" " alt="" coords="103,107,173,132"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="228,90,174,110,172,105,226,85"/>
+<area shape="poly" id="edge4_Node000004_Node000003" title=" " alt="" coords="87,110,55,103,56,97,88,105"/>
+</map>

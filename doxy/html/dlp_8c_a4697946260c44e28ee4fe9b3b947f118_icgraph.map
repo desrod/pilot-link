@@ -1,0 +1,17 @@
+<map id="dlp_ReadResourceByType" name="dlp_ReadResourceByType">
+<area shape="rect" id="Node000001" title=" " alt="" coords="524,79,700,104"/>
+<area shape="poly" id="edge6_Node000001_Node000001" title=" " alt="" coords="655,67,641,60,612,57,586,59,572,64,569,69,576,77,572,80,564,70,568,60,585,54,612,52,643,55,658,62"/>
+<area shape="rect" id="Node000002" href="$pisock__wrap_8c.html#a3d5413c9244b6f6993e539ca4387a8a4" title=" " alt="" coords="258,5,476,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="563,75,475,45,435,34,436,29,477,40,565,70"/>
+<area shape="rect" id="Node000003" href="$dlp_8c.html#a04502339338696388c8f58e182f772a9" title=" " alt="" coords="286,79,448,104"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="508,94,449,94,449,89,508,89"/>
+<area shape="rect" id="Node000006" href="$pilot-schlep_8c.html#a0cc61fd7a753f599b57fc5707f07bf07" title=" " alt="" coords="340,128,394,154"/>
+<area shape="poly" id="edge7_Node000001_Node000006" title=" " alt="" coords="530,111,395,138,394,133,529,105"/>
+<area shape="poly" id="edge4_Node000003_Node000003" title=" " alt="" coords="410,67,396,60,367,57,341,59,327,64,324,69,330,77,326,80,318,70,323,60,340,54,367,52,397,55,412,62"/>
+<area shape="rect" id="Node000004" href="$pisock__wrap_8c.html#a83ba14b7688b3b3355ba5aafcf879c4b" title=" " alt="" coords="5,29,210,55"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="280,78,178,58,179,53,281,73"/>
+<area shape="rect" id="Node000005" href="$pilot-read-expenses_8c.html#ac0f2228420376f4db7e1274f2b41667c" title=" " alt="" coords="83,79,132,104"/>
+<area shape="poly" id="edge5_Node000003_Node000005" title=" " alt="" coords="270,94,132,94,132,89,270,89"/>
+<area shape="rect" id="Node000007" href="$pilot-schlep_8c.html#ac0f2228420376f4db7e1274f2b41667c" title=" " alt="" coords="83,128,132,154"/>
+<area shape="poly" id="edge8_Node000006_Node000007" title=" " alt="" coords="324,144,133,144,133,138,324,138"/>
+</map>

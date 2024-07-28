@@ -1,0 +1,19 @@
+<map id="libpisock/net.c" name="libpisock/net.c">
+<area shape="rect" id="Node000001" title=" " alt="" coords="290,5,395,31"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,79,69,105"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="290,33,84,81,83,75,289,28"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="92,79,152,105"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="306,34,168,78,167,73,304,29"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="177,79,238,105"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="321,34,245,74,243,69,318,29"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="262,79,326,105"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="337,33,313,67,309,64,332,30"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="351,79,432,105"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="353,30,377,65,373,68,348,33"/>
+<area shape="rect" id="Node000007" title=" " alt="" coords="457,79,542,105"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="370,29,460,70,458,75,368,34"/>
+<area shape="rect" id="Node000008" title=" " alt="" coords="566,79,630,105"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="386,29,552,75,551,80,385,34"/>
+<area shape="rect" id="Node000009" title=" " alt="" coords="655,79,726,105"/>
+<area shape="poly" id="edge8_Node000001_Node000009" title=" " alt="" coords="396,27,640,76,639,81,395,32"/>
+</map>

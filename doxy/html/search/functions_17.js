@@ -1,0 +1,23 @@
+var searchData=
+[
+  ['waitforconnect_0',['WaitForConnect',['../pitcl_8c.html#a7b7fc75ce9177fa80f2232f96361b1f9',1,'pitcl.c']]],
+  ['write_5fall_1',['write_all',['../pilot-read-palmpix_8c.html#a0070a4bd7ecc9520a486baf6989da9f7',1,'pilot-read-palmpix.c']]],
+  ['write_5fdata_2',['write_data',['../pilot-wav_8c.html#a05f4fd475028e98c3174d3d2d940d701',1,'pilot-wav.c']]],
+  ['write_5ffield_3',['write_field',['../pilot-addresses_8c.html#aa436342c40dbfce2adbaeb851b0f1f13',1,'pilot-addresses.c']]],
+  ['write_5ffile_4',['write_file',['../pilot-addresses_8c.html#a642b6daf040b175d39ccd1aafd2b0ef7',1,'pilot-addresses.c']]],
+  ['write_5fheader_5',['write_header',['../pilot-wav_8c.html#ad07f0bbebeda5ab67a6e8e2b249e0774',1,'pilot-wav.c']]],
+  ['write_5fmemo_5fin_5fdirectory_6',['write_memo_in_directory',['../pilot-hinotes_8c.html#aca7dcbaa933e727f8a97d3d6c43a83c0',1,'write_memo_in_directory(char *dirname, struct HiNoteNote m, struct HiNoteAppInfo mai, int category):&#160;pilot-hinotes.c'],['../pilot-memos_8c.html#a20ba1b2fe3bf97d5a63b60101b2c0b95',1,'write_memo_in_directory(char *dirname, struct Memo m, struct MemoAppInfo mai, int category, int verbose, const char *progname):&#160;pilot-memos.c']]],
+  ['write_5fmemo_5fmbox_7',['write_memo_mbox',['../pilot-hinotes_8c.html#ae71dd9072144010ddc59cd801b0adc98',1,'write_memo_mbox(struct PilotUser User, struct HiNoteNote m, struct HiNoteAppInfo mai, int category):&#160;pilot-hinotes.c'],['../pilot-memos_8c.html#a7ddcad0dde8ac64bedb23d26eacf8d4c',1,'write_memo_mbox(struct Memo m, struct MemoAppInfo mai, int category):&#160;pilot-memos.c']]],
+  ['write_5fone_8',['write_one',['../pilot-read-palmpix_8c.html#a592b58a761314c5eaed3265c9857ea4e',1,'pilot-read-palmpix.c']]],
+  ['write_5fpng_5fv2_9',['write_png_v2',['../pilot-read-notepad_8c.html#aedef3114ecca546d3f450e041d07a1b5',1,'pilot-read-notepad.c']]],
+  ['write_5fppm_10',['write_ppm',['../pilot-read-notepad_8c.html#ab406a2d3a9663191a06002e2f1631fdc',1,'write_ppm(FILE *f, struct NotePad *n):&#160;pilot-read-notepad.c'],['../pilot-read-palmpix_8c.html#ad39eb1840af95239f0509d62ab372dfe',1,'write_ppm(FILE *f, const struct PalmPixState *state, const struct PalmPixHeader *header):&#160;pilot-read-palmpix.c'],['../pilot-read-screenshot_8c.html#a20dd1d5045e96b0c4f76dc999f4513e4',1,'write_ppm(char *fname, struct ss_state *state):&#160;pilot-read-screenshot.c'],['../pilot-read-veo_8c.html#a8c3f02f8314b0e146ebb9cce547c3d19',1,'write_ppm(FILE *f, struct Veo *v, long flags):&#160;pilot-read-veo.c']]],
+  ['write_5frecord_5fcsv_11',['write_record_CSV',['../pilot-addresses_8c.html#aba6093cd2e911c381cd254f8ce65d28e',1,'pilot-addresses.c']]],
+  ['write_5frecord_5fhuman_12',['write_record_human',['../pilot-addresses_8c.html#a3f189f3414e595a2542728855d7969b8',1,'pilot-addresses.c']]],
+  ['writeappblock_13',['writeAppBlock',['../classorg_1_1gnu_1_1pilotlink_1_1PilotLink.html#a65af0effe7ce427b3aac323ca1816ff2',1,'org.gnu.pilotlink.PilotLink.writeAppBlock(byte[] data, int dbhandle)'],['../classorg_1_1gnu_1_1pilotlink_1_1PilotLink.html#a375c074cd4617eed636af6ad1c09b26b',1,'org.gnu.pilotlink.PilotLink.writeAppBlock(int handle, int dbhandle, byte[] data, int length)']]],
+  ['writenewrecord_14',['writeNewRecord',['../classorg_1_1gnu_1_1pilotlink_1_1PilotLink.html#abdc184ab852f7494f2c5585176c2edde',1,'org::gnu::pilotlink::PilotLink']]],
+  ['writepicture_15',['WritePicture',['../pilot-read-veo_8c.html#a5cb3bf537d5aa62494471acd30ae0986',1,'pilot-read-veo.c']]],
+  ['writepictures_16',['WritePictures',['../pilot-read-screenshot_8c.html#a51b1cab7f4ae39f13766604e638f760d',1,'pilot-read-screenshot.c']]],
+  ['writerecord_17',['writeRecord',['../classorg_1_1gnu_1_1pilotlink_1_1PilotLink.html#a1a10ba763225a0905b2d728a4aca97d7',1,'org.gnu.pilotlink.PilotLink.writeRecord(int dbh, Record r)'],['../classorg_1_1gnu_1_1pilotlink_1_1PilotLink.html#a12b578d15bf78a4ba37ee6ab6deadb71',1,'org.gnu.pilotlink.PilotLink.writeRecord(int handle, int dbhandle, Record r)']]],
+  ['writeresource_18',['writeResource',['../classorg_1_1gnu_1_1pilotlink_1_1PilotLink.html#a525479c37da882e2a751c20440e3fdc6',1,'org.gnu.pilotlink.PilotLink.writeResource(int handle, int dbhandle, RawRecord r)'],['../classorg_1_1gnu_1_1pilotlink_1_1PilotLink.html#abe3825beed642778d947b8cff2dc222f',1,'org.gnu.pilotlink.PilotLink.writeResource(int dbhandle, RawRecord r)']]],
+  ['writeuserinfo_19',['writeUserInfo',['../classorg_1_1gnu_1_1pilotlink_1_1PilotLink.html#af5aef7f089ccd08337d60d35bf5e3d07',1,'org.gnu.pilotlink.PilotLink.writeUserInfo(User u)'],['../classorg_1_1gnu_1_1pilotlink_1_1PilotLink.html#ab08ed8667f34f2a6f7271e7316ab1f46',1,'org.gnu.pilotlink.PilotLink.writeUserInfo(int h, User u)']]]
+];

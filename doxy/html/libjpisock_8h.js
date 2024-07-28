@@ -1,0 +1,26 @@
+var libjpisock_8h =
+[
+    [ "Java_org_gnu_pilotlink_PilotLink_close", "libjpisock_8h.html#a75b69b1d305737f9d96c89f8765f7e26", null ],
+    [ "Java_org_gnu_pilotlink_PilotLink_closeDB", "libjpisock_8h.html#a4d62f6957846240dcdd76687464a22b4", null ],
+    [ "Java_org_gnu_pilotlink_PilotLink_connect", "libjpisock_8h.html#a9979c97ac30160e6ce158870508d81f7", null ],
+    [ "Java_org_gnu_pilotlink_PilotLink_createDB__IJLjava_lang_String_2J", "libjpisock_8h.html#a71c8c092c5168e640d1c8ed864b79c26", null ],
+    [ "Java_org_gnu_pilotlink_PilotLink_createDB__IJLjava_lang_String_2JII", "libjpisock_8h.html#aac0eb5956f464dbc17890f3f42061277", null ],
+    [ "Java_org_gnu_pilotlink_PilotLink_deleteDB", "libjpisock_8h.html#afc2a660d93c249a9caafca7a512ca394", null ],
+    [ "Java_org_gnu_pilotlink_PilotLink_deleteRecordById", "libjpisock_8h.html#a0b9a39a807a4d17600a1838e33f07001", null ],
+    [ "Java_org_gnu_pilotlink_PilotLink_endSync", "libjpisock_8h.html#ae58082f6a3967828d6ca9d636a86ed39", null ],
+    [ "Java_org_gnu_pilotlink_PilotLink_getAppInfoBlock", "libjpisock_8h.html#a31d0d8a4dbf8c08ac71cd809a9e43b44", null ],
+    [ "Java_org_gnu_pilotlink_PilotLink_getRecordByIndex", "libjpisock_8h.html#a55465bda8a169f9645f35423d5e6f50f", null ],
+    [ "Java_org_gnu_pilotlink_PilotLink_getRecordCount", "libjpisock_8h.html#abe72f366d61c035099abb71e924f1659", null ],
+    [ "Java_org_gnu_pilotlink_PilotLink_getResourceByIndex", "libjpisock_8h.html#ab495d54eeb381101f41306217a22d891", null ],
+    [ "Java_org_gnu_pilotlink_PilotLink_openConduit", "libjpisock_8h.html#a79804f7a79211e8229691d8f94746f95", null ],
+    [ "Java_org_gnu_pilotlink_PilotLink_openDB", "libjpisock_8h.html#a6da33f78a010be1f79b05df7e4a3782a", null ],
+    [ "Java_org_gnu_pilotlink_PilotLink_readAppInfo", "libjpisock_8h.html#a380434a6fe78bbe7350a3ac3cb5c7f9d", null ],
+    [ "Java_org_gnu_pilotlink_PilotLink_readDBList", "libjpisock_8h.html#a6a18be322938d074843ee20bb5080db6", null ],
+    [ "Java_org_gnu_pilotlink_PilotLink_readSysInfo", "libjpisock_8h.html#a01fdfb692e641eafcae662b4ad55be89", null ],
+    [ "Java_org_gnu_pilotlink_PilotLink_readUserInfo", "libjpisock_8h.html#a8b9d9eef7009408a6286fad1e3d3c187", null ],
+    [ "Java_org_gnu_pilotlink_PilotLink_resetSystem", "libjpisock_8h.html#a27a2b43ed075898373b61d744a111c7e", null ],
+    [ "Java_org_gnu_pilotlink_PilotLink_writeAppBlock", "libjpisock_8h.html#a7c1b920f19204bf4810253e2f623db74", null ],
+    [ "Java_org_gnu_pilotlink_PilotLink_writeRecord", "libjpisock_8h.html#a6a14c8f9370f9d6dea172999f41a71da", null ],
+    [ "Java_org_gnu_pilotlink_PilotLink_writeResource", "libjpisock_8h.html#ae614a16d2c04fe833c53e9e9b0ce39ac", null ],
+    [ "Java_org_gnu_pilotlink_PilotLink_writeUserInfo", "libjpisock_8h.html#a2b6f9739d23723eca768f025b9655805", null ]
+];

@@ -1,0 +1,10 @@
+<map id="write_ppm" name="write_ppm">
+<area shape="rect" id="Node000001" title=" " alt="" coords="228,31,309,56"/>
+<area shape="rect" id="Node000002" href="$pilot-read-palmpix_8c.html#a0070a4bd7ecc9520a486baf6989da9f7" title=" " alt="" coords="107,5,176,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="212,35,176,28,177,22,213,30"/>
+<area shape="rect" id="Node000004" href="$pilot-read-palmpix_8c.html#a592b58a761314c5eaed3265c9857ea4e" title=" " alt="" coords="103,55,180,80"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="213,57,181,63,180,58,212,51"/>
+<area shape="rect" id="Node000003" href="$pilot-read-palmpix_8c.html#a217dbf8b442f20279ea00b898af96f52" title=" " alt="" coords="5,31,55,56"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="92,32,56,41,54,35,91,27"/>
+<area shape="poly" id="edge4_Node000004_Node000003" title=" " alt="" coords="87,59,55,51,56,46,88,53"/>
+</map>

@@ -1,0 +1,21 @@
+<map id="_wrap_pi_palmos_error" name="_wrap_pi_palmos_error">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,61,161,87"/>
+<area shape="rect" id="Node000002" href="$pilot-read-palmpix_8c.html#a0d1b4ddc8dbaeec0961a8c824afd9ebd" title=" " alt="" coords="246,12,285,38"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="133,58,231,31,232,36,134,63"/>
+<area shape="rect" id="Node000003" href="$socket_8c.html#ab0f7c13ccbc0c4b35c5b6d923c0291d3" title=" " alt="" coords="209,61,322,87"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="161,72,193,72,193,77,161,77"/>
+<area shape="rect" id="Node000008" href="$pisock__wrap_8c.html#abd77d34d7f6d10b54843fd4a02715a03" title=" " alt="" coords="215,117,316,143"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="128,85,207,110,205,115,127,90"/>
+<area shape="rect" id="Node000004" href="$socket_8c.html#a32b1327c018fb882e8283498858bf8a0" title=" " alt="" coords="377,59,482,84"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="322,71,361,70,361,75,322,76"/>
+<area shape="rect" id="Node000005" href="$threadsafe_8c.html#a57e2304ed7e93f453b4fc66dff84c7c6" title=" " alt="" coords="549,5,655,31"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="473,55,543,34,544,39,475,61"/>
+<area shape="rect" id="Node000006" href="$threadsafe_8c.html#a099d75170599d86ab20348b2af1e4da8" title=" " alt="" coords="542,55,662,80"/>
+<area shape="poly" id="edge5_Node000004_Node000006" title=" " alt="" coords="483,68,527,67,527,72,483,73"/>
+<area shape="rect" id="Node000007" href="$socket_8c.html#ad3e27d0710fe93c314822a548da2286d" title=" " alt="" coords="558,104,646,130"/>
+<area shape="poly" id="edge6_Node000004_Node000007" title=" " alt="" coords="482,82,544,99,543,104,481,88"/>
+<area shape="rect" id="Node000009" href="$pisock__wrap_8c.html#a082d3a5d476e92537e80e908f8f5428a" title=" " alt="" coords="370,129,489,155"/>
+<area shape="poly" id="edge8_Node000008_Node000009" title=" " alt="" coords="317,131,355,134,355,139,316,137"/>
+<area shape="rect" id="Node000010" href="$pisock__wrap_8c.html#aca3c78b106b24b292a156d1f2e9d6bf7" title=" " alt="" coords="537,153,667,179"/>
+<area shape="poly" id="edge9_Node000009_Node000010" title=" " alt="" coords="490,148,522,152,521,158,489,153"/>
+</map>
