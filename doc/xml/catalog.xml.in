@@ -5,13 +5,13 @@
 <catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog">
         <nextCatalog catalog="@XML_CATALOG@" />
         @CAT_ENTRY_START@
-        <uri name="https://docbook.sourceforge.net/release/xsl/current/html/docbook.xsl"
+        <uri name="/usr/share/xml/docbook/stylesheet/docbook-xsl/xhtml/docbook.xsl"
                 uri="@DOCBOOK_ROOT@/html/docbook.xsl"/>
-        <uri name="https://docbook.sourceforge.net/release/xsl/current/manpages/synop.xsl"
+        <uri name="/usr/share/xml/docbook/stylesheet/docbook-xsl/manpages/synop.xsl"
                 uri="@DOCBOOK_ROOT@/manpages/synop.xsl"/>
-        <uri name="https://docbook.sourceforge.net/release/xsl/current/manpages/lists.xsl"
+        <uri name="/usr/share/xml/docbook/stylesheet/docbook-xsl/manpages/lists.xsl"
                 uri="@DOCBOOK_ROOT@/manpages/lists.xsl"/>
-        <uri name="https://docbook.sourceforge.net/release/xsl/current/manpages/xref.xsl"
+        <uri name="/usr/share/xml/docbook/stylesheet/docbook-xsl/xhtml/xref.xsl"
                 uri="@DOCBOOK_ROOT@/manpages/xref.xsl"/>
         @CAT_ENTRY_END@
         <uri name="manpages/docbook.xsl" uri="@top_srcdir@/doc/xml/docbook.xsl"/>
