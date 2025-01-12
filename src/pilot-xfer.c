@@ -2477,8 +2477,7 @@ main(int argc, const char *argv[])
 				{
 					fprintf(stderr, "   ERROR: '%s' is not a directory or does not exist.\n"
 							"   Please supply a directory name when performing a "
-							"backup or restore and try again.\n\n", dirname);
-					fprintf(stderr,gracias);
+							"backup or restore and try again.\n\n%s", dirname, gracias);
 					return 1;
 				}
 			}
@@ -2487,14 +2486,12 @@ main(int argc, const char *argv[])
 		case palm_op_list:
 			if (rargc > 0)
 			{
-				fprintf(stderr,"   ERROR: Do not pass additional arguments to -busrlLC.\n");
-				fprintf(stderr,gracias);
+				fprintf(stderr,"   ERROR: Do not pass additional arguments to -busrlLC.\n%s", gracias);
 				return 1;
 			}
 			break;
 		case palm_op_noop:
-			fprintf(stderr,"   ERROR: Must specify one of -bursimfdlC.\n");
-			fprintf(stderr,gracias);
+			fprintf(stderr,"   ERROR: Must specify one of -bursimfdlC.\n%s", gracias);
 			return 1;
 			break;
 		case palm_op_merge:
