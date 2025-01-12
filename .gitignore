@@ -2,6 +2,7 @@ config.cache
 config.h
 config.h.in
 config.log
+config.status
 configure
 install-sh
 configure
@@ -29,7 +30,6 @@ test-driver
 tests/*-test
 m4/*.m4
 compile
-config.status
 doc/doxygen.cfg
 doc/xml/*.xml
 doc/xml/*.xsl
