@@ -120,6 +120,24 @@ Building pilot-link on Linux/Unix systems
 	options. Please make sure you use the --help option to "./configure"
 	to make sure you're enabling all of the options you wish to use.
 
+	You will also need to have your development environment set up, which
+	will require such tools as automake, autoconf, libtool, some system
+	headers, and others to be properly installed and configured on your
+	machine first. If you are running a current Linux or Unix system,
+	these common tools are probably packaged for you.
+	You also need to satisfy the dependencies of these libraries:
+		libusb, libbluetooth, libpopt and byacc
+	On Debian systems you can therefore execute:
+		$ sudo apt install build-essential automake libtool-bin
+		$ sudo apt install libusb-dev libbluetooth-dev libpopt-dev byacc
+
+	If you are using a GIT version of pilot-link, e.g. from
+	https://github.com/desrod/pilot-link/, you will have to run
+	'sh ./autogen.sh' first, from the top-level directory, which will
+	create and bootstrap the "./configure" script for you. On modern systems
+	you may alternatively use 'autoupdate' and 'autoreconf -i -s' to
+	create the "./configure" script.
+
 	If you have downloaded this code from the website, or as a tarball,
 	simply unpack the tarball and run "./configure" in the top-level
 	directory with your specific arguments. "./configure --help" will
@@ -136,8 +154,8 @@ Building pilot-link on Linux/Unix systems
 		$ make
 	
 	After the source builds, feel free to play around in the 'src'
-	subdirectory, CAREFULLY. 'dlpsh' and 'pilot-xfer' are probably the
-	most useful programs for you, and also the safest to use
+	subdirectory, CAREFULLY. 'pilot-dlpsh' and 'pilot-xfer' are probably
+	the most useful programs for you, and also the safest to use
 	non-destructively.
 	
 	Once you have determined that pilot-link works and suits your needs
@@ -156,16 +174,6 @@ Building pilot-link on Linux/Unix systems
 	/usr/local will be used.
 
 		# make install
-
-	If you are using a CVS version of pilot-link, you will have to run
-	'sh ./autogen.sh' instead, from the top-level directory, which will
-	create and bootstrap the "./configure" script for you.
-
-	You will also need to have your development environment set up, which
-	will require such tools as automake, autoconf, libtool, some system
-	headers, and others to be properly installed and configured on your
-	machine first. If you are running a current Linux or Unix system,
-	these common tools are probably packaged for you.
 
 Building pilot-link on OS/2 
 ---------------------------

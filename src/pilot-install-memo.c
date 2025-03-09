@@ -271,7 +271,7 @@ int main(int argc, char *argv[])
 
 	if (count == 0) {
 		snprintf(messagebuffer, sizeof(messagebuffer),
-			"No memos were synchronized to your Palm.\n"
+			"No memos were installed to Palm.\n"
 			"Thank you for using pilot-link.\n");
 	} else if (count == 1) {
 		snprintf(messagebuffer, sizeof(messagebuffer),

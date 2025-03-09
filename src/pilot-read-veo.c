@@ -852,7 +852,8 @@ void write_png (FILE * f, struct Veo *v, long flags)
    png_infop info_ptr;
 
    png_ptr = png_create_write_struct
-	 (PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+	 (PNG_LIBPNG_VER_STRING, NULL,
+	  NULL, NULL);
 
    if (!png_ptr)
 	 return;
