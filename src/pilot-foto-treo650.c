@@ -180,7 +180,7 @@ static void
 static void
   dump_dir(int sd, long volume, const char *path, FileRef dir)
 {
-   unsigned long		it						= 0;
+   int					it						= vfsIteratorStart;
    int					max						= 64;
    struct VFSDirInfo	infos[64];
    int					i;

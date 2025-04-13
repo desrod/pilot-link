@@ -1,7 +1,8 @@
 # This is free software, licensed under the GNU Public License V2.
 # See the file COPYING for details.
 
-AC_INIT(include/pi-version.h.in)
+AC_INIT
+AC_CONFIG_SRCDIR([include/pi-version.h.in])
 AC_CONFIG_MACRO_DIR([m4])
 
 dnl Initialize maintainer mode
@@ -15,7 +16,7 @@ AC_PREFIX_DEFAULT(/usr/local)
 dnl ******************************
 dnl Limit to a specific ac version
 dnl ******************************
-AC_PREREQ(2.53)
+AC_PREREQ([2.71])
 AM_CONFIG_HEADER(config.h)
 AM_CONFIG_HEADER(include/pi-md5.h)
 
@@ -24,7 +25,7 @@ dnl Pilot Link Version
 dnl ******************************
 PILOT_LINK_VERS=0
 PILOT_LINK_MAJOR=13
-PILOT_LINK_MINOR=0
+PILOT_LINK_MINOR=1
 PILOT_LINK_PATCH=
 
 AC_SUBST(PILOT_LINK_VERS)
@@ -40,12 +41,12 @@ dnl Please see the following URL for details:
 dnl http://sources.redhat.com/autobook/autobook/autobook_91.html
 dnl ******************************
 PISOCK_CURRENT=10
-PISOCK_REVISION=0
 PISOCK_AGE=1
+PISOCK_REVISION=0
 
 AC_SUBST(PISOCK_CURRENT)
-AC_SUBST(PISOCK_REVISION)
 AC_SUBST(PISOCK_AGE)
+AC_SUBST(PISOCK_REVISION)
 
 
 dnl ******************************
@@ -53,18 +54,18 @@ dnl Pilot Link Sync Library Version
 dnl libpisync.so
 dnl ******************************
 PISYNC_CURRENT=1
-PISYNC_REVISION=3
 PISYNC_AGE=0
+PISYNC_REVISION=3
 
 AC_SUBST(PISYNC_CURRENT)
-AC_SUBST(PISYNC_REVISION)
 AC_SUBST(PISYNC_AGE)
+AC_SUBST(PISYNC_REVISION)
 
 dnl Eat -Werror so configure will run properly, if the user provided it
 enable_werror=no
 save_CFLAGS="$CFLAGS"
-CFLAGS=$(echo $save_CFLAGS | sed -e s/-Werror//g)
-CXXFLAGS=$(echo $save_CXXFLAGS | sed -e s/-Werror//g)
+CFLAGS=$(echo "$save_CFLAGS" | sed -e 's/-Werror[^=]//g')
+CXXFLAGS=$(echo "$save_CXXFLAGS" | sed -e 's/-Werror[^=]//g')
 if test "x$CFLAGS" != "x$save_CFLAGS"; then
 	dnl -Werror was set; treat it as implicit --enable-werror below
 	enable_werror="yes"
@@ -73,7 +74,7 @@ fi
 
 dnl Check host type
 AC_CANONICAL_HOST
-AC_CANONICAL_SYSTEM
+AC_CANONICAL_TARGET
 AC_DEFINE_UNQUOTED(HOST_OS, "$host", [Host type])
 
 AM_INIT_AUTOMAKE(pilot-link, [$VERSION])
@@ -155,12 +156,45 @@ AM_CONDITIONAL(GIT_BUILD,[test -d "${srcdir}/.git"])
 dnl ******************************
 dnl Pilot Link Checks
 dnl ******************************
-AC_HEADER_STDC
+m4_warn([obsolete],
+[The preprocessor macro `STDC_HEADERS' is obsolete.
+  Except in unusual embedded environments, you can safely include all
+  ISO C90 headers unconditionally.])dnl
+# Autoupdate added the next two lines to ensure that your configure
+# script's behavior did not change.  They are probably safe to remove.
+AC_CHECK_INCLUDES_DEFAULT
+AC_PROG_EGREP
+
 AC_C_CONST
-AC_HEADER_TIME
+m4_warn([obsolete],
+[Update your code to rely only on HAVE_SYS_TIME_H,
+then remove this warning and the obsolete code below it.
+All current systems provide time.h; it need not be checked for.
+Not all systems provide sys/time.h, but those that do, all allow
+you to include it and time.h simultaneously.])dnl
+AC_CHECK_HEADERS_ONCE([sys/time.h])
+# Obsolete code to be removed.
+if test $ac_cv_header_sys_time_h = yes; then
+  AC_DEFINE([TIME_WITH_SYS_TIME],[1],[Define to 1 if you can safely include both <sys/time.h>
+	     and <time.h>.  This macro is obsolete.])
+fi
+# End of obsolete code.
+
 AC_STRUCT_TM
 AC_PROG_GCC_TRADITIONAL
-AC_TYPE_SIGNAL
+m4_warn([obsolete],
+[your code may safely assume C89 semantics that RETSIGTYPE is void.
+Remove this warning and the `AC_CACHE_CHECK' when you adjust the code.])dnl
+AC_CACHE_CHECK([return type of signal handlers],[ac_cv_type_signal],[AC_COMPILE_IFELSE(
+[AC_LANG_PROGRAM([#include <sys/types.h>
+#include <signal.h>
+],
+		 [return *(signal (0, 0)) (0) == 1;])],
+		   [ac_cv_type_signal=int],
+		   [ac_cv_type_signal=void])])
+AC_DEFINE_UNQUOTED([RETSIGTYPE],[$ac_cv_type_signal],[Define as the return type of signal handlers
+		    (`int' or `void').])
+
 
 AC_CHECK_HEADERS(
 	dirent.h errno.h fcntl.h inttypes.h memory.h netdb.h 		\
@@ -195,10 +229,8 @@ AC_CHECK_LIB(inet, main, [LIBS="$LIBS -linet"])
 AC_CACHE_CHECK([for cispeed and cospeed members of struct termios],
 	ac_cv_termios_cspeed,
 
-	[AC_TRY_COMPILE(
-		[#include <termios.h>], [int main(void) {
-		 struct termios t;t.c_ispeed=t.c_ospeed=0;}],
-			ac_cv_termios_cspeed=yes,ac_cv_termios_cspeed=no)])
+	[AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <termios.h>]], [[int main(void) {
+		 struct termios t;t.c_ispeed=t.c_ospeed=0;}]])],[ac_cv_termios_cspeed=yes],[ac_cv_termios_cspeed=no])])
 
 if test $ac_cv_termios_cspeed = yes; then
 	AC_DEFINE(TERMIOS_CSPEED, 1, [Define if we have termios(3) support])
@@ -293,7 +325,7 @@ usb_type=
 usb_libs=
 
 AC_ARG_ENABLE(libusb,
-	      AC_HELP_STRING([--enable-libusb         Enable usage of libusb]),
+	      AS_HELP_STRING([--enable-libusb         Enable usage of libusb]),
 	      if test "x$enableval" != "xno" ; then
 	          AC_CHECK_LIB(usb, usb_open, [have_libusb=yes;],[have_libusb=no])
 	      fi
@@ -348,8 +380,7 @@ have_bluez=no
 use_bluez=auto
 
 AC_ARG_WITH(bluez,
-		AC_HELP_STRING([--with-bluez],
-			[Enable use of BlueZ]),
+		AS_HELP_STRING([--with-bluez],[Enable use of BlueZ]),
 		[use_bluez="$withval"])
 if test "$use_bluez" != "no" ; then
 	PKG_CHECK_MODULES([BLUEZ],[bluez],[
@@ -392,11 +423,8 @@ if test "x$enable_conduits" != "xno"; then
 		dnl Determine if system popt is good enough
 		save_LIBS="$LIBS"
 		AC_CHECK_HEADER(popt.h,
-			AC_CHECK_DECL(POPT_BIT_SET,
-				AC_CHECK_LIB(popt, poptStrippedArgv,,
-					[with_included_popt="yes"]),
-				[with_included_popt="yes"],
-				[#include <popt.h>]),
+			AC_CHECK_LIB(popt, poptStrippedArgv,,
+				[with_included_popt="yes"]),
 			[with_included_popt="yes"]
 		)
 		LIBS="$save_LIBS"
@@ -448,7 +476,7 @@ AC_CHECK_LIB(
 		AC_CHECK_FUNC(iconv, [
 			AC_CHECK_FUNCS(gnu_get_libc_version)
 			AC_MSG_CHECKING(if system iconv handles CP1252)
-			AC_TRY_RUN([
+			AC_RUN_IFELSE([AC_LANG_SOURCE([[
 #include <iconv.h>
 #include <stdlib.h>
 #include <string.h>
@@ -474,11 +502,11 @@ int main (int argc, char **argv)
 		exit (1);
 
 	exit (0);
-}], AC_MSG_RESULT(yes); have_iconv=yes, [AC_MSG_RESULT(no);], AC_MSG_RESULT(not cross compiling);)])])
+}]])],[AC_MSG_RESULT(yes); have_iconv=yes],[AC_MSG_RESULT(no);],[AC_MSG_RESULT(not cross compiling);])])])
 
-dnl ##  Fixed AC_TRY_RUN warning, missing third argument. -DD 22/01/2002
+dnl ##  Fixed AC_RUN_IFELSE([AC_LANG_SOURCE([[]])],[],[],[]) warning, missing third argument. -DD 22/01/2002
 dnl
-dnl 	AC_TRY_RUN is a macro that's basically like an if-then-else structure. If
+dnl 	AC_RUN_IFELSE([AC_LANG_SOURCE([[]])],[],[],[]) is a macro that's basically like an if-then-else structure. If
 dnl 	the test program (whose text is the first argument) succeeds, the second
 dnl 	argument is executed; if the test fails, the third argument is executed; and
 dnl 	if autoconf knows it is cross-compiling for another machine and therefore
@@ -705,8 +733,7 @@ dnl *************************************
 AM_CONDITIONAL(BUILD_XML,[test ! -d "{$srcdir}/.git"])
 # if test -d "${srcdir}/.git" ; then
 
-AC_ARG_ENABLE([xsltproc], [AC_HELP_STRING([--enable-xsltproc],
-	[Use xsltproc to build documentation [default=no]])],
+AC_ARG_ENABLE([xsltproc], [AS_HELP_STRING([--enable-xsltproc],[Use xsltproc to build documentation [default=no]])],
 	[enable_xsltproc="$enableval"],
 [enable_xsltproc=no])
 if test x"$enable_xsltproc" = x"yes"; then
@@ -770,7 +797,7 @@ if test "x$GCC" = "xyes" -a "x$enable_werror" = "xyes"; then
 	CFLAGS="$CFLAGS -Werror"
 fi
 
-AC_OUTPUT([
+AC_CONFIG_FILES([
 	Makefile
 	pilot-link.m4
 	pilot-link.pc
@@ -799,6 +826,7 @@ AC_OUTPUT([
 tests/Makefile
 	darwin/Makefile
 ])
+AC_OUTPUT
 
 AC_MSG_RESULT([
   Options detected/selected
