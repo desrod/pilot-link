@@ -42,10 +42,6 @@
 
 #ifdef HAVE_PNG
 #include "png.h"
-#if (PNG_LIBPNG_VER < 10201)
- #define png_voidp_NULL (png_voidp)NULL
- #define png_error_ptr_NULL (png_error_ptr)NULL
-#endif
 #endif
 
 const char *progname;
@@ -223,8 +219,8 @@ void write_png( FILE *f, const struct PalmPixState *state,
 	png_infop info_ptr;
 
 	png_ptr = png_create_write_struct
-		( PNG_LIBPNG_VER_STRING, png_voidp_NULL,
-		png_error_ptr_NULL, png_error_ptr_NULL);
+		( PNG_LIBPNG_VER_STRING, NULL,
+		NULL, NULL);
 
 	if(!png_ptr)
 		return;

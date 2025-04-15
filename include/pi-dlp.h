@@ -1594,8 +1594,10 @@ struct dlpResponse {
 	 * @return A negative value if an error occured (see pi-error.h)
 	 */
 	extern PI_ERR dlp_VFSDirEntryEnumerate
-		PI_ARGS((int sd, FileRef dirref, unsigned long *diriterator,
-			int *maxitems, struct VFSDirInfo *diritems));
+		PI_ARGS((int sd, FileRef dirref,
+			int *diriterator, int *maxitems, struct VFSDirInfo *diritems));
+			// for older compilers where int is 16 bit:
+			// long *diriterator, int *maxitems, struct VFSDirInfo *diritems));
 
 	/** @brief Create a new directory on a VFS volume
 	 *

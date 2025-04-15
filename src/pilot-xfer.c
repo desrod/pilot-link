@@ -713,7 +713,6 @@ pi_file_retrieve_VFS(const int fd, const char *basename, const int socket, const
 	pi_buffer_t  *buffer;
 	ssize_t      readsize,writesize;
 	int          filesize;
-	int          original_filesize;
 	int          written_so_far;
 	pi_progress_t progress;
 
@@ -762,7 +761,6 @@ pi_file_retrieve_VFS(const int fd, const char *basename, const int socket, const
 	}
 
 	dlp_VFSFileSize(socket,file,&filesize);
-	original_filesize = filesize;
 
 	memset(&progress, 0, sizeof(progress));
 	progress.type = PI_PROGRESS_RECEIVE_VFS;
@@ -1709,7 +1707,7 @@ print_fileinfo(const char *path, FileRef file)
 static void
 print_dir(long volume, const char *path, FileRef dir)
 {
-	unsigned long		it						= 0;
+	int					it						= vfsIteratorStart;
 	int					max						= 64;
 	struct VFSDirInfo	infos[64];
 	int					i;
@@ -1839,6 +1837,7 @@ mediatype (struct VFSInfo *info)
 
 typedef struct cardreport_s {
 	char				*type;
+	char				*hidden;
 	long				size_total;
 	long				size_used;
 	long				size_free;
@@ -1856,8 +1855,7 @@ palm_cardinfo ()
 					volume_count = 16,
 					volumes[16];
 	cardreport_t	*cards = NULL,
-					*t,
-					*t2;
+					*t;
 	struct VFSInfo	info;
 	char			buf[vfsMAXFILENAME],
 					fmt[64];
@@ -1865,11 +1863,13 @@ palm_cardinfo ()
 					size_total;
 	int				len;					/* should be size_t in dlp.c? */
 	
-	size_t			digits_type = 10,
-					digits_total = 4,
-					digits_used = 4,
-					digits_free = 4,
-					digits_cardnum = 1;
+	const size_t	CONDENSE = 3;
+	size_t			width_type = 10,
+					width_hidden = 6 - CONDENSE,
+					width_total = 4,
+					width_used = 4,
+					width_free = 4,
+					width_cardnum = 1;
 	static const char unknown_type[] = "<unknown>";
 
 	/* VFS info */
@@ -1899,10 +1899,12 @@ palm_cardinfo ()
 		dlp_VFSVolumeGetLabel (sd, volumes[i], &len, buf);
 
 		t = malloc (sizeof (cardreport_t));
-		t->size_used = size_used;
-		t->size_total = size_total;
-		t->size_free = size_total - size_used;
 		t->type = mediatype(&info);
+		t->hidden = (info.attributes & vfsVolAttrHidden) ? "x" : " ";
+		// alternative: t->hidden = (info.attributes & vfsVolAttrHidden) ? "y" : "n";
+		t->size_total = size_total;
+		t->size_used = size_used;
+		t->size_free = size_total - size_used;
 		t->cardnum = info.slotRefNum;
 		t->name = malloc (strlen(buf) + 1);
 		strcpy (&t->name[1], buf);
@@ -1913,11 +1915,11 @@ palm_cardinfo ()
 			t->next = cards;
 			cards = t;
 		} else {
-			t2 = cards;
-			while (t2->next != NULL && t2->next->cardnum < t->cardnum)
-				t2 = t2->next;
-			t->next = t2->next;
-			t2->next = t;
+			cardreport_t *tmp = cards;
+			while (tmp->next != NULL && tmp->next->cardnum < t->cardnum)
+				tmp = tmp->next;
+			t->next = tmp->next;
+			tmp->next = t;
 		}
 
 		/* Determine field widths */
@@ -1925,29 +1927,30 @@ palm_cardinfo ()
 		j = FUNC;					\
 		if (j > NAME)				\
 				NAME = j
-		FIELDWIDTH (digits_type, (t->type==NULL ? sizeof(unknown_type) : strlen(t->type)));
-		FIELDWIDTH (digits_used, numdigits(t->size_used));
-		FIELDWIDTH (digits_total, numdigits(t->size_total));
-		FIELDWIDTH (digits_free, numdigits(t->size_free));
-		FIELDWIDTH (digits_cardnum, numdigits(t->cardnum));
+		FIELDWIDTH (width_type, (t->type==NULL ? sizeof(unknown_type) : strlen(t->type)));
+		FIELDWIDTH (width_hidden, strlen(t->hidden));
+		FIELDWIDTH (width_total, numdigits(t->size_total));
+		FIELDWIDTH (width_used, numdigits(t->size_used));
+		FIELDWIDTH (width_free, numdigits(t->size_free));
+		FIELDWIDTH (width_cardnum, numdigits(t->cardnum));
 #undef FIELDWIDTH
 	}
 
 	memset(fmt,0,sizeof(fmt));
-	snprintf (fmt, sizeof(fmt)-1, "%%-%zus  %%%zus  %%%zus  %%%zus  %%-%zus  %%s\n",
-			digits_type, digits_used, digits_total, digits_free,
-			digits_cardnum);
+	snprintf (fmt, sizeof(fmt)-1, "%%-%zus  %%-%zus  %%%zus  %%%zus  %%%zus  %%-%zus  %%s\n",
+			width_type, width_hidden, width_total - CONDENSE, width_used, width_free,
+			width_cardnum);
 	
-	printf (fmt, "Filesystem", "Size", "Used", "Free", "#", "Card name");
+	printf (fmt, "Filesystem", "Hidden", "Size", "Used", "Free", "#", "Card name");
 
 	memset(fmt,0,sizeof(fmt));
-	snprintf (fmt, sizeof(fmt)-1, "%%-%zus  %%%zuli  %%%zuli  %%%zuli  %%%zui  %%s\n",
-			digits_type, digits_used, digits_total, digits_free,
-			digits_cardnum);
+	snprintf (fmt, sizeof(fmt)-1, "%%-%zus  %%-%zus  %%%zuli  %%%zuli  %%%zuli  %%%zui  %%s\n",
+			width_type, width_hidden, width_total, width_used, width_free,
+			width_cardnum);
 
 	for (t = cards; t != NULL; t = t->next) {
-		printf (fmt, t->type==NULL ? unknown_type : t->type, t->size_used, t->size_total,
-				t->size_free, t->cardnum, t->name);
+		printf (fmt, t->type==NULL ? unknown_type : t->type, t->hidden,
+				t->size_total, t->size_used, t->size_free, t->cardnum, t->name);
 	}
 
 cleanup:
@@ -1986,10 +1989,7 @@ findVFSRoot_clumsy(const char *root_component, long *match)
 {
 	int				volume_count		= 16;
 	int				volumes[16];
-	struct VFSInfo	info;
-	int				i;
-	int				buflen;
-	char			buf[vfsMAXFILENAME];
+	char			labels[16][vfsMAXFILENAME];
 	long			matched_volume		= -1;
 
 	if (dlp_VFSVolumeEnumerate(sd,&volume_count,volumes) < 0)
@@ -2002,23 +2002,25 @@ findVFSRoot_clumsy(const char *root_component, long *match)
 	   device. If we're listing, print everything out, otherwise remain
 	   silent and just set matched_volume if there's a match in the
 	   first filename component. */
-	for (i = 0; i<volume_count; ++i)
+	for (int i=0; i<volume_count; ++i)
 	{
-		if (dlp_VFSVolumeInfo(sd,volumes[i],&info) < 0)
-			continue;
+		labels[i][0]=0;
+		static int buflen=vfsMAXFILENAME;
+		(void) dlp_VFSVolumeGetLabel(sd,volumes[i],&buflen,labels[i]);
 
-		buflen=vfsMAXFILENAME;
-		buf[0]=0;
-		(void) dlp_VFSVolumeGetLabel(sd,volumes[i],&buflen,buf);
-
-		/* Not listing, so just check matches and continue. */
-		if (0 == strcmp(root_component,buf)) {
+		/* Check if root component matches a volume label. */
+		if (0 == strcmp(root_component,labels[i])) {
 			matched_volume = volumes[i];
 			break;
 		}
-		/* volume label no longer important, overwrite */
-		sprintf(buf,"card%d",info.slotRefNum);
 
+		struct VFSInfo info;
+		if (dlp_VFSVolumeInfo(sd,volumes[i],&info) < 0)
+			continue; // oops, should not happen
+
+		/* Check if root component matches a cardID. */
+		static char buf[8];
+		sprintf(buf,"card%d",info.slotRefNum);
 		if (0 == strcmp(root_component,buf)) {
 			matched_volume = volumes[i];
 			break;
@@ -2028,11 +2030,14 @@ findVFSRoot_clumsy(const char *root_component, long *match)
 	if (matched_volume >= 0) {
 		*match = matched_volume;
 		return 0;
-	}
-
-	if ((matched_volume < 0) && (1 == volume_count)) {
-		/* Assume that with one card, just go look there. */
+	} else if (volume_count > 0) { // Assume at least one card and match.
 		*match = volumes[0];
+		for (int i=0; i<volume_count; i++)
+			/* if existent, match the first unlabeled volume. */
+			if (0 == strlen(labels[i])) {
+				*match = volumes[i];
+				break;
+			}
 		return 1;
 	}
 	return -1;
@@ -2327,7 +2332,7 @@ main(int argc, const char *argv[])
 
 		/* action indicators that take no arguments. */
 		{"list",     'l', POPT_ARG_NONE, NULL, palm_op_list, "List all application and 3rd party Palm data/apps", NULL},
-		{"cardinfo", 'C', POPT_ARG_NONE, NULL, palm_op_cardinfo, "Show information on available cards", NULL},
+		{"cardinfo", 'C', POPT_ARG_NONE, NULL, palm_op_cardinfo, "Show information on available card and built-in volumes", NULL},
 
 		/* action indicators that may be mixed in with the others */
 		{"Purge",    'P', POPT_BIT_SET, &sync_flags, PURGE, "Purge any deleted data that hasn't been cleaned up", NULL},
@@ -2477,8 +2482,7 @@ main(int argc, const char *argv[])
 				{
 					fprintf(stderr, "   ERROR: '%s' is not a directory or does not exist.\n"
 							"   Please supply a directory name when performing a "
-							"backup or restore and try again.\n\n", dirname);
-					fprintf(stderr,gracias);
+							"backup or restore and try again.\n\n%s", dirname, gracias);
 					return 1;
 				}
 			}
@@ -2487,14 +2491,12 @@ main(int argc, const char *argv[])
 		case palm_op_list:
 			if (rargc > 0)
 			{
-				fprintf(stderr,"   ERROR: Do not pass additional arguments to -busrlLC.\n");
-				fprintf(stderr,gracias);
+				fprintf(stderr,"   ERROR: Do not pass additional arguments to -busrlLC.\n%s", gracias);
 				return 1;
 			}
 			break;
 		case palm_op_noop:
-			fprintf(stderr,"   ERROR: Must specify one of -bursimfdlC.\n");
-			fprintf(stderr,gracias);
+			fprintf(stderr,"   ERROR: Must specify one of -bursimfdlC.\n%s", gracias);
 			return 1;
 			break;
 		case palm_op_merge:
