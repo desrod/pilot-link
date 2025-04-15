@@ -713,7 +713,6 @@ pi_file_retrieve_VFS(const int fd, const char *basename, const int socket, const
 	pi_buffer_t  *buffer;
 	ssize_t      readsize,writesize;
 	int          filesize;
-	int          original_filesize;
 	int          written_so_far;
 	pi_progress_t progress;
 
@@ -762,7 +761,6 @@ pi_file_retrieve_VFS(const int fd, const char *basename, const int socket, const
 	}
 
 	dlp_VFSFileSize(socket,file,&filesize);
-	original_filesize = filesize;
 
 	memset(&progress, 0, sizeof(progress));
 	progress.type = PI_PROGRESS_RECEIVE_VFS;
@@ -1709,7 +1707,7 @@ print_fileinfo(const char *path, FileRef file)
 static void
 print_dir(long volume, const char *path, FileRef dir)
 {
-	unsigned long		it						= 0;
+	int					it						= vfsIteratorStart;
 	int					max						= 64;
 	struct VFSDirInfo	infos[64];
 	int					i;
@@ -1986,10 +1984,7 @@ findVFSRoot_clumsy(const char *root_component, long *match)
 {
 	int				volume_count		= 16;
 	int				volumes[16];
-	struct VFSInfo	info;
-	int				i;
-	int				buflen;
-	char			buf[vfsMAXFILENAME];
+	char			labels[16][vfsMAXFILENAME];
 	long			matched_volume		= -1;
 
 	if (dlp_VFSVolumeEnumerate(sd,&volume_count,volumes) < 0)
@@ -2002,23 +1997,25 @@ findVFSRoot_clumsy(const char *root_component, long *match)
 	   device. If we're listing, print everything out, otherwise remain
 	   silent and just set matched_volume if there's a match in the
 	   first filename component. */
-	for (i = 0; i<volume_count; ++i)
+	for (int i=0; i<volume_count; ++i)
 	{
-		if (dlp_VFSVolumeInfo(sd,volumes[i],&info) < 0)
-			continue;
+		labels[i][0]=0;
+		static int buflen=vfsMAXFILENAME;
+		(void) dlp_VFSVolumeGetLabel(sd,volumes[i],&buflen,labels[i]);
 
-		buflen=vfsMAXFILENAME;
-		buf[0]=0;
-		(void) dlp_VFSVolumeGetLabel(sd,volumes[i],&buflen,buf);
-
-		/* Not listing, so just check matches and continue. */
-		if (0 == strcmp(root_component,buf)) {
+		/* Check if root component matches a volume label. */
+		if (0 == strcmp(root_component,labels[i])) {
 			matched_volume = volumes[i];
 			break;
 		}
-		/* volume label no longer important, overwrite */
-		sprintf(buf,"card%d",info.slotRefNum);
 
+		struct VFSInfo info;
+		if (dlp_VFSVolumeInfo(sd,volumes[i],&info) < 0)
+			continue; // oops, should not happen
+
+		/* Check if root component matches a cardID. */
+		static char buf[8];
+		sprintf(buf,"card%d",info.slotRefNum);
 		if (0 == strcmp(root_component,buf)) {
 			matched_volume = volumes[i];
 			break;
@@ -2028,11 +2025,14 @@ findVFSRoot_clumsy(const char *root_component, long *match)
 	if (matched_volume >= 0) {
 		*match = matched_volume;
 		return 0;
-	}
-
-	if ((matched_volume < 0) && (1 == volume_count)) {
-		/* Assume that with one card, just go look there. */
+	} else if (volume_count > 0) { // Assume at least one card and match.
 		*match = volumes[0];
+		for (int i=0; i<volume_count; i++)
+			/* if existent, match the first unlabeled volume. */
+			if (0 == strlen(labels[i])) {
+				*match = volumes[i];
+				break;
+			}
 		return 1;
 	}
 	return -1;
@@ -2327,7 +2327,7 @@ main(int argc, const char *argv[])
 
 		/* action indicators that take no arguments. */
 		{"list",     'l', POPT_ARG_NONE, NULL, palm_op_list, "List all application and 3rd party Palm data/apps", NULL},
-		{"cardinfo", 'C', POPT_ARG_NONE, NULL, palm_op_cardinfo, "Show information on available cards", NULL},
+		{"cardinfo", 'C', POPT_ARG_NONE, NULL, palm_op_cardinfo, "Show information on available card and built-in volumes", NULL},
 
 		/* action indicators that may be mixed in with the others */
 		{"Purge",    'P', POPT_BIT_SET, &sync_flags, PURGE, "Purge any deleted data that hasn't been cleaned up", NULL},
@@ -2477,8 +2477,7 @@ main(int argc, const char *argv[])
 				{
 					fprintf(stderr, "   ERROR: '%s' is not a directory or does not exist.\n"
 							"   Please supply a directory name when performing a "
-							"backup or restore and try again.\n\n", dirname);
-					fprintf(stderr,gracias);
+							"backup or restore and try again.\n\n%s", dirname, gracias);
 					return 1;
 				}
 			}
@@ -2487,14 +2486,12 @@ main(int argc, const char *argv[])
 		case palm_op_list:
 			if (rargc > 0)
 			{
-				fprintf(stderr,"   ERROR: Do not pass additional arguments to -busrlLC.\n");
-				fprintf(stderr,gracias);
+				fprintf(stderr,"   ERROR: Do not pass additional arguments to -busrlLC.\n%s", gracias);
 				return 1;
 			}
 			break;
 		case palm_op_noop:
-			fprintf(stderr,"   ERROR: Must specify one of -bursimfdlC.\n");
-			fprintf(stderr,gracias);
+			fprintf(stderr,"   ERROR: Must specify one of -bursimfdlC.\n%s", gracias);
 			return 1;
 			break;
 		case palm_op_merge:
