@@ -1,24 +1,68 @@
-config.cache
+# generic files to ignore
+# backup files (*~) and vim swap file (.swp), MacOS dir file (.DS_Store)
+*~
+*.lock
+*.DS_Store
+.*.swp
+*.out
+*.bak
+*.zip
+*.patch
+
+# except this file
+!.gitignore
+
+# from autoreconf -i
+compile
 config.guess
-config.h
-config.h.in
-config.log
-config.status
 config.sub
-configure
 install-sh
+missing
+depcomp
+ylwrap
+test-driver
+autom4te.cache
+m4
+aclocal.m4
+config.cache
+config.h.in
 configure
-libtool
 ltconfig
 ltmain.sh
-.deps
-.libs
-stamp-h*
-aclocal.m4
-Makefile
 Makefile.in
+
+# from configure
+config.h
+config.status
+config.log
+Makefile
+Makefile.PL
+stamp-h*
+libtool
+.deps
 pilot-link.m4
 pilot-link.pc
 pilot-link-pp.pc
 tags
-autom4te.cache
+include/pi-md5.h
+include/pi-version.h
+doc/xml/catalog.xml
+doc/xml/docbook.xsl
+doc/doxygen.cfg
+bindings/Python/setup*.py
+
+# from make / cc / gcc
+*.o
+*.la
+*.lo
+*.so
+.libs
+src/pilot-*
+!src/*.c
+!src/*.h
+!src/*.pl
+src/parsedate.c
+tests/*-test
+
+# from make install
+dist

@@ -1241,13 +1241,13 @@ static void postPilotLinkException(JNIEnv * env, const char * sTexto, int iResul
 
     // Attempt to describe underlying errno for exception
     sMessage = (char *)malloc(strlen(sTemplate) + strlen(sTexto) +
-        strlen(dlp_strerror(iResult)) + strlen(strerror(save_errno)) + 1);
+        strlen(dlp_err_message(iResult)) + strlen(strerror(save_errno)) + 1);
     if (sMessage != NULL) {
-        sprintf(sMessage, sTemplate, sTexto, dlp_strerror(iResult), strerror(save_errno));
+        sprintf(sMessage, sTemplate, sTexto, dlp_err_message(iResult), strerror(save_errno));
         postJavaException(env, sExceptionClass, sMessage);
         free(sMessage);
     } else {
-        postJavaException(env, sExceptionClass, dlp_strerror(iResult));
+        postJavaException(env, sExceptionClass, dlp_err_message(iResult));
     }
 }
 

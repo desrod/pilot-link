@@ -109,17 +109,17 @@ extern "C" {
 /** @name VFS definitions */
 /*@{*/
 #define vfsMountFlagsUseThisFileSystem	0x01	/**< Mount/Format the volume with the filesystem specified */
-#define vfsMAXFILENAME			256	/**< The maximum size of a filename in a VFS volume */
-#define vfsInvalidVolRef		0	/**< constant for an invalid volume reference, guaranteed not to represent a valid one.  Use it like you would use NULL for a FILE*. */
-#define vfsInvalidFileRef		0L	/**< constant for an invalid file reference, guaranteed not to represent a valid one.  Use it like you would use NULL for a FILE*. */
+#define vfsMAXFILENAME					256		/**< The maximum size of a filename in a VFS volume */
+#define vfsInvalidVolRef				0		/**< constant for an invalid volume reference, guaranteed not to represent a valid one.  Use it like you would use NULL for a FILE*. */
+#define vfsInvalidFileRef				0L		/**< constant for an invalid file reference, guaranteed not to represent a valid one.  Use it like you would use NULL for a FILE*. */
 /*@}*/
 
 typedef unsigned long FileRef;			/**< Type for file references when working with VFS files and directories. */
 
 /** @brief Information retrieved by dlp_VFSDirEntryEnumerate() */
 struct VFSDirInfo {
-	unsigned long attr;			/**< File or directory attributes (see VSF File attribute definitions) */
-	char name[vfsMAXFILENAME];		/**< File or directory name */
+	unsigned long attr;	/**< File or directory attributes (see #dlpVFSFileAttributeConstants enum) */
+	char *name;			/**< File or directory name (should be freed after use) */
 };
 
 /** @brief Information used to format a volume with dlp_VFSVolumeFormat() */
@@ -139,7 +139,7 @@ struct VFSSlotMountParam {
 /** @brief Information about a VFS volume, returned by dlp_VFSVolumeInfo() */
 struct VFSInfo {
 	/* 0: read-only etc. */
-	unsigned long   attributes;		/**< Volume attributes (see #dlpVFSVolumeAttributes enum) */
+	unsigned long attributes;		/**< Volume attributes (see #dlpVFSVolumeAttributes enum) */
 
 	/* 4: Filesystem type for this volume (defined below).
 	      These you can expect to see in devices:
@@ -161,14 +161,14 @@ struct VFSInfo {
 		  'novl' (Novell filesystem)
 		  'ntfs' (Windows NT filesystem)
 	*/
-	unsigned long   fsType;			/**< File system time (four-char code, see above) */
+	unsigned long fsType;			/**< File system time (four-char code, see above) */
 
 	/* 8: Creator code of filesystem driver for this volume. */
-	unsigned long   fsCreator;		/**< File system creator (four-char code) */
+	unsigned long fsCreator;		/**< File system creator (four-char code) */
 
 	/* For slot based filesystems: (mountClass = VFSMountClass_SlotDriver)
 	   12: mount class that mounted this volume */
-	unsigned long   mountClass;		/**< Mount class */
+	unsigned long mountClass;		/**< Mount class */
 
 	/* 16: Library on which the volume is mounted */
 	int slotLibRefNum;			/**< Slot library reference number */
@@ -193,10 +193,10 @@ struct VFSInfo {
 		   'ramd' (RAM disk)
 		   'smed' (SmartMedia)
 	*/
-	unsigned long   mediaType;		/**< Media type (see above) */
+	unsigned long mediaType;		/**< Media type (see above) */
 
 	/* 24: reserved for future use (other mountclasses may need more space) */
-	unsigned long   reserved;		/**< Reserved, set to 0 */
+	unsigned long reserved;		/**< Reserved, set to 0 */
 };
 
 /** @brief Information about the handheld user
@@ -204,9 +204,9 @@ struct VFSInfo {
  * This structure is used in dlp_ReadUserInfo() and dlp_WriteUserInfo()
  */
 struct PilotUser {
-	size_t 	passwordLength;
-	char 	username[128];
-	char	password[128];
+	size_t passwordLength;
+	char username[128];
+	char password[128];
 	unsigned long userID;
 	unsigned long viewerID;
 	unsigned long lastSyncPC;
@@ -219,15 +219,15 @@ struct PilotUser {
  * This structure is filled by dlp_ReadSysInfo()
  */
 struct SysInfo {
-	unsigned long romVersion;		/**< Version of the device ROM, of the form 0xMMmmffssbb where MM=Major, mm=minor, ff=fix, ss=stage, bb=build */
-	unsigned long locale;			/**< Locale for this device */
-	unsigned char prodIDLength;		/**< Length of the prodID string */
-	char 	prodID[128];			/**< Product ID */
+	unsigned long romVersion;			/**< Version of the device ROM, of the form 0xMMmmffssbb where MM=Major, mm=minor, ff=fix, ss=stage, bb=build */
+	unsigned long locale;				/**< Locale for this device */
+	unsigned char prodIDLength;			/**< Length of the prodID string */
+	char prodID[128];					/**< Product ID */
 	unsigned short dlpMajorVersion;		/**< Major version of the DLP protocol on this device */
 	unsigned short dlpMinorVersion;		/**< Minor version of the DLP protocol on this device */
 	unsigned short compatMajorVersion;	/**< Minimum major version of DLP this device is compatible with */
 	unsigned short compatMinorVersion;	/**< Minimum minor version of DLP this device is compatible with */
-	unsigned long  maxRecSize;		/**< Maximum record size. Usually <=0xFFFF or ==0 for older devices (means records are limited to 64k), can be much larger for devices with DLP >= 1.4 (i.e. 0x00FFFFFE) */
+	unsigned long maxRecSize;			/**< Maximum record size. Usually <=0xFFFF or ==0 for older devices (means records are limited to 64k), can be much larger for devices with DLP >= 1.4 (i.e. 0x00FFFFFE) */
 };
 
 /** @brief Database information.
@@ -236,14 +236,14 @@ struct SysInfo {
  * and dlp_FindDBByTypeCreator().
  */
 struct DBInfo {
-	int 	more;				/**< When reading database list using dlp_ReadDBList(), this flag is set if there are more databases to come */
+	int more;					/**< When reading database list using dlp_ReadDBList(), this flag is set if there are more databases to come */
 	char name[34];				/**< Database name, 32 characters max. */
 	unsigned int flags;			/**< Database flags (@see dlpDBFlags enum) */
-	unsigned int miscFlags;			/**< Additional database flags filled by pilot-link (@see dlpDBMiscFlags enum) */
-	unsigned int version;			/**< Database version number */
+	unsigned int miscFlags;		/**< Additional database flags filled by pilot-link (@see dlpDBMiscFlags enum) */
+	unsigned int version;		/**< Database version number */
 	unsigned long type;			/**< Database type (four-char code, i.e. 'appl') */
-	unsigned long creator;			/**< Database creator (four-char code, i.e. 'DATA') */
-	unsigned long modnum;			/**< Modification count */
+	unsigned long creator;		/**< Database creator (four-char code, i.e. 'DATA') */
+	unsigned long modnum;		/**< Modification count */
 	unsigned int index;			/**< Database index in database list */
 	time_t createDate;			/**< Database creation date (using the machine's local time zone) */
 	time_t modifyDate;			/**< Last time this database was modified (using the machine's local time zone). If the database was never modified, this field is set to 0x83DAC000 (Fri Jan  1 00:00:00 1904 GMT) */
@@ -259,7 +259,7 @@ struct DBSizeInfo {
 	unsigned long totalBytes;		/**< Total number of bytes occupied by the database, including header and records list */
 	unsigned long dataBytes;		/**< Total number of data bytes contained in the database's records or resources */
 	unsigned long appBlockSize;		/**< Size of the appInfo block */
-	unsigned long sortBlockSize;		/**< Size of the sortInfo block */
+	unsigned long sortBlockSize;	/**< Size of the sortInfo block */
 	unsigned long maxRecSize;		/**< note: this field is always set to 0 on return from dlp_FindDBxxx */
 };
 
@@ -269,15 +269,15 @@ struct DBSizeInfo {
  * It is returned by dlp_ReadStorageInfo().
  */
 struct CardInfo {
-	int 	card;				/**< Memory card index (most devices only have one). */
-	int	version;			/**< Version of the card */
-	int	more;				/**< Set if there is another card after this one */
-	time_t 	creation;			/**< Creation date (using the computer's local time zone) */
-	unsigned long romSize;			/**< Size of the ROM block on this card (in bytes) */
-	unsigned long ramSize;			/**< Size of the RAM block on this card (in bytes) */
-	unsigned long ramFree;			/**< Total free RAM bytes */
-	char 	name[128];			/**< Card name */
-	char	manufacturer[128];		/**< Card manufacturer name */
+	int card;				/**< Memory card index (most devices only have one). */
+	int version;			/**< Version of the card */
+	int more;				/**< Set if there is another card after this one */
+	time_t creation;		/**< Creation date (using the computer's local time zone) */
+	unsigned long romSize;	/**< Size of the ROM block on this card (in bytes) */
+	unsigned long ramSize;	/**< Size of the RAM block on this card (in bytes) */
+	unsigned long ramFree;	/**< Total free RAM bytes */
+	char name[128];			/**< Card name */
+	char manufacturer[128];	/**< Card manufacturer name */
 };
 
 /** @brief Network HotSync information.
@@ -285,10 +285,10 @@ struct CardInfo {
  * Returned by dlp_ReadNetSyncInfo(). Gives the network location of a remote handheld.
  */
 struct NetSyncInfo {
-	int 	lanSync;			/**< Non-zero if LanSync is turned on on the device */
-	char 	hostName[256];			/**< Device hostname if any. Null terminated string. */
-	char 	hostAddress[40];		/**< Device host address. Null terminated string. */
-	char 	hostSubnetMask[40];		/**< Device subnet mask. Null terminated string */
+	int lanSync;				/**< Non-zero if LanSync is turned on on the device */
+	char hostName[256];			/**< Device hostname if any. Null terminated string. */
+	char hostAddress[40];		/**< Device host address. Null terminated string. */
+	char hostSubnetMask[40];	/**< Device subnet mask. Null terminated string */
 };
 
 #ifndef SWIG	/* no need to clutter the bindings with this */
@@ -299,22 +299,22 @@ enum dlpFunctions {
 	/* DLP 1.0 FUNCTIONS START HERE (PalmOS v1.0) */
 	dlpFuncReadUserInfo,			/* 0x10 */
 	dlpFuncWriteUserInfo,			/* 0x11 */
-	dlpFuncReadSysInfo,			/* 0x12 */
+	dlpFuncReadSysInfo,				/* 0x12 */
 	dlpFuncGetSysDateTime,			/* 0x13 */
 	dlpFuncSetSysDateTime,			/* 0x14 */
 	dlpFuncReadStorageInfo,			/* 0x15 */
-	dlpFuncReadDBList,			/* 0x16 */
-	dlpFuncOpenDB,				/* 0x17 */
-	dlpFuncCreateDB,			/* 0x18 */
-	dlpFuncCloseDB,				/* 0x19 */
-	dlpFuncDeleteDB,			/* 0x1a */
+	dlpFuncReadDBList,				/* 0x16 */
+	dlpFuncOpenDB,					/* 0x17 */
+	dlpFuncCreateDB,				/* 0x18 */
+	dlpFuncCloseDB,					/* 0x19 */
+	dlpFuncDeleteDB,				/* 0x1a */
 	dlpFuncReadAppBlock,			/* 0x1b */
 	dlpFuncWriteAppBlock,			/* 0x1c */
 	dlpFuncReadSortBlock,			/* 0x1d */
 	dlpFuncWriteSortBlock,			/* 0x1e */
 	dlpFuncReadNextModifiedRec,		/* 0x1f */
-	dlpFuncReadRecord,			/* 0x20 */
-	dlpFuncWriteRecord,			/* 0x21 */
+	dlpFuncReadRecord,				/* 0x20 */
+	dlpFuncWriteRecord,				/* 0x21 */
 	dlpFuncDeleteRecord,			/* 0x22 */
 	dlpFuncReadResource,			/* 0x23 */
 	dlpFuncWriteResource,			/* 0x24 */
@@ -322,74 +322,74 @@ enum dlpFunctions {
 	dlpFuncCleanUpDatabase,			/* 0x26 */
 	dlpFuncResetSyncFlags,			/* 0x27 */
 	dlpFuncCallApplication,			/* 0x28 */
-	dlpFuncResetSystem,			/* 0x29 */
+	dlpFuncResetSystem,				/* 0x29 */
 	dlpFuncAddSyncLogEntry,			/* 0x2a */
 	dlpFuncReadOpenDBInfo,			/* 0x2b */
 	dlpFuncMoveCategory,			/* 0x2c */
-	dlpProcessRPC,				/* 0x2d */
-	dlpFuncOpenConduit,			/* 0x2e */
-	dlpFuncEndOfSync,			/* 0x2f */
+	dlpProcessRPC,					/* 0x2d */
+	dlpFuncOpenConduit,				/* 0x2e */
+	dlpFuncEndOfSync,				/* 0x2f */
 	dlpFuncResetRecordIndex,		/* 0x30 */
 	dlpFuncReadRecordIDList,		/* 0x31 */
 
 	/* DLP 1.1 FUNCTIONS ADDED HERE (PalmOS v2.0 Personal, and Professional) */
-	dlpFuncReadNextRecInCategory,   	/* 0x32 */
-	dlpFuncReadNextModifiedRecInCategory,   /* 0x33 */
-	dlpFuncReadAppPreference,		/* 0x34 */
-	dlpFuncWriteAppPreference,		/* 0x35 */
-	dlpFuncReadNetSyncInfo,			/* 0x36 */
-	dlpFuncWriteNetSyncInfo,		/* 0x37 */
-	dlpFuncReadFeature,			/* 0x38 */
+	dlpFuncReadNextRecInCategory,			/* 0x32 */
+	dlpFuncReadNextModifiedRecInCategory,	/* 0x33 */
+	dlpFuncReadAppPreference,				/* 0x34 */
+	dlpFuncWriteAppPreference,				/* 0x35 */
+	dlpFuncReadNetSyncInfo,					/* 0x36 */
+	dlpFuncWriteNetSyncInfo,				/* 0x37 */
+	dlpFuncReadFeature,						/* 0x38 */
 
 	/* DLP 1.2 FUNCTIONS ADDED HERE (PalmOS v3.0) */
 	dlpFuncFindDB,				/* 0x39 */
 	dlpFuncSetDBInfo,			/* 0x3a */
 
 	/* DLP 1.3 FUNCTIONS ADDED HERE (PalmOS v4.0) */
-	dlpLoopBackTest,			/* 0x3b */
-	dlpFuncExpSlotEnumerate,		/* 0x3c */
-	dlpFuncExpCardPresent,			/* 0x3d */
-	dlpFuncExpCardInfo,			/* 0x3e */
-	dlpFuncVFSCustomControl,		/* 0x3f */
-	dlpFuncVFSGetDefaultDir,		/* 0x40 */
+	dlpLoopBackTest,					/* 0x3b */
+	dlpFuncExpSlotEnumerate,			/* 0x3c */
+	dlpFuncExpCardPresent,				/* 0x3d */
+	dlpFuncExpCardInfo,					/* 0x3e */
+	dlpFuncVFSCustomControl,			/* 0x3f */
+	dlpFuncVFSGetDefaultDir,			/* 0x40 */
 	dlpFuncVFSImportDatabaseFromFile,	/* 0x41 */
-	dlpFuncVFSExportDatabaseToFile, 	/* 0x42 */
-	dlpFuncVFSFileCreate,			/* 0x43 */
-	dlpFuncVFSFileOpen,			/* 0x44 */
-	dlpFuncVFSFileClose,			/* 0x45 */
-	dlpFuncVFSFileWrite,			/* 0x46 */
-	dlpFuncVFSFileRead,			/* 0x47 */
-	dlpFuncVFSFileDelete,			/* 0x48 */
-	dlpFuncVFSFileRename,			/* 0x49 */
-	dlpFuncVFSFileEOF,			/* 0x4a */
-	dlpFuncVFSFileTell,			/* 0x4b */
+	dlpFuncVFSExportDatabaseToFile,		/* 0x42 */
+	dlpFuncVFSFileCreate,				/* 0x43 */
+	dlpFuncVFSFileOpen,					/* 0x44 */
+	dlpFuncVFSFileClose,				/* 0x45 */
+	dlpFuncVFSFileWrite,				/* 0x46 */
+	dlpFuncVFSFileRead,					/* 0x47 */
+	dlpFuncVFSFileDelete,				/* 0x48 */
+	dlpFuncVFSFileRename,				/* 0x49 */
+	dlpFuncVFSFileEOF,					/* 0x4a */
+	dlpFuncVFSFileTell,					/* 0x4b */
 	dlpFuncVFSFileGetAttributes,		/* 0x4c */
 	dlpFuncVFSFileSetAttributes,		/* 0x4d */
-	dlpFuncVFSFileGetDate,			/* 0x4e */
-	dlpFuncVFSFileSetDate,			/* 0x4f */
-	dlpFuncVFSDirCreate,			/* 0x50 */
+	dlpFuncVFSFileGetDate,				/* 0x4e */
+	dlpFuncVFSFileSetDate,				/* 0x4f */
+	dlpFuncVFSDirCreate,				/* 0x50 */
 	dlpFuncVFSDirEntryEnumerate,		/* 0x51 */
-	dlpFuncVFSGetFile,			/* 0x52 */
-	dlpFuncVFSPutFile,			/* 0x53 */
-	dlpFuncVFSVolumeFormat,			/* 0x54 */
-	dlpFuncVFSVolumeEnumerate,		/* 0x55 */
-	dlpFuncVFSVolumeInfo,			/* 0x56 */
-	dlpFuncVFSVolumeGetLabel,		/* 0x57 */
-	dlpFuncVFSVolumeSetLabel,		/* 0x58 */
-	dlpFuncVFSVolumeSize,			/* 0x59 */
-	dlpFuncVFSFileSeek,			/* 0x5a */
-	dlpFuncVFSFileResize,			/* 0x5b */
-	dlpFuncVFSFileSize,			/* 0x5c */
+	dlpFuncVFSGetFile,					/* 0x52 */
+	dlpFuncVFSPutFile,					/* 0x53 */
+	dlpFuncVFSVolumeFormat,				/* 0x54 */
+	dlpFuncVFSVolumeEnumerate,			/* 0x55 */
+	dlpFuncVFSVolumeInfo,				/* 0x56 */
+	dlpFuncVFSVolumeGetLabel,			/* 0x57 */
+	dlpFuncVFSVolumeSetLabel,			/* 0x58 */
+	dlpFuncVFSVolumeSize,				/* 0x59 */
+	dlpFuncVFSFileSeek,					/* 0x5a */
+	dlpFuncVFSFileResize,				/* 0x5b */
+	dlpFuncVFSFileSize,					/* 0x5c */
 
 	/* DLP 1.4 functions added here (Palm OS 5.2+, ie Tapwave Zodiac) */
-	dlpFuncExpSlotMediaType,		/* 0x5d */
-	dlpFuncWriteRecordEx,			/* 0x5e - function to write >64k records in Tapwave */
-	dlpFuncWriteResourceEx,			/* 0x5f - function to write >64k resources in Tapwave */
-	dlpFuncReadRecordEx,			/* 0x60 - function to read >64k records by index in Tapwave */
+	dlpFuncExpSlotMediaType,	/* 0x5d */
+	dlpFuncWriteRecordEx,		/* 0x5e - function to write >64k records in Tapwave */
+	dlpFuncWriteResourceEx,		/* 0x5f - function to write >64k resources in Tapwave */
+	dlpFuncReadRecordEx,		/* 0x60 - function to read >64k records by index in Tapwave */
 	dlpFuncUnknown1,			/* 0x61 (may be bogus definition in tapwave headers, is listed as dlpFuncReadRecordStream)*/
 	dlpFuncUnknown3,			/* 0x62 */
 	dlpFuncUnknown4,			/* 0x63 */
-	dlpFuncReadResourceEx,			/* 0x64 - function to read resources >64k by index in Tapwave */
+	dlpFuncReadResourceEx,		/* 0x64 - function to read resources >64k by index in Tapwave */
 	dlpLastFunc
 };
 
@@ -399,35 +399,35 @@ enum dlpFunctions {
 /*@{*/
 	/** @brief Database flags in DBInfo structure and also for dlp_CreateDB() */
 	enum dlpDBFlags {
-		dlpDBFlagResource 	= 0x0001,	/**< Resource database */
-		dlpDBFlagReadOnly 	= 0x0002,	/**< Database is read only */
-		dlpDBFlagAppInfoDirty 	= 0x0004,	/**< AppInfo data has been modified */
-		dlpDBFlagBackup 	= 0x0008,	/**< Database should be backed up during HotSync */
-		dlpDBFlagHidden		= 0x0100,	/**< Database is hidden */
-		dlpDBFlagLaunchable	= 0x0200,	/**< Database is launchable data (show in Launcher, launch app by Creator) */
-		dlpDBFlagRecyclable	= 0x0400,	/**< Database will be deleted shortly */
-		dlpDBFlagBundle		= 0x0800,	/**< Database is bundled with others having same creator (i.e. for Beam) */
-		dlpDBFlagOpen 		= 0x8000,	/**< Database is currently open */
+		dlpDBFlagResource		= 0x0001,	/**< Resource database */
+		dlpDBFlagReadOnly		= 0x0002,	/**< Database is read only */
+		dlpDBFlagAppInfoDirty	= 0x0004,	/**< AppInfo data has been modified */
+		dlpDBFlagBackup			= 0x0008,	/**< Database should be backed up during HotSync */
+		dlpDBFlagHidden			= 0x0100,	/**< Database is hidden */
+		dlpDBFlagLaunchable		= 0x0200,	/**< Database is launchable data (show in Launcher, launch app by Creator) */
+		dlpDBFlagRecyclable		= 0x0400,	/**< Database will be deleted shortly */
+		dlpDBFlagBundle			= 0x0800,	/**< Database is bundled with others having same creator (i.e. for Beam) */
+		dlpDBFlagOpen			= 0x8000,	/**< Database is currently open */
 
 		/* v2.0 specific */
-		dlpDBFlagNewer 		= 0x0010,	/**< Newer version may be installed over open DB (Palm OS 2.0 and later) */
-		dlpDBFlagReset 		= 0x0020,	/**< Reset after installation (Palm OS 2.0 and later) */
+		dlpDBFlagNewer 		= 0x0010,		/**< Newer version may be installed over open DB (Palm OS 2.0 and later) */
+		dlpDBFlagReset 		= 0x0020,		/**< Reset after installation (Palm OS 2.0 and later) */
 
 		/* v3.0 specific */
 		dlpDBFlagCopyPrevention = 0x0040,	/**< Database should not be beamed or sent (Palm OS 3.0 and later) */
-		dlpDBFlagStream 	= 0x0080,	/**< Database is a file stream (Palm OS 3.0 and later) */
+		dlpDBFlagStream 	= 0x0080,		/**< Database is a file stream (Palm OS 3.0 and later) */
 
 		/* OS 6+ */
-		dlpDBFlagSchema		= 0x1000,	/**< Schema database (Palm OS 6.0 and later) */
-		dlpDBFlagSecure		= 0x2000,	/**< Secure database (Palm OS 6.0 and later) */
+		dlpDBFlagSchema		= 0x1000,		/**< Schema database (Palm OS 6.0 and later) */
+		dlpDBFlagSecure		= 0x2000,		/**< Secure database (Palm OS 6.0 and later) */
 		dlpDBFlagExtended	= dlpDBFlagSecure, /**< Set if Schema not set and DB is Extended (Palm OS 6.0 and later) */
-		dlpDBFlagFixedUp	= 0x4000	/**< Temp flag used to clear DB on write (Palm OS 6.0 and later) */
+		dlpDBFlagFixedUp	= 0x4000		/**< Temp flag used to clear DB on write (Palm OS 6.0 and later) */
 	};
 
 	/** @brief Misc. flags in DBInfo structure */
 	enum dlpDBMiscFlags {
 		dlpDBMiscFlagExcludeFromSync = 0x80,	/**< DLP 1.1 and later: exclude this database from sync */
-		dlpDBMiscFlagRamBased 	= 0x40		/**< DLP 1.2 and later: this database is in RAM */
+		dlpDBMiscFlagRamBased = 0x40			/**< DLP 1.2 and later: this database is in RAM */
 	};
 
 	/** @brief Database record attributes */
@@ -457,8 +457,8 @@ enum dlpFunctions {
 
 	enum dlpFindDBOptFlags {
 		dlpFindDBOptFlagGetAttributes	= 0x80,
-		dlpFindDBOptFlagGetSize		= 0x40,
-		dlpFindDBOptFlagMaxRecSize	= 0x20
+		dlpFindDBOptFlagGetSize			= 0x40,
+		dlpFindDBOptFlagMaxRecSize		= 0x20
 	};
 
 	enum dlpFindDBSrchFlags {
@@ -470,10 +470,10 @@ enum dlpFunctions {
 
 /** @brief End status values for dlp_EndOfSync() */
 enum dlpEndStatus {
-	dlpEndCodeNormal 	= 0,		/**< Normal termination */
-	dlpEndCodeOutOfMemory,			/**< End due to low memory on device */
-	dlpEndCodeUserCan,			/**< Cancelled by user */
-	dlpEndCodeOther				/**< dlpEndCodeOther and higher == "Anything else" */
+	dlpEndCodeNormal = 0,	/**< Normal termination */
+	dlpEndCodeOutOfMemory,	/**< End due to low memory on device */
+	dlpEndCodeUserCan,		/**< Cancelled by user */
+	dlpEndCodeOther			/**< dlpEndCodeOther and higher == "Anything else" */
 };
 
 /** @name Expansion manager and VFS manager constants */
@@ -494,50 +494,50 @@ enum dlpEndStatus {
 
 	/** @brief Constants for dlp_VFSFileSeek() */
 	enum dlpVFSSeekConstants {
-		vfsOriginBeginning	= 0,		/**< From the beginning (first data byte of file) */
-		vfsOriginCurrent	= 1,		/**< from the current position */
+		vfsOriginBeginning	= 0,	/**< From the beginning (first data byte of file) */
+		vfsOriginCurrent	= 1,	/**< from the current position */
 		vfsOriginEnd		= 2		/**< From the end of file (one position beyond last data byte, only negative offsets are legally allowed) */
 	};
 
 	/** @brief Flags for dlp_VFSFileOpen() */
 	enum dlpVFSOpenFlags {
-		dlpVFSOpenExclusive 	= 0x01,		/**< For dlp_VFSFileOpen(). Exclusive access */
+		dlpVFSOpenExclusive	= 0x01,		/**< For dlp_VFSFileOpen(). Exclusive access */
 		dlpVFSOpenRead 		= 0x02,		/**< For dlp_VFSFileOpen(). Read only */
 		dlpVFSOpenWrite 	= 0x05, 	/**< For dlp_VFSFileOpen(). Write only. Implies exclusive */
-		dlpVFSOpenReadWrite 	= 0x07,		/**< For dlp_VFSFileOpen(). Read | write */
+		dlpVFSOpenReadWrite	= 0x07,		/**< For dlp_VFSFileOpen(). Read | write */
 
 		/* Remainder are aliases and special cases not for VFSFileOpen */
 		vfsModeExclusive 	= dlpVFSOpenExclusive,	/**< Alias to #dlpVFSOpenExclusive */
-		vfsModeRead 		= dlpVFSOpenRead,	/**< Alias to #dlpVFSOpenRead */
-		vfsModeWrite 		= dlpVFSOpenWrite,	/**< Alias to #dlpVFSOpenWrite */
+		vfsModeRead 		= dlpVFSOpenRead,		/**< Alias to #dlpVFSOpenRead */
+		vfsModeWrite 		= dlpVFSOpenWrite,		/**< Alias to #dlpVFSOpenWrite */
 		vfsModeReadWrite	= vfsModeRead | vfsModeWrite,	/**< Alias to #dlpVFSOpenReadWrite */
-		vfsModeCreate 		= 0x08 		/**< Not for dlp_VFSFileOpen(). Create file if it doesn't exist. */,
-		vfsModeTruncate 	= 0x10 		/**< Not for dlp_VFSFileOpen(). Truncate to 0 bytes on open. */,
-		vfsModeLeaveOpen 	= 0x20 		/**< Not for dlp_VFSFileOpen(). Leave file open even if foreground task closes. */
+		vfsModeCreate 		= 0x08,					/**< Not for dlp_VFSFileOpen(). Create file if it doesn't exist. */
+		vfsModeTruncate 	= 0x10,					/**< Not for dlp_VFSFileOpen(). Truncate to 0 bytes on open. */
+		vfsModeLeaveOpen 	= 0x20					/**< Not for dlp_VFSFileOpen(). Leave file open even if foreground task closes. */
 	} ;
 
 	/** @brief VFS file attribute constants */
 	enum dlpVFSFileAttributeConstants {
-		vfsFileAttrReadOnly	= 0x00000001,	/**< File is read only */
-		vfsFileAttrHidden	= 0x00000002,	/**< File is hidden */
-		vfsFileAttrSystem	= 0x00000004,	/**< File is a system file */
+		vfsFileAttrReadOnly		= 0x00000001,	/**< File is read only */
+		vfsFileAttrHidden		= 0x00000002,	/**< File is hidden */
+		vfsFileAttrSystem		= 0x00000004,	/**< File is a system file */
 		vfsFileAttrVolumeLabel	= 0x00000008,	/**< File is the volume label */
 		vfsFileAttrDirectory	= 0x00000010,	/**< File is a directory */
-		vfsFileAttrArchive	= 0x00000020,	/**< File is archived */
-		vfsFileAttrLink		= 0x00000040	/**< File is a link to another file */
+		vfsFileAttrArchive		= 0x00000020,	/**< File is archived */
+		vfsFileAttrLink			= 0x00000040	/**< File is a link to another file */
 	};
 
 	/** @brief Constants for dlp_VFSFileGetDate() and dlp_VFSFileSetDate() */
 	enum dlpVFSDateConstants {
-		vfsFileDateCreated	= 1,		/**< The date the file was created. */
-		vfsFileDateModified	= 2,		/**< The date the file was last modified. */
+		vfsFileDateCreated	= 1,	/**< The date the file was created. */
+		vfsFileDateModified	= 2,	/**< The date the file was last modified. */
 		vfsFileDateAccessed	= 3		/**< The date the file was last accessed. */
 	};
 
 	/** @brief VFS file iterator constants */
 	enum dlpVFSFileIteratorConstants {
-		vfsIteratorStart	= 0,		/** < Indicates that iterator is beginning */
-		vfsIteratorStop		= -1		/**< Indicate that iterator has gone through all items */
+		vfsIteratorStart	= 0,	/**< Indicates that iterator is beginning */
+		vfsIteratorStop		= -1	/**< Indicate that iterator has gone through all items */
 	};
 /*@}*/
 
@@ -552,7 +552,7 @@ enum dlpEndStatus {
  * definitions, in relation with each DLP call)
  */
 enum dlpErrors {
-	dlpErrNoError = 0,	/**< No error */
+	dlpErrNoError = 0,	/**< No error (0x0000) */
 	dlpErrSystem,		/**< System error (0x0001) */
 	dlpErrIllegalReq,	/**< Illegal request, not supported by this version of DLP (0x0002) */
 	dlpErrMemory,		/**< Not enough memory (0x0003) */
@@ -562,22 +562,69 @@ enum dlpErrors {
 	dlpErrAlreadyOpen,	/**< File already open (0x0007) */
 	dlpErrTooManyOpen,	/**< Too many open files (0x0008) */
 	dlpErrExists,		/**< File already exists (0x0009) */
-	dlpErrOpen,		/**< Can't open file (0x000a) */
+	dlpErrOpen,			/**< Can't open file (0x000a) */
 	dlpErrDeleted,		/**< File deleted (0x000b) */
-	dlpErrBusy,		/**< Record busy (0x000c) */
+	dlpErrBusy,			/**< Record busy (0x000c) */
 	dlpErrNotSupp,		/**< Call not supported (0x000d) */
 	dlpErrUnused1,		/**< @e Unused (0x000e) */
 	dlpErrReadOnly,		/**< File is read-only (0x000f) */
 	dlpErrSpace,		/**< Not enough space left on device (0x0010) */
 	dlpErrLimit,		/**< Limit reached (0x0011) */
-	dlpErrSync,		/**< Sync error (0x0012) */
+	dlpErrSync,			/**< Sync error (0x0012) */
 	dlpErrWrapper,		/**< Wrapper error (0x0013) */
 	dlpErrArgument,		/**< Invalid argument (0x0014) */
-	dlpErrSize,		/**< Invalid size (0x0015) */
+	dlpErrSize,			/**< Invalid size (0x0015) */
 
 	dlpErrUnknown = 127	/**< Unknown error (0x007F) */
 };
 
+/** @brief Error codes returned by PalmOS
+ *
+ * Reference: https://www.nsbasic.com/palm/info/technotes/TN23.htm
+ */
+enum palmOSErrors {
+	errNone						= 0x0000,	/**< No error */
+
+	dmErrAlreadyExists			= 0x0219,	/**< Another database with the same name already exists in RAM store */
+
+	sysErrParamErr				= 0x0502,	/**< Wrong input parameter */
+
+	expErrUnsupportedOperation	= 0x2901,	/**< Unsupported or undefined opcode and/or creator */
+	expErrNotEnoughPower		= 0x2902,	/**< The required power is not available */
+	expErrCardNotPresent		= 0x2903,	/**< No card is present */
+	expErrInvalidSlotRefNum		= 0x2904,	/**< Slot reference number is bad */
+	expErrSlotDeallocated		= 0x2905,	/**< Slot reference number is within valid range, but has been deallocated */
+	expErrCardNoSectorReadWrite	= 0x2906,	/**< The card does not support the SlotDriver block read/write API */
+	expErrCardReadOnly			= 0x2907,	/**< The card does support R/W API but the card is read only */
+	expErrCardBadSector			= 0x2908,	/**< The card does support R/W API but the sector is bad */
+	expErrCardProtectedSector	= 0x2909,	/**< The card does support R/W API but the sector is protected */
+	expErrNotOpen				= 0x290a,	/**< Slot driver library has not been opened */
+	expErrStillOpen				= 0x290b,	/**< Slot driver library is still open - maybe it was opened > once */
+	expErrUnimplemented			= 0x290c,	/**< Call is unimplemented */
+	expErrEnumerationEmpty		= 0x290d,	/**< No values remaining to enumerate */
+	expErrIncompatibleAPIVer	= 0x290e,	/**< The API version of this slot driver is not supported by this version of ExpansionMgr. */
+
+	vfsErrBufferOverflow		= 0x2a01,	/**< Passed in buffer is too small */
+	vfsErrFileGeneric			= 0x2a02,	/**< Generic file error. */
+	vfsErrFileBadRef			= 0x2a03,	/**< The fileref is invalid (has been closed, or was not obtained from VFS.Open() ) */
+	vfsErrFileStillOpen			= 0x2a04,	/**< Returned from VFS.Delete if the file is still open */
+	vfsErrFilePermissionDenied	= 0x2a05,	/**< The file is read only */
+	vfsErrFileAlreadyExists		= 0x2a06,	/**< A file of this name exists already in this location */
+	vfsErrFileEOF				= 0x2a07,	/**< File pointer is at end of file */
+	vfsErrFileNotFound			= 0x2a08,	/**< File was not found at the path specified */
+	vfsErrVolumeBadRef			= 0x2a09,	/**< The volume refnum is invalid */
+	vfsErrVolumeStillMounted	= 0x2a0a,	/**< Returned if the volume is still mounted */
+	vfsErrNoFileSystem			= 0x2a0b,	/**< No installed filesystem supports this operation */
+	vfsErrBadData				= 0x2a0c,	/**< Operation could not be completed because of invalid data (i.e., import DB from .PRC file) */
+	vfsErrDirNotEmpty			= 0x2a0d,	/**< Can't delete a non-empty directory */
+	vfsErrBadName				= 0x2a0e,	/**< Invalid filename, or path, or volume label or something... */
+	vfsErrVolumeFull			= 0x2a0f,	/**< Not enough space left on volume */
+	vfsErrUnimplemented			= 0x2a10,	/**< This call is not implemented */
+	vfsErrNotADirectory			= 0x2a11,	/**< This operation requires a directory */
+	vfsErrIsADirectory			= 0x2a12,	/**< This operation requires a regular file, not a directory */
+	vfsErrDirectoryNotFound		= 0x2a13,	/**< Returned from VFS.FileCreate when the path leading up to the new file does not exist */
+	vfsErrNameShortened			= 0x2a14	/**< A volume name or filename was automatically shortened to conform to filesystem spec */
+};
 
 #ifndef SWIG	/* no need to clutter the bindings with this */
 
@@ -585,21 +632,21 @@ enum dlpErrors {
 struct dlpArg {
 	int 	id_;		/**< Argument ID (start at #PI_DLP_ARG_FIRST_ID) */
 	size_t	len;		/**< Argument length */
-	char *data;		/**< Argument data */
+	char *data;			/**< Argument data */
 };
 
 /** @brief Internal DLP command request structure */
 struct dlpRequest {
 	enum dlpFunctions cmd;	/**< Command ID */
-	int argc;		/**< Number of arguments */
+	int argc;				/**< Number of arguments */
 	struct dlpArg **argv;	/**< Ptr to arguments */
 };
 
 /** @brief Internal DLP command response structure */
 struct dlpResponse {
 	enum dlpFunctions cmd;	/**< Command ID as returned by device. If not the same than requested command, this is an error */
-	enum dlpErrors err;	/**< DLP error (see #dlpErrors enum) */
-	int argc;		/**< Number of response arguments */
+	enum dlpErrors err;		/**< DLP error (see #dlpErrors enum) */
+	int argc;				/**< Number of response arguments */
 	struct dlpArg **argv;	/**< Response arguments */
 };
 
@@ -629,8 +676,9 @@ struct dlpResponse {
 	extern int dlp_exec PI_ARGS((int sd, struct dlpRequest *req,
 		struct dlpResponse **res));
 
-	extern char *dlp_errorlist[];
-	extern char *dlp_strerror(int error);
+	extern char *pi_err_message(int error);
+	extern char *dlp_errorList[];
+	extern char *dlp_err_message(int error);
 
 	struct RPC_params;
 	extern int dlp_RPC
@@ -875,7 +923,7 @@ struct dlpResponse {
 	 * @param version If not NULL
 	 * @return A negative value if an error occured (see pi-error.h), otherwise the size of the preference block
 	 */
-	extern PI_ERR dlp_ReadAppPreference
+	extern int dlp_ReadAppPreference
 		PI_ARGS((int sd, unsigned long creator, int prefid, int backup,
 			int maxsize, void *databuf, size_t *datasize, int *version));
 
@@ -1446,7 +1494,7 @@ struct dlpResponse {
 	 * @param slotref The slot reference as returned by dlp_ExpSlotEnumerate().
 	 * @return A negative value if an error occured (see pi-error.h), >=0 if a card is inserted
 	 */
-	extern PI_ERR dlp_ExpCardPresent
+	extern int dlp_ExpCardPresent
 		PI_ARGS((int sd, int slotref));
 
 	/** @brief Get information about a removable card inserted in an expansion slot
@@ -1576,10 +1624,8 @@ struct dlpResponse {
 
 	/** @brief Iterate through the entries in a directory
 	 *
-	 * Supported on Palm OS 4.0 and later. At the beginning you set
-	 * @p dirIterator to #vfsIteratorStart, then call this function
-	 * repeatedly until it returns an error code or the iterator becomes
-	 * #vfsIteratorStop.
+	 * Supported on Palm OS 4.0 and later. At the beginning you set @p dirItems
+	 * to an empty #VFSDirInfo pointer variable, and then call this function.
 	 *
 	 * @bug On some early OS 5 devices like Tungsten T and Sony NX70, NX73 this
 	 * call crashes the device. This has been confirmed to be a bug in HotSync on
@@ -1587,15 +1633,12 @@ struct dlpResponse {
 	 * device with this call too.
 	 *
 	 * @param sd Socket number
-	 * @param dirref Directory reference obtained from dlp_VFSFileOpen()
-	 * @param diriterator Ptr to an iterator. Start with #vfsIteratorStart
-	 * @param maxitems On input, the max number of VFSDirInfo structures stored in @p dirItems. On output, the actual number of items.
-	 * @param diritems Preallocated array that contains a number of VFSDirInfo structures on return.
-	 * @return A negative value if an error occured (see pi-error.h)
+	 * @param dirRef Directory reference obtained from dlp_VFSFileOpen()
+	 * @param dirItems On input, pointer array of to #VFSDirInfo structures. If NULL, only the numer of dirItems are returned. On output, if it wasn't Null, it points to a new allocated array of retrieved #VFSDirInfo structures. You are responsible for free()'ing it, once you're done with it. But before free()'ing the whole array, first each char buffer @p VFSDirInfo.name field, which is new allocated by this function, must be free()'ed too after use.
+	 * @return A negative value if an error occured (see pi-error.h), the number of dirItems otherwise.
 	 */
-	extern PI_ERR dlp_VFSDirEntryEnumerate
-		PI_ARGS((int sd, FileRef dirref, unsigned long *diriterator,
-			int *maxitems, struct VFSDirInfo *diritems));
+	extern int dlp_VFSDirEntryEnumerate
+		PI_ARGS((int sd, FileRef dirRef, struct VFSDirInfo **dirItems));
 
 	/** @brief Create a new directory on a VFS volume
 	 *
@@ -1655,9 +1698,9 @@ struct dlpResponse {
 
 	/** @brief Open an existing file on a VFS volume
 	 *
-	 * Supported on Palm OS 4.0 and later. On some devices, it is required to open the
-	 * file using the #dlpOpenReadWrite mode to be able to write to it (using
-	 * #dlpOpenWrite is not enough).
+	 * Supported on Palm OS 4.0 and later. On some devices, it is required to open
+	 * the file using the #dlpOpenReadWrite mode to be able to write to it (using
+	 * #dlpOpenWrite is not enough, see: https://github.com/desrod/pilot-link/issues/10).
 	 *
 	 * @param sd Socket number
 	 * @param volref Volume reference number (obtained from dlp_VFSVolumeEnumerate())
@@ -1683,8 +1726,10 @@ struct dlpResponse {
 
 	/** @brief Write data to an open file
 	 *
-	 * Supported on Palm OS 4.0 and later. Will return the number of bytes
-	 * written if successful.
+	 * Supported on Palm OS 4.0 and later. Will return the number of bytes written
+	 * if successful. On some devices, it is required to open the file using
+	 * the #dlpOpenReadWrite mode to be able to write to it (using #dlpOpenWrite
+	 * is not enough, see: https://github.com/desrod/pilot-link/issues/10).
 	 *
 	 * @param sd Socket number
 	 * @param fileref File reference obtained from dlp_VFSFileOpen()
@@ -1692,7 +1737,7 @@ struct dlpResponse {
 	 * @param datasize Length of the data to write
 	 * @return A negative value if an error occured (see pi-error.h), the number of bytes written otherwise.
 	 */
-	extern PI_ERR dlp_VFSFileWrite
+	extern int dlp_VFSFileWrite
 		PI_ARGS((int sd, FileRef fileref, PI_CONST void *databuf, size_t datasize));
 
 	/** @brief Read data from an open file
@@ -1706,7 +1751,7 @@ struct dlpResponse {
 	 * @param reqbytes Number of bytes to read from the file.
 	 * @return A negative value if an error occured (see pi-error.h), or the total number of bytes read
 	 */
-	extern PI_ERR dlp_VFSFileRead
+	extern int dlp_VFSFileRead
 		PI_ARGS((int sd, FileRef fileref, pi_buffer_t *retbuf, size_t reqbytes));
 
 	/** @brief Delete an existing file from a VFS volume
@@ -1747,7 +1792,7 @@ struct dlpResponse {
 	 * @param fileref File reference obtained from dlp_VFSFileOpen()
 	 * @return A negative value if an error occured (see pi-error.h). 0 if not at EOF, >0 if at EOF.
 	 */
-	extern PI_ERR dlp_VFSFileEOF
+	extern int dlp_VFSFileEOF
 		PI_ARGS((int sd, FileRef fileref));
 
 	/** @brief Return the current seek position in an open file

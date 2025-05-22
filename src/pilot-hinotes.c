@@ -79,9 +79,7 @@ void write_memo_mbox(struct PilotUser User, struct HiNoteNote m,
 		printf("...\n");
 	else
 		printf("\n");
-	printf("\n");
-	printf(m.text);
-	printf("\n");
+	printf("\n%s\n", m.text);
 }
 
 void write_memo_in_directory(char *dirname, struct HiNoteNote m,
