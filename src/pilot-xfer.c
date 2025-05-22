@@ -111,8 +111,7 @@ char    *vfsdir = NULL;
 char	*exclude[MAXEXCLUDE];
 int		numexclude = 0;
 
-static int findVFSPath(const char *path, long *volume, char *rpath,
-		int *rpathlen);
+static int findVFSPath(const char *path, long *volume, char *rpath, int *rpathlen);
 
 const char
 *media_name(int m)
@@ -713,7 +712,6 @@ pi_file_retrieve_VFS(const int fd, const char *basename, const int socket, const
 	pi_buffer_t  *buffer;
 	ssize_t      readsize,writesize;
 	int          filesize;
-	int          original_filesize;
 	int          written_so_far;
 	pi_progress_t progress;
 
@@ -762,7 +760,6 @@ pi_file_retrieve_VFS(const int fd, const char *basename, const int socket, const
 	}
 
 	dlp_VFSFileSize(socket,file,&filesize);
-	original_filesize = filesize;
 
 	memset(&progress, 0, sizeof(progress));
 	progress.type = PI_PROGRESS_RECEIVE_VFS;
@@ -1668,27 +1665,45 @@ palm_list_internal(unsigned long int flags)
  *
  * Function:    print_fileinfo
  *
- * Summary:     Show information about the given @p file (which is
+ * Summary:     Show information about the given @p fileRef (which is
  *              assumed to have VFS path @p path).
  *
- * Parameters:  path        --> path to file in VFS volume.
- *              file        --> FileRef for already opened file.
+ * Parameters:  err         --> Possible PI_ERR.
+ *              fileRef     --> File ref to already opened file.
+ *              path        --> Path to file in VFS volume.
+ *              attributes  --> Attributes of already opened file.
  *
  * Returns:     Nothing
  *
  ***********************************************************************/
 static void
-print_fileinfo(const char *path, FileRef file)
+print_fileinfo(PI_ERR err, FileRef fileRef, const char *path, unsigned long attributes)
 {
 	int		size;
-	time_t	date;
-	char	*s;
+	time_t	epoch;
 
-	(void) dlp_VFSFileSize(sd,file,&size);
-	(void) dlp_VFSFileGetDate(sd,file,vfsFileDateModified,&date);
-	s = ctime(&date);
-	s[24]=0;
-	printf("   %8d %s  %s\n",size,s,path);
+	if (err >= 0)
+		if (attributes & vfsFileAttrDirectory)
+			err = size = dlp_VFSDirEntryEnumerate(sd, fileRef, NULL);
+		else
+			err = dlp_VFSFileSize(sd, fileRef, &size);
+	err = (err >= 0) ? dlp_VFSFileGetDate(sd, fileRef, vfsFileDateModified, &epoch) : err;
+	if (err >= 0) {
+		char attr_chars[] = "ladvshr";
+		for (int i=0; i<sizeof(attr_chars)-1; i++) {
+			if (!(attributes & (0x40 >> i)))
+				attr_chars[i] = '-';
+		}
+		char *date = ctime(&epoch);
+		date[24] = 0;
+		printf("   %s %8d %s  %s\n", attr_chars, size, date, path);
+	} else {
+		if (err != PI_ERR_DLP_PALMOS)
+			printf("   %s", pi_err_message(err));
+		else
+			printf("   %s", dlp_err_message(pi_palmos_error(sd)));
+		printf(":  %s\n", path);
+	}
 }
 
 /***********************************************************************
@@ -1700,64 +1715,64 @@ print_fileinfo(const char *path, FileRef file)
  *              path @p path on that volume.
  *
  * Parameters:  volume      --> volume ref number.
- *              path        --> path to directory.
- *              dir         --> file ref to already opened dir.
+ *              dirPath     --> path to directory.
+ *              dirRef      --> file ref to already opened dir.
  *
  * Returns:     Nothing
  *
  ***********************************************************************/
 static void
-print_dir(long volume, const char *path, FileRef dir)
+print_dir(long volume, const char *dirPath, FileRef dirRef)
 {
-	unsigned long		it						= 0;
-	int					max						= 64;
-	struct VFSDirInfo	infos[64];
-	int					i;
-	FileRef				file;
-	char				buf[vfsMAXFILENAME];
-	int					pathlen					= strlen(path);
+	char				filePath[vfsMAXFILENAME];
+	int					pathlen;
+	struct VFSDirInfo	*infos					= NULL;
+	FileRef				fileRef;
 
-	/* Set up buf so it contains path with trailing / and
-	   buflen points to the terminating NUL. */
-	if (pathlen<1)
-	{
-		printf("   NULL path.\n");
+	// Set up filePath so it contains dirPath with trailing / and
+	// pathlen points to the terminating NUL.
+	filePath[vfsMAXFILENAME-1] = 0;
+	strncpy(filePath, dirPath, vfsMAXFILENAME-1);
+	pathlen = strlen(filePath);
+
+	if (pathlen == 0 || filePath[pathlen-1] != '/') {
+		filePath[pathlen++]='/';
+	}
+
+	if (pathlen > vfsMAXFILENAME-2) {
+		fprintf(stderr, "   dirPath too long.\n");
 		return;
 	}
 
-	memset(buf,0,vfsMAXFILENAME);
-	strncpy(buf,path,vfsMAXFILENAME-1);
-
-	if (buf[pathlen-1] != '/')
-	{
-		buf[pathlen]='/';
-		pathlen++;
-	}
-
-	if (pathlen>vfsMAXFILENAME-2)
-	{
-		printf("   Path too long.\n");
+	int entries = dlp_VFSDirEntryEnumerate(sd, dirRef, &infos);
+	if (entries == 0) {
+		printf("   No files in this directory.\n");
+	} else if (entries < 0) {
+		LOG((PI_DBG_USER, PI_DBG_LVL_ERR,
+				"print_dir: dlp_VFSDirEntryEnumerate returned %s\n", pi_err_message(entries)));
+		if (entries == PI_ERR_DLP_PALMOS) {
+			entries = pi_palmos_error(sd);
+			LOG((PI_DBG_USER, PI_DBG_LVL_ERR,
+					"print_dir: dlp_VFSDirEntryEnumerate returned %s\n", dlp_err_message(entries)));
+			fprintf(stderr, "   dlp_VFSDirEntryEnumerate returned %s\n", dlp_err_message(entries));
+		} else
+			fprintf(stderr, "   dlp_VFSDirEntryEnumerate returned %s\n", pi_err_message(entries));
 		return;
 	}
 
-	while (dlp_VFSDirEntryEnumerate(sd,dir,&it,&max,infos) >= 0)
-	{
-		if (max<1) break;
-		for (i = 0; i<max; i++)
-		{
-			memset(buf+pathlen,0,vfsMAXFILENAME-pathlen);
-			strncpy(buf+pathlen,infos[i].name,vfsMAXFILENAME-pathlen);
-			if (dlp_VFSFileOpen(sd,volume,buf,dlpVFSOpenRead,&file) < 0)
-			{
-				printf("   %s: No such file or directory.\n",infos[i].name);
-			} else {
-				print_fileinfo(infos[i].name, file);
-				dlp_VFSFileClose(sd,file);
-			}
+	for (int i = 0; i<entries; i++) {
+		memset(filePath+pathlen, 0, vfsMAXFILENAME-pathlen);
+		strncpy(filePath+pathlen, infos[i].name, vfsMAXFILENAME-pathlen);
+		PI_ERR err = dlp_VFSFileOpen(sd, volume, filePath, dlpVFSOpenRead, &fileRef);
+		print_fileinfo(err, fileRef, infos[i].name, infos[i].attr);
+		if (err >= 0) {
+			dlp_VFSFileClose(sd, fileRef);
 		}
+		free(infos[i].name);
 	}
+	free(infos);
+	return;
 }
-
 
 
 static int
@@ -1839,6 +1854,7 @@ mediatype (struct VFSInfo *info)
 
 typedef struct cardreport_s {
 	char				*type;
+	char				*hidden;
 	long				size_total;
 	long				size_used;
 	long				size_free;
@@ -1856,8 +1872,7 @@ palm_cardinfo ()
 					volume_count = 16,
 					volumes[16];
 	cardreport_t	*cards = NULL,
-					*t,
-					*t2;
+					*t;
 	struct VFSInfo	info;
 	char			buf[vfsMAXFILENAME],
 					fmt[64];
@@ -1865,11 +1880,13 @@ palm_cardinfo ()
 					size_total;
 	int				len;					/* should be size_t in dlp.c? */
 	
-	size_t			digits_type = 10,
-					digits_total = 4,
-					digits_used = 4,
-					digits_free = 4,
-					digits_cardnum = 1;
+	const size_t	CONDENSE = 3;
+	size_t			width_type = 10,
+					width_hidden = 6 - CONDENSE,
+					width_total = 4,
+					width_used = 4,
+					width_free = 4,
+					width_cardnum = 1;
 	static const char unknown_type[] = "<unknown>";
 
 	/* VFS info */
@@ -1899,10 +1916,12 @@ palm_cardinfo ()
 		dlp_VFSVolumeGetLabel (sd, volumes[i], &len, buf);
 
 		t = malloc (sizeof (cardreport_t));
-		t->size_used = size_used;
-		t->size_total = size_total;
-		t->size_free = size_total - size_used;
 		t->type = mediatype(&info);
+		t->hidden = (info.attributes & vfsVolAttrHidden) ? "x" : " ";
+		// alternative: t->hidden = (info.attributes & vfsVolAttrHidden) ? "y" : "n";
+		t->size_total = size_total;
+		t->size_used = size_used;
+		t->size_free = size_total - size_used;
 		t->cardnum = info.slotRefNum;
 		t->name = malloc (strlen(buf) + 1);
 		strcpy (&t->name[1], buf);
@@ -1913,11 +1932,11 @@ palm_cardinfo ()
 			t->next = cards;
 			cards = t;
 		} else {
-			t2 = cards;
-			while (t2->next != NULL && t2->next->cardnum < t->cardnum)
-				t2 = t2->next;
-			t->next = t2->next;
-			t2->next = t;
+			cardreport_t *tmp = cards;
+			while (tmp->next != NULL && tmp->next->cardnum < t->cardnum)
+				tmp = tmp->next;
+			t->next = tmp->next;
+			tmp->next = t;
 		}
 
 		/* Determine field widths */
@@ -1925,29 +1944,30 @@ palm_cardinfo ()
 		j = FUNC;					\
 		if (j > NAME)				\
 				NAME = j
-		FIELDWIDTH (digits_type, (t->type==NULL ? sizeof(unknown_type) : strlen(t->type)));
-		FIELDWIDTH (digits_used, numdigits(t->size_used));
-		FIELDWIDTH (digits_total, numdigits(t->size_total));
-		FIELDWIDTH (digits_free, numdigits(t->size_free));
-		FIELDWIDTH (digits_cardnum, numdigits(t->cardnum));
+		FIELDWIDTH (width_type, (t->type==NULL ? sizeof(unknown_type) : strlen(t->type)));
+		FIELDWIDTH (width_hidden, strlen(t->hidden));
+		FIELDWIDTH (width_total, numdigits(t->size_total));
+		FIELDWIDTH (width_used, numdigits(t->size_used));
+		FIELDWIDTH (width_free, numdigits(t->size_free));
+		FIELDWIDTH (width_cardnum, numdigits(t->cardnum));
 #undef FIELDWIDTH
 	}
 
 	memset(fmt,0,sizeof(fmt));
-	snprintf (fmt, sizeof(fmt)-1, "%%-%zus  %%%zus  %%%zus  %%%zus  %%-%zus  %%s\n",
-			digits_type, digits_used, digits_total, digits_free,
-			digits_cardnum);
+	snprintf (fmt, sizeof(fmt)-1, "%%-%zus  %%-%zus  %%%zus  %%%zus  %%%zus  %%-%zus  %%s\n",
+			width_type, width_hidden, width_total - CONDENSE, width_used, width_free,
+			width_cardnum);
 	
-	printf (fmt, "Filesystem", "Size", "Used", "Free", "#", "Card name");
+	printf (fmt, "Filesystem", "Hidden", "Size", "Used", "Free", "#", "Card name");
 
 	memset(fmt,0,sizeof(fmt));
-	snprintf (fmt, sizeof(fmt)-1, "%%-%zus  %%%zuli  %%%zuli  %%%zuli  %%%zui  %%s\n",
-			digits_type, digits_used, digits_total, digits_free,
-			digits_cardnum);
+	snprintf (fmt, sizeof(fmt)-1, "%%-%zus  %%-%zus  %%%zuli  %%%zuli  %%%zuli  %%%zui  %%s\n",
+			width_type, width_hidden, width_total, width_used, width_free,
+			width_cardnum);
 
 	for (t = cards; t != NULL; t = t->next) {
-		printf (fmt, t->type==NULL ? unknown_type : t->type, t->size_used, t->size_total,
-				t->size_free, t->cardnum, t->name);
+		printf (fmt, t->type==NULL ? unknown_type : t->type, t->hidden,
+				t->size_total, t->size_used, t->size_free, t->cardnum, t->name);
 	}
 
 cleanup:
@@ -1976,9 +1996,11 @@ cleanup:
  *
  * Returns:     -2 on VFSVolumeEnumerate error,
  *              -1 if no match was found,
- *              0 if a match was found and @p match is set,
- *              1 if no match but only one VFS volume exists and
- *                match is set.
+ *              0 if a match was found; @p match is set,
+ *              1 if no match but at least one VFS volume exists; match is set
+ *                to the first, or if found, the first unlabeled volume,
+ *              2 if invalid cardID but at least one VFS volume exists; match is set
+ *                to the first, or if found, the first unlabeled volume.
  *
  ***********************************************************************/
 static int
@@ -1986,13 +2008,10 @@ findVFSRoot_clumsy(const char *root_component, long *match)
 {
 	int				volume_count		= 16;
 	int				volumes[16];
-	struct VFSInfo	info;
-	int				i;
-	int				buflen;
-	char			buf[vfsMAXFILENAME];
+	char			labels[16][vfsMAXFILENAME];
 	long			matched_volume		= -1;
 
-	if (dlp_VFSVolumeEnumerate(sd,&volume_count,volumes) < 0)
+	if (dlp_VFSVolumeEnumerate(sd, &volume_count, volumes) < 0)
 	{
 		return -2;
 	}
@@ -2002,38 +2021,48 @@ findVFSRoot_clumsy(const char *root_component, long *match)
 	   device. If we're listing, print everything out, otherwise remain
 	   silent and just set matched_volume if there's a match in the
 	   first filename component. */
-	for (i = 0; i<volume_count; ++i)
+	for (int i=0; i<volume_count; ++i)
 	{
-		if (dlp_VFSVolumeInfo(sd,volumes[i],&info) < 0)
-			continue;
+		labels[i][0] = 0;
+		static int buflen = vfsMAXFILENAME;
+		(void) dlp_VFSVolumeGetLabel(sd, volumes[i], &buflen, labels[i]);
 
-		buflen=vfsMAXFILENAME;
-		buf[0]=0;
-		(void) dlp_VFSVolumeGetLabel(sd,volumes[i],&buflen,buf);
-
-		/* Not listing, so just check matches and continue. */
-		if (0 == strcmp(root_component,buf)) {
+//	printf("   root_component=%s, labels[%d]=%s\n", root_component, i, labels[i]);
+		/* Check if root component matches a volume label. */
+		if (0 != strlen(labels[i]) && 0 == strcmp(root_component, labels[i])) {
 			matched_volume = volumes[i];
 			break;
 		}
-		/* volume label no longer important, overwrite */
-		sprintf(buf,"card%d",info.slotRefNum);
 
-		if (0 == strcmp(root_component,buf)) {
+		struct VFSInfo info;
+		if (dlp_VFSVolumeInfo(sd, volumes[i], &info) < 0)
+			continue; // oops, should not happen
+
+		/* Check if root component matches a cardID. */
+		static char buf[8];
+		sprintf(buf,"card%d", info.slotRefNum);
+		if (0 == strcmp(root_component, buf)) {
 			matched_volume = volumes[i];
 			break;
+		}
+		/* Check if invalid cardID. */
+		if (0 == strncmp(root_component, buf, 4)) {
+			matched_volume = -2;
 		}
 	}
 
 	if (matched_volume >= 0) {
 		*match = matched_volume;
 		return 0;
-	}
-
-	if ((matched_volume < 0) && (1 == volume_count)) {
-		/* Assume that with one card, just go look there. */
+	} else if (volume_count > 0) { // assume at least one card and match
 		*match = volumes[0];
-		return 1;
+		for (int i=0; i<volume_count; i++)
+			// if existent, match the first unlabeled volume as default
+			if (0 == strlen(labels[i])) {
+				*match = volumes[i];
+				break;
+			}
+		return -matched_volume;
 	}
 	return -1;
 }
@@ -2061,13 +2090,16 @@ findVFSRoot_clumsy(const char *root_component, long *match)
  *
  * Returns:     -2 on VFSVolumeEnumerate error,
  *              -1 if no match was found,
- *              0 if a match was found.
+ *              0 if a matching volume was found.,
+ *              1 if no match but at least one VFS volume exists; volume is set
+ *                to the first, or if found, the first unlabeled volume,
+ *              2 if invalid cardID but at least one VFS volume exists; volume is set
+ *                to the first, or if found, the first unlabeled volume.
  *
  ***********************************************************************/
 static int
 findVFSPath(const char *path, long *volume, char *rpath, int *rpathlen)
 {
-	char	*s;
 	int		r;
 
 	if ((NULL == path) || (NULL == rpath) || (NULL == rpathlen))
@@ -2075,83 +2107,41 @@ findVFSPath(const char *path, long *volume, char *rpath, int *rpathlen)
 	if (*rpathlen < strlen(path))
 		return -1;
 
-	memset(rpath,0,*rpathlen);
-	if ('/'==path[0])
-		strncpy(rpath,path+1,*rpathlen-1);
+	/* copy root component to rpath */
+	memset(rpath, 0, *rpathlen);
+	if ('/' == path[0])
+		strncpy(rpath, path+1, *rpathlen-1);
 	else
-		strncpy(rpath,path,*rpathlen-1);
-	s = strchr(rpath,'/');
-	if (NULL != s)
-		*s=0;
+		strncpy(rpath, path, *rpathlen-1);
+	char *s = strchr(rpath, '/');
+	if (s)
+		*s = 0;
 
 
-	r = findVFSRoot_clumsy(rpath,volume);
+	r = findVFSRoot_clumsy(rpath, volume);
 	if (r < 0)
 		return r;
 
-	if (0 == r)
-	{
+	/* copy volume relative path to rpath */
+	if (0 == r) {
 		/* Path includes card/volume label. */
-		r = strlen(rpath);
-		if ('/'==path[0])
-			++r; /* adjust for stripped / */
-		memset(rpath,0,*rpathlen);
-		strncpy(rpath,path+r,*rpathlen-1);
+		int rlen = strlen(rpath);
+		if ('/' == path[0])
+			++rlen; /* adjust for stripped / */
+		memset(rpath, 0, *rpathlen);
+		strncpy(rpath, path+rlen, *rpathlen-1);
 	} else {
-		/* Path without card label */
-		memset(rpath,0,*rpathlen);
-		strncpy(rpath,path,*rpathlen-1);
+		/* Path without or invalid card label */
+		memset(rpath, 0, *rpathlen);
+		strncpy(rpath, path, *rpathlen-1);
 	}
 
-	if (!rpath[0])
-	{
-		rpath[0]='/';
-		rpath[1]=0;
+	if (!rpath[0]) {
+		rpath[0] = '/';
+		rpath[1] = 0;
 	}
 	*rpathlen = strlen(rpath);
-	return 0;
-}
-
-/***********************************************************************
- *
- * Function:    palm_list_VFSDir
- *
- * Summary:     Dispatch listing for given @p path to either
- *              print_dir or print_fileinfo, depending on type.
- *
- * Parameters:  volume      --> volume ref number.
- *              path        --> path to file or directory.
- *
- * Returns:     Nothing
- *
- ***********************************************************************/
-static void palm_list_VFSDir(long volume, const char *path)
-{
-	FileRef file;
-	unsigned long attributes;
-
-	if (dlp_VFSFileOpen(sd,volume,path,dlpVFSOpenRead,&file) < 0)
-	{
-		printf("   %s: No such file or directory.\n",path);
-		return;
-	}
-
-	if (dlp_VFSFileGetAttributes(sd,file,&attributes) < 0)
-	{
-		printf("   %s: Cannot get attributes.\n",path);
-		return;
-	}
-
-	if (vfsFileAttrDirectory == (attributes & vfsFileAttrDirectory))
-	{
-		/* directory */
-		print_dir(volume,path,file);
-	} else {
-		/* file */
-		print_fileinfo(path,file);
-	}
-
-	(void) dlp_VFSFileClose(sd,file);
+	return r;
 }
 
 /***********************************************************************
@@ -2159,10 +2149,10 @@ static void palm_list_VFSDir(long volume, const char *path)
  * Function:    palm_list_VFS
  *
  * Summary:     Show information about the directory or file specified
- *              in global vfsdir. Listing / will always tell you the
- *              physical VFS cards present; other paths should specify
- *              either a card as /cardX/ in the path of a volume label.
- *              As a special case, /dir/ is mapped to /card1/dir/ if
+ *              in global vfsdir. Listing / or nothing will tell you the
+ *              physical VFS cards present; other paths should prepend either
+ *              /BUILTIN or a card as /cardX in the path of a volume label.
+ *              As a special case, / or nothing is mapped to /card1 if
  *              there is only one card.
  *
  * Parameters:  None
@@ -2173,35 +2163,48 @@ static void palm_list_VFSDir(long volume, const char *path)
 static void
 palm_list_VFS()
 {
-	char	root_component[vfsMAXFILENAME];
-	int		rootlen							= vfsMAXFILENAME;
-	long	matched_volume					= -1;
+	char	path[vfsMAXFILENAME];
+	int		pathlen					= vfsMAXFILENAME;
+	long	volume					= -1;
 	int		r;
+	FileRef	fileRef;
+	unsigned long attributes = 0;
 
-	/* Listing the root directory / has special handling. Detect that
-	   here. */
-	if (NULL == vfsdir)
-		vfsdir="/";
+	// Listing the root directory / has special handling. Detect that here.
+	if (NULL == vfsdir || strlen(vfsdir) == 0)
+		vfsdir = "/";
 
-	/* Find the given directory. Will list the VFS root dir if the
-	   requested dir is "/" */
-	printf("   Directory of %s...\n",vfsdir);
+	// Find the given directory. Will list the VFS root dir if the requested dir is "/"
 
-	r = findVFSPath(vfsdir,&matched_volume,root_component,&rootlen);
+	r = findVFSPath(vfsdir, &volume, path, &pathlen);
 
-	if (-2 == r)
-	{
+	if (-2 == r) {
 		fprintf(stderr,"   Not ready reading drive C:\n");
 		return;
 	}
-	if (r < 0)
-	{
-		fprintf(stderr,"   No such directory, use pilot-xfer -C to list volumes.\n");
-		return;
+
+//	printf("   With %s, r=%d check path %s on volume %ld\n", vfsdir, r, path, volume);
+	PI_ERR err = r >= 0 ? dlp_VFSFileOpen(sd, volume, path, dlpVFSOpenRead, &fileRef) : -1;
+
+	if (err < 0 && r == 2)
+		printf("   Invalid cardID (use pilot-xfer -C to list cards / volumes) and ...\n");
+
+//	printf("   On volume: %ld read path: %s, err: %d, fileRef: %ld\n", volume, path, err, fileRef);
+	char *defVol = r > 0 ? " default" : "";
+	if (err >= 0 && (err = dlp_VFSFileGetAttributes(sd, fileRef, &attributes)) >= 0
+			&& attributes & vfsFileAttrDirectory) {
+		// directory
+		printf("   Directory on%s volume %ld of %s...\n", defVol, volume, path);
+		print_dir(volume, path, fileRef);
+	} else {
+		// file
+		if (err >= 0 && !(attributes & vfsFileAttrDirectory) && path[pathlen-1] == '/')
+			path[pathlen-1] = 0;
+		printf("   File on%s volume %ld:\n", defVol, volume);
+		print_fileinfo(err, fileRef, path, attributes);
 	}
 
-	/* printf("   Reading card dir %s on volume %ld\n",root_component,matched_volume); */
-	palm_list_VFSDir(matched_volume,root_component);
+	(void) dlp_VFSFileClose(sd, fileRef);
 }
 
 /***********************************************************************
@@ -2327,7 +2330,7 @@ main(int argc, const char *argv[])
 
 		/* action indicators that take no arguments. */
 		{"list",     'l', POPT_ARG_NONE, NULL, palm_op_list, "List all application and 3rd party Palm data/apps", NULL},
-		{"cardinfo", 'C', POPT_ARG_NONE, NULL, palm_op_cardinfo, "Show information on available cards", NULL},
+		{"cardinfo", 'C', POPT_ARG_NONE, NULL, palm_op_cardinfo, "Show information on available card and built-in volumes", NULL},
 
 		/* action indicators that may be mixed in with the others */
 		{"Purge",    'P', POPT_BIT_SET, &sync_flags, PURGE, "Purge any deleted data that hasn't been cleaned up", NULL},
@@ -2477,8 +2480,7 @@ main(int argc, const char *argv[])
 				{
 					fprintf(stderr, "   ERROR: '%s' is not a directory or does not exist.\n"
 							"   Please supply a directory name when performing a "
-							"backup or restore and try again.\n\n", dirname);
-					fprintf(stderr,gracias);
+							"backup or restore and try again.\n\n%s", dirname, gracias);
 					return 1;
 				}
 			}
@@ -2487,14 +2489,12 @@ main(int argc, const char *argv[])
 		case palm_op_list:
 			if (rargc > 0)
 			{
-				fprintf(stderr,"   ERROR: Do not pass additional arguments to -busrlLC.\n");
-				fprintf(stderr,gracias);
+				fprintf(stderr,"   ERROR: Do not pass additional arguments to -busrlLC.\n%s", gracias);
 				return 1;
 			}
 			break;
 		case palm_op_noop:
-			fprintf(stderr,"   ERROR: Must specify one of -bursimfdlC.\n");
-			fprintf(stderr,gracias);
+			fprintf(stderr,"   ERROR: Must specify one of -bursimfdlC.\n%s", gracias);
 			return 1;
 			break;
 		case palm_op_merge:

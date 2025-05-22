@@ -231,22 +231,16 @@ int main (int argc, char **argv)
 			result = dlp_VFSFileOpen (sd, refs[i], name, 0x0007 /* vfsModeReadWrite */, &fileRef);
 			CHECK_RESULT(dlp_VFSFileOpen);
 			if (result >= 0) {
-				unsigned long dirIterator = vfsIteratorStart;
-				do {
-					struct VFSDirInfo dirItems[16];
-					int dirCount;
-					
-					memset (dirItems, 0, sizeof(dirItems));
-					dirCount = 16;
-					result = dlp_VFSDirEntryEnumerate (sd, fileRef, &dirIterator, &dirCount, dirItems);
-					CHECK_RESULT(dlp_VFSDirEntryEnumerate);
+				struct VFSDirInfo *dirItems = NULL;
 
-					if (result >= 0) {
-						for (j = 0; j < dirCount; j++) {
-							LOG((PI_DBG_USER, PI_DBG_LVL_INFO, "\t'%s' attrs = 0x%08lx\n", dirItems[j].name, dirItems[j].attr));
-						}
+				result = dlp_VFSDirEntryEnumerate (sd, fileRef, &dirItems);
+				CHECK_RESULT(dlp_VFSDirEntryEnumerate);
+
+				if (result >= 0) {
+					for (j = 0; j < result; j++) {
+						LOG((PI_DBG_USER, PI_DBG_LVL_INFO, "\t'%s' attrs = 0x%08lx\n", dirItems[j].name, dirItems[j].attr));
 					}
-				} while (dirIterator != vfsIteratorStop && result >= 0);
+				}
 
 				result = dlp_VFSFileClose (sd, fileRef);
 				CHECK_RESULT(dlp_VFSFileClose);

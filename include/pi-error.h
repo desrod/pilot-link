@@ -50,30 +50,30 @@ typedef int PI_ERR;
 /** @brief Definition of errors returned by various libpisock functions */
 enum dlpErrorDefinitions {
 	/* PROTOCOL level errors */
-	PI_ERR_PROT_ABORTED		= -100,	/**< aborted by other end */
+	PI_ERR_PROT_ABORTED			= -100,	/**< aborted by other end */
 	PI_ERR_PROT_INCOMPATIBLE	= -101,	/**< can't talk with other end */
 	PI_ERR_PROT_BADPACKET		= -102,	/**< bad packet (used with serial protocols) */
 
 	/* SOCKET level errors */
 	PI_ERR_SOCK_DISCONNECTED	= -200,	/**< connection has been broken */
-	PI_ERR_SOCK_INVALID		= -201,	/**< invalid protocol stack */
-	PI_ERR_SOCK_TIMEOUT		= -202,	/**< communications timeout (but link not known as broken) */
+	PI_ERR_SOCK_INVALID			= -201,	/**< invalid protocol stack */
+	PI_ERR_SOCK_TIMEOUT			= -202,	/**< communications timeout (but link not known as broken) */
 	PI_ERR_SOCK_CANCELED		= -203,	/**< last data transfer was canceled */
-	PI_ERR_SOCK_IO			= -204,	/**< generic I/O error */
+	PI_ERR_SOCK_IO				= -204,	/**< generic I/O error */
 	PI_ERR_SOCK_LISTENER		= -205,	/**< socket can't listen/accept */
 
 	/* DLP level errors */
-	PI_ERR_DLP_BUFSIZE		= -300,	/**< provided buffer is not big enough to store data */
-	PI_ERR_DLP_PALMOS		= -301,	/**< a non-zero error was returned by the device */
+	PI_ERR_DLP_BUFSIZE			= -300,	/**< provided buffer is not big enough to store data */
+	PI_ERR_DLP_PALMOS			= -301,	/**< a non-zero error was returned by the device */
 	PI_ERR_DLP_UNSUPPORTED		= -302,	/**< this DLP call is not supported by the connected handheld */
-	PI_ERR_DLP_SOCKET		= -303,	/**< invalid socket */
-	PI_ERR_DLP_DATASIZE		= -304,	/**< requested transfer with data block too large (>64k) */
-	PI_ERR_DLP_COMMAND		= -305,	/**< command error (the device returned an invalid response) */
+	PI_ERR_DLP_SOCKET			= -303,	/**< invalid socket */
+	PI_ERR_DLP_DATASIZE			= -304,	/**< requested transfer with data block too large (>64k) */
+	PI_ERR_DLP_COMMAND			= -305,	/**< command error (the device returned an invalid response) */
 
 	/* FILE level error */
-	PI_ERR_FILE_INVALID		= -400,	/**< invalid prc/pdb/pqa/pi_file file */
-	PI_ERR_FILE_ERROR		= -401,	/**< generic error when reading/writing file */
-	PI_ERR_FILE_ABORTED		= -402,	/**< file transfer was aborted by progress callback, see pi_file_retrieve(), pi_file_install(), pi_file_merge() */
+	PI_ERR_FILE_INVALID			= -400,	/**< invalid prc/pdb/pqa/pi_file file */
+	PI_ERR_FILE_ERROR			= -401,	/**< generic error when reading/writing file */
+	PI_ERR_FILE_ABORTED			= -402,	/**< file transfer was aborted by progress callback, see pi_file_retrieve(), pi_file_install(), pi_file_merge() */
 	PI_ERR_FILE_NOT_FOUND		= -403,	/**< record or resource not found */
 	PI_ERR_FILE_ALREADY_EXISTS	= -404,	/**< a record with same UID or resource with same type/ID already exists */
 
@@ -85,11 +85,29 @@ enum dlpErrorDefinitions {
 
 /** @name libpisock error management macros */
 /*@{*/
-	#define IS_PROT_ERR(error)	((error)<=-100 && (error)>-200)	/**< Check whether the error code is at protocol level	*/
-	#define IS_SOCK_ERR(error)	((error)<=-200 && (error)>-300) /**< Check whether the error code is at socket level	*/
-	#define IS_DLP_ERR(error)	((error)<=-300 && (error)>-400) /**< Check whether the error code is at DLP level 	*/
-	#define IS_FILE_ERR(error)	((error)<=-400 && (error)>-500) /**< Check whether the error code os a file error 	*/
-	#define IS_GENERIC_ERR(error)	((error)<=-500 && (error)>-600) /**< Check whether the error code is a generic error 	*/
+	#define IS_PROT_ERR(error)		((error)<=-100 && (error)>-200)	/**< Check whether the error code is at protocol level */
+	#define IS_SOCK_ERR(error)		((error)<=-200 && (error)>-300)	/**< Check whether the error code is at socket level */
+	#define IS_DLP_ERR(error)		((error)<=-300 && (error)>-400)	/**< Check whether the error code is at DLP level */
+	#define IS_FILE_ERR(error)		((error)<=-400 && (error)>-500)	/**< Check whether the error code is a file error */
+	#define IS_GENERIC_ERR(error)	((error)<=-500 && (error)>-600)	/**< Check whether the error code is a generic error */
+/*@}*/
+
+/** @name libpisock error management macros */
+/*@{*/
+	#define PI_PROT_ERR		-100	/**< Offset for protocol level error */
+	#define PI_SOCK_ERR		-200	/**< Offset for socket level error */
+	#define PI_DLP_ERR		-300	/**< Offset for DLP level error */
+	#define PI_FILE_ERR		-400	/**< Offset for file error */
+	#define PI_GENERIC_ERR	-500	/**< Offset for generic error */
+/*@}*/
+
+/** @name DLP PalmOS error masks */
+/*@{*/
+	#define DLP_ERR		0x0000	/**< Mask for DLP level error */
+	#define POS_DM_ERR	0x0200	/**< Mask for PalmOS data manager level error */
+	#define POS_SYS_ERR	0x0500	/**< Mask for PalmOS system level error */
+	#define POS_EXP_ERR	0x2900	/**< Mask for PalmOS expansion level error */
+	#define POS_VFS_ERR	0x2A00	/**< Mask for PalmOS VFS level error */
 /*@}*/
 
 #endif

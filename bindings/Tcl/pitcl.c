@@ -1054,7 +1054,7 @@ OpenDBCmd(ClientData clientData, Tcl_Interp * interp, int argc, char*argv[])
 		result, name, mode, cardno, handle);
 
 	if (result<0) {
-		Tcl_SetResult(interp, dlp_strerror(result), TCL_STATIC);
+		Tcl_SetResult(interp, dlp_err_message(result), TCL_STATIC);
 		return TCL_ERROR;
 	}
 
@@ -1126,7 +1126,7 @@ GetRecordCmd(ClientData clientData, Tcl_Interp * interp, int argc, char *argv[])
 	result = dlp_ReadRecordByIndex(tcl_socket(interp, argv[1]), handle, index, buf, &id_, &attr, &cat);
 	
 	if (result<0) {
-		Tcl_SetResult(interp, dlp_strerror(result), TCL_STATIC);
+		Tcl_SetResult(interp, dlp_err_message(result), TCL_STATIC);
 		return TCL_ERROR;
 	}
 	
@@ -1175,7 +1175,7 @@ SetRecordCmd(ClientData clientData, Tcl_Interp * interp, int argc, char *argv[])
 	free(buf);
 	
 	if (result<0) {
-		Tcl_SetResult(interp, dlp_strerror(result), TCL_STATIC);
+		Tcl_SetResult(interp, dlp_err_message(result), TCL_STATIC);
 		return TCL_ERROR;
 	}
 	

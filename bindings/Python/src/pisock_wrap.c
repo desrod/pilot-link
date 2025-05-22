@@ -1753,7 +1753,7 @@ static int pythonWrapper_handlePiErr(int sd, int err)
 			return 0;
 		if (palmerr > dlpErrNoError && palmerr <= dlpErrUnknown) {
 			PyErr_SetObject(PIError,
-				Py_BuildValue("(is)", palmerr, dlp_strerror(palmerr)));
+				Py_BuildValue("(is)", palmerr, dlp_err_message(palmerr)));
 			return err;
 		}
 	}
@@ -1803,7 +1803,7 @@ static PyObject *_wrap_dlp_ReadRecordIDList (PyObject *self, PyObject *args) {
 	}
 	
 	if (ret < 0) {
-		PyErr_SetObject(PIError, Py_BuildValue("(is)", ret, dlp_strerror(ret)));
+		PyErr_SetObject(PIError, Py_BuildValue("(is)", ret, dlp_err_message(ret)));
 		PyMem_Free(buf);
 		return NULL;
 	}

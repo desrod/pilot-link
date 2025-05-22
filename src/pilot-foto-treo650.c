@@ -178,74 +178,55 @@ static void
  *
  ***********************************************************************/
 static void
-  dump_dir(int sd, long volume, const char *path, FileRef dir)
+  dump_dir(int sd, long volume, const char *dirPath, FileRef dirRef)
 {
-   unsigned long		it						= 0;
-   int					max						= 64;
-   struct VFSDirInfo	infos[64];
-   int					i;
-   FileRef				file;
-   char				buf[vfsMAXFILENAME];
-   int					pathlen					= strlen(path);
-   int fd;
-   char *index;
+	int					pathlen					= strlen(dirPath);
+	char				filePath[vfsMAXFILENAME];
+	struct VFSDirInfo	*infos					= NULL;
+	FileRef				file;
+	int fd;
+	char *index;
 
-	/* Set up buf so it contains path with trailing / and
-	   buflen points to the terminating NUL. */
-   if (pathlen<1)
-     {
-	printf("   NULL path.\n");
-	return;
-     }
+	// Set up filePath so it contains dirPath with trailing / and
+	// pathlen points to the terminating NUL.
+	if (pathlen == 0) {
+		printf("   NULL path.\n");
+		return;
+	}
+	memset(filePath, 0, vfsMAXFILENAME);
+	strncpy(filePath, dirPath, vfsMAXFILENAME-1);
+	if (filePath[pathlen-1] != '/') {
+		filePath[pathlen++]='/';
+	}
+	if (pathlen > vfsMAXFILENAME-2) {
+		printf("   Dir path too long.\n");
+		return;
+	}
 
-   memset(buf,0,vfsMAXFILENAME);
-   strncpy(buf,path,vfsMAXFILENAME-1);
+	int entries = dlp_VFSDirEntryEnumerate(sd, dirRef, &infos);
 
-   if (buf[pathlen-1] != '/')
-     {
-	buf[pathlen]='/';
-	pathlen++;
-     }
-
-   if (pathlen>vfsMAXFILENAME-2)
-     {
-	printf("   Path too long.\n");
-	return;
-     }
-
-   while (dlp_VFSDirEntryEnumerate(sd,dir,&it,&max,infos) >= 0)
-     {
-	if (max<1) break;
-	for (i = 0; i<max; i++)
-	  {
-	     memset(buf+pathlen,0,vfsMAXFILENAME-pathlen);
-	     strncpy(buf+pathlen,infos[i].name,vfsMAXFILENAME-pathlen);
-	     if (dlp_VFSFileOpen(sd,volume,buf,dlpVFSOpenRead,&file) < 0)
-	       {
-		  printf("   %s: No such file or directory.\n",infos[i].name);
-	       }
-	     else
-	       {
-		  if( index = rindex( infos[i].name, '.' ))
-		    {
-//		       printf( "index: %s %d strlen %d\n", infos[i].name, index, strlen( infos[i].name ) );
-		       if(( index + 4 ) == (infos[i].name + strlen( infos[i].name )))
-			 {
-			    print_fileinfo(sd,infos[i].name, file);
-
-			    if( !strcmp( index,".jpg" ) ||  !strcmp( index,".3gp" ))
-			      {
-				 fd = open( infos[i].name, O_CREAT | O_TRUNC | O_RDWR, S_IRUSR | S_IWUSR);
-				 pi_file_retrieve_VFS( fd, sd, file, buf );
-				 close(fd);
-			      }
-			 }
-		    }
-
-		  dlp_VFSFileClose(sd,file);
-	       }
-	  }
-     }
+	for (int i = 0; i<entries; i++) {
+		memset(filePath+pathlen, 0, vfsMAXFILENAME-pathlen);
+		strncpy(filePath+pathlen, infos[i].name, vfsMAXFILENAME-pathlen);
+		if (dlp_VFSFileOpen(sd, volume, filePath, dlpVFSOpenRead, &file) < 0) {
+			printf("   %s: No such file or directory.\n", infos[i].name);
+		} else {
+			if( index = rindex(infos[i].name, '.' )) {
+//				printf("index: %s %d strlen %d\n", infos[i].name, index, strlen(infos[i].name) );
+				if((index + 4) == (infos[i].name + strlen(infos[i].name))) {
+					print_fileinfo(sd, infos[i].name, file);
+					if(!strcmp(index,".jpg") || !strcmp(index,".3gp")) {
+						fd = open(infos[i].name, O_CREAT | O_TRUNC | O_RDWR, S_IRUSR | S_IWUSR);
+						pi_file_retrieve_VFS(fd, sd, file, filePath);
+						close(fd);
+					}
+				}
+			}
+			dlp_VFSFileClose(sd, file);
+		}
+		free(infos[i].name);
+	}
+	free(infos); // Do only, if allocated.
 }
 
 int main(int argc, const char *argv[])
