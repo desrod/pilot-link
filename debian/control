@@ -1,0 +1,26 @@
+Source: pilot-link
+Section: utils
+Priority: optional
+Maintainer: Pilot Link Packagers <pilot-link@packages.debian.org>
+Build-Depends:
+ debhelper-compat (= 13),
+ dh-autoreconf,
+ autotools-dev,
+ libpng-dev,
+ libpopt-dev,
+ libreadline-dev,
+ libusb-dev,
+Standards-Version: 4.6.2
+Homepage: https://github.com/juddmon/pilot-link
+Vcs-Browser: https://github.com/juddmon/pilot-link
+Vcs-Git: https://github.com/juddmon/pilot-link.git
+Rules-Requires-Root: no
+
+Package: pilot-link
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Tools and library for Palm PDA communication
+ pilot-link is a suite of tools for communicating with Palm handheld
+ devices over serial, USB, and network connections. It includes
+ command-line utilities for installing applications, syncing data,
+ and managing the device, plus the libpisock and libpisync libraries.

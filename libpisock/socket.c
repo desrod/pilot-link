@@ -842,6 +842,7 @@ onalarm(int signo)
 	}
 
 	pi_mutex_unlock(&watch_list_mutex);
+	return;
 }
 
 /* Exit Handling Code */

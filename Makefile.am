@@ -24,3 +24,17 @@ EXTRA_DIST = 			\
 	pilot-link.pc.in	\
 	pilot-link-pp.pc.in
 
+# Clean up files created by build-deb.sh (Debian package build)
+clean-deb:
+	@if test -f debian/rules; then \
+		$(MAKE) -f debian/rules clean; \
+	fi
+
+clean-deb-packages:
+	rm -f $(top_builddir)/../pilot-link_*.deb \
+	      $(top_builddir)/../pilot-link_*.changes \
+	      $(top_builddir)/../pilot-link_*.dsc \
+	      $(top_builddir)/../pilot-link_*.buildinfo \
+	      $(top_builddir)/../pilot-link_*.tar.xz \
+	      $(top_builddir)/../pilot-link-dbgsym_*.ddeb
+

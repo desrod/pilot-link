@@ -5,16 +5,13 @@ AM_CPPFLAGS = 			\
 noinst_PROGRAMS =		\
 	calendardb-test 	\
 	locationdb-test 	\
-	contactsdb-test		\
-	contactsdb-jps		\
 	dlp-test		\
 	versamail-test		\
 	vfs-test
 
-contactsdb_jps_SOURCES =	\
-	contactsdb-jps.c
-contactsdb_jps_LDADD =		\
-	$(top_builddir)/libpisock/libpisock.la
+if HAVE_POPT
+noinst_PROGRAMS += contactsdb-test
+endif
 
 calendardb_test_SOURCES =	\
 	calendardb-test.c
@@ -26,10 +23,13 @@ locationdb_test_SOURCES =	\
 locationdb_test_LDADD =		\
 	$(top_builddir)/libpisock/libpisock.la
 
+if HAVE_POPT
 contactsdb_test_SOURCES =	\
 	contactsdb-test.c
 contactsdb_test_LDADD =		\
-	$(top_builddir)/libpisock/libpisock.la
+	$(top_builddir)/libpisock/libpisock.la \
+	$(POPT_LIBS)
+endif
 
 dlp_test_SOURCES =		\
 	dlp-test.c

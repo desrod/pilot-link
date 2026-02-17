@@ -1,0 +1,9 @@
+#!/usr/bin/make -f
+# You must remove the comment on the next line to enable debugging
+export DH_VERBOSE = 1
+
+%:
+	dh $@
+
+override_dh_auto_configure:
+	dh_auto_configure -- --prefix=/usr

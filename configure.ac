@@ -413,6 +413,7 @@ else
 	POPT_INCLUDES=
 fi
 AM_CONDITIONAL(INCLUDED_POPT, test "x$with_included_popt" = "xyes")
+AM_CONDITIONAL(HAVE_POPT, test "x$msg_popt" != "xnone")
 AC_SUBST(POPT_LIBS)
 AC_SUBST(POPT_INCLUDES)
 
