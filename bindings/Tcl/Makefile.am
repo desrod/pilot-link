@@ -1,10 +1,9 @@
 # $Id$
 
-INCLUDES = 					\
-	-I../../include				\
-	-I$(top_srcdir)/include			\
-	-DPACKAGE_VERSION=\"1.0\"		\
-	$(POPT_INCLUDES)			\
+AM_CPPFLAGS = 				\
+	-I$(top_srcdir)/include		\
+	-DPACKAGE_VERSION=\"1.0\"	\
+	$(POPT_INCLUDES)		\
 	$(TCL_INCLUDES)
 
 noinst_LTLIBRARIES = libpiuserland.la

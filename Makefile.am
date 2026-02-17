@@ -1,4 +1,4 @@
-AUTOMAKE_OPTIONS = 1.6
+AUTOMAKE_OPTIONS = 1.6 subdir-objects
 
 SUBDIRS=popt 		\
 	libpisock 	\

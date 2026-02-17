@@ -1,5 +1,4 @@
-INCLUDES = 			\
-	-I../include		\
+AM_CPPFLAGS = 			\
 	-I$(top_srcdir)/include \
 	$(POPT_INCLUDES)
 
@@ -7,10 +6,10 @@ noinst_PROGRAMS =		\
 	calendardb-test 	\
 	locationdb-test 	\
 	contactsdb-test		\
+	contactsdb-jps		\
 	dlp-test		\
 	versamail-test		\
-	vfs-test		\
-	contactsdb-test
+	vfs-test
 
 contactsdb_jps_SOURCES =	\
 	contactsdb-jps.c

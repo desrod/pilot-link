@@ -1,5 +1,4 @@
-INCLUDES = 			\
-	-I../include		\
+AM_CPPFLAGS = 			\
 	-I$(top_srcdir)/include
 
 bluetooth_FILES =	\
