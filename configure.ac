@@ -2,22 +2,22 @@
 # See the file COPYING for details.
 
 dnl ******************************
-dnl Pilot Link Version (must be before AC_INIT)
+dnl Pilot Link Version
 dnl ******************************
-PILOT_LINK_VERS=0
-PILOT_LINK_MAJOR=13
-PILOT_LINK_MINOR=0
-PILOT_LINK_PATCH=
+m4_define([pilot_link_vers], [0])
+m4_define([pilot_link_major], [13])
+m4_define([pilot_link_minor], [0])
+m4_define([pilot_link_patch], [])
 
-AC_SUBST(PILOT_LINK_VERS)
-AC_SUBST(PILOT_LINK_MAJOR)
-AC_SUBST(PILOT_LINK_MINOR)
-AC_SUBST(PILOT_LINK_PATCH)
-VERSION="$PILOT_LINK_VERS.$PILOT_LINK_MAJOR.$PILOT_LINK_MINOR$PILOT_LINK_PATCH"
-
-AC_INIT([pilot-link],[0.13.0],[],[https://github.com/juddmon/pilot-link])
+AC_INIT([pilot-link],[pilot_link_vers.pilot_link_major.pilot_link_minor[]pilot_link_patch],[],[https://github.com/juddmon/pilot-link])
 AC_CONFIG_SRCDIR([include/pi-version.h.in])
 AC_CONFIG_MACRO_DIR([m4])
+
+AC_SUBST([PILOT_LINK_VERS], pilot_link_vers)
+AC_SUBST([PILOT_LINK_MAJOR], pilot_link_major)
+AC_SUBST([PILOT_LINK_MINOR], pilot_link_minor)
+AC_SUBST([PILOT_LINK_PATCH], pilot_link_patch)
+VERSION="$PILOT_LINK_VERS.$PILOT_LINK_MAJOR.$PILOT_LINK_MINOR$PILOT_LINK_PATCH"
 
 dnl Initialize maintainer mode
 AM_MAINTAINER_MODE
@@ -359,7 +359,7 @@ if test "$use_bluez" != "no" ; then
 			use_bluez=yes
 		],[
 			test "$use_bluez" != "no" -a "$use_bluez" != "auto" \
-			&& AC_MSG_ERROR([BlueZ explicitly requested, but no library found])
+			&& AC_MSG_ERROR([[BlueZ explicitly requested, but no library found]])
 			use_bluez=no
 			have_bluez=no
 		])
@@ -386,16 +386,12 @@ AC_ARG_WITH(included-popt,
 
 if test "x$enable_conduits" != "xno"; then
 	if test "x$with_included_popt" != "xyes"; then
-		dnl Determine if system popt is good enough
+		dnl Determine if system popt is good enough (single test to avoid nested macro expansion issues)
 		save_LIBS="$LIBS"
-		AC_CHECK_HEADER(popt.h,
-			AC_CHECK_DECL(POPT_BIT_SET,
-				AC_CHECK_LIB(popt, poptStrippedArgv,,
-					[with_included_popt="yes"]),
-				[with_included_popt="yes"],
-				[#include <popt.h>]),
-			[with_included_popt="yes"]
-		)
+		LIBS="$LIBS -lpopt"
+		AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <popt.h>], [(void)&poptStrippedArgv;])],
+			[],
+			[with_included_popt="yes"])
 		LIBS="$save_LIBS"
 	fi
 
