@@ -1,6 +1,6 @@
 if INCLUDED_POPT
 
-INCLUDES = -I$(top_srcdir)/include
+AM_CPPFLAGS = -I$(top_srcdir)/include
 
 noinst_HEADERS = findme.h poptint.h system.h popt.h
 

@@ -56,6 +56,10 @@
 #else
 #endif
 
+#ifndef RETSIGTYPE
+# define RETSIGTYPE void
+#endif
+
 #ifdef SGTTY
 # include <sgtty.h>
 #else

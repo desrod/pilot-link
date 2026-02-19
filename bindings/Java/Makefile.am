@@ -2,12 +2,11 @@ PORT=/dev/pilot
 
 all: java_pisock
 
-INCLUDES= 				\
-	-I../../include			\
-	-I $(top_srcdir)/include 	\
-	-I $(top_builddir)/include	\
-	-I $(JAVABASE)/include		\
-	-I $(JAVABASE)/include/linux
+AM_CPPFLAGS = 				\
+	-I$(top_srcdir)/include		\
+	-I$(top_builddir)/include	\
+	-I$(JAVABASE)/include		\
+	-I$(JAVABASE)/include/linux
 
 java_files= \
 	$(srcdir)/MidiMgr.java	\

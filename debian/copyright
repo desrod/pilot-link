@@ -1,0 +1,54 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: pilot-link
+Source: https://github.com/juddmon/pilot-link
+
+Files: *
+Copyright: (C) 1996-2024 and later, various authors
+License: LGPL, GPL
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see
+<https://www.gnu.org/licenses/>.
+
+
+License: LGPL
+This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 2.1 of the License, or (at your option) any later version.
+
+This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public
+License along with this library; if not, see
+<https://www.gnu.org/licenses/>.
+
+License notes
+-------------
+
+	The utility programs, otherwise known collectively as "conduits"
+	(pilot-xfer, dlpsh, sync-plan, etc.) are licensed for use under the
+	GPL. For more information, please see the file COPYING included in
+	this source tree.
+
+	The libraries (libpisock, libpisync, libpisock++, and libcc) and the
+	language bindings (Perl, Python, Java, and Tcl) are licensed for use
+	under the LGPL. For more information, please see COPYING.LIB included
+	in this source tree.
+	
+	All contained source is the copyright of its author(s). Please see
+	the copyright notices in the individual files for more information on
+	their individual copyrights.

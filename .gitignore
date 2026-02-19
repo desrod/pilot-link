@@ -22,3 +22,19 @@ pilot-link.pc
 pilot-link-pp.pc
 tags
 autom4te.cache
+# Updated auto things
+bindings/Perl/Makefile.PL
+bindings/Python/setup-standalone.py
+bindings/Python/setup.py
+compile
+depcomp
+doc/doxygen.cfg
+doc/xml/catalog.xml
+doc/xml/docbook.xsl
+include/pi-md5.h
+include/pi-version.h
+missing
+test-driver
+ylwrap
+# A popular IDE
+*.code-workspace

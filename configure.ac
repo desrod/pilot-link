@@ -1,8 +1,23 @@
 # This is free software, licensed under the GNU Public License V2.
 # See the file COPYING for details.
 
-AC_INIT(include/pi-version.h.in)
+dnl ******************************
+dnl Pilot Link Version
+dnl ******************************
+m4_define([pilot_link_vers], [0])
+m4_define([pilot_link_major], [13])
+m4_define([pilot_link_minor], [0])
+m4_define([pilot_link_patch], [])
+
+AC_INIT([pilot-link],[pilot_link_vers.pilot_link_major.pilot_link_minor[]pilot_link_patch],[],[https://github.com/juddmon/pilot-link])
+AC_CONFIG_SRCDIR([include/pi-version.h.in])
 AC_CONFIG_MACRO_DIR([m4])
+
+AC_SUBST([PILOT_LINK_VERS], pilot_link_vers)
+AC_SUBST([PILOT_LINK_MAJOR], pilot_link_major)
+AC_SUBST([PILOT_LINK_MINOR], pilot_link_minor)
+AC_SUBST([PILOT_LINK_PATCH], pilot_link_patch)
+VERSION="$PILOT_LINK_VERS.$PILOT_LINK_MAJOR.$PILOT_LINK_MINOR$PILOT_LINK_PATCH"
 
 dnl Initialize maintainer mode
 AM_MAINTAINER_MODE
@@ -15,23 +30,9 @@ AC_PREFIX_DEFAULT(/usr/local)
 dnl ******************************
 dnl Limit to a specific ac version
 dnl ******************************
-AC_PREREQ(2.53)
-AM_CONFIG_HEADER(config.h)
-AM_CONFIG_HEADER(include/pi-md5.h)
-
-dnl ******************************
-dnl Pilot Link Version
-dnl ******************************
-PILOT_LINK_VERS=0
-PILOT_LINK_MAJOR=13
-PILOT_LINK_MINOR=0
-PILOT_LINK_PATCH=
-
-AC_SUBST(PILOT_LINK_VERS)
-AC_SUBST(PILOT_LINK_MAJOR)
-AC_SUBST(PILOT_LINK_MINOR)
-AC_SUBST(PILOT_LINK_PATCH)
-VERSION="$PILOT_LINK_VERS.$PILOT_LINK_MAJOR.$PILOT_LINK_MINOR$PILOT_LINK_PATCH"
+AC_PREREQ([2.71])
+AC_CONFIG_HEADERS([config.h])
+AC_CONFIG_HEADERS([include/pi-md5.h])
 
 dnl ******************************
 dnl Pilot Link Library Version
@@ -73,10 +74,10 @@ fi
 
 dnl Check host type
 AC_CANONICAL_HOST
-AC_CANONICAL_SYSTEM
+AC_CANONICAL_TARGET
 AC_DEFINE_UNQUOTED(HOST_OS, "$host", [Host type])
 
-AM_INIT_AUTOMAKE(pilot-link, [$VERSION])
+AM_INIT_AUTOMAKE([foreign subdir-objects])
 
 
 dnl ******************************
@@ -85,7 +86,7 @@ dnl ******************************
 AC_PROG_CC
 AC_PROG_INSTALL(install ginstall)
 AC_PROG_F77(g77 g77-3.2 g77-3.3 fl32 f77 fort77 xlf f90 xlf90)
-AM_PROG_LIBTOOL
+LT_INIT
 AC_PROG_YACC
 
 
@@ -155,12 +156,10 @@ AM_CONDITIONAL(GIT_BUILD,[test -d "${srcdir}/.git"])
 dnl ******************************
 dnl Pilot Link Checks
 dnl ******************************
-AC_HEADER_STDC
 AC_C_CONST
-AC_HEADER_TIME
 AC_STRUCT_TM
 AC_PROG_GCC_TRADITIONAL
-AC_TYPE_SIGNAL
+dnl C90 headers and sys/time.h assumed; signal handlers return void (C89)
 
 AC_CHECK_HEADERS(
 	dirent.h errno.h fcntl.h inttypes.h memory.h netdb.h 		\
@@ -194,11 +193,10 @@ AC_CHECK_LIB(inet, main, [LIBS="$LIBS -linet"])
 
 AC_CACHE_CHECK([for cispeed and cospeed members of struct termios],
 	ac_cv_termios_cspeed,
-
-	[AC_TRY_COMPILE(
-		[#include <termios.h>], [int main(void) {
-		 struct termios t;t.c_ispeed=t.c_ospeed=0;}],
-			ac_cv_termios_cspeed=yes,ac_cv_termios_cspeed=no)])
+	[AC_COMPILE_IFELSE(
+		[AC_LANG_SOURCE([#include <termios.h>
+			int main(void) { struct termios t; t.c_ispeed = t.c_ospeed = 0; return 0; }])],
+		[ac_cv_termios_cspeed=yes], [ac_cv_termios_cspeed=no])])
 
 if test $ac_cv_termios_cspeed = yes; then
 	AC_DEFINE(TERMIOS_CSPEED, 1, [Define if we have termios(3) support])
@@ -293,7 +291,7 @@ usb_type=
 usb_libs=
 
 AC_ARG_ENABLE(libusb,
-	      AC_HELP_STRING([--enable-libusb         Enable usage of libusb]),
+	      AS_HELP_STRING([--enable-libusb],[Enable usage of libusb]),
 	      if test "x$enableval" != "xno" ; then
 	          AC_CHECK_LIB(usb, usb_open, [have_libusb=yes;],[have_libusb=no])
 	      fi
@@ -348,8 +346,7 @@ have_bluez=no
 use_bluez=auto
 
 AC_ARG_WITH(bluez,
-		AC_HELP_STRING([--with-bluez],
-			[Enable use of BlueZ]),
+		AS_HELP_STRING([--with-bluez],[Enable use of BlueZ]),
 		[use_bluez="$withval"])
 if test "$use_bluez" != "no" ; then
 	PKG_CHECK_MODULES([BLUEZ],[bluez],[
@@ -362,7 +359,7 @@ if test "$use_bluez" != "no" ; then
 			use_bluez=yes
 		],[
 			test "$use_bluez" != "no" -a "$use_bluez" != "auto" \
-			&& AC_MSG_ERROR([BlueZ explicitly requested, but no library found])
+			&& AC_MSG_ERROR([[BlueZ explicitly requested, but no library found]])
 			use_bluez=no
 			have_bluez=no
 		])
@@ -389,16 +386,12 @@ AC_ARG_WITH(included-popt,
 
 if test "x$enable_conduits" != "xno"; then
 	if test "x$with_included_popt" != "xyes"; then
-		dnl Determine if system popt is good enough
+		dnl Determine if system popt is good enough (single test to avoid nested macro expansion issues)
 		save_LIBS="$LIBS"
-		AC_CHECK_HEADER(popt.h,
-			AC_CHECK_DECL(POPT_BIT_SET,
-				AC_CHECK_LIB(popt, poptStrippedArgv,,
-					[with_included_popt="yes"]),
-				[with_included_popt="yes"],
-				[#include <popt.h>]),
-			[with_included_popt="yes"]
-		)
+		LIBS="$LIBS -lpopt"
+		AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <popt.h>], [(void)&poptStrippedArgv;])],
+			[],
+			[with_included_popt="yes"])
 		LIBS="$save_LIBS"
 	fi
 
@@ -420,6 +413,7 @@ else
 	POPT_INCLUDES=
 fi
 AM_CONDITIONAL(INCLUDED_POPT, test "x$with_included_popt" = "xyes")
+AM_CONDITIONAL(HAVE_POPT, test "x$msg_popt" != "xnone")
 AC_SUBST(POPT_LIBS)
 AC_SUBST(POPT_INCLUDES)
 
@@ -448,7 +442,7 @@ AC_CHECK_LIB(
 		AC_CHECK_FUNC(iconv, [
 			AC_CHECK_FUNCS(gnu_get_libc_version)
 			AC_MSG_CHECKING(if system iconv handles CP1252)
-			AC_TRY_RUN([
+			AC_RUN_IFELSE([AC_LANG_SOURCE([
 #include <iconv.h>
 #include <stdlib.h>
 #include <string.h>
@@ -474,11 +468,11 @@ int main (int argc, char **argv)
 		exit (1);
 
 	exit (0);
-}], AC_MSG_RESULT(yes); have_iconv=yes, [AC_MSG_RESULT(no);], AC_MSG_RESULT(not cross compiling);)])])
+}])], [AC_MSG_RESULT(yes); have_iconv=yes], [AC_MSG_RESULT(no);], [AC_MSG_RESULT(not cross compiling);])])])
 
-dnl ##  Fixed AC_TRY_RUN warning, missing third argument. -DD 22/01/2002
+dnl ##  Fixed AC_RUN_IFELSE([AC_LANG_SOURCE([[]])],[],[],[]) warning, missing third argument. -DD 22/01/2002
 dnl
-dnl 	AC_TRY_RUN is a macro that's basically like an if-then-else structure. If
+dnl 	AC_RUN_IFELSE([AC_LANG_SOURCE([[]])],[],[],[]) is a macro that's basically like an if-then-else structure. If
 dnl 	the test program (whose text is the first argument) succeeds, the second
 dnl 	argument is executed; if the test fails, the third argument is executed; and
 dnl 	if autoconf knows it is cross-compiling for another machine and therefore
@@ -705,7 +699,7 @@ dnl *************************************
 AM_CONDITIONAL(BUILD_XML,[test ! -d "{$srcdir}/.git"])
 # if test -d "${srcdir}/.git" ; then
 
-AC_ARG_ENABLE([xsltproc], [AC_HELP_STRING([--enable-xsltproc],
+AC_ARG_ENABLE([xsltproc], [AS_HELP_STRING([--enable-xsltproc],
 	[Use xsltproc to build documentation [default=no]])],
 	[enable_xsltproc="$enableval"],
 [enable_xsltproc=no])
@@ -770,7 +764,7 @@ if test "x$GCC" = "xyes" -a "x$enable_werror" = "xyes"; then
 	CFLAGS="$CFLAGS -Werror"
 fi
 
-AC_OUTPUT([
+AC_CONFIG_FILES([
 	Makefile
 	pilot-link.m4
 	pilot-link.pc
@@ -799,6 +793,7 @@ AC_OUTPUT([
 tests/Makefile
 	darwin/Makefile
 ])
+AC_OUTPUT
 
 AC_MSG_RESULT([
   Options detected/selected
