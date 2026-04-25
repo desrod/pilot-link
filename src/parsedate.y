@@ -24,7 +24,7 @@
 #include <time.h>
 #include <string.h>
 
-int date_lex();
+int date_lex(void);
 
 #define yyparse		date_parse
 #define yylex		date_lex
@@ -77,7 +77,7 @@ typedef enum _MERIDIAN {
 **  union, but this is more efficient.  (This routine predates the
 **  yacc %union construct.)
 */
-static char	*yyInput;
+static const char	*yyInput;
 static DSTMODE	yyDSTmode;
 static int	yyHaveDate;
 static int	yyHaveRel;
@@ -94,8 +94,7 @@ static time_t	yyRelMonth;
 static time_t	yyRelSeconds;
 
 
-extern struct tm	*localtime();
-static void		date_error();
+static void		date_error(const char *);
 %}
 
 %union {
@@ -439,19 +438,15 @@ static TABLE	TimezoneTable[] = {
 
 /* ARGSUSED */
 static void
-date_error(s)
-    char	*s;
+date_error(const char *s)
 {
     /* NOTREACHED */
+    (void)s;
 }
 
 
 static time_t
-ToSeconds(Hours, Minutes, Seconds, Meridian)
-    time_t	Hours;
-    time_t	Minutes;
-    time_t	Seconds;
-    MERIDIAN	Meridian;
+ToSeconds(time_t Hours, time_t Minutes, time_t Seconds, MERIDIAN Meridian)
 {
     if (Minutes < 0 || Minutes > 59 || Seconds < 0 || Seconds > 61)
 	return -1;
@@ -472,15 +467,8 @@ ToSeconds(Hours, Minutes, Seconds, Meridian)
 
 
 static time_t
-Convert(Month, Day, Year, Hours, Minutes, Seconds, Meridian, dst)
-    time_t	Month;
-    time_t	Day;
-    time_t	Year;
-    time_t	Hours;
-    time_t	Minutes;
-    time_t	Seconds;
-    MERIDIAN	Meridian;
-    DSTMODE	dst;
+Convert(time_t Month, time_t Day, time_t Year, time_t Hours, time_t Minutes,
+    time_t Seconds, MERIDIAN Meridian, DSTMODE dst)
 {
     static int	DaysNormal[13] = {
 	0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31
@@ -534,9 +522,7 @@ Convert(Month, Day, Year, Hours, Minutes, Seconds, Meridian, dst)
 
 
 static time_t
-DSTcorrect(Start, Future)
-    time_t	Start;
-    time_t	Future;
+DSTcorrect(time_t Start, time_t Future)
 {
     time_t	StartDay;
     time_t	FutureDay;
@@ -548,9 +534,7 @@ DSTcorrect(Start, Future)
 
 
 static time_t
-RelativeMonth(Start, RelMonth)
-    time_t	Start;
-    time_t	RelMonth;
+RelativeMonth(time_t Start, time_t RelMonth)
 {
     struct tm	*tm;
     time_t	Month;
@@ -568,9 +552,7 @@ RelativeMonth(Start, RelMonth)
 
 
 static int
-LookupWord(buff, length)
-    char		*buff;
-    register int	length;
+LookupWord(char *buff, int length)
 {
     register char	*p;
     register char	*q;
@@ -660,7 +642,7 @@ LookupWord(buff, length)
 
 
 int
-date_lex()
+date_lex(void)
 {
     register char	c;
     register char	*p;
@@ -723,10 +705,8 @@ date_lex()
 
 
 time_t
-parsedate(p)
-    char		*p;
+parsedate(const char *p)
 {
-    extern int		date_parse();
     time_t		Start;
 
     yyInput = p;
