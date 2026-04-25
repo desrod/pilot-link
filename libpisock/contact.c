@@ -86,6 +86,7 @@ int unpack_Contact(struct Contact *c, pi_buffer_t *buf, contactsType type)
    int i, field_num, len;
    unsigned int packed_date;
    unsigned int blob_count;
+   size_t slen;
 
    if (buf == NULL || buf->data == NULL || buf->used < 17)
       return -1;
@@ -133,9 +134,12 @@ int unpack_Contact(struct Contact *c, pi_buffer_t *buf, contactsType type)
       if (contents1 & (1 << i)) {
          if (len < 1)
             return 0;
+         slen = strlen((char *) Pbuf);
          c->entry[field_num] = strdup((char *) Pbuf);
-         Pbuf += strlen((char *) Pbuf) + 1;
-         len -= strlen(c->entry[field_num]) + 1;
+         if (c->entry[field_num] == NULL)
+            return -1;
+         Pbuf += slen + 1;
+         len -= slen + 1;
       } else {
          c->entry[field_num] = 0;
       }
@@ -144,9 +148,12 @@ int unpack_Contact(struct Contact *c, pi_buffer_t *buf, contactsType type)
       if (contents2 & (1 << i)) {
          if (len < 1)
             return 0;
+         slen = strlen((char *) Pbuf);
          c->entry[field_num] = strdup((char *) Pbuf);
-         Pbuf += strlen((char *) Pbuf) + 1;
-         len -= strlen(c->entry[field_num]) + 1;
+         if (c->entry[field_num] == NULL)
+            return -1;
+         Pbuf += slen + 1;
+         len -= slen + 1;
       } else {
          c->entry[field_num] = 0;
       }
