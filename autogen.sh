@@ -173,7 +173,7 @@ do
 	  test -r $dr/aclocal.m4 && chmod u+w $dr/aclocal.m4
         fi
       fi
-      if grep "^AM_PROG_LIBTOOL" configure.ac >/dev/null; then
+      if grep "^AM_PROG_LIBTOOL\|^LT_INIT" configure.ac >/dev/null; then
 	if test -z "$NO_LIBTOOLIZE" ; then 
 	    case "$OSTYPE" in
 		*darwin*)
@@ -199,7 +199,7 @@ do
 	exit 1
       }
 
-      if grep "^AM_CONFIG_HEADER" configure.ac >/dev/null; then
+      if grep "^AM_CONFIG_HEADER\|^AC_CONFIG_HEADERS" configure.ac >/dev/null; then
 	echo "Running autoheader..."
 	$AUTOHEADER || { echo "**Error**: autoheader failed."; exit 1; }
       fi

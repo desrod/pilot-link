@@ -85,7 +85,6 @@ dnl Checks for basic programs.
 dnl ******************************
 AC_PROG_CC
 AC_PROG_INSTALL(install ginstall)
-AC_PROG_F77(g77 g77-3.2 g77-3.3 fl32 f77 fort77 xlf f90 xlf90)
 LT_INIT
 AC_PROG_YACC
 
