@@ -228,7 +228,18 @@ unpack_Appointment(Appointment_t *a, const pi_buffer_t *buf, datebookType type)
 	if (iflags & exceptFlag) {
 		a->exceptions = get_short(p2);
 		p2 += 2;
-		a->exception = malloc(sizeof(struct tm) * a->exceptions);
+
+		if (a->exceptions < 0 ||
+		    a->exceptions > (int)((buf->used - (size_t)(p2 - buf->data)) / 2))
+			return -1;
+
+		if (a->exceptions > 0) {
+			a->exception = malloc(sizeof(struct tm) * (size_t)a->exceptions);
+			if (a->exception == NULL)
+				return -1;
+		} else {
+			a->exception = NULL;
+		}
 
 		for (j = 0; j < a->exceptions; j++, p2 += 2) {
 			d = (unsigned short int) get_short(p2);
