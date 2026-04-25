@@ -73,7 +73,8 @@ unpack_Address(Address_t *addr, const pi_buffer_t *buf, addressType type)
 {
 	unsigned long	contents,
 			v;
-	size_t		ofs;
+	size_t		ofs,
+			slen;
 
 	if (type != address_v1)
 		/* Don't support anything else yet */
@@ -107,8 +108,11 @@ unpack_Address(Address_t *addr, const pi_buffer_t *buf, addressType type)
 		if (contents & (1 << v)) {
 			if ((buf->used - ofs) < 1)
 				return 0;
+			slen = strlen((char *) (buf->data + ofs));
 			addr->entry[v] = strdup((char *) (buf->data + ofs));
-                  	ofs += strlen(addr->entry[v]) + 1;
+			if (addr->entry[v] == NULL)
+				return -1;
+			ofs += slen + 1;
 		} else {
 			addr->entry[v] = 0;
 		}
