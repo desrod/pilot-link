@@ -5,7 +5,7 @@ dnl ******************************
 dnl Pilot Link Version
 dnl ******************************
 m4_define([pilot_link_vers], [0])
-m4_define([pilot_link_major], [13])
+m4_define([pilot_link_major], [15])
 m4_define([pilot_link_minor], [0])
 m4_define([pilot_link_patch], [])
 

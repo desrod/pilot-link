@@ -174,7 +174,7 @@ do
         fi
       fi
       if grep "^AM_PROG_LIBTOOL\|^LT_INIT" configure.ac >/dev/null; then
-	if test -z "$NO_LIBTOOLIZE" ; then 
+	if test -z "$NO_LIBTOOLIZE" ; then
 	    case "$OSTYPE" in
 		*darwin*)
 		    echo "Running glibtoolize... ($MACHTYPE)"
