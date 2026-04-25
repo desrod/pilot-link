@@ -73,6 +73,7 @@ void free_NotePad( NotePad_t *a )
 int unpack_NotePad(NotePad_t *notepad, unsigned char *buffer, size_t len)
 {
    unsigned char *start = buffer;
+   size_t slen;
    
    notepad->createDate.sec = (unsigned short int) get_short(buffer);
    buffer += 2;
@@ -134,11 +135,14 @@ int unpack_NotePad(NotePad_t *notepad, unsigned char *buffer, size_t len)
    if( notepad->flags & NOTEPAD_FLAG_NAME )
      {
 /*	fprintf( stderr, "Getting Name\n" ); */
+	slen = strlen( (char *) buffer );
 	notepad->name = strdup((char *) buffer);
-   
-	buffer += strlen( notepad->name ) + 1;
-	
-	if( (strlen( notepad->name ) + 1)%2 == 1)
+	if( notepad->name == NULL )
+	  return 0;
+
+	buffer += slen + 1;
+
+	if( (slen + 1)%2 == 1)
 	  buffer++;
 	
      }
