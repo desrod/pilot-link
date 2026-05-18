@@ -107,38 +107,49 @@ write_memo_in_directory(char *dirname, struct Memo m,
 	int 	j;
 	char 	pathbuffer[MAXDIRNAMELEN] = "",
 		tmp[5] = "";
+	size_t	pathlen;
 	FILE *fd;
 
 	/* Should check if dirname exists and is a directory */
 	mkdir(dirname, 0700);
 
 	/* Create a directory for the category */
-	strncat(pathbuffer, dirname, MAXDIRNAMELEN);
-	strncat(pathbuffer, "/", 1);
-
-	/* Should make sure category doesn't have slashes in it */
-	strncat(pathbuffer, mai.category.name[category], 60);
+	snprintf(pathbuffer, sizeof(pathbuffer), "%s/%s",
+		dirname, mai.category.name[category]);
 
 	/* Should check if pathbuffer exists and is a directory */
 	mkdir(pathbuffer, 0700);
 
 	/* Should check if there were problems creating directory */
 	/* open the actual file to write */
-	strncat(pathbuffer, "/", 1);
+	pathlen = strlen(pathbuffer);
+	if (pathlen + 1 < sizeof(pathbuffer)) {
+		pathbuffer[pathlen++] = '/';
+		pathbuffer[pathlen] = '\0';
+	}
 	for (j = 0; j < 40; j++) {
 		if ((!m.text[j]) || (m.text[j] == '\n'))
 			break;
 		if (m.text[j] == '/') {
-			strncat(pathbuffer, "=2F", 3);
+			if (pathlen + 3 >= sizeof(pathbuffer))
+				break;
+			memcpy(pathbuffer + pathlen, "=2F", 4);
+			pathlen += 3;
 			continue;
 		}
 		if (m.text[j] == '=') {
-			strncat(pathbuffer, "=3D", 3);
+			if (pathlen + 3 >= sizeof(pathbuffer))
+				break;
+			memcpy(pathbuffer + pathlen, "=3D", 4);
+			pathlen += 3;
 			continue;
 		}
 #ifdef OS2
 		if (m.text[j] == ':') {
-			strncat(pathbuffer, "=3A", 3);
+			if (pathlen + 3 >= sizeof(pathbuffer))
+				break;
+			memcpy(pathbuffer + pathlen, "=3A", 4);
+			pathlen += 3;
 			continue;
 		}
 #endif
@@ -151,7 +162,10 @@ write_memo_in_directory(char *dirname, struct Memo m,
 			tmp[0] = m.text[j];
 			tmp[1] = '\0';
 		}
-		strcat(pathbuffer, tmp);
+		if (pathlen + strlen(tmp) >= sizeof(pathbuffer))
+			break;
+		strcpy(pathbuffer + pathlen, tmp);
+		pathlen += strlen(tmp);
 	}
 
 	if (verbose) {

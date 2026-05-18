@@ -164,7 +164,12 @@ int main(int argc, const char *argv[])
 		strcpy(file_text, file_arg);
 		file_text[filenamelen] = '\n';
 
-		fread(file_text + filenamelen + 1, filelen, 1, f);
+		if (fread(file_text + filenamelen + 1, filelen, 1, f) != 1) {
+			fprintf(stderr, "   WARNING: Reading file '%s': %s\n",
+				file_arg, strerror(errno));
+			fclose(f);
+			continue;
+		}
 		file_text[filenamelen + 1 + filelen] = '\0';
 
 
@@ -179,6 +184,7 @@ int main(int argc, const char *argv[])
 		}
 		dlp_WriteRecord(sd, db, 0, 0, category, note_buf,
 				note_size, 0);
+		fclose(f);
 	}
 	free(file_text);
 

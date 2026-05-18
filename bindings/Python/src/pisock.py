@@ -24,16 +24,10 @@ def _swig_setattr(self,class_type,name,value):
 def _swig_getattr(self,class_type,name):
     method = class_type.__swig_getmethods__.get(name,None)
     if method: return method(self)
-    raise AttributeError,name
+    raise AttributeError(name)
 
-import types
-try:
-    _object = types.ObjectType
-    _newclass = 1
-except AttributeError:
-    class _object : pass
-    _newclass = 0
-del types
+_object = object
+_newclass = 1
 
 
 from pisockextras import *

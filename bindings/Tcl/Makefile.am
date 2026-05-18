@@ -1,18 +1,11 @@
 # $Id$
 
-AM_CPPFLAGS = 				\
-	-I$(top_srcdir)/include		\
-	-DPACKAGE_VERSION=\"1.0\"	\
-	$(POPT_INCLUDES)		\
+AM_CPPFLAGS = 					\
+	-I../../include				\
+	-I$(top_srcdir)/include			\
+	-DPACKAGE_VERSION=\"1.0\"		\
+	$(POPT_INCLUDES)			\
 	$(TCL_INCLUDES)
-
-noinst_LTLIBRARIES = libpiuserland.la
-
-libpiuserland_la_SOURCES =			\
-	$(top_builddir)/src/plu_args.c		\
-	$(top_builddir)/src/userland.c
-
-libpiuserland_la_LDFLAGS = -static
 
 bin_PROGRAMS = pitclsh
 

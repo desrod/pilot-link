@@ -6,4 +6,7 @@ export DH_VERBOSE = 1
 	dh $@
 
 override_dh_auto_configure:
-	dh_auto_configure -- --prefix=/usr
+	dh_auto_configure -- --prefix=/usr --enable-conduits --with-python
+
+override_dh_auto_install:
+	dh_auto_install -- LIBTOOLFLAGS=--no-warnings

@@ -73,10 +73,19 @@ int read_file(char *filename, char **text)
 	*text = (char *) malloc(filelen + 1);
 	if (*text == NULL) {
 		fprintf(stderr,"   ERROR: Could not allocate memory.\n");
+		fclose(f);
 		return -1;
 	}
 
-	fread(*text, filelen, 1, f);
+	if (fread(*text, filelen, 1, f) != 1) {
+		fprintf(stderr,"   ERROR: Could not read '%s': %s\n",
+			filename, strerror(errno));
+		fclose(f);
+		free(*text);
+		*text = NULL;
+		return -1;
+	}
+	fclose(f);
 
 	return 0;
 }

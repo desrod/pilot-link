@@ -1,0 +1,9 @@
+usr/include/*
+usr/lib/*/libpisock.a
+usr/lib/*/libpisock.la
+usr/lib/*/libpisock.so
+usr/lib/*/libpisync.a
+usr/lib/*/libpisync.la
+usr/lib/*/libpisync.so
+usr/lib/*/pkgconfig/pilot-link.pc
+usr/share/aclocal/pilot-link.m4

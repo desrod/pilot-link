@@ -19,7 +19,11 @@
 # $Id$
 
 import sys
-from distutils.core import Extension, setup
+
+try:
+    from setuptools import Extension, setup
+except ImportError:
+    from distutils.core import Extension, setup
 
 if sys.platform.startswith("darwin"):
     # additional link options for Mac OS X

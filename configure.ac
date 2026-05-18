@@ -64,8 +64,9 @@ AC_SUBST(PISYNC_AGE)
 dnl Eat -Werror so configure will run properly, if the user provided it
 enable_werror=no
 save_CFLAGS="$CFLAGS"
-CFLAGS=$(echo $save_CFLAGS | sed -e s/-Werror//g)
-CXXFLAGS=$(echo $save_CXXFLAGS | sed -e s/-Werror//g)
+save_CXXFLAGS="$CXXFLAGS"
+CFLAGS=$(printf '%s\n' "$save_CFLAGS" | sed -e 's/\(^\|[ 	]\)-Werror\([ 	]\|$\)/\1\2/g')
+CXXFLAGS=$(printf '%s\n' "$save_CXXFLAGS" | sed -e 's/\(^\|[ 	]\)-Werror\([ 	]\|$\)/\1\2/g')
 if test "x$CFLAGS" != "x$save_CFLAGS"; then
 	dnl -Werror was set; treat it as implicit --enable-werror below
 	enable_werror="yes"
@@ -86,7 +87,7 @@ dnl ******************************
 AC_PROG_CC
 AC_PROG_INSTALL(install ginstall)
 AC_PROG_F77(g77 g77-3.2 g77-3.3 fl32 f77 fort77 xlf f90 xlf90)
-LT_INIT
+LT_INIT([disable-fast-install])
 AC_PROG_YACC
 
 
@@ -157,9 +158,9 @@ dnl ******************************
 dnl Pilot Link Checks
 dnl ******************************
 AC_C_CONST
+AC_CHECK_HEADERS([sys/time.h])
 AC_STRUCT_TM
-AC_PROG_GCC_TRADITIONAL
-dnl C90 headers and sys/time.h assumed; signal handlers return void (C89)
+AC_DEFINE([RETSIGTYPE], [void], [Define as the return type of signal handlers ('int' or 'void').])
 
 AC_CHECK_HEADERS(
 	dirent.h errno.h fcntl.h inttypes.h memory.h netdb.h 		\
@@ -193,10 +194,8 @@ AC_CHECK_LIB(inet, main, [LIBS="$LIBS -linet"])
 
 AC_CACHE_CHECK([for cispeed and cospeed members of struct termios],
 	ac_cv_termios_cspeed,
-	[AC_COMPILE_IFELSE(
-		[AC_LANG_SOURCE([#include <termios.h>
-			int main(void) { struct termios t; t.c_ispeed = t.c_ospeed = 0; return 0; }])],
-		[ac_cv_termios_cspeed=yes], [ac_cv_termios_cspeed=no])])
+	[AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <termios.h>]], [[int main(void) {
+		 struct termios t;t.c_ispeed=t.c_ospeed=0;}]])],[ac_cv_termios_cspeed=yes],[ac_cv_termios_cspeed=no])])
 
 if test $ac_cv_termios_cspeed = yes; then
 	AC_DEFINE(TERMIOS_CSPEED, 1, [Define if we have termios(3) support])
@@ -388,10 +387,17 @@ if test "x$enable_conduits" != "xno"; then
 	if test "x$with_included_popt" != "xyes"; then
 		dnl Determine if system popt is good enough (single test to avoid nested macro expansion issues)
 		save_LIBS="$LIBS"
-		LIBS="$LIBS -lpopt"
-		AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <popt.h>], [(void)&poptStrippedArgv;])],
-			[],
-			[with_included_popt="yes"])
+		AC_CHECK_HEADER([popt.h], [
+			AC_CHECK_DECL([POPT_BIT_SET], [
+				AC_CHECK_LIB([popt], [poptStrippedArgv], [], [
+					with_included_popt="yes"
+				])
+			], [
+				with_included_popt="yes"
+			], [[#include <popt.h>]])
+		], [
+			with_included_popt="yes"
+		])
 		LIBS="$save_LIBS"
 	fi
 
@@ -442,7 +448,7 @@ AC_CHECK_LIB(
 		AC_CHECK_FUNC(iconv, [
 			AC_CHECK_FUNCS(gnu_get_libc_version)
 			AC_MSG_CHECKING(if system iconv handles CP1252)
-			AC_RUN_IFELSE([AC_LANG_SOURCE([
+			AC_RUN_IFELSE([AC_LANG_SOURCE([[
 #include <iconv.h>
 #include <stdlib.h>
 #include <string.h>
@@ -468,7 +474,7 @@ int main (int argc, char **argv)
 		exit (1);
 
 	exit (0);
-}])], [AC_MSG_RESULT(yes); have_iconv=yes], [AC_MSG_RESULT(no);], [AC_MSG_RESULT(not cross compiling);])])])
+}]])],[AC_MSG_RESULT(yes); have_iconv=yes],[AC_MSG_RESULT(no);],[AC_MSG_RESULT(not cross compiling);])])])
 
 dnl ##  Fixed AC_RUN_IFELSE([AC_LANG_SOURCE([[]])],[],[],[]) warning, missing third argument. -DD 22/01/2002
 dnl

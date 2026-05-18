@@ -48,6 +48,19 @@
 #include "pi-userland.h"
 #include "pi-debug.h"
 
+static void
+print_splash_compat(const char *progname)
+{
+#if defined(__GNUC__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
+	print_splash(progname);
+#if defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif
+}
+
 static char hostname_[130];		/* buffer fetch_host() can write to. */
 static char *hostname = hostname_;	/* pointer poptGetNextOpt() can change. */
 struct in_addr address, netmask;
@@ -283,7 +296,7 @@ int main(int argc, const char *argv[])
 	while ((c = poptGetNextOpt(po)) >= 0) {
 		switch (c) {
 		case 'v':
-			print_splash(progname);
+			print_splash_compat(progname);
 			return 0;
 		default:
 			fprintf(stderr,"   ERROR: Unhandled option %d.\n",c);

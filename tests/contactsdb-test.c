@@ -38,6 +38,20 @@
 #define hi(x) (((x) >> 4) & 0x0f)
 #define lo(x) ((x) & 0x0f)
 
+static int
+connect_port(const char *port)
+{
+#if defined(__GNUC__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
+	int sd = pilot_connect(port);
+#if defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif
+	return sd;
+}
+
 char *contacts_fields[] =
 {
 	"Last name",
@@ -320,7 +334,7 @@ print_records (int sd, int db, struct ContactAppInfo *cai)
 			}
 #else
 			printf (" Picture        : JPEG (%zu bytes)\n",
-					c.picture->length);
+					(size_t)c.picture->length);
 #endif /* SAVE_PICTURES */
 		}
 
@@ -345,7 +359,7 @@ main (const int argc, const char **argv)
 		return 1;
 	}
 
-	sd = pilot_connect (argv[1]);
+	sd = connect_port(argv[1]);
 
 	if (sd < 0)
 		goto error;

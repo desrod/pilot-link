@@ -329,10 +329,11 @@ palm_backup(const char *dirname, unsigned long int flags, int unsaved,
 			skipped		= 0;
 
 	static int	totalsize;
+	size_t		path_buf_len;
 
 	char		**orig_files    = NULL,
 				*name,
-				synclog[70];
+				synclog[256];
 
 	const char	*synctext       = (flags & UPDATE) ? "Synchronizing" : "Backing up";
 	DIR		*dir;
@@ -383,7 +384,8 @@ palm_backup(const char *dirname, unsigned long int flags, int unsaved,
 				{
 					continue;
 				} else {
-					sprintf(name, "%s/%s", dirname, dirent->d_name);
+					snprintf(name, dirnamelen + strlen(dirent->d_name) + 2,
+						"%s/%s", dirname, dirent->d_name);
 					orig_files[ofile_total++] = name;
 				}
 			}
@@ -392,7 +394,10 @@ palm_backup(const char *dirname, unsigned long int flags, int unsaved,
 	}
 
 	buffer = pi_buffer_new (sizeof(struct DBInfo));
-	name = (char *)malloc(strlen(dirname) + 1 + 256);
+	path_buf_len = strlen(dirname) + 1 + 256;
+	if (archive_dir != NULL && (strlen(archive_dir) + 1 + 256) > path_buf_len)
+		path_buf_len = strlen(archive_dir) + 1 + 256;
+	name = (char *)malloc(path_buf_len);
 
 	for (;;)
 	{
@@ -423,7 +428,8 @@ palm_backup(const char *dirname, unsigned long int flags, int unsaved,
 		{
 			printf("\n   Exiting on cancel, all data was not backed up"
 					"\n   Stopped before backing up: '%s'\n\n", info.name);
-			sprintf(synclog, "\npilot-xfer was cancelled by the user "
+			snprintf(synclog, sizeof(synclog),
+					"\npilot-xfer was cancelled by the user "
 					"before backing up '%s'.", info.name);
 			dlp_AddSyncLogEntry(sd, synclog);
 			exit(EXIT_FAILURE);
@@ -545,7 +551,8 @@ palm_backup(const char *dirname, unsigned long int flags, int unsaved,
 					{
 						printf("Archiving '%s'", orig_files[i]);
 
-						sprintf(name, "%s/%s", archive_dir,
+						snprintf(name, path_buf_len,
+							"%s/%s", archive_dir,
 							&orig_files[i] [dirname_len + 1]);
 
 						if (rename (orig_files[i], name) != 0)
@@ -573,7 +580,8 @@ palm_backup(const char *dirname, unsigned long int flags, int unsaved,
 			(filecount ? filecount - 1 : 0),
 			skipped, failed, (failed == 1) ? "" : "s");
 
-	sprintf(synclog, "%d files successfully backed up.\n\n"
+	snprintf(synclog, sizeof(synclog),
+			"%d files successfully backed up.\n\n"
 			"Thank you for using pilot-link.", filecount - 1);
 	dlp_AddSyncLogEntry(sd, synclog);
 }
@@ -926,7 +934,7 @@ static void palm_delete(const char *dbname)
 struct db {
 	int				flags,
 					maxblock;
-	char			name[256];
+	char			*name;
 	unsigned long	creator, type;
 };
 
@@ -1015,8 +1023,13 @@ palm_restore(const char *dirname)
 
 		db[dbcount] = (struct db *) malloc(sizeof(struct db));
 
-		sprintf(db[dbcount]->name, "%s/%s", dirname,
-			dirent->d_name);
+		db[dbcount]->name = malloc(strlen(dirname) + strlen(dirent->d_name) + 2);
+		if (db[dbcount]->name == NULL) {
+			free(db[dbcount]);
+			break;
+		}
+		snprintf(db[dbcount]->name, strlen(dirname) + strlen(dirent->d_name) + 2,
+			"%s/%s", dirname, dirent->d_name);
 
 		f = pi_file_open(db[dbcount]->name);
 		if (f == 0)
@@ -1108,6 +1121,7 @@ palm_restore(const char *dirname)
 
 	for (i = 0; i < dbcount; i++)
 	{
+		free(db[i]->name);
 		free(db[i]);
 	}
 	free(db);
@@ -1631,7 +1645,7 @@ palm_list_internal(unsigned long int flags)
 					j,
 					dbcount	= 0;
 	struct DBInfo	info;
-	char			synclog[68];
+	char			synclog[128];
 	pi_buffer_t		*buffer;
 
 	printf("   Reading list of databases in RAM%s...\n",
@@ -1658,7 +1672,8 @@ palm_list_internal(unsigned long int flags)
 	pi_buffer_free(buffer);
 
 	printf("\n   List complete. %d files found.\n\n", dbcount);
-	sprintf(synclog, "List complete. %d files found..\n\nThank you for using pilot-link.",
+	snprintf(synclog, sizeof(synclog),
+			"List complete. %d files found..\n\nThank you for using pilot-link.",
 			dbcount);
 	dlp_AddSyncLogEntry(sd, synclog);
 }
@@ -1860,7 +1875,7 @@ palm_cardinfo ()
 					*t2;
 	struct VFSInfo	info;
 	char			buf[vfsMAXFILENAME],
-					fmt[64];
+					fmt[128];
 	long			size_used,
 					size_total;
 	int				len;					/* should be size_t in dlp.c? */
@@ -1934,14 +1949,14 @@ palm_cardinfo ()
 	}
 
 	memset(fmt,0,sizeof(fmt));
-	snprintf (fmt, sizeof(fmt)-1, "%%-%zus  %%%zus  %%%zus  %%%zus  %%-%zus  %%s\n",
+	snprintf (fmt, sizeof(fmt), "%%-%zus  %%%zus  %%%zus  %%%zus  %%-%zus  %%s\n",
 			digits_type, digits_used, digits_total, digits_free,
 			digits_cardnum);
 	
 	printf (fmt, "Filesystem", "Size", "Used", "Free", "#", "Card name");
 
 	memset(fmt,0,sizeof(fmt));
-	snprintf (fmt, sizeof(fmt)-1, "%%-%zus  %%%zuli  %%%zuli  %%%zuli  %%%zui  %%s\n",
+	snprintf (fmt, sizeof(fmt), "%%-%zus  %%%zuli  %%%zuli  %%%zuli  %%%zui  %%s\n",
 			digits_type, digits_used, digits_total, digits_free,
 			digits_cardnum);
 
@@ -2478,7 +2493,7 @@ main(int argc, const char *argv[])
 					fprintf(stderr, "   ERROR: '%s' is not a directory or does not exist.\n"
 							"   Please supply a directory name when performing a "
 							"backup or restore and try again.\n\n", dirname);
-					fprintf(stderr,gracias);
+					fprintf(stderr, "%s", gracias);
 					return 1;
 				}
 			}
@@ -2488,13 +2503,13 @@ main(int argc, const char *argv[])
 			if (rargc > 0)
 			{
 				fprintf(stderr,"   ERROR: Do not pass additional arguments to -busrlLC.\n");
-				fprintf(stderr,gracias);
+				fprintf(stderr, "%s", gracias);
 				return 1;
 			}
 			break;
 		case palm_op_noop:
 			fprintf(stderr,"   ERROR: Must specify one of -bursimfdlC.\n");
-			fprintf(stderr,gracias);
+			fprintf(stderr, "%s", gracias);
 			return 1;
 			break;
 		case palm_op_merge:

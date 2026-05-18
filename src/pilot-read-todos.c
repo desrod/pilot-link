@@ -204,6 +204,7 @@ int main(int argc, const char *argv[])
 		int 	attr,
 			category,
 			len;
+		size_t	record_len;
 
 		struct 	ToDo todo;
 
@@ -214,15 +215,17 @@ int main(int argc, const char *argv[])
 
 			if (len < 0)
 				break;
+
+			record_len = (size_t)len;
 		}
 		else {
 			if (pi_file_read_record
-			    (pif, i, (void *) &ptr, &len, &attr, &category,
+			    (pif, i, (void *) &ptr, &record_len, &attr, &category,
 			     0))
 				break;
 
 			pi_buffer_clear(recbuf);
-			pi_buffer_append(recbuf, ptr, len);
+			pi_buffer_append(recbuf, ptr, record_len);
 		}
 
 		/* Skip deleted records */

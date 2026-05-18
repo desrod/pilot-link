@@ -106,7 +106,13 @@ int main(int argc, const char *argv[])
 		return 1;
 	}
 
-	fread(file_text, filelen, 1, f);
+	if (fread(file_text, filelen, 1, f) != 1) {
+		perror("fread");
+		fclose(f);
+		f = NULL;
+		free(file_text);
+		return 1;
+	}
 	fclose(f);
 	f = NULL;
 

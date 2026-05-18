@@ -35,11 +35,15 @@ if [[ ! -w "$PARENT_DIR" ]]; then
 	exit 1
 fi
 
+# Clear stale debhelper cache. Path hashes can become invalid when
+# the source tree location changes (e.g. moved/renamed checkout).
+if [[ -d debian/.debhelper ]]; then
+	echo "Removing stale debhelper state..."
+	rm -rf debian/.debhelper
+fi
+
 echo "Building Debian package..."
 # -us: do not sign source package; -uc: do not sign .changes; -b: binary-only
-# dpkg-buildflags can inject CFLAGS with "-Wformat =format-security" (space breaks the linker).
-# Until this is fixed, use DEB_BUILD_MAINT_OPTIONS="hardening=-format"
-# dpkg-buildpackage -us -uc -b "$@"
-DEB_BUILD_MAINT_OPTIONS="hardening=-format" dpkg-buildpackage -us -uc -b "$@"
+dpkg-buildpackage -us -uc -b "$@"
 
 echo "Done. .deb and related files are in: $PARENT_DIR"

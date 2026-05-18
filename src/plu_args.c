@@ -36,6 +36,19 @@ static char *badoption_help = NULL;
 
 #define ARGUMENT_BAD_OPTION	17227
 
+static void
+print_splash_compat(const char *progname)
+{
+#if defined(__GNUC__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
+	print_splash(progname);
+#if defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif
+}
+
 static void callback(poptContext pc,
 	int reason,
 	const struct poptOption *opt,
@@ -45,7 +58,7 @@ static void callback(poptContext pc,
 	static int have_complained_already = 0;
 	switch(opt->val) {
 	case 'v' :
-		print_splash(poptGetInvocationName(pc));
+		print_splash_compat(poptGetInvocationName(pc));
 		exit(0);
 		break;
 	case ARGUMENT_BAD_OPTION:

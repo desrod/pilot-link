@@ -1,4 +1,5 @@
 AM_CPPFLAGS = 			\
+	-I../include		\
 	-I$(top_srcdir)/include \
 	$(POPT_INCLUDES)
 

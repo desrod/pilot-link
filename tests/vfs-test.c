@@ -36,6 +36,20 @@
 #include "pi-source.h"
 #include "pi-header.h"
 
+static int
+connect_port(const char *port)
+{
+#if defined(__GNUC__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
+	int sd = pilot_connect(port);
+#if defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif
+	return sd;
+}
+
 
 /* For various protocol versions, set to 0 to not test those versions */
 #define DLP_1_1 1
@@ -77,7 +91,7 @@ int main (int argc, char **argv)
 
 	unsigned long flags;
 
-	sd = pilot_connect (argv[1]);
+	sd = connect_port(argv[1]);
 	if (sd < 0) return 1;
 
 	t1 = time (NULL);

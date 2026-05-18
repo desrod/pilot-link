@@ -3,6 +3,7 @@ PORT=/dev/pilot
 all: java_pisock
 
 AM_CPPFLAGS = 				\
+	-I../../include			\
 	-I$(top_srcdir)/include		\
 	-I$(top_builddir)/include	\
 	-I$(JAVABASE)/include		\
@@ -72,7 +73,7 @@ java_compile: $(java_files)
 	$(JAVAC) -d . $(java_files)
 
 java_lib: libjpisock.c
-	$(CXX) $(INCLUDES) -fPIC $(DEFS) -L $(top_builddir)/libpisock/.libs -lpisock -shared -o libjpisock.so $(srcdir)/libjpisock.c
+	$(CXX) $(AM_CPPFLAGS) -fPIC $(DEFS) -L $(top_builddir)/libpisock/.libs -lpisock -shared -o libjpisock.so $(srcdir)/libjpisock.c
 
 java_jar: $(java_classes)
 	$(JAR) cvf pilot-link.jar $(java_classes)

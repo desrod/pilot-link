@@ -19,7 +19,7 @@ python-build: Python/setup.py
 	cd $(srcdir)/Python && $(PYTHON) setup.py build
 
 python-install: python-build
-	cd $(srcdir)/Python && $(PYTHON) setup.py install --root=$(DESTDIR) --prefix=$(prefix)
+	cd $(srcdir)/Python && $(PYTHON) setup.py install --root=$(DESTDIR) --prefix=$(prefix) --install-lib=$(prefix)/lib/python3/dist-packages --no-compile
 
 python-clean: Python/setup.py
 	-cd $(srcdir)/Python && $(PYTHON) setup.py clean 
@@ -79,6 +79,6 @@ distclean-local: $(PERL_CLEAN) $(PYTHON_CLEAN)
 maintainer-clean-local: $(PERL_CLEAN) $(PYTHON_CLEAN)
 
 dist-hook:
-	@d="$(distdir)"; rm -rf $$(find "$$d" -name CVS)
+	cd "$(distdir)" && find . -name CVS -type d -prune -exec rm -rf {} +
 
 EXTRA_DIST = Python Java Perl

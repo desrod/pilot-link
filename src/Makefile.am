@@ -3,11 +3,14 @@ SUBDIRS=prc pix
 if ENABLE_CONDUITS
 
 AM_CPPFLAGS = 			\
+	-I/usr/include		\
 	-I$(top_srcdir)/include \
 	$(POPT_INCLUDES)	\
 	$(PNG_CFLAGS)		\
 	$(TCL_INCLUDES)		\
 	$(RL_CFLAGS)
+
+AM_LDFLAGS = -no-install
 
 noinst_LTLIBRARIES = libpiuserland.la
 

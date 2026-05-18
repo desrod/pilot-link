@@ -77,7 +77,57 @@
 
 
 
+#define PY_SSIZE_T_CLEAN
 #include <Python.h>
+
+#if PY_MAJOR_VERSION >= 3
+#define PyInt_Check PyLong_Check
+#define PyInt_AsLong PyLong_AsLong
+#define PyInt_FromLong PyLong_FromLong
+#define PyString_Check PyBytes_Check
+#define PyString_AsString PyBytes_AsString
+#define PyString_Size PyBytes_Size
+#define PyString_AS_STRING PyBytes_AS_STRING
+#define PyString_GET_SIZE PyBytes_GET_SIZE
+#define PyString_FromString PyBytes_FromString
+#define PyString_FromStringAndSize PyBytes_FromStringAndSize
+#define PyString_FromFormat PyUnicode_FromFormat
+#define PyString_Format PyUnicode_Format
+#define PyCObject_Check PyCapsule_CheckExact
+#define PyCObject_AsVoidPtr(obj) PyCapsule_GetPointer((obj), NULL)
+#define PyCObject_GetDesc(obj) PyCapsule_GetName((obj))
+#define PyCObject_FromVoidPtr(obj, destr) PyCapsule_New((obj), NULL, (destr))
+#define PyCObject_FromVoidPtrAndDesc(obj, desc, destr) PyCapsule_New((obj), (desc), (destr))
+
+static PyObject *
+pilotlink_PyString_AsEncodedObject(PyObject *object, const char *encoding, const char *errors)
+{
+  if (PyUnicode_Check(object)) {
+    return PyUnicode_AsEncodedString(object, encoding, errors);
+  }
+  if (PyBytes_Check(object)) {
+    Py_INCREF(object);
+    return object;
+  }
+  PyErr_SetString(PyExc_TypeError, "expected bytes or str");
+  return NULL;
+}
+
+#undef PyString_AsEncodedObject
+#define PyString_AsEncodedObject pilotlink_PyString_AsEncodedObject
+
+static void *
+pilotlink_PyCObject_Import(const char *module_name, const char *attr_name)
+{
+  char full_name[256];
+
+  PyOS_snprintf(full_name, sizeof(full_name), "%s.%s", module_name, attr_name);
+  return PyCapsule_Import(full_name, 0);
+}
+
+#undef PyCObject_Import
+#define PyCObject_Import pilotlink_PyCObject_Import
+#endif
 
 /***********************************************************************
  * swigrun.swg
@@ -748,7 +798,27 @@ SWIGRUNTIME PyTypeObject*
 PySwigObject_type(void) {
   static char pyswigobject_type__doc__[] = 
     "Swig object carries a C/C++ instance pointer";
-  
+
+#if PY_MAJOR_VERSION >= 3
+  static PyNumberMethods PySwigObject_as_number = {
+    .nb_int = (unaryfunc)PySwigObject_long,
+    .nb_index = (unaryfunc)PySwigObject_long,
+  };
+
+  static PyTypeObject pyswigobject_type = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "PySwigObject",
+    .tp_basicsize = sizeof(PySwigObject),
+    .tp_dealloc = (destructor)PySwigObject_dealloc,
+    .tp_repr = (reprfunc)PySwigObject_repr,
+    .tp_as_number = &PySwigObject_as_number,
+    .tp_str = (reprfunc)PySwigObject_str,
+    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_doc = pyswigobject_type__doc__,
+  };
+
+  return &pyswigobject_type;
+#else
   static PyNumberMethods PySwigObject_as_number = {
     (binaryfunc)0, /*nb_add*/
     (binaryfunc)0, /*nb_subtract*/
@@ -833,6 +903,7 @@ PySwigObject_type(void) {
   }
 #endif
   return &pyswigobject_type;
+#endif
 }
 
 SWIGRUNTIME PyObject *
@@ -937,6 +1008,21 @@ SWIGRUNTIME PyTypeObject*
 PySwigPacked_type(void) {
   static char pyswigpacked_type__doc__[] = 
     "Swig object carries a C/C++ instance pointer";
+
+#if PY_MAJOR_VERSION >= 3
+  static PyTypeObject pyswigpacked_type = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "PySwigPacked",
+    .tp_basicsize = sizeof(PySwigPacked),
+    .tp_dealloc = (destructor)PySwigPacked_dealloc,
+    .tp_repr = (reprfunc)PySwigPacked_repr,
+    .tp_str = (reprfunc)PySwigPacked_str,
+    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_doc = pyswigpacked_type__doc__,
+  };
+
+  return &pyswigpacked_type;
+#else
   static PyTypeObject pyswigpacked_type
 #if !defined(__cplusplus)
   ;
@@ -990,6 +1076,7 @@ PySwigPacked_type(void) {
   }
 #endif
   return &pyswigpacked_type;
+#endif
 }
 
 SWIGRUNTIME PyObject *
@@ -1398,9 +1485,13 @@ PyModule_AddObject(PyObject *m, char *name, PyObject *o)
 SWIGRUNTIME void
 SWIG_Python_SetModule(swig_module_info *swig_module) {
   static PyMethodDef swig_empty_runtime_method_table[] = { {NULL, NULL, 0, NULL} };/* Sentinel */
-
-  PyObject *module = Py_InitModule((char*)"swig_runtime_data" SWIG_RUNTIME_VERSION,
+  PyObject *module = NULL;
+#if PY_MAJOR_VERSION >= 3
+  module = PyImport_AddModule("swig_runtime_data" SWIG_RUNTIME_VERSION);
+#else
+  module = Py_InitModule((char*)"swig_runtime_data" SWIG_RUNTIME_VERSION,
 				   swig_empty_runtime_method_table);
+#endif
   PyObject *pointer = PyCObject_FromVoidPtr((void *) swig_module, NULL);
   if (pointer && module) {
     PyModule_AddObject(module, (char*)"type_pointer" SWIG_TYPE_TABLE_NAME, pointer);
@@ -1454,7 +1545,11 @@ static swig_module_info swig_module = {swig_types, 29, 0, 0, 0, 0};
 /*-----------------------------------------------
               @(target):= _pisock.so
   ------------------------------------------------*/
+#if PY_MAJOR_VERSION >= 3
+#define SWIG_init    PyInit__pisock
+#else
 #define SWIG_init    init_pisock
+#endif
 
 #define SWIG_name    "_pisock"
 
@@ -1481,7 +1576,7 @@ static PyObject *ConvertFromEncoding(const char *data, const char *encoding, con
 {
     PyObject *buffer, *string = NULL;
 
-    buffer = PyBuffer_FromMemory((void *)data, strlen(data));
+    buffer = PyBytes_FromString(data);
     if (buffer == NULL)
     {
         if (allowErrors)
@@ -12765,10 +12860,44 @@ extern "C" {
         PyErr_SetString(PyExc_NameError,"Unknown C global variable");
         return 1;
     }
+
+#if PY_MAJOR_VERSION >= 3
+    SWIGINTERN PyObject *
+    swig_varlink_py3_getattro(PyObject *obj, PyObject *name) {
+        const char *attr_name = PyUnicode_AsUTF8(name);
+        if (!attr_name) {
+            return NULL;
+        }
+        return swig_varlink_getattr((swig_varlinkobject *)obj, (char *)attr_name);
+    }
+
+    SWIGINTERN int
+    swig_varlink_py3_setattro(PyObject *obj, PyObject *name, PyObject *value) {
+        const char *attr_name = PyUnicode_AsUTF8(name);
+        if (!attr_name) {
+            return -1;
+        }
+        return swig_varlink_setattr((swig_varlinkobject *)obj, (char *)attr_name, value);
+    }
+#endif
     
     SWIGINTERN PyTypeObject*
     swig_varlink_type(void) {
         static char varlink__doc__[] = "Swig var link object";
+
+#if PY_MAJOR_VERSION >= 3
+        static PyTypeObject varlink_type = {
+                PyVarObject_HEAD_INIT(NULL, 0)
+                .tp_name = "swigvarlink",
+                .tp_basicsize = sizeof(swig_varlinkobject),
+                .tp_repr = (reprfunc) swig_varlink_repr,
+                .tp_getattro = swig_varlink_py3_getattro,
+                .tp_setattro = swig_varlink_py3_setattro,
+                .tp_flags = Py_TPFLAGS_DEFAULT,
+                .tp_doc = varlink__doc__,
+        };
+        return &varlink_type;
+#else
         static PyTypeObject varlink_type
 #if !defined(__cplusplus)
         ;
@@ -12823,6 +12952,7 @@ extern "C" {
         }
 #endif
         return &varlink_type;
+#endif
     }
     
     /* Create a variable linking object for use later */
@@ -12955,7 +13085,23 @@ extern "C" {
 #ifdef __cplusplus
 extern "C"
 #endif
+#if PY_MAJOR_VERSION >= 3
+static struct PyModuleDef SWIG_module_def = {
+    PyModuleDef_HEAD_INIT,
+    SWIG_name,
+    NULL,
+    -1,
+    SwigMethods,
+    NULL,
+    NULL,
+    NULL,
+    NULL
+};
+
+SWIGEXPORT PyObject *SWIG_init(void) {
+#else
 SWIGEXPORT void SWIG_init(void) {
+#endif
     static PyObject *SWIG_globals = 0; 
     PyObject *m, *d;
     if (!SWIG_globals) SWIG_globals = SWIG_newvarlink();
@@ -12963,7 +13109,13 @@ SWIGEXPORT void SWIG_init(void) {
     /* Fix SwigMethods to carry the callback ptrs when needed */
     SWIG_Python_FixMethods(SwigMethods, swig_const_table, swig_types, swig_type_initial);
     
+#if PY_MAJOR_VERSION >= 3
+    m = PyModule_Create(&SWIG_module_def);
+    if (!m)
+      return NULL;
+#else
     m = Py_InitModule((char *) SWIG_name, SwigMethods);
+#endif
     d = PyModule_GetDict(m);
     
     SWIG_InitializeModule(0);
@@ -13487,5 +13639,8 @@ SWIGEXPORT void SWIG_init(void) {
     {
         PyDict_SetItemString(d,"dlpErrUnknown", SWIG_From_int((int)(dlpErrUnknown))); 
     }
+#if PY_MAJOR_VERSION >= 3
+    return m;
+#endif
 }
 

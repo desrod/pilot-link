@@ -81,6 +81,10 @@ There are several core parts of pilot-link:
 	can use those languages, instead of C directly, to talk to your Palm
 	handheld device and communicate with it. 
 
+	The maintained Python bindings target Python 3. Debian-style package
+	builds install them as `python3-pisock`; the older `python-pisock`
+	package name was for the historical Python 2 packaging.
+
 	Want to write a Java application that uses pilot-link's libraries?
 	Simple! Just use the Java bindings.
 

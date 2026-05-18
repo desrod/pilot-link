@@ -125,7 +125,13 @@ int install_memo(int sd, int db, int category, int add_title, char *filename)
 			filename, strerror(errno));
 		return 1;
 	}
-	fread(memo_buf + preamble, memo_size, 1, f);
+	if (fread(memo_buf + preamble, memo_size, 1, f) != 1) {
+		fprintf(stderr,"   ERROR: Unable to read %s (%s)\n\n",
+			filename, strerror(errno));
+		fclose(f);
+		free(memo_buf);
+		return 1;
+	}
 	fclose(f);
 
 	dlp_WriteRecord(sd, db, 0, 0, category, memo_buf, -1, 0);

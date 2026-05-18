@@ -1,5 +1,11 @@
-pilot-link (0.13.1-1) unstable; urgency=medium
+pilot-link (0.13.1-2) unstable; urgency=medium
 
   * Initial Debian package.
+  * Split the Debian build into runtime, library, development, and
+    Python 3 binary packages.
+  * Rename the historical Python package from python-pisock to
+    python3-pisock and document the Python 3 transition.
+  * Add Breaks/Replaces metadata so upgrades from the older monolithic
+    pilot-link package to the split package set work cleanly.
 
  -- Pilot Link Packagers <pilot-link@packages.debian.org>  Mon, 16 Feb 2025 12:00:00 +0000

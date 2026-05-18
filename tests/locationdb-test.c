@@ -149,7 +149,9 @@ void parse(pi_file_t *pf)
       
       if(pi_buf->used != test->used) {
         int i;
-        printf("Error: Different record sizes unpack: %d pack: %d last byte unpack: 0x%02X pack: 0x%02X\n", pi_buf->used, test->used, pi_buf->data[pi_buf->used-1], test->data[test->used-1]);
+        printf("Error: Different record sizes unpack: %zu pack: %zu last byte unpack: 0x%02X pack: 0x%02X\n",
+               pi_buf->used, test->used,
+               pi_buf->data[pi_buf->used-1], test->data[test->used-1]);
         for(i=0; i<pi_buf->used; ++i) {
           if(pi_buf->data[i] != test->data[i]) {
             printf("Error: Byte %d is different unpack: 0x%02X pack: 0x%02X\n", i, pi_buf->data[i], test->data[i]);

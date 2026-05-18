@@ -374,7 +374,8 @@ begin:
  # endif /* PATH_MAX */
 #endif /* MAXPATHLEN */
 
-		realpath(pa->pi_device, realport);
+		if (realpath(pa->pi_device, realport) == NULL)
+			realport[0] = '\0';
 		errno = save_errno;
 
 		if (errno == ENOENT) {

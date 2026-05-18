@@ -87,7 +87,10 @@ int extract_image(struct pi_file *pi_fp, MainDBImgRecord * img_rec)
 
 		if (req_uid && uid == req_uid) {
 			memcpy(&req_uid, Pbuf, 4);	/* get next req_uid for image 'block' */
-			write(fd, Pbuf + 4, size - 4);	/* The rest is just jpeg data */
+			if (write(fd, Pbuf + 4, size - 4) != (ssize_t)(size - 4)) {
+				close(fd);
+				return -1;
+			}
 		}
 	}
 

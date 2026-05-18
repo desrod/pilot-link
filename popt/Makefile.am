@@ -14,7 +14,7 @@ sources:
         
 .PHONY: lclint
 lclint:
-	lclint ${DEFS} ${INCLUDES} ${libpopt_la_SOURCES}
+	lclint ${DEFS} ${AM_CPPFLAGS} ${libpopt_la_SOURCES}
 
 endif
 

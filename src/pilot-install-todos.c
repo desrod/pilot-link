@@ -63,7 +63,13 @@ void install_ToDos(int sd, int db, char *filename)
 		exit(EXIT_FAILURE);
 	}
 
-	fread(file_text, filelen, 1, f);
+	if (fread(file_text, filelen, 1, f) != 1) {
+		perror("fread");
+		fclose(f);
+		free(file_text);
+		exit(EXIT_FAILURE);
+	}
+	fclose(f);
 
         cPtr = file_text;
         begPtr = cPtr;

@@ -175,8 +175,10 @@ int do_get_rom(int sd,const char *filename)
 				break;
 		if (j == len)
 			lseek(file, len, SEEK_CUR);
-		else
-			write(file, buffer, len);
+		else if (write(file, buffer, len) != len) {
+			perror("write");
+			goto cancel;
+		}
 		offset += len;
 		if (cancel || !(i++ % 8))
 			if (cancel || (dlp_OpenConduit(sd) < 0)) {
@@ -303,8 +305,10 @@ int do_get_ram(int sd, const char *filename)
 				break;
 		if (j == len)
 			lseek(file, len, SEEK_CUR);
-		else
-			write(file, buffer, len);
+		else if (write(file, buffer, len) != len) {
+			perror("write");
+			goto cancel;
+		}
 
 		offset += len;
 		if (cancel || !(i++ % 4))
