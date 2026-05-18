@@ -1,0 +1,4 @@
+usr/lib/python3*/dist-packages/_pisock*.so
+usr/lib/python3*/dist-packages/pisock.py
+usr/lib/python3*/dist-packages/pisockextras.py
+usr/lib/python3*/dist-packages/*.egg-info

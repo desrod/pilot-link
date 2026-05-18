@@ -419,9 +419,9 @@ int Contact_add_blob(struct Contact *c, Blob_t *blob)
       if (!c->blob[i]) return EXIT_FAILURE;
 
       c->blob[i]->data = malloc(blob->length);
-      strncpy(c->blob[i]->type, blob->type, 4);
+      memcpy(c->blob[i]->type, blob->type, 4);
       c->blob[i]->length = blob->length;
-      strncpy((char *)c->blob[i]->data, (char *)blob->data, blob->length);
+      memcpy(c->blob[i]->data, blob->data, blob->length);
       return EXIT_SUCCESS;
    }
 
@@ -459,7 +459,7 @@ int Contact_add_picture(struct Contact *c, struct ContactPicture *p)
       if (!c->blob[i]) return EXIT_FAILURE;
 
       c->blob[i]->data = malloc(p->length + 2);
-      strncpy(c->blob[i]->type, BLOB_TYPE_PICTURE_ID, 4);
+      memcpy(c->blob[i]->type, BLOB_TYPE_PICTURE_ID, 4);
       c->blob[i]->length = p->length + 2;
       set_short(c->blob[i]->data, p->dirty);
       memcpy(c->blob[i]->data + 2, p->data, p->length);

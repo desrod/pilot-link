@@ -1609,13 +1609,8 @@ static int
 int
   unpack_PalmPixHeader (struct PalmPixHeader *h, const unsigned char *p, int len)
 {
-   int magic1, magic2;
-   
    if (len != 196)
      return 0;
-
-   magic1 = p[1];
-   magic2 = get_le_short (&p[46]);
    
    /* FIXME For now, don't check the magic.  I've seen 0x0002 and 0x0201.
     I'm not sure that the endianness is right on this one.  Possibly it

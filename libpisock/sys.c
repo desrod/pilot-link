@@ -240,15 +240,12 @@ sys_rx(pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags)
 {
 	pi_protocol_t	*next,
 			*prot;
-
-	pi_sys_data_t *data;
 	size_t 	data_len;
 
 	prot = pi_protocol(ps->sd, PI_LEVEL_SYS);
 	if (prot == NULL)
 		return pi_set_error(ps->sd, PI_ERR_SOCK_INVALID);
 
-	data = (pi_sys_data_t *)prot->data;
 	next = pi_protocol_next(ps->sd, PI_LEVEL_SYS);
 	if (next == NULL)
 		return pi_set_error(ps->sd, PI_ERR_SOCK_INVALID);

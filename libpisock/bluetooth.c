@@ -286,13 +286,10 @@ static pi_protocol_t*
 pi_bluetooth_protocol (pi_device_t *dev)
 {	
 	pi_protocol_t *prot;
-	struct pi_bluetooth_data *data;
 
 	ASSERT (dev != NULL);
 
 	prot = (pi_protocol_t *) malloc(sizeof (pi_protocol_t));
-
-	data = (struct pi_bluetooth_data *)(dev->data);
 
 	if (prot != NULL) {
 		prot->level 		= PI_LEVEL_DEV;

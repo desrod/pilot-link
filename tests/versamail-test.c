@@ -143,7 +143,7 @@ void validate_versamail_packer(void *record, int size, int attr, int idx)
 
 	for (i = 0; i < ((size) > (len) ? (size) : (len)); i++) {
 		if ((i < len) && (i < size)) {
-			if (!((char *) record)[i] == buffer[i]) {
+			if (((char *) record)[i] != buffer[i]) {
 				printf
 				    ("WRONG Byte %3d: 0x%10x (%c) vs. 0x%10x (%c)\n",
 				     i, ((char *) record)[i],
@@ -186,7 +186,7 @@ int main(int argc, char *argv[])
 {
 	struct pi_file *pi_fp;
 	char *DBname;
-	int r;
+	int r = 0;
 	int idx;
 	size_t size;
 	int attr;
@@ -204,7 +204,7 @@ int main(int argc, char *argv[])
 
 	pi_file_get_app_info PI_ARGS((pi_fp, &record, &size));
 
-	print_versamail_app_info(r, record, size);
+	print_versamail_app_info(0, record, size);
 	printf("----------\n");
 
 	for (idx = 0;; idx++) {

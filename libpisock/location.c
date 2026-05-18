@@ -460,7 +460,7 @@ unpack_Timezone_p(Timezone_t *tz, const unsigned char *data, const size_t positi
 		return -1;
 	}
 
-	if(0x00 == data+localPosition) {
+	if (data[localPosition] == 0x00) {
 		tz->name = NULL;
 		++localPosition;
 	} else {

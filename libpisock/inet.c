@@ -112,11 +112,8 @@ static pi_protocol_t*
 pi_inet_protocol (pi_device_t *dev)
 {	
 	pi_protocol_t *prot;
-	pi_inet_data_t *data;
 
 	ASSERT (dev != NULL);
-	
-	data = dev->data;
 	
 	prot = (pi_protocol_t *)malloc (sizeof (pi_protocol_t));
 
