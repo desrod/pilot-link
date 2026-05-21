@@ -226,20 +226,22 @@ if test "x$enable_conduits" != "xno"; then
 
 	case $with_libpng in
 		/*)
-		PNG_CFLAGS="-I$withval/include"
-		PNG_LIBS="-L$withval/lib"
+		PNG_CFLAGS="-I$with_libpng/include"
+		PNG_LIBS="-L$with_libpng/lib -lpng"
+		have_png=yes
+		;;
+		*)
+		PKG_CHECK_MODULES([PNG], [libpng],
+			[have_png=yes],
+			[AC_CHECK_LIB(png, main,
+				[have_png=yes; PNG_LIBS="-lpng"],
+				[have_png=no], [-lm])])
 		;;
 	esac
 
-	save_CFLAGS="$CFLAGS"
-	save_CPPFLAGS="$CPPFLAGS"
-	save_LDFLAGS="$LDFLAGS"
-	CFLAGS="$CFLAGS $PNG_CFLAGS"
-	CPPFLAGS="$CPPFLAGS $PNG_CFLAGS"
-	LDFLAGS="$LDFLAGS $PNG_LIBS"
-
-	AC_CHECK_LIB(png, main, [have_png=yes; PNG_LIBS="$PNG_LIBS -lpng"],[have_png=no],[-lm])
 	if test "$have_png" = yes; then
+		save_CPPFLAGS="$CPPFLAGS"
+		CPPFLAGS="$CPPFLAGS $PNG_CFLAGS"
 		AC_CHECK_HEADER(png.h, , have_png=no)
 		if test "$have_png" = yes; then
 			AC_MSG_CHECKING(for png setjmp support)
@@ -251,15 +253,11 @@ if test "x$enable_conduits" != "xno"; then
 			AC_MSG_RESULT($have_png)
 			if test "$have_png" = yes; then
 				AC_DEFINE(HAVE_PNG, 1, [Define if we have PNG support])
-				have_png=yes
 				msg_png=yes
 			fi
 		fi
+		CPPFLAGS="$save_CPPFLAGS"
 	fi
-
-	CFLAGS="$save_CFLAGS"
-	CPPFLAGS="$save_CPPFLAGS"
-	LDFLAGS="$save_LDFLAGS"
 else
 	have_png="none"
 	PNG_CFLAGS=
