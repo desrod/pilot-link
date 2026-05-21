@@ -435,7 +435,7 @@ CFLAGS="$CFLAGS $ICONV_CFLAGS"
 LDFLAGS="$LDFLAGS $ICONV_LIBS"
 
 AC_CHECK_LIB(
-	iconv, libiconv, [have_iconv=yes; ICONV_LIBS="$ICONV_LIBS -liconv"], [
+	iconv, iconv_open, [have_iconv=yes; ICONV_LIBS="$ICONV_LIBS -liconv"], [
 		AC_CHECK_FUNC(iconv, [
 			AC_CHECK_FUNCS(gnu_get_libc_version)
 			AC_MSG_CHECKING(if system iconv handles CP1252)

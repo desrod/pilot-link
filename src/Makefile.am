@@ -14,6 +14,7 @@ noinst_LTLIBRARIES = libpiuserland.la
 bin_PROGRAMS =			\
 	pilot-addresses		\
 	pilot-clip		\
+	pilot-contacts		\
 	pilot-csd		\
 	pilot-debugsh		\
 	pilot-dedupe		\
@@ -201,6 +202,14 @@ pilot_addresses_SOURCES = 	\
 pilot_addresses_LDADD = 	\
 	libpiuserland.la	\
 	$(POPT_LIBS)		\
+	$(top_builddir)/libpisock/libpisock.la
+
+pilot_contacts_SOURCES =	\
+	pilot-contacts.c
+pilot_contacts_LDADD =		\
+	libpiuserland.la	\
+	$(POPT_LIBS)		\
+	$(ICONV_LIBS)		\
 	$(top_builddir)/libpisock/libpisock.la
 
 pilot_clip_SOURCES = 		\
