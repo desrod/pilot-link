@@ -1,3 +1,4 @@
+if ENABLE_XSLTPROC
 man_MANS =				\
 	ietf2datebook.1			\
 	pilot-addresses.1		\
@@ -38,3 +39,4 @@ man_MANS =				\
 	pilot-xfer.1
 
 EXTRA_DIST=$(man_MANS)
+endif

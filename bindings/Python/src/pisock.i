@@ -53,10 +53,10 @@ from pisockextras import *
 #include "pi-util.h"
 
 #define DGETLONG(src,key,default) (PyDict_GetItemString(src,key) ? \
-				   PyInt_AsLong(PyDict_GetItemString(src,key)) : default)
+				   PyLong_AsLong(PyDict_GetItemString(src,key)) : default)
 
 #define DGETSTR(src,key,default) (PyDict_GetItemString(src,key) ? \
-				  PyString_AsString(PyDict_GetItemString(src,key)) : default)
+				  PyBytes_AsString(PyDict_GetItemString(src,key)) : default)
 
 static PyObject *PIError = NULL;
 %}

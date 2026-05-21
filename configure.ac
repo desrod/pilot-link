@@ -9,7 +9,7 @@ m4_define([pilot_link_major], [15])
 m4_define([pilot_link_minor], [0])
 m4_define([pilot_link_patch], [])
 
-AC_INIT([pilot-link],[pilot_link_vers.pilot_link_major.pilot_link_minor[]pilot_link_patch],[],[https://github.com/juddmon/pilot-link])
+AC_INIT([pilot-link],[pilot_link_vers.pilot_link_major.pilot_link_minor[]pilot_link_patch],[],[pilot-link],[https://github.com/desrod/pilot-link])
 AC_CONFIG_SRCDIR([include/pi-version.h.in])
 AC_CONFIG_MACRO_DIR([m4])
 
@@ -706,11 +706,51 @@ if test x"$enable_xsltproc" = x"yes"; then
     enable_xsltproc=no
   fi
 fi
+
+# Locate the docbook-xsl stylesheet root. Common install locations:
+#   /usr/share/xml/docbook/stylesheet/docbook-xsl                (Debian)
+#   /usr/share/sgml/docbook/xsl-stylesheets                      (Red Hat)
+#   /usr/share/xsl/docbook                                       (Arch)
+#   /opt/homebrew/opt/docbook-xsl/docbook-xsl                    (Homebrew, ARM)
+#   /usr/local/opt/docbook-xsl/docbook-xsl                       (Homebrew, Intel)
+#   /usr/local/share/xsl/docbook-xsl                             (FreeBSD)
+# Allow override via --with-docbook-xsl=PATH.
+AC_ARG_WITH([docbook-xsl],
+  [AS_HELP_STRING([--with-docbook-xsl=PATH],
+    [Path to docbook-xsl stylesheets (root containing html/docbook.xsl)])],
+  [DOCBOOK_ROOT="$withval"],
+  [DOCBOOK_ROOT=""])
+
+if test x"$enable_xsltproc" = x"yes" && test -z "$DOCBOOK_ROOT"; then
+  AC_MSG_CHECKING([for docbook-xsl stylesheet root])
+  for d in \
+    /usr/share/xml/docbook/stylesheet/docbook-xsl \
+    /usr/share/xml/docbook/stylesheet/nwalsh/current \
+    /usr/share/sgml/docbook/xsl-stylesheets \
+    /usr/share/xsl/docbook \
+    /usr/share/xsl/docbook-xsl \
+    /opt/homebrew/opt/docbook-xsl/docbook-xsl \
+    /usr/local/opt/docbook-xsl/docbook-xsl \
+    /opt/local/share/xsl/docbook-xsl \
+    /usr/local/share/xsl/docbook-xsl ; do
+    if test -f "$d/html/docbook.xsl" && test -f "$d/manpages/synop.xsl"; then
+      DOCBOOK_ROOT="$d"
+      break
+    fi
+  done
+  if test -n "$DOCBOOK_ROOT"; then
+    AC_MSG_RESULT([$DOCBOOK_ROOT])
+  else
+    AC_MSG_RESULT([not found])
+    AC_MSG_WARN([docbook-xsl not found; disabling xsltproc. Pass --with-docbook-xsl=PATH or install docbook-xsl.])
+    enable_xsltproc=no
+  fi
+fi
+
 AM_CONDITIONAL([ENABLE_XSLTPROC], [test x"$enable_xsltproc" = x"yes"])
 
 # fi
 
-# now let's test to see if we can find the docbook-xsl stuff
 XSLTPROC_FLAGS="--nonet"
 AC_SUBST(XML_CATALOG)
 AC_SUBST(XSLTPROC_FLAGS)

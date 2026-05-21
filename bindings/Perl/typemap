@@ -50,9 +50,9 @@ T_CHAR4
 
 T_RESULT
 	if ($var < 0) {
-		sv_setsv($arg, &sv_no);
+		sv_setsv($arg, &PL_sv_no);
 		self->errnop = $var;
 	} else
-		sv_setsv($arg, &sv_yes);
+		sv_setsv($arg, &PL_sv_yes);
 T_PTROBJ
 	sv_setref_pv($arg, \"${ntype}\", (void*)$var);

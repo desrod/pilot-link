@@ -11,9 +11,9 @@ Build-Depends:
  libreadline-dev,
  libusb-dev,
 Standards-Version: 4.6.2
-Homepage: https://github.com/juddmon/pilot-link
-Vcs-Browser: https://github.com/juddmon/pilot-link
-Vcs-Git: https://github.com/juddmon/pilot-link.git
+Homepage: https://github.com/desrod/pilot-link
+Vcs-Browser: https://github.com/desrod/pilot-link
+Vcs-Git: https://github.com/desrod/pilot-link.git
 Rules-Requires-Root: no
 
 Package: pilot-link

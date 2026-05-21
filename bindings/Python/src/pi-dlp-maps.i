@@ -30,21 +30,21 @@
 // -----------------------------------------------
 // a char value that allows None for a null value.
 // -----------------------------------------------
-%typemap (python,in) char *ALLOWNULL {
+%typemap (in) char *ALLOWNULL {
     if (!($input) || ($input == Py_None))
 		$1 = NULL;
     else
-		$1 = PyString_AsString($input);
+		$1 = PyBytes_AsString($input);
 }
 
 // -------------------------------------
 //  type/creator pair
 // -------------------------------------
-%typemap (python,in) unsigned long creator, unsigned long type {
-    if (PyString_Check($input))
-        $1 = makelong(PyString_AS_STRING($input));
-    else if (PyInt_Check($input))
-        $1 = PyInt_AsLong($input);
+%typemap (in) unsigned long creator, unsigned long type {
+    if (PyBytes_Check($input))
+        $1 = makelong(PyBytes_AS_STRING($input));
+    else if (PyLong_Check($input))
+        $1 = PyLong_AsLong($input);
     else {
         PyErr_SetString(PyExc_TypeError,"You must specify a type/creator");
         SWIG_fail;
@@ -80,28 +80,28 @@
 // -------------------------------------
 %rename(dlp_GetSysDateTime_) dlp_GetSysDateTime;
 
-%typemap (python,in,numinputs=0) time_t *time (time_t time) {
+%typemap (in,numinputs=0) time_t *time (time_t time) {
     $1 = (time_t *)&time;
 }
-%typemap (python,argout) time_t *time (time_t time) {
-    if ($1) $result = PyInt_FromLong((unsigned long ) $1);
+%typemap (argout) time_t *time (time_t time) {
+    if ($1) $result = PyLong_FromLong((unsigned long ) $1);
 }
 
 // -------------------------------------
 // struct PilotUser
 // -------------------------------------
-%typemap (python,in) const struct PilotUser* (struct PilotUser temp) %{
+%typemap (in) const struct PilotUser* (struct PilotUser temp) %{
 	if (!PyObjectToPilotUser($input, &temp))
 	    SWIG_fail;
 	$1 = &temp;
 %}
 
-%typemap (python,in,numinputs=0) struct PilotUser* (struct PilotUser temp) %{
+%typemap (in,numinputs=0) struct PilotUser* (struct PilotUser temp) %{
     $1 = &temp;
 %}
 
-%typemap (python,argout) struct PilotUser* %{
-    if ($1) $result = t_output_helper($result, PyObjectFromPilotUser($1));
+%typemap (argout) struct PilotUser* %{
+    if ($1) $result = SWIG_Python_AppendOutput($result, PyObjectFromPilotUser($1), 0);
 %}
 
 // -------------------------------------
@@ -111,33 +111,33 @@
     $1 = &temp;
 %}
 
-%typemap (python,argout) struct SysInfo * %{
-    if ($1) $result = t_output_helper($result, PyObjectFromSysInfo($1));
+%typemap (argout) struct SysInfo * %{
+    if ($1) $result = SWIG_Python_AppendOutput($result, PyObjectFromSysInfo($1), 0);
 %}
 
 // -------------------------------------
 // struct CardInfo
 // -------------------------------------
-%typemap (python,argout) (struct CardInfo *cardinfo) %{
-    if ($1) $result = t_output_helper($result, PyObjectFromCardInfo($1));
+%typemap (argout) (struct CardInfo *cardinfo) %{
+    if ($1) $result = SWIG_Python_AppendOutput($result, PyObjectFromCardInfo($1), 0);
 %}
 
-%typemap (python,in,numinputs=0) struct CardInfo *cardinfo (struct CardInfo temp) %{
+%typemap (in,numinputs=0) struct CardInfo *cardinfo (struct CardInfo temp) %{
     $1 = &temp;
 %}
 
 // -------------------------------------
 // struct NetSyncInfo
 // -------------------------------------
-%typemap (python,in,numinputs=0) struct NetSyncInfo *OUTPUT (struct NetSyncInfo temp) {
+%typemap (in,numinputs=0) struct NetSyncInfo *OUTPUT (struct NetSyncInfo temp) {
     $1 = &temp;
 }
 
-%typemap (python,argout) struct NetSyncInfo *OUTPUT %{
-    if ($1) $result = t_output_helper($result, PyObjectFromNetSyncInfo($1));
+%typemap (argout) struct NetSyncInfo *OUTPUT %{
+    if ($1) $result = SWIG_Python_AppendOutput($result, PyObjectFromNetSyncInfo($1), 0);
 %}
 
-%typemap (python,in) struct NetSyncInfo *INPUT (struct NetSyncInfo temp) %{
+%typemap (in) struct NetSyncInfo *INPUT (struct NetSyncInfo temp) %{
 	PyObjectToNetSyncInfo($input, &temp);
     $1 = &temp;
 %}
@@ -145,36 +145,36 @@
 // -------------------------------------
 // Passing data as parameter
 // -------------------------------------
-%typemap (python,in) (const void *databuf, size_t datasize) %{
-	$1 = (void *)PyString_AsString($input);
-	$2 = PyString_Size($input);
+%typemap (in) (const void *databuf, size_t datasize) %{
+	$1 = (void *)PyBytes_AsString($input);
+	$2 = PyBytes_Size($input);
 %}
 
-%typemap (python,in) (size_t datasize, const void *databuf) %{
-    $1 = PyString_Size($input);
-    $2 = (void *)PyString_AsString($input);
+%typemap (in) (size_t datasize, const void *databuf) %{
+    $1 = PyBytes_Size($input);
+    $2 = (void *)PyBytes_AsString($input);
 %}
 
 // -------------------------------------
 // Used by dlp_ReadAppPreference
 // -------------------------------------
-%typemap (python,argout) (void *databuf, size_t *datasize, int *version) %{
-	if ($1) $result = t_output_helper($result, Py_BuildValue("is#", $3, $1, $2));
+%typemap (argout) (void *databuf, size_t *datasize, int *version) %{
+	if ($1) $result = SWIG_Python_AppendOutput($result, Py_BuildValue("is#", $3, $1, $2), 0);
 %}
 
 // ---------------------------------------------------------
 // Finding databases: proper wrapping of dlp_Find* functions
 // so that they do not need to be passed a pointer
 // ---------------------------------------------------------
-%typemap (python,in,numinputs=0)  (struct DBInfo *dbInfo, struct DBSizeInfo *dbSize)
+%typemap (in,numinputs=0)  (struct DBInfo *dbInfo, struct DBSizeInfo *dbSize)
 		(struct DBInfo temp1, struct DBSizeInfo temp2) %{
 	$1 = &temp1;
 	$2 = &temp2;
 %}
 
-%typemap (python,argout) (struct DBInfo *dbInfo, struct DBSizeInfo *dbSize) %{
-	if ($1) $result = t_output_helper($result, PyObjectFromDBInfo($1));
-	if ($2) $result = t_output_helper($result, PyObjectFromDBSizeInfo($2));
+%typemap (argout) (struct DBInfo *dbInfo, struct DBSizeInfo *dbSize) %{
+	if ($1) $result = SWIG_Python_AppendOutput($result, PyObjectFromDBInfo($1), 0);
+	if ($2) $result = SWIG_Python_AppendOutput($result, PyObjectFromDBSizeInfo($2), 0);
 %}
 
 // -------------------------------------
@@ -184,7 +184,7 @@
 // we provide a python implementation for dlp_ReadDBList (see ../pisockextras.py)
 %rename(dlp_ReadDBList_) dlp_ReadDBList;
 
-%typemap (python,argout) (pi_buffer_t *dblist) %{
+%typemap (argout) (pi_buffer_t *dblist) %{
 	if ($1) {
 		int j;
 		struct DBInfo info;
@@ -201,18 +201,18 @@
 // -----------------------------------------
 // Mapping for dlp_ExpSlotEnumerate
 // -----------------------------------------
-%typemap (python,in,numinputs=0) (int *numslots, int *slotrefs)
+%typemap (in,numinputs=0) (int *numslots, int *slotrefs)
 		(int numSlots, int slotRefs[16]) %{
 	numSlots = sizeof(slotRefs) / sizeof(slotRefs[0]);
 	$1 = &numSlots;
 	$2 = &slotRefs[0];
 %}
 
-%typemap (python,argout) (int *numslots, int *slotrefs) %{
+%typemap (argout) (int *numslots, int *slotrefs) %{
 	if ($1 && $2) {
 		int slotIndex;
 		for (slotIndex=0; slotIndex < *$1; slotIndex++)
-			t_output_helper($result, PyInt_FromLong($2[slotIndex]));
+			SWIG_Python_AppendOutput($result, PyLong_FromLong($2[slotIndex]), 0);
 	}
 %}
 
@@ -257,7 +257,7 @@ static PyObject *_wrap_dlp_ReadRecordIDList (PyObject *self, PyObject *args) {
 
 	list = PyList_New(0);
 	for (i=0; i<count; i++)
-		PyList_Append(list, PyInt_FromLong((long)buf[i]));
+		PyList_Append(list, PyLong_FromLong((long)buf[i]));
 
 	PyMem_Free(buf);
 	return list;
