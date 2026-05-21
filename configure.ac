@@ -792,48 +792,92 @@ tests/Makefile
 ])
 AC_OUTPUT
 
-AC_MSG_RESULT([
-  Options detected/selected
-  -------------------------.
-  pilot-link version...... : $VERSION
-  libpisock version....... : $PISOCK_CURRENT.$PISOCK_AGE.$PISOCK_REVISION
-  libpisync version....... : $PISYNC_CURRENT.$PISYNC_AGE.$PISYNC_REVISION
-  Build for host.......... : $host
-  Extra Warnings.......... : $set_compile_warnings
-  Direct USB support...... : $msg_usb
-  BlueZ support........... : $use_bluez
-  Thread-safe libpisock... : $msg_threads
-  ElectricFence checks.... : $msg_efence
-  CPPFLAGS................ : $CPPFLAGS
-  CFLAGS.................. : $CFLAGS
+dnl ******************************
+dnl Configuration summary
+dnl ******************************
 
-  Userland Tools
-  -------------------------.
-  Build userland tools.... : $enable_conduits
-  Support for popt........ : $msg_popt
-  Readline support........ : $msg_readline
-  PNG support............. : $msg_png
+dnl Normalize boolean-ish values (true/false -> yes/no) so the summary
+dnl uses consistent vocabulary.
+case "x$use_bluez"  in xtrue) use_bluez=yes  ;; xfalse|x) use_bluez=no  ;; esac
+case "x$use_tcl"    in xtrue) use_tcl=yes    ;; xfalse|x) use_tcl=no    ;; esac
+case "x$use_java"   in xtrue) use_java=yes   ;; xfalse|x) use_java=no   ;; esac
+case "x$use_python" in xtrue) use_python=yes ;; xfalse|x) use_python=no ;; esac
+case "x$use_perl"   in xtrue) use_perl=yes   ;; xfalse|x) use_perl=no   ;; esac
+case "x$msg_efence" in xtrue) msg_efence=yes ;; xfalse|x) msg_efence=no ;; esac
 
-  Internal Language Support
-  -------------------------.
-  Iconv support........... : $msg_iconv
+dnl Enable color only on a real TTY with a capable TERM and tput available.
+C_HDR= C_YES= C_NO= C_BOX= C_OFF=
+if test -t 1 && test "x$TERM" != xdumb && test "x$TERM" != x \
+   && ( command -v tput >/dev/null 2>&1 ); then
+  C_HDR=`tput bold 2>/dev/null; tput setaf 6 2>/dev/null`
+  C_YES=`tput bold 2>/dev/null; tput setaf 2 2>/dev/null`
+  C_NO=`tput  bold 2>/dev/null; tput setaf 1 2>/dev/null`
+  C_BOX=`tput setaf 8 2>/dev/null || tput setaf 7 2>/dev/null`
+  C_OFF=`tput sgr0 2>/dev/null`
+fi
 
-  External Language Support
-  -------------------------.
-  TCL support............. : $use_tcl	$TCL_VERSION
-  Java support............ : $use_java	$JAVA_VERSION
-  Python support.......... : $use_python	$PYTHON_VERSION
-  Perl support............ : $use_perl	$PERL_VERSION
-])
+dnl Colorize a yes/no-ish value. Handles "yes, Darwin" style suffixes
+dnl by colorizing only the leading yes/no token.
+plfmt() {
+  case "$1" in
+    yes|yes,*|yes\ *)
+      rest=`expr "$1" : 'yes\(.*\)'`
+      printf '%syes%s%s' "$C_YES" "$C_OFF" "$rest" ;;
+    no|none|"")
+      printf '%sno%s' "$C_NO" "$C_OFF" ;;
+    *)
+      printf '%s' "$1" ;;
+  esac
+}
 
-if [[ x"$PL_FROM_GIT" = xyes ]]; then
-  echo " .----- NOTICE ------------------------------------------------."
-  echo " |         You are using pilot-link from source.               |"
-  echo " |                                                             |"
-  echo " | This is likely to be unstable, or contain some incomplete   |"
-  echo " | features, or just plain not work at all. Use it at your own |"
-  echo " | risk. Please help us to fix any bugs you find, by reporting |"
-  echo " | them at: https://github.com/desrod/pilot-link/issues        |"
-  echo " \`-------------------------------------------------------------'"
+dnl Render an optional "(version)" suffix only when the version is set.
+plver() {
+  test -n "$1" && printf ' (%s)' "$1"
+}
+
+echo ""
+printf '%s+--------------------------------------------------------------+%s\n' "$C_BOX" "$C_OFF"
+printf '%s|%s %spilot-link configuration summary%s                             %s|%s\n' \
+       "$C_BOX" "$C_OFF" "$C_HDR" "$C_OFF" "$C_BOX" "$C_OFF"
+printf '%s+--------------------------------------------------------------+%s\n' "$C_BOX" "$C_OFF"
+echo ""
+printf '  %sBuild%s\n' "$C_HDR" "$C_OFF"
+printf '    pilot-link version ..... %s\n' "$VERSION"
+printf '    libpisock version ...... %s.%s.%s\n' "$PISOCK_CURRENT" "$PISOCK_AGE" "$PISOCK_REVISION"
+printf '    libpisync version ...... %s.%s.%s\n' "$PISYNC_CURRENT" "$PISYNC_AGE" "$PISYNC_REVISION"
+printf '    Host ................... %s\n' "$host"
+printf '    CPPFLAGS ............... %s\n' "${CPPFLAGS:-(none)}"
+printf '    CFLAGS ................. %s\n' "$CFLAGS"
+echo ""
+printf '  %sCore features%s\n' "$C_HDR" "$C_OFF"
+printf '    Direct USB ............. %s\n' "`plfmt \"$msg_usb\"`"
+printf '    BlueZ .................. %s\n' "`plfmt \"$use_bluez\"`"
+printf '    Thread-safe libpisock .. %s\n' "`plfmt \"$msg_threads\"`"
+printf '    Extra warnings ......... %s\n' "`plfmt \"$set_compile_warnings\"`"
+printf '    ElectricFence .......... %s\n' "`plfmt \"$msg_efence\"`"
+printf '    Iconv .................. %s\n' "`plfmt \"$msg_iconv\"`"
+echo ""
+printf '  %sUserland tools%s\n' "$C_HDR" "$C_OFF"
+printf '    Build tools ............ %s\n' "`plfmt \"$enable_conduits\"`"
+printf '    popt ................... %s\n' "$msg_popt"
+printf '    Readline ............... %s\n' "`plfmt \"$msg_readline\"`"
+printf '    PNG .................... %s\n' "`plfmt \"$msg_png\"`"
+echo ""
+printf '  %sLanguage bindings%s\n' "$C_HDR" "$C_OFF"
+printf '    TCL .................... %s%s\n' "`plfmt \"$use_tcl\"`"    "`plver \"$TCL_VERSION\"`"
+printf '    Java ................... %s%s\n' "`plfmt \"$use_java\"`"   "`plver \"$JAVA_VERSION\"`"
+printf '    Python ................. %s%s\n' "`plfmt \"$use_python\"`" "`plver \"$PYTHON_VERSION\"`"
+printf '    Perl ................... %s%s\n' "`plfmt \"$use_perl\"`"   "`plver \"$PERL_VERSION\"`"
+echo ""
+
+if test "x$PL_FROM_GIT" = xyes; then
+  printf '%s+----- NOTICE -------------------------------------------------+%s\n' "$C_BOX" "$C_OFF"
+  printf '%s|%s         You are using pilot-link from source.               %s|%s\n' "$C_BOX" "$C_OFF" "$C_BOX" "$C_OFF"
+  printf '%s|%s                                                             %s|%s\n' "$C_BOX" "$C_OFF" "$C_BOX" "$C_OFF"
+  printf '%s|%s This is likely to be unstable, or contain some incomplete   %s|%s\n' "$C_BOX" "$C_OFF" "$C_BOX" "$C_OFF"
+  printf '%s|%s features, or just plain not work at all. Use it at your own %s|%s\n' "$C_BOX" "$C_OFF" "$C_BOX" "$C_OFF"
+  printf '%s|%s risk. Please help us to fix any bugs you find, by reporting %s|%s\n' "$C_BOX" "$C_OFF" "$C_BOX" "$C_OFF"
+  printf '%s|%s them at: https://github.com/desrod/pilot-link/issues        %s|%s\n' "$C_BOX" "$C_OFF" "$C_BOX" "$C_OFF"
+  printf '%s+--------------------------------------------------------------+%s\n' "$C_BOX" "$C_OFF"
   echo ""
 fi
