@@ -713,7 +713,6 @@ pi_file_retrieve_VFS(const int fd, const char *basename, const int socket, const
 	pi_buffer_t  *buffer;
 	ssize_t      readsize,writesize;
 	int          filesize;
-	int          original_filesize;
 	int          written_so_far;
 	pi_progress_t progress;
 
@@ -762,7 +761,6 @@ pi_file_retrieve_VFS(const int fd, const char *basename, const int socket, const
 	}
 
 	dlp_VFSFileSize(socket,file,&filesize);
-	original_filesize = filesize;
 
 	memset(&progress, 0, sizeof(progress));
 	progress.type = PI_PROGRESS_RECEIVE_VFS;
@@ -1203,7 +1201,6 @@ static int pi_file_install_VFS(const int fd, const char *basename, const int soc
 	            writesize,
 	            offset;
 	size_t      readsize;
-	size_t      written_so_far = 0;
 	enum { no_path=0, appended_filename=1, retried=2, done=3 } path_steps;
 	struct stat sbuf;
 	pi_progress_t progress;
@@ -1343,7 +1340,6 @@ static int pi_file_install_VFS(const int fd, const char *basename, const int soc
 	progress.data.vfs.total_bytes = sbuf.st_size;
 
 	writesize = 0;
-	written_so_far = 0;
 	while (writesize >= 0)
 	{
 		readsize = read(fd,filebuffer,FBUFSIZ);
@@ -1359,7 +1355,6 @@ static int pi_file_install_VFS(const int fd, const char *basename, const int soc
 			}
 			readsize -= writesize;
 			offset += writesize;
-			written_so_far += writesize;
 			progress.transferred_bytes += writesize;
 
 			if ((writesize>0) || (readsize > 0)) {
@@ -2478,7 +2473,7 @@ main(int argc, const char *argv[])
 					fprintf(stderr, "   ERROR: '%s' is not a directory or does not exist.\n"
 							"   Please supply a directory name when performing a "
 							"backup or restore and try again.\n\n", dirname);
-					fprintf(stderr,gracias);
+					fprintf(stderr, "%s", gracias);
 					return 1;
 				}
 			}
@@ -2488,13 +2483,13 @@ main(int argc, const char *argv[])
 			if (rargc > 0)
 			{
 				fprintf(stderr,"   ERROR: Do not pass additional arguments to -busrlLC.\n");
-				fprintf(stderr,gracias);
+				fprintf(stderr, "%s", gracias);
 				return 1;
 			}
 			break;
 		case palm_op_noop:
 			fprintf(stderr,"   ERROR: Must specify one of -bursimfdlC.\n");
-			fprintf(stderr,gracias);
+			fprintf(stderr, "%s", gracias);
 			return 1;
 			break;
 		case palm_op_merge:
