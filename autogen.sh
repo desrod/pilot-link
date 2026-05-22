@@ -16,7 +16,7 @@ DIE=0
   DIE=1
 }
 
-(grep "^AM_PROG_LIBTOOL" $srcdir/configure.ac >/dev/null) && {
+(grep "^AM_PROG_LIBTOOL\|^LT_INIT" $srcdir/configure.ac >/dev/null) && {
   (glibtool --version) < /dev/null > /dev/null 2>&1 || 
   (libtool --version) < /dev/null > /dev/null 2>&1 || {
     echo
