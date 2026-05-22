@@ -41,12 +41,10 @@
 static int
   pi_file_retrieve_VFS(const int fd, const int socket, FileRef file, const char *rpath )
 {
-   int          rpathlen = vfsMAXFILENAME;
-   long         attributes;
+   unsigned long attributes;
    pi_buffer_t  *buffer;
    ssize_t      readsize,writesize;
    int          filesize;
-   int          original_filesize;
    int          written_so_far;
    pi_progress_t progress;
 
@@ -59,8 +57,6 @@ static int
 	  insufficient_space=-5,
 	  internal_=-6
      };
-
-   rpathlen=strlen(rpath);
 
    if (dlp_VFSFileGetAttributes(socket,file,&attributes) < 0)
      {
@@ -78,7 +74,6 @@ static int
      }
 
    dlp_VFSFileSize(socket,file,&filesize);
-   original_filesize = filesize;
 
    memset(&progress, 0, sizeof(progress));
    progress.type = PI_PROGRESS_RECEIVE_VFS;
@@ -226,7 +221,7 @@ static void
 	       }
 	     else
 	       {
-		  if( index = rindex( infos[i].name, '.' ))
+		  if(( index = rindex( infos[i].name, '.' )))
 		    {
 //		       printf( "index: %s %d strlen %d\n", infos[i].name, index, strlen( infos[i].name ) );
 		       if(( index + 4 ) == (infos[i].name + strlen( infos[i].name )))
