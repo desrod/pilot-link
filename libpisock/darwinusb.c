@@ -530,8 +530,14 @@ start_listening(void)
 
 	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: start_listening for connections\n"));
 
-	/* first create a master_port for my task */
+	/* first create a master_port for my task. IOMainPort replaces
+	 * IOMasterPort on macOS 12+; fall back on older systems. */
+#if defined(__MAC_OS_X_VERSION_MIN_REQUIRED) && \
+    __MAC_OS_X_VERSION_MIN_REQUIRED >= 120000
+	kr = IOMainPort (MACH_PORT_NULL, &masterPort);
+#else
 	kr = IOMasterPort (MACH_PORT_NULL, &masterPort);
+#endif
 	if (kr || !masterPort)
 	{
 		LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "darwinusb: couldn't create a master IOKit Port(%08x)\n", kr));
@@ -1157,8 +1163,10 @@ find_interfaces(usb_connection_t *c,
 						    (pass == 2 && port_number != 0xff && number == port_number) ||
 						    (pass == 3 && ((port_number != 0xff && pair_index == port_number) || (port_number == 0xff && (maxPacketSize == 64 || maxPacketSize == 512)))) ||
 						     pass == 4)
+						{
 							c->in_pipe_ref = pipeRef;
 							c->in_pipe_bulk_size = maxPacketSize;
+						}
 					}
 					else if (c->out_pipe_ref == 0 &&
 					         direction == kUSBOut &&
@@ -1243,7 +1251,7 @@ read_visor_connection_information (IOUSBDeviceInterface **dev, int *port_number,
 		kr = kIOReturnNotReady;
 		for (i=0; i < ci.num_ports; i++)
 		{
-			char *function_str;
+			[[maybe_unused]] char *function_str;
 			switch (ci.connections[i].port_function_id)
 			{
 				case VISOR_FUNCTION_GENERIC:
