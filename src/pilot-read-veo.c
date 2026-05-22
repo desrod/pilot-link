@@ -678,13 +678,12 @@ int ColourCorrect (struct Veo *v, uint8_t *red, uint8_t *green, uint8_t *blue, l
  ***********************************************************************/
 int Gen24bitRow (long flags, int r, struct Veo *v, unsigned char *row)
 {
-   int i, rawW, rawH, modR = r % 4;
+   int i, rawW, modR = r % 4;
 
    unsigned char rowA[2560], rowB[2560];
    unsigned char *rAP, *rBP, *rCP;
 
    rawW = v->width / 2;
-   rawH = v->height / 2;
 
    if (r == 0)
 	 {
@@ -917,7 +916,7 @@ void write_ppm (FILE * f, struct Veo *v, long flags)
 
    fprintf (f, "P6\n# ");
 
-   if (v->name != NULL)
+   if (v->name[0] != '\0')
 	 fprintf (f, "%s (created on %s)\n", v->name, fmt_date (v));
 
    fprintf (f, "%d %d\n255\n", v->width, v->height);
@@ -946,7 +945,6 @@ void WritePicture (int sd, int db, int type, char *name, const char *progname, l
    char fname[FILENAME_MAX];
    FILE *f;
    char extension[8];
-   static int len;
    struct Veo v;
    pi_buffer_t *inBuf;
    int attr, category;
@@ -973,8 +971,7 @@ void WritePicture (int sd, int db, int type, char *name, const char *progname, l
 		if (sd)
 		  {
              inBuf = pi_buffer_new (2560);
-			 len =
-			   dlp_ReadRecordByIndex (sd, db, 0, inBuf, 0, &attr, &category);
+			 dlp_ReadRecordByIndex (sd, db, 0, inBuf, 0, &attr, &category);
 			 unpack_Veo (&v, inBuf->data, inBuf->used);
              pi_buffer_free (inBuf);
 			 v.sd = sd;
