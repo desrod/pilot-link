@@ -91,7 +91,7 @@ static const char *fmt_date ( noteDate_t d )
  ***********************************************************************/
 void write_ppm( FILE *f, struct NotePad *n )
 {
-   int i,j,k,datapoints = 0;
+   int i,j,k;
    unsigned long black = 0;
    unsigned long white = 0xFFFFFFFF;
 
@@ -110,8 +110,6 @@ void write_ppm( FILE *f, struct NotePad *n )
    if( n->body.dataType == NOTEPAD_DATA_BITS )
      for( i=0; i<n->body.dataLen/2; i++ )
        {
-	  datapoints += n->data[i].repeat;
-
 	  for( j=0; j<n->data[i].repeat; j++ )
 	    {
 
@@ -482,8 +480,8 @@ int main(int argc, const char *argv[])
 
    for (i = 0;; i++)
      {
-	int 	attr,
-		category,
+	int 	attr = 0,
+		category = 0,
 		len = 0;
 
 	struct 	NotePad n;
