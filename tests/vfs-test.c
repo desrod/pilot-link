@@ -298,7 +298,7 @@ int main (int argc, char **argv)
 					} else if (memcmp (name, fileBuf->data, fileBuf->used)) {
 						LOG((PI_DBG_USER, PI_DBG_LVL_INFO, "* ERROR: File read: read data mismatch\n", fileBuf->used, strlen (name)));
 						pi_dumpdata (name, fileBuf->used);
-						pi_dumpdata (fileBuf->data, fileBuf->used);
+						pi_dumpdata ((const char *)fileBuf->data, fileBuf->used);
 					} else {
 						LOG((PI_DBG_USER, PI_DBG_LVL_INFO, "* File read: successfully read the data back\n"));
 					}
