@@ -239,7 +239,7 @@ int unpack_Contact(struct Contact *c, pi_buffer_t *buf, contactsType type)
          c->anniversaryReminder = get_byte(c->blob[blob_count]->data + 3);
          c->anniversaryReminderDays = get_byte(c->blob[blob_count]->data + 4);
       } else {
-         printf("Found unknown blob type: 0x%x\n", c->blob[blob_count]->type);
+         printf("Found unknown blob type: %.4s\n", c->blob[blob_count]->type);
       }
 
       Pbuf += 6;
