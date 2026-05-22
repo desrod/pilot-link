@@ -252,10 +252,10 @@ int main(int argc, const char *argv[])
 	dlp_WriteUserInfo(sd, &User);
 
 	if (dlp_AddSyncLogEntry(sd, "Successfully wrote Appointment to Palm.\n"
-				"Thank you for using pilot-link.\n") < 0);
+				"Thank you for using pilot-link.\n") < 0)
 		goto error_close;
 
-	if(dlp_EndOfSync(sd, 0) < 0);
+	if (dlp_EndOfSync(sd, 0) < 0)
 		goto error_close;
 
 	if(pi_close(sd) < 0)
