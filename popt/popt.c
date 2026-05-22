@@ -367,7 +367,6 @@ static int execCommand(poptContext con)
     poptItem item = con->doExec;
     const char ** argv;
     int argc = 0;
-    int rc;
 
     if (item == NULL) /*XXX can't happen*/
 	return POPT_ERROR_NOARG;
@@ -443,7 +442,7 @@ if (_popt_debug)
     }
 #endif
 
-    rc = execvp(argv[0], (char *const *)argv);
+    (void)execvp(argv[0], (char *const *)argv);
 
     return POPT_ERROR_ERRNO;
 }
