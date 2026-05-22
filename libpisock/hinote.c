@@ -133,8 +133,8 @@ unpack_HiNoteAppInfo(HiNoteAppInfo_t *appinfo, unsigned char *record, size_t len
 	len -= i;
 	if (len < 48)
 		return 0;
-	for (idx = 0; i < 48; i++)
-		appinfo->reserved[i] = *record++;
+	for (idx = 0; idx < 48; idx++)
+		appinfo->reserved[idx] = *record++;
 	return (record - start);
 }
 
@@ -166,8 +166,8 @@ pack_HiNoteAppInfo(HiNoteAppInfo_t *appinfo, unsigned char *record, size_t len)
 	len -= i;
 	if (len < 48)
 		return (record - start);
-	for (idx = 0; i < 48; i++)
-		*record++ = appinfo->reserved[i];
+	for (idx = 0; idx < 48; idx++)
+		*record++ = appinfo->reserved[idx];
 
 	return (record - start);
 }
