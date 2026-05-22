@@ -744,7 +744,7 @@ int main(int argc, const char *argv[]) {
                        "   tool. The data format of the AddressBook has changed. The legacy format\n"
                        "   is called \"Classic\" and PalmOS 5.x and later uses \"Extended\" databases\n"
                        "   with a different structure. Your Palm has \"Contacts\", and this tool reads\n"
-                       "   the \"AddressBook\" database. (Found OS version: %x)\n\n"
+                       "   the \"AddressBook\" database. (Found OS version: %lx)\n\n"
 
                        "   Due to this change, pilot-addresses and other tools must be rewritten to\n"
                        "   compensate. Sorry about the inconvenience.\n\n", info.romVersion);
