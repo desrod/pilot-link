@@ -24,35 +24,32 @@
 #include <config.h>
 #endif
 
-#include <stdio.h>
-#include "pi-version.h"
 #include "pi-header.h"
+#include "pi-version.h"
+#include <stdio.h>
 
-void print_splash(const char *progname)
-{
-        char 	*patchlevel = "";
+void print_splash(const char *progname) {
+  char *patchlevel = "";
 
-	fprintf(stderr,"   DEPRECATED: The application is calling print_splash()\n");
+  fprintf(stderr, "   DEPRECATED: The application is calling print_splash()\n");
 #ifdef PILOT_LINK_PATCH
-        patchlevel = PILOT_LINK_PATCH;
+  patchlevel = PILOT_LINK_PATCH;
 #endif
-	printf("   .--------------------------------------------.\n"
-	       "   | (c) Copyright 1996-2006, pilot-link team   |\n"
-	       "   |   Join the pilot-link lists to help out.   |\n"
-	       "   `--------------------------------------------'\n"
-	       "   This is %s, from pilot-link version %d.%d.%d%s\n\n"
-	       "   Build target..: %s\n"
-	       "   Build date....: %s %s\n\n", progname,
-		PILOT_LINK_VERSION, PILOT_LINK_MAJOR, PILOT_LINK_MINOR,
-		patchlevel, HOST_OS, __DATE__, __TIME__);
+  printf("   .--------------------------------------------.\n"
+         "   | (c) Copyright 1996-2026, pilot-link team   |\n"
+         "   |   Join the pilot-link lists to help out.   |\n"
+         "   `--------------------------------------------'\n"
+         "   This is %s, from pilot-link version %d.%d.%d%s\n\n"
+         "   Build target..: %s\n"
+         "   Build date....: %s %s\n\n",
+         progname, PILOT_LINK_VERSION, PILOT_LINK_MAJOR, PILOT_LINK_MINOR,
+         patchlevel, HOST_OS, __DATE__, __TIME__);
 
-	printf("   pilot-link %d.%d.%d%s is covered under the GPL/LGPL\n",
-                PILOT_LINK_VERSION, PILOT_LINK_MAJOR, PILOT_LINK_MINOR,
-                patchlevel);
+  printf("   pilot-link %d.%d.%d%s is covered under the GPL/LGPL\n",
+         PILOT_LINK_VERSION, PILOT_LINK_MAJOR, PILOT_LINK_MINOR, patchlevel);
 
-	printf("   See the file COPYING under docs for more info.\n\n"
-	       "   Please use --help for more detailed options.\n");
-
+  printf("   See the file COPYING under docs for more info.\n\n"
+         "   Please use --help for more detailed options.\n");
 }
 
 /* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */
