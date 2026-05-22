@@ -24,11 +24,17 @@
 #include "pi-source.h"
 
 #ifndef SWIG
-/* Print the version splash 	*/
-void print_splash(const char *progname) PI_DEPRECATED;
+/* Print the version splash. (Still emits a deprecation notice at runtime
+ * for callers; the compile-time deprecation was dropped because no
+ * userland-aware replacement exists.)
+ */
+void print_splash(const char *progname);
 
-/* Connect to the Palm device	*/
-int pilot_connect(const char *port) PI_DEPRECATED;
+/* Connect to the Palm device. plu_connect() is the modern alternative
+ * for tools that link against libpiuserland; standalone test programs
+ * still use pilot_connect().
+ */
+int pilot_connect(const char *port);
 #endif
 
 #endif /* _PI_HEADER_H_ */
