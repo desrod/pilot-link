@@ -213,7 +213,7 @@ unpack_AddressAppInfo(AddressAppInfo_t *ai, const unsigned char *record, size_t 
 	size_t 	i,
 		destlen = 4 + 16 * 22 + 2 + 2;
 
-	unsigned char *start = record;
+	const unsigned char *start = record;
 	unsigned long r;
 
 	ai->type = address_v1;
@@ -280,10 +280,10 @@ pack_AddressAppInfo(const AddressAppInfo_t *ai, unsigned char *record, size_t le
 	pos += i;
 	len -= i;
 
-	for (i = 3; i < 8; i++)
-		strcpy(ai->phoneLabels[i - 3], ai->labels[i]);
-	for (i = 19; i < 22; i++)
-		strcpy(ai->phoneLabels[i - 19 + 5], ai->labels[i]);
+	/* Note: phoneLabels are kept in sync with labels[] by
+	 * unpack_AddressAppInfo(); no need to re-sync here, and we
+	 * cannot write through `ai` since it is const-qualified.
+	 */
 
 	memset(pos, 0, destlen);
 
@@ -300,11 +300,6 @@ pack_AddressAppInfo(const AddressAppInfo_t *ai, unsigned char *record, size_t le
 	pos += 2;
 	set_byte(pos, ai->sortByCompany);
 	pos += 2;
-
-	for (i = 3; i < 8; i++)
-		strcpy(ai->phoneLabels[i - 3], ai->labels[i]);
-	for (i = 19; i < 22; i++)
-		strcpy(ai->phoneLabels[i - 19 + 5], ai->labels[i]);
 
 	return (pos - record);
 }
