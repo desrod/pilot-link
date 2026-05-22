@@ -4472,12 +4472,12 @@ int
 dlp_VFSDirEntryEnumerate(int sd, FileRef dirRefNum, 
 	unsigned long *dirIterator, int *maxDirItems, struct VFSDirInfo *data)
 {
-	unsigned int result,
-		entries,
-		from,
-		at,
-		slen,
-		count;
+	int		result;
+	unsigned int	entries,
+			from,
+			at,
+			slen,
+			count;
 	struct dlpRequest *req;
 	struct dlpResponse *res;
 
@@ -4498,13 +4498,8 @@ dlp_VFSDirEntryEnumerate(int sd, FileRef dirRefNum,
 	dlp_request_free (req);
 	
 	if (result > 0) {
-		if (result) {
-			*dirIterator = get_long (DLP_RESPONSE_DATA (res, 0, 0));
-			entries = get_long (DLP_RESPONSE_DATA (res, 0, 4));
-		} else {
-			*dirIterator = vfsIteratorStop;
-			entries = 0;
-		}
+		*dirIterator = get_long (DLP_RESPONSE_DATA (res, 0, 0));
+		entries = get_long (DLP_RESPONSE_DATA (res, 0, 4));
 
 		LOG((PI_DBG_DLP, PI_DBG_LVL_INFO,
 		     "%d results returnd (ilterator: %d)\n", entries,
