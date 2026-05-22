@@ -330,7 +330,7 @@ static int open_db(SyncHandler * sh, int *dbhandle)
 {
 	if (sh->secret)
 		return dlp_OpenDB(sh->sd, 0, dlpOpenReadWrite
-				  && dlpOpenSecret, sh->name, dbhandle);
+				  | dlpOpenSecret, sh->name, dbhandle);
 	else
 		return dlp_OpenDB(sh->sd, 0, dlpOpenReadWrite, sh->name,
 				  dbhandle);
