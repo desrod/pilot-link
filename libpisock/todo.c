@@ -232,7 +232,7 @@ int
 unpack_ToDoAppInfo(ToDoAppInfo_t *appinfo, const unsigned char *record, size_t len)
 {
 	int i;
-	unsigned char *start = record;
+	const unsigned char *start = record;
 
 	appinfo->type = todo_v1;
 
