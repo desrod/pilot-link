@@ -89,7 +89,6 @@ int install_memo(int sd, int db, int category, int add_title, char *filename)
 {
 	struct  stat sbuf;
 	FILE *f = NULL;
-	char *tmp = NULL;
 	char *memo_buf = NULL;
 	int memo_size, preamble;
 
