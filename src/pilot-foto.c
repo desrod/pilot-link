@@ -538,7 +538,7 @@ int install_tux_with_name(int sd, char *name, int width, int height,
 int do_install(int sd, const char **install_files)
 {
     int n, ret, i;
-    const int max_photo_namelen = 30;
+    #define max_photo_namelen 30
     struct pi_file *pf;
     struct DBInfo info;
     FILE *in;
