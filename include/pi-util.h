@@ -26,6 +26,8 @@
 #ifndef _PILOT_UTIL_H_
 #define _PILOT_UTIL_H_
 
+#include <time.h>		/* struct timespec */
+
 #ifdef __cplusplus
 extern "C" {
 #endif
