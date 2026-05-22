@@ -383,7 +383,7 @@ int main(int argc, const char *argv[])
 
 		if ((get_byte(mesg + 2) == 0x01) && (n > 12)) {
 			struct 	in_addr ip, mask;
-			char *name = mesg + 12;
+			char *name = (char *)(mesg + 12);
 
 			memcpy(&ip, mesg + 4, 4);
 			memcpy(&mask, mesg + 8, 4);
@@ -418,7 +418,7 @@ int main(int argc, const char *argv[])
 	      invalid:
 		if (!quiet)
 			fprintf(stdout, "invalid packet of %d bytes:\n", n);
-		pi_dumpdata(mesg, n);
+		pi_dumpdata((const char *)mesg, n);
 	}
 
 	return 0;
