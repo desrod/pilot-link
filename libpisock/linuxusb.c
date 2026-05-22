@@ -27,6 +27,7 @@
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/socket.h>		/* recv() */
 
 #include "pi-debug.h"
 #include "pi-source.h"
@@ -48,8 +49,8 @@
 
 static int u_open(pi_socket_t *ps, struct pi_sockaddr *addr, size_t addrlen);
 static int u_close(pi_socket_t *ps);
-static int u_write(pi_socket_t *ps, unsigned char *buf, size_t len, int flags);
-static int u_read(pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags);
+static ssize_t u_write(pi_socket_t *ps, const unsigned char *buf, size_t len, int flags);
+static ssize_t u_read(pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags);
 static int u_poll(pi_socket_t *ps, int timeout);
 static int u_flush(pi_socket_t *ps, int flags);
 
@@ -188,8 +189,8 @@ u_poll(pi_socket_t *ps, int timeout)
  * Returns:     Nothing
  *
  ***********************************************************************/
-static int
-u_write(pi_socket_t *ps, unsigned char *buf, size_t len, int flags)
+static ssize_t
+u_write(pi_socket_t *ps, const unsigned char *buf, size_t len, int flags)
 {
 	int 	total,
 		nwrote;
@@ -281,7 +282,7 @@ u_read_buf (pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags)
  * Returns:     number of bytes read or negative otherwise
  *
  ***********************************************************************/
-static int
+static ssize_t
 u_read(pi_socket_t *ps, pi_buffer_t *buf, size_t len, int flags)
 {
 	ssize_t rbuf = 0,

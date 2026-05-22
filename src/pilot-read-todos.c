@@ -216,10 +216,12 @@ int main(int argc, const char *argv[])
 				break;
 		}
 		else {
+			size_t reclen;
 			if (pi_file_read_record
-			    (pif, i, (void *) &ptr, &len, &attr, &category,
+			    (pif, i, (void *) &ptr, &reclen, &attr, &category,
 			     0))
 				break;
+			len = (int) reclen;
 
 			pi_buffer_clear(recbuf);
 			pi_buffer_append(recbuf, ptr, len);
