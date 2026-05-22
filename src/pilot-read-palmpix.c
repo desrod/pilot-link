@@ -134,7 +134,7 @@ static int getrecord_pi_socket (struct PalmPixState *vstate, int recno,
 		(struct PalmPixState_pi_socket *) vstate;
 
 	*buf = buffer;
-    fakebuf.data = buffer;
+    fakebuf.data = (unsigned char *)buffer;
     fakebuf.allocated = 0;
     fakebuf.used = 0;
 
