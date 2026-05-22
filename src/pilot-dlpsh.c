@@ -378,7 +378,6 @@ int rm_fn(int sd, int argc, const char *argv[])
  ***********************************************************************/
 int time_fn(int sd, int argc, const char *argv[])
 {
-	int 	s;
 	time_t 	ltime;
 	struct 	tm *tm_ptr;
 	struct	timeval tv;
@@ -389,11 +388,11 @@ int time_fn(int sd, int argc, const char *argv[])
 
 	strftime(timebuf, 80, "Now setting Palm time from desktop to: "
 			      "%a %b %d %H:%M:%S %Z %Y\n", tm_ptr);
-	printf(timebuf);
+	printf("%s", timebuf);
 	gettimeofday(&tv, 0);
 	ltime = tv.tv_sec + 1;
 	usleep(1000000 - tv.tv_usec);
-	s = dlp_SetSysDateTime(sd, ltime);
+	dlp_SetSysDateTime(sd, ltime);
 
 	return 0;
 }
