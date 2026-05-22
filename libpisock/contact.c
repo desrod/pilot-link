@@ -211,8 +211,13 @@ int unpack_Contact(struct Contact *c, pi_buffer_t *buf, contactsType type)
          return (Pbuf - record);
       }
       c->blob[blob_count] = malloc(sizeof(Blob_t));
-      strncpy(c->blob[blob_count]->type, (char *)Pbuf, 4);
+      memcpy(c->blob[blob_count]->type, (char *)Pbuf, 4);
       c->blob[blob_count]->length = get_short(Pbuf+4);
+      if (c->blob[blob_count]->length > (len - 6)) {
+         free(c->blob[blob_count]);
+         c->blob[blob_count] = NULL;
+         return (Pbuf - record);
+      }
       c->blob[blob_count]->data = malloc(c->blob[blob_count]->length);
       if (c->blob[blob_count]->data) {
          memcpy(c->blob[blob_count]->data, Pbuf+6, c->blob[blob_count]->length);
@@ -426,9 +431,9 @@ int Contact_add_blob(struct Contact *c, Blob_t *blob)
       if (!c->blob[i]) return EXIT_FAILURE;
 
       c->blob[i]->data = malloc(blob->length);
-      strncpy(c->blob[i]->type, blob->type, 4);
+      memcpy(c->blob[i]->type, blob->type, 4);
       c->blob[i]->length = blob->length;
-      strncpy((char *)c->blob[i]->data, (char *)blob->data, blob->length);
+      memcpy(c->blob[i]->data, blob->data, blob->length);
       return EXIT_SUCCESS;
    }
 
@@ -466,7 +471,7 @@ int Contact_add_picture(struct Contact *c, struct ContactPicture *p)
       if (!c->blob[i]) return EXIT_FAILURE;
 
       c->blob[i]->data = malloc(p->length + 2);
-      strncpy(c->blob[i]->type, BLOB_TYPE_PICTURE_ID, 4);
+      memcpy(c->blob[i]->type, BLOB_TYPE_PICTURE_ID, 4);
       c->blob[i]->length = p->length + 2;
       set_short(c->blob[i]->data, p->dirty);
       memcpy(c->blob[i]->data + 2, p->data, p->length);
@@ -532,23 +537,23 @@ int unpack_ContactAppInfo(struct ContactAppInfo *ai, pi_buffer_t *buf)
 
    /* These are the fields that go in drop down menus */
    for (i = 4, j = 0; i < 11; i++, j++) {
-      strcpy(ai->phoneLabels[j], ai->labels[i]);
+      memcpy(ai->phoneLabels[j], ai->labels[i], 16);
    }
-   strcpy(ai->phoneLabels[j], ai->labels[40]);
+   memcpy(ai->phoneLabels[j], ai->labels[40], 16);
 
    for (i = 0; i < ai->numCustoms; i++) {
-      strcpy(ai->customLabels[i], ai->labels[14 + i]);
+      memcpy(ai->customLabels[i], ai->labels[14 + i], 16);
    }
 
-   strcpy(ai->addrLabels[0], ai->labels[23]);
-   strcpy(ai->addrLabels[1], ai->labels[28]);
-   strcpy(ai->addrLabels[2], ai->labels[33]);
+   memcpy(ai->addrLabels[0], ai->labels[23], 16);
+   memcpy(ai->addrLabels[1], ai->labels[28], 16);
+   memcpy(ai->addrLabels[2], ai->labels[33], 16);
 
-   strcpy(ai->IMLabels[0], ai->labels[41]);
-   strcpy(ai->IMLabels[1], ai->labels[42]);
-   strcpy(ai->IMLabels[2], ai->labels[43]);
-   strcpy(ai->IMLabels[3], ai->labels[44]);
-   strcpy(ai->IMLabels[4], ai->labels[45]);
+   memcpy(ai->IMLabels[0], ai->labels[41], 16);
+   memcpy(ai->IMLabels[1], ai->labels[42], 16);
+   memcpy(ai->IMLabels[2], ai->labels[43], 16);
+   memcpy(ai->IMLabels[3], ai->labels[44], 16);
+   memcpy(ai->IMLabels[4], ai->labels[45], 16);
 
    return (Pbuf - start);
 }
