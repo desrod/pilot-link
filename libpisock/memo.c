@@ -122,7 +122,7 @@ unpack_MemoAppInfo(struct MemoAppInfo *appinfo, const unsigned char *record,
 			 size_t len)
 {
 	int 	i = unpack_CategoryAppInfo(&appinfo->category, record, len);
-	unsigned char *start = record;
+	const unsigned char *start = record;
 
 	appinfo->type = memo_v1;
 
