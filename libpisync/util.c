@@ -120,7 +120,7 @@ convert_ToPilotChar_WithCharset(const char *charset, const char *text,
 	obl 	= bytes * 4 + 1;
 	*ptext 	= ob = malloc(obl);
 	
-	if (iconv(cd, &text, &ibl, &ob, &obl) == (size_t)-1)
+	if (iconv(cd, (char **)&text, &ibl, &ob, &obl) == (size_t)-1)
 		return -1;
 	*ob = '\0';
 
@@ -211,7 +211,7 @@ convert_FromPilotChar_WithCharset(const char *charset, const char *ptext,
 	obl 	= bytes * 4 + 1;
 	*text 	= ob = malloc(obl);
 	
-	if (iconv(cd, &ptext, &ibl, &ob, &obl) == (size_t)-1)
+	if (iconv(cd, (char **)&ptext, &ibl, &ob, &obl) == (size_t)-1)
 		return -1;
 	*ob = '\0';
 
