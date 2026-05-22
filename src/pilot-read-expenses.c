@@ -116,8 +116,8 @@ int main(int argc, const char *argv[])
 	}
 
 	if (ret >= 0) {
-		unpack_ExpensePref(&tp, buffer, 0xffff);
-		i = pack_ExpensePref(&tp, buffer2, 0xffff);
+		unpack_ExpensePref(&tp, (unsigned char *)buffer, 0xffff);
+		i = pack_ExpensePref(&tp, (unsigned char *)buffer2, 0xffff);
 
 #ifdef DEBUG
 		fprintf(stderr, "Orig prefs, %d bytes:\n", ret);
@@ -184,7 +184,7 @@ int main(int argc, const char *argv[])
 			continue;
 
 		unpack_Expense(&t, recbuf->data, recbuf->used);
-		ret = pack_Expense(&t, buffer2, 0xffff);
+		ret = pack_Expense(&t, (unsigned char *)buffer2, 0xffff);
 #ifdef DEBUG
 		fprintf(stderr, "Orig length %d, data:\n", len);
 		pi_dumpdata(buffer, len);
