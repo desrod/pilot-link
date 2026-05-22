@@ -1291,6 +1291,14 @@ decode_generic_connection_information(palm_ext_connection_info *ci, int *port_nu
 	CHECK(PI_DBG_DEV, PI_DBG_LVL_DEBUG, pi_dumpdata((const char *)ci, sizeof(palm_ext_connection_info)));
 	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "darwinusb: decode_generic_connection_information num_ports=%d, endpoint_numbers_different=%d\n", ci->num_ports, ci->endpoint_numbers_different));
 
+	/* Devices that don't actually implement PALM_GET_EXT_CONNECTION_INFORMATION
+	 * (e.g. Handspring Treo 90) can leave num_ports holding whatever was in
+	 * the buffer; clamp it to the size of the connections[] array to avoid
+	 * walking off the end of the struct.
+	 */
+	if (ci->num_ports > (sizeof(ci->connections) / sizeof(ci->connections[0])))
+		ci->num_ports = sizeof(ci->connections) / sizeof(ci->connections[0]);
+
 	for (i=0; i < ci->num_ports; i++)
 	{
 		UInt32 port_function_id = CFSwapInt32LittleToHost(ci->connections[i].port_function_id);
