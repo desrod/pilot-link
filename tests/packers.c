@@ -104,7 +104,7 @@ int test_memo()
    if (l != sizeof(MemoAppBlock)) {
       errors++;
       printf
-	  ("1: unpack_MemoAppInfo returned incorrect length (got %d, expected %d)\n",
+	  ("1: unpack_MemoAppInfo returned incorrect length (got %d, expected %zu)\n",
 	   l, sizeof(MemoAppBlock));
    }
 
@@ -113,7 +113,7 @@ int test_memo()
    if (l != sizeof(MemoAppBlock)) {
       errors++;
       printf
-	  ("2: unpack_MemoAppInfo returned incorrect length (got %d, expected %d)\n",
+	  ("2: unpack_MemoAppInfo returned incorrect length (got %d, expected %zu)\n",
 	   l, sizeof(MemoAppBlock));
    }
 
@@ -142,7 +142,7 @@ int test_memo()
    if (l != sizeof(MemoAppBlock)) {
       errors++;
       printf
-	  ("5: unpack_MemoAppInfo returned incorrect length (got %d, expected %d)\n",
+	  ("5: unpack_MemoAppInfo returned incorrect length (got %d, expected %zu)\n",
 	   l, sizeof(MemoAppBlock));
    }
 
@@ -206,7 +206,7 @@ int test_memo()
    if (l != sizeof(MemoAppBlock)) {
       errors++;
       printf
-	  ("7: pack_MemoAppInfo returned incorrect allocation length (got %d, expected %d)\n",
+	  ("7: pack_MemoAppInfo returned incorrect allocation length (got %d, expected %zu)\n",
 	   l, sizeof(MemoAppBlock));
    }
 
@@ -231,7 +231,7 @@ int test_memo()
    if (l != sizeof(MemoAppBlock)) {
       errors++;
       printf
-	  ("10: pack_MemoAppInfo returned incorrect length (got %d, expected %d)\n",
+	  ("10: pack_MemoAppInfo returned incorrect length (got %d, expected %zu)\n",
 	   l, sizeof(MemoAppBlock));
    }
 
@@ -272,7 +272,7 @@ int test_memo()
    if (RecordBuffer->used != sizeof(MemoRecord)) {
       errors++;
       printf
-	  ("15: pack_MemoRecord returned incorrect allocation length (got %d, expected %d)\n",
+	  ("15: pack_MemoRecord returned incorrect allocation length (got %zu, expected %zu)\n",
 	   RecordBuffer->used, sizeof(MemoRecord));
    }
 
@@ -353,7 +353,7 @@ int test_address()
    if (l != sizeof(AddressAppBlock)) {
       errors++;
       printf
-	  ("1: unpack_AddressAppInfo returned incorrect length (got %d, expected %d)\n",
+	  ("1: unpack_AddressAppInfo returned incorrect length (got %d, expected %zu)\n",
 	   l, sizeof(AddressAppBlock));
    }
 
@@ -364,7 +364,7 @@ int test_address()
    if (l != sizeof(AddressAppBlock)) {
       errors++;
       printf
-	  ("2: unpack_AddressAppInfo returned incorrect length (got %d, expected %d)\n",
+	  ("2: unpack_AddressAppInfo returned incorrect length (got %d, expected %zu)\n",
 	   l, sizeof(AddressAppBlock));
    }
 
@@ -397,7 +397,7 @@ int test_address()
    if (l != sizeof(AddressAppBlock)) {
       errors++;
       printf
-	  ("5: unpack_AddressAppInfo returned incorrect length (got %d, expected %d)\n",
+	  ("5: unpack_AddressAppInfo returned incorrect length (got %d, expected %zu)\n",
 	   l, sizeof(AddressAppBlock));
    }
 
@@ -459,7 +459,7 @@ int test_address()
    if (l != sizeof(AddressAppBlock)) {
       errors++;
       printf
-	  ("7: pack_AddressAppInfo returned incorrect allocation length (got %d, expected %d)\n",
+	  ("7: pack_AddressAppInfo returned incorrect allocation length (got %d, expected %zu)\n",
 	   l, sizeof(AddressAppBlock));
    }
 
@@ -485,7 +485,7 @@ int test_address()
    if (l != sizeof(AddressAppBlock)) {
       errors++;
       printf
-	  ("10: pack_AddressAppInfo returned incorrect length (got %d, expected %d)\n",
+	  ("10: pack_AddressAppInfo returned incorrect length (got %d, expected %zu)\n",
 	   l, sizeof(AddressAppBlock));
    }
 
@@ -535,7 +535,7 @@ int test_address()
    if (RecordBuffer->used != sizeof(AddressRecord)) {
       errors++;
       printf
-	  ("15: pack_Address returned incorrect length (got %d, expected %d)\n",
+	  ("15: pack_Address returned incorrect length (got %zu, expected %zu)\n",
 	   RecordBuffer->used, sizeof(AddressRecord));
    }
 
@@ -599,7 +599,7 @@ int test_appointment()
    if (l != sizeof(AppointmentAppBlock)) {
       errors++;
       printf
-	  ("1: unpack_AppointmentAppInfo returned incorrect length (got %d, expected %d)\n",
+	  ("1: unpack_AppointmentAppInfo returned incorrect length (got %d, expected %zu)\n",
 	   l, sizeof(AppointmentAppBlock));
    }
 
@@ -610,7 +610,7 @@ int test_appointment()
    if (l != sizeof(AppointmentAppBlock)) {
       errors++;
       printf
-	  ("2: unpack_AppointmentAppInfo returned incorrect length (got %d, expected %d)\n",
+	  ("2: unpack_AppointmentAppInfo returned incorrect length (got %d, expected %zu)\n",
 	   l, sizeof(AppointmentAppBlock));
    }
 
@@ -643,7 +643,7 @@ int test_appointment()
    if (l != sizeof(AppointmentAppBlock)) {
       errors++;
       printf
-	  ("5: unpack_AppointmentAppInfo returned incorrect length (got %d, expected %d)\n",
+	  ("5: unpack_AppointmentAppInfo returned incorrect length (got %d, expected %zu)\n",
 	   l, sizeof(AppointmentAppBlock));
    }
 
@@ -708,7 +708,7 @@ int test_appointment()
    if (l != sizeof(AppointmentAppBlock)) {
       errors++;
       printf
-	  ("7: pack_AppointmentAppInfo returned incorrect allocation length (got %d, expected %d)\n",
+	  ("7: pack_AppointmentAppInfo returned incorrect allocation length (got %d, expected %zu)\n",
 	   l, sizeof(AppointmentAppBlock));
    }
 
@@ -734,7 +734,7 @@ int test_appointment()
    if (l != sizeof(AppointmentAppBlock)) {
       errors++;
       printf
-	  ("10: pack_AppointmentAppInfo returned incorrect length (got %d, expected %d)\n",
+	  ("10: pack_AppointmentAppInfo returned incorrect length (got %d, expected %zu)\n",
 	   l, sizeof(AppointmentAppBlock));
    }
 
@@ -786,7 +786,7 @@ int test_appointment()
    if (RecordBuffer->used != sizeof(AppointmentRecord)) {
       errors++;
       printf
-	  ("15: pack_Appointment returned incorrect length (got %d, expected %d)\n",
+	  ("15: pack_Appointment returned incorrect length (got %zu, expected %zu)\n",
 	   RecordBuffer->used, sizeof(AppointmentRecord));
    }
 
@@ -842,7 +842,7 @@ int test_todo()
    if (l != sizeof(ToDoAppBlock)) {
       errors++;
       printf
-	  ("1: unpack_ToDoAppInfo returned incorrect length (got %d, expected %d)\n",
+	  ("1: unpack_ToDoAppInfo returned incorrect length (got %d, expected %zu)\n",
 	   l, sizeof(ToDoAppBlock));
    }
 
@@ -851,7 +851,7 @@ int test_todo()
    if (l != sizeof(ToDoAppBlock)) {
       errors++;
       printf
-	  ("2: unpack_ToDoAppInfo returned incorrect length (got %d, expected %d)\n",
+	  ("2: unpack_ToDoAppInfo returned incorrect length (got %d, expected %zu)\n",
 	   l, sizeof(ToDoAppBlock));
    }
 
@@ -878,7 +878,7 @@ int test_todo()
    if (l != sizeof(ToDoAppBlock)) {
       errors++;
       printf
-	  ("5: unpack_ToDoAppInfo returned incorrect length (got %d, expected %d)\n",
+	  ("5: unpack_ToDoAppInfo returned incorrect length (got %d, expected %zu)\n",
 	   l, sizeof(ToDoAppBlock));
    }
 
@@ -942,7 +942,7 @@ int test_todo()
    if (l != sizeof(ToDoAppBlock)) {
       errors++;
       printf
-	  ("7: pack_ToDoAppInfo returned incorrect allocation length (got %d, expected %d)\n",
+	  ("7: pack_ToDoAppInfo returned incorrect allocation length (got %d, expected %zu)\n",
 	   l, sizeof(ToDoAppBlock));
    }
 
@@ -967,7 +967,7 @@ int test_todo()
    if (l != sizeof(ToDoAppBlock)) {
       errors++;
       printf
-	  ("10: pack_ToDoAppInfo returned incorrect length (got %d, expected %d)\n",
+	  ("10: pack_ToDoAppInfo returned incorrect length (got %d, expected %zu)\n",
 	   l, sizeof(ToDoAppBlock));
    }
 
@@ -1021,8 +1021,8 @@ int test_todo()
    if (RecordBuffer->used != sizeof(ToDoRecord)) {
       errors++;
       printf
-	  ("15: pack_ToDo returned incorrect length (got %d, expected %d)\n",
-	   l, sizeof(ToDoRecord));
+	  ("15: pack_ToDo returned incorrect length (got %zu, expected %zu)\n",
+	   RecordBuffer->used, sizeof(ToDoRecord));
    }
 
    if (memcmp(RecordBuffer->data, ToDoRecord, sizeof(ToDoRecord))) {
@@ -1087,7 +1087,7 @@ int test_expense()
    if (l != sizeof(ExpenseAppBlock)) {
       errors++;
       printf
-	  ("1: unpack_ExpenseAppInfo returned incorrect length (got %d, expected %d)\n",
+	  ("1: unpack_ExpenseAppInfo returned incorrect length (got %d, expected %zu)\n",
 	   l, sizeof(ExpenseAppBlock));
    }
 
@@ -1098,7 +1098,7 @@ int test_expense()
    if (l != sizeof(ExpenseAppBlock)) {
       errors++;
       printf
-	  ("2: unpack_ExpenseAppInfo returned incorrect length (got %d, expected %d)\n",
+	  ("2: unpack_ExpenseAppInfo returned incorrect length (got %d, expected %zu)\n",
 	   l, sizeof(ExpenseAppBlock));
    }
 
@@ -1116,7 +1116,7 @@ int test_expense()
    if (l != sizeof(ExpenseAppBlock)) {
       errors++;
       printf
-	  ("3: unpack_ExpenseAppInfo returned incorrect length (got %d, expected %d)\n",
+	  ("3: unpack_ExpenseAppInfo returned incorrect length (got %d, expected %zu)\n",
 	   l, sizeof(ExpenseAppBlock));
    }
 
@@ -1181,7 +1181,7 @@ int test_expense()
    if (l != sizeof(ExpenseAppBlock)) {
       errors++;
       printf
-	  ("5: pack_ExpenseAppInfo returned incorrect allocation length (got %d, expected %d)\n",
+	  ("5: pack_ExpenseAppInfo returned incorrect allocation length (got %d, expected %zu)\n",
 	   l, sizeof(ExpenseAppBlock));
    }
 
@@ -1207,7 +1207,7 @@ int test_expense()
    if (l != sizeof(ExpenseAppBlock)) {
       errors++;
       printf
-	  ("8: pack_ExpenseAppInfo returned incorrect length (got %d, expected %d)\n",
+	  ("8: pack_ExpenseAppInfo returned incorrect length (got %d, expected %zu)\n",
 	   l, sizeof(ExpenseAppBlock));
    }
 
@@ -1230,7 +1230,7 @@ int test_expense()
    if (l != sizeof(ExpenseRecord)) {
       errors++;
       printf
-	  ("11: unpack_Expense returned incorrect length (got %d, expected %d)\n",
+	  ("11: unpack_Expense returned incorrect length (got %d, expected %zu)\n",
 	   l, sizeof(ExpenseRecord));
    }
 
@@ -1257,7 +1257,7 @@ int test_expense()
    if (l != sizeof(ExpenseRecord)) {
       errors++;
       printf
-	  ("13: pack_Expense returned incorrect allocation length (got %d, expected %d)\n",
+	  ("13: pack_Expense returned incorrect allocation length (got %d, expected %zu)\n",
 	   l, sizeof(ExpenseRecord));
    }
 
@@ -1282,7 +1282,7 @@ int test_expense()
    if (l != sizeof(ExpenseRecord)) {
       errors++;
       printf
-	  ("16: pack_Expense returned incorrect length (got %d, expected %d)\n",
+	  ("16: pack_Expense returned incorrect length (got %d, expected %zu)\n",
 	   l, sizeof(ExpenseRecord));
    }
 
@@ -1348,7 +1348,7 @@ int test_mail()
    if (l != sizeof(MailAppBlock)) {
       errors++;
       printf
-	  ("1: unpack_MailAppInfo returned incorrect length (got %d, expected %d)\n",
+	  ("1: unpack_MailAppInfo returned incorrect length (got %d, expected %zu)\n",
 	   l, sizeof(MailAppBlock));
    }
 
@@ -1357,7 +1357,7 @@ int test_mail()
    if (l != sizeof(MailAppBlock)) {
       errors++;
       printf
-	  ("2: unpack_MailAppInfo returned incorrect length (got %d, expected %d)\n",
+	  ("2: unpack_MailAppInfo returned incorrect length (got %d, expected %zu)\n",
 	   l, sizeof(MailAppBlock));
    }
 
@@ -1373,7 +1373,7 @@ int test_mail()
    if (l != sizeof(MailAppBlock)) {
       errors++;
       printf
-	  ("3: unpack_MailAppInfo returned incorrect length (got %d, expected %d)\n",
+	  ("3: unpack_MailAppInfo returned incorrect length (got %d, expected %zu)\n",
 	   l, sizeof(MailAppBlock));
    }
 
@@ -1438,7 +1438,7 @@ int test_mail()
    if (l != sizeof(MailAppBlock)) {
       errors++;
       printf
-	  ("5: pack_MailAppInfo returned incorrect allocation length (got %d, expected %d)\n",
+	  ("5: pack_MailAppInfo returned incorrect allocation length (got %d, expected %zu)\n",
 	   l, sizeof(MailAppBlock));
    }
 
@@ -1463,7 +1463,7 @@ int test_mail()
    if (l != sizeof(MailAppBlock)) {
       errors++;
       printf
-	  ("8: pack_MailAppInfo returned incorrect length (got %d, expected %d)\n",
+	  ("8: pack_MailAppInfo returned incorrect length (got %d, expected %zu)\n",
 	   l, sizeof(MailAppBlock));
    }
 
@@ -1486,7 +1486,7 @@ int test_mail()
    if (l != sizeof(MailRecord)) {
       errors++;
       printf
-	  ("11: unpack_Mail returned incorrect length (got %d, expected %d)\n",
+	  ("11: unpack_Mail returned incorrect length (got %d, expected %zu)\n",
 	   l, sizeof(MailRecord));
    }
 
@@ -1513,7 +1513,7 @@ int test_mail()
    if (l != sizeof(MailRecord)) {
       errors++;
       printf
-	  ("13: pack_Mail returned incorrect allocation length (got %d, expected %d)\n",
+	  ("13: pack_Mail returned incorrect allocation length (got %d, expected %zu)\n",
 	   l, sizeof(MailRecord));
    }
 
@@ -1537,7 +1537,7 @@ int test_mail()
    if (l != sizeof(MailRecord)) {
       errors++;
       printf
-	  ("16: pack_Mail returned incorrect length (got %d, expected %d)\n",
+	  ("16: pack_Mail returned incorrect length (got %d, expected %zu)\n",
 	   l, sizeof(MailRecord));
    }
 
@@ -1561,7 +1561,7 @@ int test_mail()
    if (l != sizeof(MailSyncPreference)) {
       errors++;
       printf
-	  ("19: unpack_MailSyncPref returned incorrect length (got %d, expected %d)\n",
+	  ("19: unpack_MailSyncPref returned incorrect length (got %d, expected %zu)\n",
 	   l, sizeof(MailSyncPreference));
    }
 
@@ -1572,7 +1572,7 @@ int test_mail()
    if (l != sizeof(MailSyncPreference)) {
       errors++;
       printf
-	  ("20: unpack_MailSyncPref returned incorrect length (got %d, expected %d)\n",
+	  ("20: unpack_MailSyncPref returned incorrect length (got %d, expected %zu)\n",
 	   l, sizeof(MailSyncPreference));
    }
 
@@ -1583,7 +1583,7 @@ int test_mail()
    if (l != sizeof(MailSyncPreference)) {
       errors++;
       printf
-	  ("21: unpack_MailSyncPref returned incorrect length (got %d, expected %d)\n",
+	  ("21: unpack_MailSyncPref returned incorrect length (got %d, expected %zu)\n",
 	   l, sizeof(MailSyncPreference));
    }
 
@@ -1610,7 +1610,7 @@ int test_mail()
    if (l != sizeof(MailSyncPreference)) {
       errors++;
       printf
-	  ("23: pack_MailSyncPref returned incorrect allocation length (got %d, expected %d)\n",
+	  ("23: pack_MailSyncPref returned incorrect allocation length (got %d, expected %zu)\n",
 	   l, sizeof(MailSyncPreference));
    }
 
@@ -1636,7 +1636,7 @@ int test_mail()
    if (l != sizeof(MailSyncPreference)) {
       errors++;
       printf
-	  ("26: pack_MailSyncPref returned incorrect length (got %d, expected %d)\n",
+	  ("26: pack_MailSyncPref returned incorrect length (got %d, expected %zu)\n",
 	   l, sizeof(MailSyncPreference));
    }
 
@@ -1662,7 +1662,7 @@ int test_mail()
    if (l != sizeof(MailSigPreference)) {
       errors++;
       printf
-	  ("29: unpack_MailSigPref returned incorrect length (got %d, expected %d)\n",
+	  ("29: unpack_MailSigPref returned incorrect length (got %d, expected %zu)\n",
 	   l, sizeof(MailSyncPreference));
    }
 
@@ -1673,7 +1673,7 @@ int test_mail()
    if (l != sizeof(MailSigPreference)) {
       errors++;
       printf
-	  ("30: unpack_MailSigPref returned incorrect length (got %d, expected %d)\n",
+	  ("30: unpack_MailSigPref returned incorrect length (got %d, expected %zu)\n",
 	   l, sizeof(MailSyncPreference));
    }
 
@@ -1684,7 +1684,7 @@ int test_mail()
    if (l != sizeof(MailSigPreference)) {
       errors++;
       printf
-	  ("31: unpack_MailSigPref returned incorrect length (got %d, expected %d)\n",
+	  ("31: unpack_MailSigPref returned incorrect length (got %d, expected %zu)\n",
 	   l, sizeof(MailSyncPreference));
    }
 
@@ -1711,7 +1711,7 @@ int test_mail()
    if (l != sizeof(MailSigPreference)) {
       errors++;
       printf
-	  ("33: pack_MailSignaturePref returned incorrect allocation length (got %d, expected %d)\n",
+	  ("33: pack_MailSignaturePref returned incorrect allocation length (got %d, expected %zu)\n",
 	   l, sizeof(MailSigPreference));
    }
 
@@ -1737,7 +1737,7 @@ int test_mail()
    if (l != sizeof(MailSigPreference)) {
       errors++;
       printf
-	  ("36: pack_MailSignaturePref returned incorrect length (got %d, expected %d)\n",
+	  ("36: pack_MailSignaturePref returned incorrect length (got %d, expected %zu)\n",
 	   l, sizeof(MailSigPreference));
    }
 

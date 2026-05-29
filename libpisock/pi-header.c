@@ -29,7 +29,7 @@
 #include <stdio.h>
 
 void print_splash(const char *progname) {
-  char *patchlevel = "";
+  const char *patchlevel = "";
 
   fprintf(stderr, "   DEPRECATED: The application is calling print_splash()\n");
 #ifdef PILOT_LINK_PATCH
@@ -41,9 +41,9 @@ void print_splash(const char *progname) {
          "   `--------------------------------------------'\n"
          "   This is %s, from pilot-link version %d.%d.%d%s\n\n"
          "   Build target..: %s\n"
-         "   Build date....: %s %s\n\n",
+         "   Build date....: unavailable\n\n",
          progname, PILOT_LINK_VERSION, PILOT_LINK_MAJOR, PILOT_LINK_MINOR,
-         patchlevel, HOST_OS, __DATE__, __TIME__);
+         patchlevel, HOST_OS);
 
   printf("   pilot-link %d.%d.%d%s is covered under the GPL/LGPL\n",
          PILOT_LINK_VERSION, PILOT_LINK_MAJOR, PILOT_LINK_MINOR, patchlevel);

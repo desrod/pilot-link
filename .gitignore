@@ -38,3 +38,7 @@ test-driver
 ylwrap
 # A popular IDE
 *.code-workspace
+*/*.o
+*/*.lo
+*/*.a
+*/*.la
