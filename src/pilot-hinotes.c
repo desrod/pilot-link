@@ -51,13 +51,11 @@ void write_memo_mbox(struct PilotUser User, struct HiNoteNote m,
 
 	time_t 	ltime;
 	struct 	tm *tm_ptr;
-	char 	c,
-		fromtmbuf[80],
+	char 	fromtmbuf[80],
 		recvtmbuf[80];
 
 	time(&ltime);
 	tm_ptr 	= localtime(&ltime);
-	c 	= *asctime(tm_ptr);
 
 	strftime(fromtmbuf, 80, "%a, %d %b %H:%M:%S %Y (%Z)\n", tm_ptr);
 	strftime(recvtmbuf, 80, "%d %b %H:%M:%S %Y\n", tm_ptr);

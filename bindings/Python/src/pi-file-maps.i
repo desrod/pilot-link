@@ -41,15 +41,9 @@ static PyObject *_wrap_pi_file_install (PyObject *self, PyObject *args)
 	char *path = NULL;
 	pi_file_t *pf = NULL;
 
-	if (!PyArg_ParseTuple(args,(char *)"OOOO:pi_file_install",&obj1, &obj2, &obj3, &cback))
+	if (!PyArg_ParseTuple(args,(char *)"iisO:pi_file_install",&sd, &cardno, &path, &cback))
 		return NULL;
-
-	sd = (int)SWIG_As_int(obj1);
-	cardno = (int)SWIG_As_int(obj2);
-	if (!SWIG_AsCharPtr(obj3, (char**)&path)) {
-		SWIG_arg_fail(3);
-		return NULL;
-	}
+	(void)obj1; (void)obj2; (void)obj3;
 
 	pf = pi_file_open(path);
 	if (pf == NULL) {
@@ -91,21 +85,9 @@ static PyObject *_wrap_pi_file_retrieve (PyObject *self, PyObject *args)
 	pi_file_t *pf = NULL;
 	PyThreadState *save;
 
-	if (!PyArg_ParseTuple(args, (char *)"OOOOO:pi_file_retrieve",&obj1,&obj2,&obj3,&obj4,&cback))
+	if (!PyArg_ParseTuple(args, (char *)"iissO:pi_file_retrieve",&sd, &cardno, &dbname, &path, &cback))
 		return NULL;
-
-	sd = SWIG_As_int(obj1);
-	cardno = SWIG_As_int(obj2);
-
-	if (!SWIG_AsCharPtr(obj3, (char**)&dbname)) {
-		SWIG_arg_fail(3);
-		return NULL;
-	}
-
-	if (!SWIG_AsCharPtr(obj4, (char **)&path)) {
-		SWIG_arg_fail(4);
-		return NULL;
-	}
+	(void)obj1; (void)obj2; (void)obj3; (void)obj4;
 
 	/* let other threads run */
  	save = PyEval_SaveThread();

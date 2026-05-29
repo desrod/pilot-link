@@ -39,10 +39,10 @@
 	}
 }
 
-%typemap (python,argout) (pi_buffer_t *) {
+%typemap (argout) (pi_buffer_t *) {
 	if ($1) {
 		PyObject *o1 = Py_BuildValue("s#", $1->data, $1->used);
-		$result = t_output_helper($result, o1);
+		$result = SWIG_Python_AppendOutput($result, o1, 0);
 	}
 }
 
@@ -58,42 +58,42 @@
     $1 = &temp;
 %}
 
-%typemap (python,argout) struct DBInfo *OUTPUT %{
-    if ($1) $result = t_output_helper($result, PyObjectFromDBInfo($1));
+%typemap (argout) struct DBInfo *OUTPUT %{
+    if ($1) $result = SWIG_Python_AppendOutput($result, PyObjectFromDBInfo($1), 0);
 %}
 
 // ------------------------------------------------------------------
 // Type/creator strings
 // a generic 4-character string type, for use as a type or creator ID
 // ------------------------------------------------------------------
-%typemap (python,in) unsigned long STR4 {
+%typemap (in) unsigned long STR4 {
 	if (!($input) || ($input == Py_None)) {
 		$1 = 0;
 	} else {
-		if (!PyString_Check($input) || (PyString_Size($input) != 4)) {
+		if (!PyBytes_Check($input) || (PyBytes_Size($input) != 4)) {
 			PyErr_SetString(PyExc_ValueError, "argument must be a 4-character string");
 			return 0;
 		}
-		$1 = makelong(PyString_AsString($input));
+		$1 = makelong(PyBytes_AsString($input));
 	}
 }
 
-%typemap (python,in) long STR4 {
+%typemap (in) long STR4 {
 	if (!($input) || ($input == Py_None)) {
 		$1 = 0;
 	} else {
-		if (!PyString_Check($input) || (PyString_Size($input) != 4)) {
+		if (!PyBytes_Check($input) || (PyBytes_Size($input) != 4)) {
 			PyErr_SetString(PyExc_ValueError, "argument must be a 4-character string");
 			return 0;
 		}
-		$1 = makelong(PyString_AsString($input));
+		$1 = makelong(PyBytes_AsString($input));
 	}
 }
 
-%typemap (python,argout) unsigned long *OUTSTR4 {
+%typemap (argout) unsigned long *OUTSTR4 {
 	if ($1) {
-		PyObject *o = PyString_FromStringAndSize(printlong(*$1), 4);
-		$result = t_output_helper($result, o);
+		PyObject *o = PyBytes_FromStringAndSize(printlong(*$1), 4);
+		$result = SWIG_Python_AppendOutput($result, o, 0);
 	}
 }
 

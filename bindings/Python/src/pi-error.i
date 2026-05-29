@@ -63,7 +63,7 @@ static int pythonWrapper_handlePiErr(int sd, int err)
 // Returned errors: we pass them to our static function for handling
 // (reduces the total wrapper code size)
 // -----------------------------------------------------------------
-%typemap (python,out) PI_ERR %{
+%typemap (out) PI_ERR %{
 	if ($1 < 0 && pythonWrapper_handlePiErr(arg1, $1) != 0)
         SWIG_fail;
 	$result = Py_None;

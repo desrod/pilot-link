@@ -157,16 +157,28 @@ copy_CalendarEvent(const CalendarEvent_t *source, CalendarEvent_t *dest)
 	}
 	if(NULL != source->description) {
 		dest->description = strdup(source->description);
+		if(NULL == dest->description) {
+			errno = ENOMEM;
+			return -1;
+		}
 	} else {
 		dest->description = NULL;
 	}
 	if(NULL != source->note) {
 		dest->note = strdup(source->note);
+		if(NULL == dest->note) {
+			errno = ENOMEM;
+			return -1;
+		}
 	} else {
 		dest->note = NULL;
 	}
 	if(NULL != source->location) {
 		dest->location = strdup(source->location);
+		if(NULL == dest->location) {
+			errno = ENOMEM;
+			return -1;
+		}
 	} else {
 		dest->location = NULL;
 	}
@@ -375,7 +387,18 @@ unpack_CalendarEvent(CalendarEvent_t *a, const pi_buffer_t *buf, calendarType ty
 	if (iflags & exceptFlag) {
 		a->exceptions = get_short(p2);
 		p2 += 2;
-		a->exception = malloc(sizeof(struct tm) * a->exceptions);
+
+		if (a->exceptions < 0 ||
+		    a->exceptions > (int)((buf->used - (size_t)(p2 - buf->data)) / 2))
+			return -1;
+
+		if (a->exceptions > 0) {
+			a->exception = malloc(sizeof(struct tm) * (size_t)a->exceptions);
+			if (a->exception == NULL)
+				return -1;
+		} else {
+			a->exception = NULL;
+		}
 
 		for (j = 0; j < a->exceptions; j++, p2 += 2) {
 			d = (unsigned short int) get_short(p2);
@@ -396,12 +419,16 @@ unpack_CalendarEvent(CalendarEvent_t *a, const pi_buffer_t *buf, calendarType ty
 
 	if (iflags & descFlag) {
 		a->description = strdup((char *)p2);
+		if (a->description == NULL)
+			return -1;
 		p2 += strlen((char *)p2) + 1;
 	} else
 		a->description = 0;
 
 	if (iflags & noteFlag) {
 		a->note = strdup((char *)p2);
+		if (a->note == NULL)
+			return -1;
 		p2 += strlen((char *)p2) + 1;
 	} else {
 		a->note = 0;
@@ -409,6 +436,8 @@ unpack_CalendarEvent(CalendarEvent_t *a, const pi_buffer_t *buf, calendarType ty
 
 	if (iflags & locFlag) {
 		a->location = strdup((char *)p2);
+		if (a->location == NULL)
+			return -1;
 		p2 += strlen((char *)p2) + 1;
 	} else {
 		a->location = 0;

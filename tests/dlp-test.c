@@ -146,7 +146,7 @@ main (int argc, char **argv)
 	CHECK_RESULT(dlp_WriteUserInfo);
 	result = dlp_ReadUserInfo (sd, &u2);
 	CHECK_RESULT(dlp_ReadUserInfo);
-	if (memcmp(&u1, &u2, sizeof(struct PilotUser) != 0)) {
+	if (memcmp(&u1, &u2, sizeof(struct PilotUser)) != 0) {
 		LOG((PI_DBG_USER, PI_DBG_LVL_ERR, "DLPTEST User info mismatch\n"));
 		goto error;
 	}
@@ -195,7 +195,7 @@ main (int argc, char **argv)
 	CHECK_RESULT(dlp_WriteNetSyncInfo);
 	result = dlp_ReadNetSyncInfo (sd, &n2);
 	CHECK_RESULT(dlp_ReadNetSyncInfo);
-	if (memcmp(&n1, &n2, sizeof(struct NetSyncInfo) != 0)) {
+	if (memcmp(&n1, &n2, sizeof(struct NetSyncInfo)) != 0) {
 		LOG((PI_DBG_USER, PI_DBG_LVL_ERR, "DLPTEST Net sync info mismatch\n"));
 		goto error;
 	}
@@ -374,7 +374,7 @@ main (int argc, char **argv)
 	CHECK_RESULT(dlp_WriteAppPrefence);
 	result = dlp_ReadAppPreference (sd, CREATOR, 0, 1, sizeof(pref2), pref2, NULL, NULL);
 	CHECK_RESULT(dlp_ReadAppPreference);
-	if (memcmp(&pref1, &pref2, sizeof(pref1) != 0)) {
+	if (memcmp(&pref1, &pref2, sizeof(pref1)) != 0) {
 		LOG((PI_DBG_USER, PI_DBG_LVL_ERR, "DLPTEST Preference mismatch\n"));
 		goto error;
 	}
@@ -425,7 +425,7 @@ main (int argc, char **argv)
 	CHECK_RESULT(dlp_WriteAppBlock);
 	result = dlp_ReadAppBlock (sd, handle, 0, sizeof(ablock1), appblock);
 	CHECK_RESULT(dlp_ReadAppBlock);
-	if (result != sizeof(ablock1) || memcmp(ablock1, appblock->data, sizeof(ablock1) != 0)) {
+	if (result != sizeof(ablock1) || memcmp(ablock1, appblock->data, sizeof(ablock1)) != 0) {
 		LOG((PI_DBG_USER, PI_DBG_LVL_ERR, "DLPTEST App block mismatch\n"));
 		goto error;
 	}
@@ -435,7 +435,7 @@ main (int argc, char **argv)
 	CHECK_RESULT(dlp_WriteSortBlock);
 	result = dlp_ReadSortBlock (sd, handle, 0, sizeof(sblock1), appblock);
 	CHECK_RESULT(dlp_ReadSortBlock);
-	if (result != sizeof(sblock1) || memcmp(sblock1, appblock->data, sizeof(sblock1) != 0)) {
+	if (result != sizeof(sblock1) || memcmp(sblock1, appblock->data, sizeof(sblock1)) != 0) {
 		LOG((PI_DBG_USER, PI_DBG_LVL_ERR, "DLPTEST App block mismatch\n"));
 		goto error;
 	}
@@ -473,19 +473,19 @@ main (int argc, char **argv)
 	/* Try reading the records in various ways */
 	result = dlp_ReadRecordById (sd, handle, rid1, record4, &index, NULL, NULL);
 	CHECK_RESULT(dlp_ReadRecordById);
-	if (memcmp(record1, record4->data, sizeof(record1) != 0)) {
+	if (memcmp(record1, record4->data, sizeof(record1)) != 0) {
 		LOG((PI_DBG_USER, PI_DBG_LVL_ERR, "DLPTEST Record by Id mismatch\n"));
 		goto error;
 	}
 	result = dlp_ReadRecordByIndex (sd, handle, index, record4, NULL, NULL, NULL);
 	CHECK_RESULT(dlp_ReadRecordByIndex);
-	if (memcmp(record1, record4->data, sizeof(record1) != 0)) {
+	if (memcmp(record1, record4->data, sizeof(record1)) != 0) {
 		LOG((PI_DBG_USER, PI_DBG_LVL_ERR, "DLPTEST Record by index mismatch\n"));
 		goto error;
 	}
 	result = dlp_ReadNextModifiedRec (sd, handle, record4, NULL, NULL, NULL, NULL);
 	CHECK_RESULT(dlp_ReadNextModifiedRec);
-	if (memcmp(record2, record4->data, sizeof(record2) != 0)) {
+	if (memcmp(record2, record4->data, sizeof(record2)) != 0) {
 		LOG((PI_DBG_USER, PI_DBG_LVL_ERR, "DLPTEST Next modified record mismatch\n"));
 		goto error;
 	}
@@ -497,7 +497,7 @@ main (int argc, char **argv)
 	/* This is a DLP 1.1 call, but pilot-link has a 1.0 implementation */
 	result = dlp_ReadNextRecInCategory (sd, handle, 3, record4, NULL, NULL, NULL);
 	CHECK_RESULT(dlp_ReadNextRecInCategory)
-	if (memcmp(record3, record4->data, sizeof(record3) != 0)) {
+	if (memcmp(record3, record4->data, sizeof(record3)) != 0) {
 		LOG((PI_DBG_USER, PI_DBG_LVL_ERR, "DLPTEST dlp_ReadNextRecInCategory mismatch\n"));
 		goto error;
 	}
@@ -509,7 +509,7 @@ main (int argc, char **argv)
 	/* This is a DLP 1.1 call, but pilot-link has a 1.0 implementation */
 	result = dlp_ReadNextModifiedRecInCategory (sd, handle, 2, record4, NULL, NULL, NULL);
 	CHECK_RESULT(dlp_ReadNextModifiedRecInCategory)
-	if (memcmp(record2, record4->data, sizeof(record2) != 0)) {
+	if (memcmp(record2, record4->data, sizeof(record2)) != 0) {
 		LOG((PI_DBG_USER, PI_DBG_LVL_ERR, "DLPTEST dlp_ReadNextModifiedRecInCategory mismatch\n"));
 		goto error;
 	}
@@ -523,7 +523,7 @@ main (int argc, char **argv)
 	CHECK_RESULT(dlp_MoveCategory)
 	result = dlp_ReadNextRecInCategory (sd, handle, 4, record4, NULL, NULL, NULL);
 	CHECK_RESULT(dlp_ReadNextRecInCategory)
-	if (memcmp(record1, record4->data, sizeof(record1) != 0)) {
+	if (memcmp(record1, record4->data, sizeof(record1)) != 0) {
 		LOG((PI_DBG_USER, PI_DBG_LVL_ERR, "DLPTEST dlp_ReadNextRecInCategory mismatch\n"));
 		goto error;
 	}
@@ -589,13 +589,13 @@ main (int argc, char **argv)
 	/* Read in the resources by various methods */
 	result = dlp_ReadResourceByType (sd, handle, INFO, 1, ires2, &index);
 	CHECK_RESULT(dlp_ReadResourceByType)
-	if (memcmp(ires1, ires2->data, sizeof(ires1) != 0)) {
+	if (memcmp(ires1, ires2->data, sizeof(ires1)) != 0) {
 		LOG((PI_DBG_USER, PI_DBG_LVL_ERR, "DLPTEST Resource by type mismatch\n"));
 		goto error;
 	}
 	result = dlp_ReadResourceByIndex (sd, handle, index, ires2, &type, &id_);
 	CHECK_RESULT(dlp_ReadResourceByIndex)
-	if (memcmp(ires1, ires2->data, sizeof(ires1) != 0)) {
+	if (memcmp(ires1, ires2->data, sizeof(ires1)) != 0) {
 		LOG((PI_DBG_USER, PI_DBG_LVL_ERR, "DLPTEST Resource by index mismatch\n"));
 		goto error;
 	}

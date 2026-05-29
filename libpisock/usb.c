@@ -1038,9 +1038,16 @@ USB_configure_generic (pi_usb_data_t *dev, u_int8_t *input_pipe, u_int8_t *outpu
 	if (ret < 0) {
 		LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "usb: PALM_GET_EXT_CONNECTION_INFORMATION failed (err=%08x)\n", ret));
 	} else {
-		LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "usb: PALM_GET_EXT_CONNECTION_INFORMATION, num_ports=%d, endpoint_numbers_different=%d\n", 
-			ci.num_ports, 
+		LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "usb: PALM_GET_EXT_CONNECTION_INFORMATION, num_ports=%d, endpoint_numbers_different=%d\n",
+			ci.num_ports,
 			ci.endpoint_numbers_different));
+		/* Some devices (e.g. Handspring Treo 90) return junk in num_ports
+		 * when they don't actually implement this control request. Clamp
+		 * to the size of the connections[] array so we don't walk off the
+		 * end of the struct looking for "cnys".
+		 */
+		if (ci.num_ports > (sizeof(ci.connections) / sizeof(ci.connections[0])))
+			ci.num_ports = sizeof(ci.connections) / sizeof(ci.connections[0]);
 		for (i=0; i < ci.num_ports; i++) {
 			LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "\t[%d] port_function_id='%c%c%c%c'\n", i, 
 				ci.connections[i].port_function_id[0], 

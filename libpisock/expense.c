@@ -110,6 +110,7 @@ int
 unpack_Expense(Expense_t *expense, unsigned char *buffer, int len)
 {
 	unsigned long d;
+	size_t slen;
 	unsigned char *start = buffer;
 
 	if (len < 6)
@@ -136,9 +137,12 @@ unpack_Expense(Expense_t *expense, unsigned char *buffer, int len)
 		return 0;
 
 	if (*buffer) {
+		slen = strlen((char *)buffer);
 		expense->amount = strdup((char *)buffer);
-		buffer += strlen(expense->amount);
-		len -= strlen(expense->amount);
+		if (expense->amount == NULL)
+			return 0;
+		buffer += slen;
+		len -= slen;
 	} else {
 		expense->amount = 0;
 	}
@@ -149,9 +153,12 @@ unpack_Expense(Expense_t *expense, unsigned char *buffer, int len)
 		return 0;
 
 	if (*buffer) {
+		slen = strlen((char *)buffer);
 		expense->vendor = strdup((char *)buffer);
-		buffer += strlen(expense->vendor);
-		len -= strlen(expense->vendor);
+		if (expense->vendor == NULL)
+			return 0;
+		buffer += slen;
+		len -= slen;
 	} else {
 		expense->vendor = 0;
 	}
@@ -162,9 +169,12 @@ unpack_Expense(Expense_t *expense, unsigned char *buffer, int len)
 		return 0;
 
 	if (*buffer) {
+		slen = strlen((char *)buffer);
 		expense->city = strdup((char *)buffer);
-		buffer += strlen(expense->city);
-		len -= strlen(expense->city);
+		if (expense->city == NULL)
+			return 0;
+		buffer += slen;
+		len -= slen;
 	} else {
 		expense->city = 0;
 	}
@@ -175,9 +185,12 @@ unpack_Expense(Expense_t *expense, unsigned char *buffer, int len)
 		return 0;
 
 	if (*buffer) {
+		slen = strlen((char *)buffer);
 		expense->attendees = strdup((char *)buffer);
-		buffer += strlen(expense->attendees);
-		len -= strlen(expense->attendees);
+		if (expense->attendees == NULL)
+			return 0;
+		buffer += slen;
+		len -= slen;
 	} else {
 		expense->attendees = 0;
 	}
@@ -188,9 +201,12 @@ unpack_Expense(Expense_t *expense, unsigned char *buffer, int len)
 		return 0;
 
 	if (*buffer) {
+		slen = strlen((char *)buffer);
 		expense->note = strdup((char *)buffer);
-		buffer += strlen(expense->note);
-		len -= strlen(expense->note);
+		if (expense->note == NULL)
+			return 0;
+		buffer += slen;
+		len -= slen;
 	} else {
 		expense->note = 0;
 	}

@@ -1611,14 +1611,15 @@ int
 {
    if (len != 196)
      return 0;
-   
    /* FIXME For now, don't check the magic.  I've seen 0x0002 and 0x0201.
     I'm not sure that the endianness is right on this one.  Possibly it
-    should be interpreted as two bytes instead (major and minor?).   */
-   #if 0
-   if (magic1 != 0 || (magic2 != 0x0102 && magic2 != 0x0002))
-     return 0;
-   #endif
+    should be interpreted as two bytes instead (major and minor?).
+    When re-enabled:
+       int magic1 = p[1];
+       int magic2 = get_le_short (&p[46]);
+       if (magic1 != 0 || (magic2 != 0x0102 && magic2 != 0x0002))
+           return 0;
+    */
    
    h->numRec= p[0];
    h->month= p[2];

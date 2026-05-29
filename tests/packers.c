@@ -12,6 +12,7 @@
 #include <string.h>
 
 #include "pi-source.h"
+#include "pi-debug.h"
 #include "pi-socket.h"
 #include "pi-memo.h"
 #include "pi-address.h"

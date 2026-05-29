@@ -24,7 +24,7 @@
 #include <time.h>
 #include <string.h>
 
-int date_lex();
+int date_lex(void);
 
 #define yyparse		date_parse
 #define yylex		date_lex
@@ -77,7 +77,7 @@ typedef enum _MERIDIAN {
 **  union, but this is more efficient.  (This routine predates the
 **  yacc %union construct.)
 */
-static char	*yyInput;
+static const char	*yyInput;
 static DSTMODE	yyDSTmode;
 static int	yyHaveDate;
 static int	yyHaveRel;
@@ -441,6 +441,7 @@ static void
 date_error(const char *s)
 {
     /* NOTREACHED */
+    (void)s;
 }
 
 
@@ -466,8 +467,8 @@ ToSeconds(time_t Hours, time_t Minutes, time_t Seconds, MERIDIAN Meridian)
 
 
 static time_t
-Convert(time_t Month, time_t Day, time_t Year, time_t Hours,
-    time_t Minutes, time_t Seconds, MERIDIAN Meridian, DSTMODE dst)
+Convert(time_t Month, time_t Day, time_t Year, time_t Hours, time_t Minutes,
+    time_t Seconds, MERIDIAN Meridian, DSTMODE dst)
 {
     static int	DaysNormal[13] = {
 	0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31
@@ -551,7 +552,7 @@ RelativeMonth(time_t Start, time_t RelMonth)
 
 
 static int
-LookupWord(char *buff, register int length)
+LookupWord(char *buff, int length)
 {
     register char	*p;
     register char	*q;
@@ -704,9 +705,8 @@ date_lex(void)
 
 
 time_t
-parsedate(char *p)
+parsedate(const char *p)
 {
-    extern int		date_parse();
     time_t		Start;
 
     yyInput = p;

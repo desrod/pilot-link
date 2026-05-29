@@ -14,7 +14,7 @@ m4dir = $(datadir)/aclocal
 m4_DATA = pilot-link.m4
 
 pkgconfigdir = $(libdir)/pkgconfig
-pkgconfig_DATA = pilot-link.pc 
+pkgconfig_DATA = pilot-link.pc
 
 ACLOCAL_AMFLAGS = -I m4
 

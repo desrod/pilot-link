@@ -5,11 +5,11 @@ dnl ******************************
 dnl Pilot Link Version
 dnl ******************************
 m4_define([pilot_link_vers], [0])
-m4_define([pilot_link_major], [13])
+m4_define([pilot_link_major], [15])
 m4_define([pilot_link_minor], [0])
 m4_define([pilot_link_patch], [])
 
-AC_INIT([pilot-link],[pilot_link_vers.pilot_link_major.pilot_link_minor[]pilot_link_patch],[],[https://github.com/juddmon/pilot-link])
+AC_INIT([pilot-link],[pilot_link_vers.pilot_link_major.pilot_link_minor[]pilot_link_patch],[],[pilot-link],[https://github.com/desrod/pilot-link])
 AC_CONFIG_SRCDIR([include/pi-version.h.in])
 AC_CONFIG_MACRO_DIR([m4])
 
@@ -86,7 +86,6 @@ dnl Checks for basic programs.
 dnl ******************************
 AC_PROG_CC
 AC_PROG_INSTALL(install ginstall)
-AC_PROG_F77(g77 g77-3.2 g77-3.3 fl32 f77 fort77 xlf f90 xlf90)
 LT_INIT([disable-fast-install])
 AC_PROG_YACC
 
@@ -226,20 +225,22 @@ if test "x$enable_conduits" != "xno"; then
 
 	case $with_libpng in
 		/*)
-		PNG_CFLAGS="-I$withval/include"
-		PNG_LIBS="-L$withval/lib"
+		PNG_CFLAGS="-I$with_libpng/include"
+		PNG_LIBS="-L$with_libpng/lib -lpng"
+		have_png=yes
+		;;
+		*)
+		PKG_CHECK_MODULES([PNG], [libpng],
+			[have_png=yes],
+			[AC_CHECK_LIB(png, main,
+				[have_png=yes; PNG_LIBS="-lpng"],
+				[have_png=no], [-lm])])
 		;;
 	esac
 
-	save_CFLAGS="$CFLAGS"
-	save_CPPFLAGS="$CPPFLAGS"
-	save_LDFLAGS="$LDFLAGS"
-	CFLAGS="$CFLAGS $PNG_CFLAGS"
-	CPPFLAGS="$CPPFLAGS $PNG_CFLAGS"
-	LDFLAGS="$LDFLAGS $PNG_LIBS"
-
-	AC_CHECK_LIB(png, main, [have_png=yes; PNG_LIBS="$PNG_LIBS -lpng"],[have_png=no],[-lm])
 	if test "$have_png" = yes; then
+		save_CPPFLAGS="$CPPFLAGS"
+		CPPFLAGS="$CPPFLAGS $PNG_CFLAGS"
 		AC_CHECK_HEADER(png.h, , have_png=no)
 		if test "$have_png" = yes; then
 			AC_MSG_CHECKING(for png setjmp support)
@@ -251,15 +252,11 @@ if test "x$enable_conduits" != "xno"; then
 			AC_MSG_RESULT($have_png)
 			if test "$have_png" = yes; then
 				AC_DEFINE(HAVE_PNG, 1, [Define if we have PNG support])
-				have_png=yes
 				msg_png=yes
 			fi
 		fi
+		CPPFLAGS="$save_CPPFLAGS"
 	fi
-
-	CFLAGS="$save_CFLAGS"
-	CPPFLAGS="$save_CPPFLAGS"
-	LDFLAGS="$save_LDFLAGS"
 else
 	have_png="none"
 	PNG_CFLAGS=
@@ -444,7 +441,7 @@ CFLAGS="$CFLAGS $ICONV_CFLAGS"
 LDFLAGS="$LDFLAGS $ICONV_LIBS"
 
 AC_CHECK_LIB(
-	iconv, libiconv, [have_iconv=yes; ICONV_LIBS="$ICONV_LIBS -liconv"], [
+	iconv, iconv_open, [have_iconv=yes; ICONV_LIBS="$ICONV_LIBS -liconv"], [
 		AC_CHECK_FUNC(iconv, [
 			AC_CHECK_FUNCS(gnu_get_libc_version)
 			AC_MSG_CHECKING(if system iconv handles CP1252)
@@ -715,11 +712,51 @@ if test x"$enable_xsltproc" = x"yes"; then
     enable_xsltproc=no
   fi
 fi
+
+# Locate the docbook-xsl stylesheet root. Common install locations:
+#   /usr/share/xml/docbook/stylesheet/docbook-xsl                (Debian)
+#   /usr/share/sgml/docbook/xsl-stylesheets                      (Red Hat)
+#   /usr/share/xsl/docbook                                       (Arch)
+#   /opt/homebrew/opt/docbook-xsl/docbook-xsl                    (Homebrew, ARM)
+#   /usr/local/opt/docbook-xsl/docbook-xsl                       (Homebrew, Intel)
+#   /usr/local/share/xsl/docbook-xsl                             (FreeBSD)
+# Allow override via --with-docbook-xsl=PATH.
+AC_ARG_WITH([docbook-xsl],
+  [AS_HELP_STRING([--with-docbook-xsl=PATH],
+    [Path to docbook-xsl stylesheets (root containing html/docbook.xsl)])],
+  [DOCBOOK_ROOT="$withval"],
+  [DOCBOOK_ROOT=""])
+
+if test x"$enable_xsltproc" = x"yes" && test -z "$DOCBOOK_ROOT"; then
+  AC_MSG_CHECKING([for docbook-xsl stylesheet root])
+  for d in \
+    /usr/share/xml/docbook/stylesheet/docbook-xsl \
+    /usr/share/xml/docbook/stylesheet/nwalsh/current \
+    /usr/share/sgml/docbook/xsl-stylesheets \
+    /usr/share/xsl/docbook \
+    /usr/share/xsl/docbook-xsl \
+    /opt/homebrew/opt/docbook-xsl/docbook-xsl \
+    /usr/local/opt/docbook-xsl/docbook-xsl \
+    /opt/local/share/xsl/docbook-xsl \
+    /usr/local/share/xsl/docbook-xsl ; do
+    if test -f "$d/html/docbook.xsl" && test -f "$d/manpages/synop.xsl"; then
+      DOCBOOK_ROOT="$d"
+      break
+    fi
+  done
+  if test -n "$DOCBOOK_ROOT"; then
+    AC_MSG_RESULT([$DOCBOOK_ROOT])
+  else
+    AC_MSG_RESULT([not found])
+    AC_MSG_WARN([docbook-xsl not found; disabling xsltproc. Pass --with-docbook-xsl=PATH or install docbook-xsl.])
+    enable_xsltproc=no
+  fi
+fi
+
 AM_CONDITIONAL([ENABLE_XSLTPROC], [test x"$enable_xsltproc" = x"yes"])
 
 # fi
 
-# now let's test to see if we can find the docbook-xsl stuff
 XSLTPROC_FLAGS="--nonet"
 AC_SUBST(XML_CATALOG)
 AC_SUBST(XSLTPROC_FLAGS)
@@ -801,48 +838,92 @@ tests/Makefile
 ])
 AC_OUTPUT
 
-AC_MSG_RESULT([
-  Options detected/selected
-  -------------------------.
-  pilot-link version...... : $VERSION
-  libpisock version....... : $PISOCK_CURRENT.$PISOCK_AGE.$PISOCK_REVISION
-  libpisync version....... : $PISYNC_CURRENT.$PISYNC_AGE.$PISYNC_REVISION
-  Build for host.......... : $host
-  Extra Warnings.......... : $set_compile_warnings
-  Direct USB support...... : $msg_usb
-  BlueZ support........... : $use_bluez
-  Thread-safe libpisock... : $msg_threads
-  ElectricFence checks.... : $msg_efence
-  CPPFLAGS................ : $CPPFLAGS
-  CFLAGS.................. : $CFLAGS
+dnl ******************************
+dnl Configuration summary
+dnl ******************************
 
-  Userland Tools
-  -------------------------.
-  Build userland tools.... : $enable_conduits
-  Support for popt........ : $msg_popt
-  Readline support........ : $msg_readline
-  PNG support............. : $msg_png
+dnl Normalize boolean-ish values (true/false -> yes/no) so the summary
+dnl uses consistent vocabulary.
+case "x$use_bluez"  in xtrue) use_bluez=yes  ;; xfalse|x) use_bluez=no  ;; esac
+case "x$use_tcl"    in xtrue) use_tcl=yes    ;; xfalse|x) use_tcl=no    ;; esac
+case "x$use_java"   in xtrue) use_java=yes   ;; xfalse|x) use_java=no   ;; esac
+case "x$use_python" in xtrue) use_python=yes ;; xfalse|x) use_python=no ;; esac
+case "x$use_perl"   in xtrue) use_perl=yes   ;; xfalse|x) use_perl=no   ;; esac
+case "x$msg_efence" in xtrue) msg_efence=yes ;; xfalse|x) msg_efence=no ;; esac
 
-  Internal Language Support
-  -------------------------.
-  Iconv support........... : $msg_iconv
+dnl Enable color only on a real TTY with a capable TERM and tput available.
+C_HDR= C_YES= C_NO= C_BOX= C_OFF=
+if test -t 1 && test "x$TERM" != xdumb && test "x$TERM" != x \
+   && ( command -v tput >/dev/null 2>&1 ); then
+  C_HDR=`tput bold 2>/dev/null; tput setaf 6 2>/dev/null`
+  C_YES=`tput bold 2>/dev/null; tput setaf 2 2>/dev/null`
+  C_NO=`tput  bold 2>/dev/null; tput setaf 1 2>/dev/null`
+  C_BOX=`tput setaf 8 2>/dev/null || tput setaf 7 2>/dev/null`
+  C_OFF=`tput sgr0 2>/dev/null`
+fi
 
-  External Language Support
-  -------------------------.
-  TCL support............. : $use_tcl	$TCL_VERSION
-  Java support............ : $use_java	$JAVA_VERSION
-  Python support.......... : $use_python	$PYTHON_VERSION
-  Perl support............ : $use_perl	$PERL_VERSION
-])
+dnl Colorize a yes/no-ish value. Handles "yes, Darwin" style suffixes
+dnl by colorizing only the leading yes/no token.
+plfmt() {
+  case "$1" in
+    yes|yes,*|yes\ *)
+      rest=`expr "$1" : 'yes\(.*\)'`
+      printf '%syes%s%s' "$C_YES" "$C_OFF" "$rest" ;;
+    no|none|"")
+      printf '%sno%s' "$C_NO" "$C_OFF" ;;
+    *)
+      printf '%s' "$1" ;;
+  esac
+}
 
-if [[ x"$PL_FROM_GIT" = xyes ]]; then
-  echo " .----- NOTICE ------------------------------------------------."
-  echo " |         You are using pilot-link from source.               |"
-  echo " |                                                             |"
-  echo " | This is likely to be unstable, or contain some incomplete   |"
-  echo " | features, or just plain not work at all. Use it at your own |"
-  echo " | risk. Please help us to fix any bugs you find, by reporting |"
-  echo " | them at: https://github.com/desrod/pilot-link/issues        |"
-  echo " \`-------------------------------------------------------------'"
+dnl Render an optional "(version)" suffix only when the version is set.
+plver() {
+  test -n "$1" && printf ' (%s)' "$1"
+}
+
+echo ""
+printf '%s+--------------------------------------------------------------+%s\n' "$C_BOX" "$C_OFF"
+printf '%s|%s %spilot-link configuration summary%s                             %s|%s\n' \
+       "$C_BOX" "$C_OFF" "$C_HDR" "$C_OFF" "$C_BOX" "$C_OFF"
+printf '%s+--------------------------------------------------------------+%s\n' "$C_BOX" "$C_OFF"
+echo ""
+printf '  %sBuild%s\n' "$C_HDR" "$C_OFF"
+printf '    pilot-link version ..... %s\n' "$VERSION"
+printf '    libpisock version ...... %s.%s.%s\n' "$PISOCK_CURRENT" "$PISOCK_AGE" "$PISOCK_REVISION"
+printf '    libpisync version ...... %s.%s.%s\n' "$PISYNC_CURRENT" "$PISYNC_AGE" "$PISYNC_REVISION"
+printf '    Host ................... %s\n' "$host"
+printf '    CPPFLAGS ............... %s\n' "${CPPFLAGS:-(none)}"
+printf '    CFLAGS ................. %s\n' "$CFLAGS"
+echo ""
+printf '  %sCore features%s\n' "$C_HDR" "$C_OFF"
+printf '    Direct USB ............. %s\n' "`plfmt \"$msg_usb\"`"
+printf '    BlueZ .................. %s\n' "`plfmt \"$use_bluez\"`"
+printf '    Thread-safe libpisock .. %s\n' "`plfmt \"$msg_threads\"`"
+printf '    Extra warnings ......... %s\n' "`plfmt \"$set_compile_warnings\"`"
+printf '    ElectricFence .......... %s\n' "`plfmt \"$msg_efence\"`"
+printf '    Iconv .................. %s\n' "`plfmt \"$msg_iconv\"`"
+echo ""
+printf '  %sUserland tools%s\n' "$C_HDR" "$C_OFF"
+printf '    Build tools ............ %s\n' "`plfmt \"$enable_conduits\"`"
+printf '    popt ................... %s\n' "$msg_popt"
+printf '    Readline ............... %s\n' "`plfmt \"$msg_readline\"`"
+printf '    PNG .................... %s\n' "`plfmt \"$msg_png\"`"
+echo ""
+printf '  %sLanguage bindings%s\n' "$C_HDR" "$C_OFF"
+printf '    TCL .................... %s%s\n' "`plfmt \"$use_tcl\"`"    "`plver \"$TCL_VERSION\"`"
+printf '    Java ................... %s%s\n' "`plfmt \"$use_java\"`"   "`plver \"$JAVA_VERSION\"`"
+printf '    Python ................. %s%s\n' "`plfmt \"$use_python\"`" "`plver \"$PYTHON_VERSION\"`"
+printf '    Perl ................... %s%s\n' "`plfmt \"$use_perl\"`"   "`plver \"$PERL_VERSION\"`"
+echo ""
+
+if test "x$PL_FROM_GIT" = xyes; then
+  printf '%s+----- NOTICE -------------------------------------------------+%s\n' "$C_BOX" "$C_OFF"
+  printf '%s|%s         You are using pilot-link from source.               %s|%s\n' "$C_BOX" "$C_OFF" "$C_BOX" "$C_OFF"
+  printf '%s|%s                                                             %s|%s\n' "$C_BOX" "$C_OFF" "$C_BOX" "$C_OFF"
+  printf '%s|%s This is likely to be unstable, or contain some incomplete   %s|%s\n' "$C_BOX" "$C_OFF" "$C_BOX" "$C_OFF"
+  printf '%s|%s features, or just plain not work at all. Use it at your own %s|%s\n' "$C_BOX" "$C_OFF" "$C_BOX" "$C_OFF"
+  printf '%s|%s risk. Please help us to fix any bugs you find, by reporting %s|%s\n' "$C_BOX" "$C_OFF" "$C_BOX" "$C_OFF"
+  printf '%s|%s them at: https://github.com/desrod/pilot-link/issues        %s|%s\n' "$C_BOX" "$C_OFF" "$C_BOX" "$C_OFF"
+  printf '%s+--------------------------------------------------------------+%s\n' "$C_BOX" "$C_OFF"
   echo ""
 fi

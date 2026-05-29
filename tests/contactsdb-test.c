@@ -205,7 +205,8 @@ print_appblock (int sd, int db, struct ContactAppInfo *cai)
 		printf ("\n");
 
 	/* Fair enough for a test to print opaque data.. */
-	if (cai->internal != NULL) {
+	{
+		/* `internal` is a fixed-size array; print it unconditionally. */
 		printf ("\nInternal data (opaque)\n");
 		hexprint ((unsigned char *)cai->internal, sizeof(cai->internal), 0, 0);
 	}

@@ -1,6 +1,6 @@
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: pilot-link
-Source: https://github.com/juddmon/pilot-link
+Source: https://github.com/desrod/pilot-link
 
 Files: *
 Copyright: (C) 1996-2024 and later, various authors
@@ -48,7 +48,7 @@ License notes
 	language bindings (Perl, Python, Java, and Tcl) are licensed for use
 	under the LGPL. For more information, please see COPYING.LIB included
 	in this source tree.
-	
+
 	All contained source is the copyright of its author(s). Please see
 	the copyright notices in the individual files for more information on
 	their individual copyrights.

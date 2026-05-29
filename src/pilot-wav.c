@@ -254,7 +254,7 @@ int fetch_wavs(int sd, char *dbname)
                                     PI_ARGS((sd, db, index, buffer, &id_,
                                              &attr, &category));
 				if (ret > 0) {
-                                  dataChunkSize = write_data(buffer->data, index, buffer->used, dataChunkSize, out);
+                                  dataChunkSize = write_data((char *)buffer->data, index, buffer->used, dataChunkSize, out);
 				}
 				index++;
                         }
@@ -288,12 +288,11 @@ int fetch_wavs(int sd, char *dbname)
  ***********************************************************************/
 int do_fetch(char *dbname)
 {
-        int     sd              = -1,
-		ret;
+        int     sd              = -1;
 
         sd = plu_connect();
 
-	ret = fetch_wavs(sd, dbname);
+	fetch_wavs(sd, dbname);
 
 	dlp_EndOfSync(sd, dlpEndCodeNormal);
 	pi_close(sd);

@@ -219,10 +219,13 @@ int main(int argc, const char *argv[])
 			record_len = (size_t)len;
 		}
 		else {
+			size_t reclen;
 			if (pi_file_read_record
-			    (pif, i, (void *) &ptr, &record_len, &attr, &category,
+			    (pif, i, (void *) &ptr, &reclen, &attr, &category,
 			     0))
 				break;
+			record_len = reclen;
+			len = (int) reclen;
 
 			pi_buffer_clear(recbuf);
 			pi_buffer_append(recbuf, ptr, record_len);

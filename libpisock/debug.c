@@ -179,12 +179,18 @@ pi_dumpline(const char *buf, size_t len, unsigned int addr)
 	int offset;
 	char line[256];
 
-	offset = sprintf(line, "  %.4x  ", addr);
+	/* Each row displays at most 16 bytes; clamp len to prevent
+	 * overflowing the fixed-size line buffer in the ASCII section.
+	 */
+	if (len > 16)
+		len = 16;
+
+	offset = snprintf(line, sizeof(line), "  %.4x  ", addr);
 
 	for (i = 0; i < 16; i++) {
 		if (i < len)
-			offset += sprintf(line+offset, "%.2x ",
-			       0xff & (unsigned int) buf[i]);
+			offset += snprintf(line+offset, sizeof(line) - offset,
+				"%.2x ", 0xff & (unsigned int) buf[i]);
 		else {
 			strcpy(line+offset, "   ");
 			offset += 3;
@@ -201,7 +207,7 @@ pi_dumpline(const char *buf, size_t len, unsigned int addr)
 			 */
 			line[offset++] = '%';
 			line[offset++] = '%';
-		} else if (isprint(buf[i]) && buf[i] >= 32 && buf[i] <= 126)
+		} else if (isprint((unsigned char)buf[i]) && buf[i] >= 32 && buf[i] <= 126)
 			line[offset++] = buf[i];
 		else
 			line[offset++] = '.';

@@ -116,7 +116,7 @@ void read_pilot(int sd)
 	if (l < 0)
 		exit(EXIT_FAILURE);
 	
-	pi_dumpdata(buf->data, l);
+	pi_dumpdata((const char *)buf->data, l);
 
 	if (buf->data[2] == 0) {			/* SysPkt command 	*/
 		if (buf->data[0] == 1) {		/* Console 		*/

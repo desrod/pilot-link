@@ -33,8 +33,7 @@
 
 void install_ToDos(int sd, int db, char *filename)
 {
-	int 	cLen		= 0,
-		i		= 0,
+	int 	i		= 0,
 		filelen;
 
         char 	*file_text 	= NULL,
@@ -73,7 +72,6 @@ void install_ToDos(int sd, int db, char *filename)
 
         cPtr = file_text;
         begPtr = cPtr;
-        cLen = 0;
         i = 0;
 	while (i < filelen) {
 		i++;
@@ -99,9 +97,7 @@ void install_ToDos(int sd, int db, char *filename)
 			pi_buffer_free(ToDo_buf);
 			cPtr++;
 			begPtr = cPtr;
-			cLen = 0;
 		} else {
-			cLen++;
 			cPtr++;
 		}
 	}

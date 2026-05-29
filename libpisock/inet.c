@@ -114,7 +114,6 @@ pi_inet_protocol (pi_device_t *dev)
 	pi_protocol_t *prot;
 
 	ASSERT (dev != NULL);
-	
 	prot = (pi_protocol_t *)malloc (sizeof (pi_protocol_t));
 
 	if (prot != NULL) {
