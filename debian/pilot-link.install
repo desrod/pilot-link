@@ -1,0 +1,4 @@
+usr/bin/*
+usr/share/pilot-link/pix/*
+usr/share/pilot-link/prc/*
+usr/share/pilot-link/udev/*

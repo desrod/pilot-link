@@ -188,8 +188,8 @@ int main(int argc, const char *argv[])
 		b = GetClip(sd, 0, &ret);
 		if (b == NULL)
 			goto error_close;
-		if (ret > 0)
-			write(fileno(stdout), b, ret);
+		if (ret > 0 && write(fileno(stdout), b, ret) != ret)
+			goto error_close;
 	}
 
 	if (pi_close(sd) < 0)

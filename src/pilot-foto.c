@@ -85,9 +85,15 @@ int get_jpg_info(FILE * in, char *type, unsigned short *version,
     rewind(in);
 
     /* marker identifier, application use marker */
-    fread(&word, 2, 1, in);
+    if (fread(&word, 2, 1, in) != 1) {
+	rewind(in);
+	return -1;
+    }
     word1 = htons(word);
-    fread(&word, 2, 1, in);
+    if (fread(&word, 2, 1, in) != 1) {
+	rewind(in);
+	return -1;
+    }
     word2 = htons(word);
     /* printf("start of image 0x%02x 0x%02x\n", str[0], str[1]); */
     /* printf("application use marker 0x%02x 0x%02x\n", str[2], str[3]); */
@@ -101,7 +107,10 @@ int get_jpg_info(FILE * in, char *type, unsigned short *version,
 
     *height = *width = -1;
     /* length of application block */
-    fread(&word, 2, 1, in);
+    if (fread(&word, 2, 1, in) != 1) {
+	rewind(in);
+	return -1;
+    }
     len = htons(word);
     /* printf("len %d\n", len); */
     if (len > 65535) {
@@ -110,7 +119,10 @@ int get_jpg_info(FILE * in, char *type, unsigned short *version,
 	return -1;
     }
 
-    fread(str, 5, 1, in);
+    if (fread(str, 5, 1, in) != 1) {
+	rewind(in);
+	return -1;
+    }
     str[6] = '\0';
     /* printf("%s\n", str); */
     if (strncmp(str, "JFIF", 4) && strncmp(str, "Exif", 4)
@@ -123,18 +135,27 @@ int get_jpg_info(FILE * in, char *type, unsigned short *version,
     type[4] = '\0';
 
     /* Version */
-    fread(&word, 2, 1, in);
+    if (fread(&word, 2, 1, in) != 1) {
+	rewind(in);
+	return -1;
+    }
     *version = htons(word);
     /* printf("version %d.%02d\n", ((*version)&0xFF00)>>8, (*version)&0xFF); */
 
-    fread(str, len - 9, 1, in);
+    if (fread(str, len - 9, 1, in) != 1) {
+	rewind(in);
+	return -1;
+    }
     /* Units 1 byte
      * X and Y density, 1 byte each
      * X and Y thumbnail size, 2 bytes each
      */
     while (!feof(in)) {
 	/* marker identifier */
-	fread(&word, 2, 1, in);
+	if (fread(&word, 2, 1, in) != 1) {
+	    rewind(in);
+	    return -1;
+	}
 	word1 = htons(word);
 	m1 = (word1 & 0xFF00) >> 8;
 	m2 = word1 & 0xFF;
@@ -143,18 +164,30 @@ int get_jpg_info(FILE * in, char *type, unsigned short *version,
 	if ((m1 == 0xFF) && (m2 == 0xC0)) {
 	    /* The SOF0 marker (Start of Frame 0) */
 	    /* length(2 bytes) and data precision(1 byte) */
-	    fread(str, 3, 1, in);
+	    if (fread(str, 3, 1, in) != 1) {
+		rewind(in);
+		return -1;
+	    }
 	    /* Height */
-	    fread(&word, 2, 1, in);
+	    if (fread(&word, 2, 1, in) != 1) {
+		rewind(in);
+		return -1;
+	    }
 	    *height = htons(word);
 	    /* printf("height %d\n", *height); */
 	    /* Width */
-	    fread(&word, 2, 1, in);
+	    if (fread(&word, 2, 1, in) != 1) {
+		rewind(in);
+		return -1;
+	    }
 	    *width = htons(word);
 	    /* printf("width %d\n", *width); */
 	    break;
 	}
-	fread(&word, 2, 1, in);
+	if (fread(&word, 2, 1, in) != 1) {
+	    rewind(in);
+	    return -1;
+	}
 	len = htons(word);
 	/* printf("len %d\n", len); */
 	if (len > 65535) {
@@ -162,7 +195,10 @@ int get_jpg_info(FILE * in, char *type, unsigned short *version,
 	    rewind(in);
 	    return -1;
 	}
-	fread(str, len - 2, 1, in);
+	if (fread(str, len - 2, 1, in) != 1) {
+	    rewind(in);
+	    return -1;
+	}
     }
 
     rewind(in);
