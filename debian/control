@@ -6,10 +6,12 @@ Build-Depends:
  debhelper-compat (= 13),
  dh-autoreconf,
  autotools-dev,
+ docbook-xsl,
  libpng-dev,
  libpopt-dev,
  libreadline-dev,
  libusb-dev,
+ xsltproc,
 Standards-Version: 4.6.2
 Homepage: https://github.com/desrod/pilot-link
 Vcs-Browser: https://github.com/desrod/pilot-link
