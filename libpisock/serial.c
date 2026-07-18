@@ -409,7 +409,7 @@ begin:
 			}
 			LOG((PI_DBG_DEV, PI_DBG_LVL_ERR,
 					"\n\n   Device not found on %s, \
-					Did you hit HotSync?\n\n", realport));	
+					Did you hit HotSync?\n\n", port_for_messages));	
 		} else if (errno == EISDIR) {
 			LOG((PI_DBG_DEV, PI_DBG_LVL_ERR,
 					" The port specified must"

@@ -1663,7 +1663,7 @@ int test_mail()
       errors++;
       printf
 	  ("29: unpack_MailSigPref returned incorrect length (got %d, expected %zu)\n",
-	   l, sizeof(MailSyncPreference));
+	   l, sizeof(MailSigPreference));
    }
 
    /* Unpacker should return count of bytes used */
@@ -1674,7 +1674,7 @@ int test_mail()
       errors++;
       printf
 	  ("30: unpack_MailSigPref returned incorrect length (got %d, expected %zu)\n",
-	   l, sizeof(MailSyncPreference));
+	   l, sizeof(MailSigPreference));
    }
 
    /* Unpacker should return count of bytes used */
@@ -1685,7 +1685,7 @@ int test_mail()
       errors++;
       printf
 	  ("31: unpack_MailSigPref returned incorrect length (got %d, expected %zu)\n",
-	   l, sizeof(MailSyncPreference));
+	   l, sizeof(MailSigPreference));
    }
 
    if (

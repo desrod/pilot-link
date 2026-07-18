@@ -60,8 +60,13 @@ rm -rf debian/.debhelper
 # configure.ac strips "-Werror" naively, which corrupts Debian flags like
 # "-Werror=format-security" into "=format-security". Preserve the normal Debian
 # flags but remove the -Werror entries before running the package build.
-BUILD_CFLAGS="$(sanitize_warning_error_flags "$(dpkg-buildflags --get CFLAGS)")"
-BUILD_CXXFLAGS="$(sanitize_warning_error_flags "$(dpkg-buildflags --get CXXFLAGS)")"
+# Capture dpkg-buildflags output before sanitizing: a command substitution
+# nested inside the sanitizer would mask its exit status, so a dpkg-buildflags
+# failure would not abort under "set -e" (unlike the CPPFLAGS/LDFLAGS lines).
+RAW_CFLAGS="$(dpkg-buildflags --get CFLAGS)"
+RAW_CXXFLAGS="$(dpkg-buildflags --get CXXFLAGS)"
+BUILD_CFLAGS="$(sanitize_warning_error_flags "$RAW_CFLAGS")"
+BUILD_CXXFLAGS="$(sanitize_warning_error_flags "$RAW_CXXFLAGS")"
 BUILD_CPPFLAGS="$(dpkg-buildflags --get CPPFLAGS)"
 BUILD_LDFLAGS="$(dpkg-buildflags --get LDFLAGS)"
 
