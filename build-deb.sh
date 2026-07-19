@@ -12,6 +12,11 @@ cd "$ROOT_DIR"
 sanitize_warning_error_flags() {
 	local token
 	local sanitized=()
+	# Localize shell option changes (`local -`, bash 4.4+) and disable globbing
+	# while intentionally word-splitting $1, so a token like -I/opt/*/inc is not
+	# expanded against the filesystem.
+	local -
+	set -f
 
 	for token in $1; do
 		case "$token" in
@@ -23,7 +28,11 @@ sanitize_warning_error_flags() {
 		esac
 	done
 
-	printf '%s ' "${sanitized[@]}"
+	# Guard the expansion so an all-stripped (empty) array does not trip
+	# `set -u` ("unbound variable") on older bash.
+	if ((${#sanitized[@]})); then
+		printf '%s ' "${sanitized[@]}"
+	fi
 }
 
 # Optional: regenerate configure and Makefiles (use when building from git without committed configure)

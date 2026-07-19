@@ -41,9 +41,9 @@ void print_splash(const char *progname) {
          "   `--------------------------------------------'\n"
          "   This is %s, from pilot-link version %d.%d.%d%s\n\n"
          "   Build target..: %s\n"
-         "   Build date....: unavailable\n\n",
+         "   Build date....: %s\n\n",
          progname, PILOT_LINK_VERSION, PILOT_LINK_MAJOR, PILOT_LINK_MINOR,
-         patchlevel, HOST_OS);
+         patchlevel, HOST_OS, PILOT_LINK_BUILD_DATE);
 
   printf("   pilot-link %d.%d.%d%s is covered under the GPL/LGPL\n",
          PILOT_LINK_VERSION, PILOT_LINK_MAJOR, PILOT_LINK_MINOR, patchlevel);

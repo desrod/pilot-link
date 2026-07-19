@@ -801,6 +801,17 @@ if test "x$GCC" = "xyes" -a "x$enable_werror" = "xyes"; then
 	CFLAGS="$CFLAGS -Werror"
 fi
 
+dnl Reproducible build date. Honor SOURCE_DATE_EPOCH when set (GNU and BSD date
+dnl differ, so try both) and fall back to the current UTC date otherwise.
+if test -n "$SOURCE_DATE_EPOCH"; then
+	BUILD_DATE=$(date -u -d "@$SOURCE_DATE_EPOCH" '+%Y-%m-%d' 2>/dev/null \
+		|| date -u -r "$SOURCE_DATE_EPOCH" '+%Y-%m-%d' 2>/dev/null \
+		|| date -u '+%Y-%m-%d')
+else
+	BUILD_DATE=$(date -u '+%Y-%m-%d')
+fi
+AC_DEFINE_UNQUOTED(PILOT_LINK_BUILD_DATE, "$BUILD_DATE", [Build date])
+
 AC_CONFIG_FILES([
 	Makefile
 	pilot-link.m4
