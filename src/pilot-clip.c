@@ -30,7 +30,7 @@
 
 static void *GetClip(int sock, int type, int *length)
 {
-	int 	len,
+	int 	len = 0,
 		err;
 	struct 	RPC_params p;
 	unsigned long handle, ptr;
@@ -175,7 +175,7 @@ int main(int argc, const char *argv[])
 
 
 	if (mode == mode_set) {
-		ret = read(fileno(stdin), buffer, 0xffff);
+		ret = read(fileno(stdin), buffer, sizeof(buffer) - 1);
 		if (ret >= 0) {
 			buffer[ret++] = 0;
 			if (SetClip(sd, 0, buffer, ret) <= 0)

@@ -142,6 +142,10 @@ int get_jpg_info(FILE * in, char *type, unsigned short *version,
     *version = htons(word);
     /* printf("version %d.%02d\n", ((*version)&0xFF00)>>8, (*version)&0xFF); */
 
+    if (len < 9) {
+	rewind(in);
+	return -1;
+    }
     if (fread(str, len - 9, 1, in) != 1) {
 	rewind(in);
 	return -1;
@@ -190,7 +194,7 @@ int get_jpg_info(FILE * in, char *type, unsigned short *version,
 	}
 	len = htons(word);
 	/* printf("len %d\n", len); */
-	if (len > 65535) {
+	if (len < 2 || len > 65535) {
 	    /* fprintf(stderr, "Not a jpeg file\n"); */
 	    rewind(in);
 	    return -1;
@@ -643,6 +647,7 @@ int do_install(int sd, const char **install_files)
 	} else {
 	    printf("%s does not appear to be a jpeg file\n",
 		   install_files[i]);
+	    fclose(in);
 	    continue;
 	}
 
