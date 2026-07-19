@@ -87,7 +87,8 @@ int do_get_rom(int sd,const char *filename)
 {
 	int	i,
 		file = -1,
-		timespent = 0;
+		timespent = 0,
+		rc = 0;
 
 	struct 	RPC_params p;
 	plu_romversion_t version;
@@ -175,8 +176,11 @@ int do_get_rom(int sd,const char *filename)
 				break;
 		if (j == len)
 			lseek(file, len, SEEK_CUR);
-		else
-			write(file, buffer, len);
+		else if (write(file, buffer, len) != len) {
+			fprintf(stderr, "\n   Error writing to %s, aborting\n", filename);
+			rc = -1;
+			goto cancel;
+		}
 		offset += len;
 		if (cancel || !(i++ % 8))
 			if (cancel || (dlp_OpenConduit(sd) < 0)) {
@@ -206,7 +210,7 @@ cancel:
 	if (file>=0) {
 		close(file);
 	}
-	return 0;
+	return rc;
 }
 
 
@@ -225,7 +229,8 @@ int do_get_ram(int sd, const char *filename)
 	int	i,
 		file = -1,
 		j,
-		timespent	= 0;
+		timespent	= 0,
+		rc = 0;
 
 	/* Tell user (via Palm) that we are starting things up */
 	dlp_OpenConduit(sd);
@@ -303,8 +308,11 @@ int do_get_ram(int sd, const char *filename)
 				break;
 		if (j == len)
 			lseek(file, len, SEEK_CUR);
-		else
-			write(file, buffer, len);
+		else if (write(file, buffer, len) != len) {
+			fprintf(stderr, "\n   Error writing to %s, aborting\n", filename);
+			rc = -1;
+			goto cancel;
+		}
 
 		offset += len;
 		if (cancel || !(i++ % 4))
@@ -335,7 +343,7 @@ cancel:
 	if (file >=0) {
 		close(file);
 	}
-	return 0;
+	return rc;
 }
 
 

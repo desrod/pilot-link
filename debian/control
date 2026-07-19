@@ -6,21 +6,55 @@ Build-Depends:
  debhelper-compat (= 13),
  dh-autoreconf,
  autotools-dev,
+ docbook-xsl,
  libpng-dev,
  libpopt-dev,
  libreadline-dev,
  libusb-dev,
+ xsltproc,
 Standards-Version: 4.6.2
 Homepage: https://github.com/desrod/pilot-link
 Vcs-Browser: https://github.com/desrod/pilot-link
 Vcs-Git: https://github.com/desrod/pilot-link.git
 Rules-Requires-Root: no
 
+Package: libpisock9
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Breaks: pilot-link (<< 0.13.1-2)
+Replaces: pilot-link (<< 0.13.1-2)
+Description: Palm OS communication library
+ libpisock provides the core library used by pilot-link to communicate
+ with Palm handhelds over serial, USB, and network transports.
+
+Package: libpisync1
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Breaks: pilot-link (<< 0.13.1-2)
+Replaces: pilot-link (<< 0.13.1-2)
+Description: Palm OS synchronization helper library
+ libpisync provides synchronization helpers built on top of libpisock
+ for Palm handheld data exchange.
+
+Package: libpisock-dev
+Section: libdevel
+Architecture: any
+Depends:
+ libpisock9 (= ${binary:Version}),
+ libpisync1 (= ${binary:Version}),
+ ${misc:Depends}
+Breaks: pilot-link (<< 0.13.1-2)
+Replaces: pilot-link (<< 0.13.1-2)
+Description: Development files for the pilot-link libraries
+ This package contains the headers, linker symlinks, pkg-config metadata,
+ and static libraries needed to build software against libpisock and
+ libpisync.
+
 Package: pilot-link
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Description: Tools and library for Palm PDA communication
+Description: Tools for Palm PDA communication
  pilot-link is a suite of tools for communicating with Palm handheld
  devices over serial, USB, and network connections. It includes
  command-line utilities for installing applications, syncing data,
- and managing the device, plus the libpisock and libpisync libraries.
+ and managing the device.

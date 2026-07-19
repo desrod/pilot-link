@@ -1,0 +1,6 @@
+usr/bin/*
+usr/share/man/man1/*
+usr/share/man/man7/*
+usr/share/pilot-link/pix/*
+usr/share/pilot-link/prc/*
+usr/share/pilot-link/udev/*
