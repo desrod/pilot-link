@@ -1,13 +1,39 @@
 #!/usr/bin/env bash
 #
-# Build a Debian package (.deb) from the pilot-link source tree.
+# Build Debian packages from the pilot-link source tree.
 # Run from the project root. Requires build dependencies (see debian/control).
 #
-set -e
+set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "$SCRIPT_DIR" && pwd)"
 cd "$ROOT_DIR"
+
+sanitize_warning_error_flags() {
+	local token
+	local sanitized=()
+	# Localize shell option changes (`local -`, bash 4.4+) and disable globbing
+	# while intentionally word-splitting $1, so a token like -I/opt/*/inc is not
+	# expanded against the filesystem.
+	local -
+	set -f
+
+	for token in $1; do
+		case "$token" in
+			-Werror|-Werror=*)
+				;;
+			*)
+				sanitized+=("$token")
+				;;
+		esac
+	done
+
+	# Guard the expansion so an all-stripped (empty) array does not trip
+	# `set -u` ("unbound variable") on older bash.
+	if ((${#sanitized[@]})); then
+		printf '%s ' "${sanitized[@]}"
+	fi
+}
 
 # Optional: regenerate configure and Makefiles (use when building from git without committed configure)
 RECONFIGURE=false
@@ -37,9 +63,26 @@ fi
 
 echo "Building Debian package..."
 # -us: do not sign source package; -uc: do not sign .changes; -b: binary-only
-# dpkg-buildflags can inject CFLAGS with "-Wformat =format-security" (space breaks the linker).
-# Until this is fixed, use DEB_BUILD_MAINT_OPTIONS="hardening=-format"
-# dpkg-buildpackage -us -uc -b "$@"
-DEB_BUILD_MAINT_OPTIONS="hardening=-format" dpkg-buildpackage -us -uc -b "$@"
+# Clear stale debhelper state so package splits/installs are recalculated cleanly.
+rm -rf debian/.debhelper
+
+# configure.ac strips "-Werror" naively, which corrupts Debian flags like
+# "-Werror=format-security" into "=format-security". Preserve the normal Debian
+# flags but remove the -Werror entries before running the package build.
+# Capture dpkg-buildflags output before sanitizing: a command substitution
+# nested inside the sanitizer would mask its exit status, so a dpkg-buildflags
+# failure would not abort under "set -e" (unlike the CPPFLAGS/LDFLAGS lines).
+RAW_CFLAGS="$(dpkg-buildflags --get CFLAGS)"
+RAW_CXXFLAGS="$(dpkg-buildflags --get CXXFLAGS)"
+BUILD_CFLAGS="$(sanitize_warning_error_flags "$RAW_CFLAGS")"
+BUILD_CXXFLAGS="$(sanitize_warning_error_flags "$RAW_CXXFLAGS")"
+BUILD_CPPFLAGS="$(dpkg-buildflags --get CPPFLAGS)"
+BUILD_LDFLAGS="$(dpkg-buildflags --get LDFLAGS)"
+
+CFLAGS="$BUILD_CFLAGS" \
+CXXFLAGS="$BUILD_CXXFLAGS" \
+CPPFLAGS="$BUILD_CPPFLAGS" \
+LDFLAGS="$BUILD_LDFLAGS" \
+dpkg-buildpackage -us -uc -b "$@"
 
 echo "Done. .deb and related files are in: $PARENT_DIR"

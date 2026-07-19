@@ -373,8 +373,10 @@ begin:
 		char	realport[4096];
  # endif /* PATH_MAX */
 #endif /* MAXPATHLEN */
+		const char *port_for_messages = pa->pi_device;
 
-		realpath(pa->pi_device, realport);
+		if (realpath(pa->pi_device, realport) != NULL)
+			port_for_messages = realport;
 		errno = save_errno;
 
 		if (errno == ENOENT) {
@@ -387,10 +389,10 @@ begin:
 		} else if (errno == EACCES) {
 			LOG((PI_DBG_DEV, PI_DBG_LVL_ERR,
 					"   Please check the "
-					"permissions on %s..\n", realport));
+					"permissions on %s..\n", port_for_messages));
 			LOG((PI_DBG_DEV, PI_DBG_LVL_ERR,
 					" Possible solution:\n\n\tchmod 0666 "
-					"%s\n\n", realport));
+					"%s\n\n", port_for_messages));
 		} else if (errno == ENODEV) {
 			while (count <= 5) {
 				if (isatty(fileno(stdout))) {
@@ -407,7 +409,7 @@ begin:
 			}
 			LOG((PI_DBG_DEV, PI_DBG_LVL_ERR,
 					"\n\n   Device not found on %s, \
-					Did you hit HotSync?\n\n", realport));	
+					Did you hit HotSync?\n\n", port_for_messages));	
 		} else if (errno == EISDIR) {
 			LOG((PI_DBG_DEV, PI_DBG_LVL_ERR,
 					" The port specified must"
