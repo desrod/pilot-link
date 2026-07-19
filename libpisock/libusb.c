@@ -62,6 +62,8 @@ static int u_wait_for_device(struct pi_socket *ps, int *timeout);
 static int u_flush(pi_socket_t *ps, int flags);
 static int u_control_request (pi_usb_data_t *usb_data, int request_type, 
 	int request, int value, int control_index, void *data, int size, int timeout);
+static int u_interrupt_read (pi_usb_data_t *usb_data, int ep, void *data, int size,
+	int timeout);
 
 void pi_usb_impl_init (struct pi_usb_impl *impl)
 {
@@ -74,6 +76,7 @@ void pi_usb_impl_init (struct pi_usb_impl *impl)
 	impl->wait_for_device	= u_wait_for_device;
 	impl->changebaud	= NULL;		/* we don't need this one for libusb (yet) */
 	impl->control_request	= u_control_request;
+	impl->interrupt_read = u_interrupt_read;
 }
 
 
@@ -595,6 +598,12 @@ u_control_request (pi_usb_data_t *usb_data, int request_type, int request,
 		int value, int control_index, void *data, int size, int timeout)
 {
 	return usb_control_msg (usb_data->ref, request_type, request, value, control_index, data, size, timeout);
+}
+
+static int
+u_interrupt_read (pi_usb_data_t *usb_data, int ep, void *data, int size, int timeout)
+{
+	return usb_interrupt_read(usb_data->ref, ep, data, size, timeout);
 }
 
 /* vi: set ts=8 sw=4 sts=4 noexpandtab: cin */
