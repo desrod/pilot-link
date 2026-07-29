@@ -27,10 +27,17 @@ $h2xsheaders = join(' ', map { "$plincdir/$_" } qw(
 					     ));
 
 sub MY::postamble {
-    "%.inc:
+    "const-c.inc:
 	@PERL@ ./h2xs-pilot-link -n PDA::Pilot $h2xsheaders
 	cp PDA-Pilot/fallback/*.inc .
 	rm -rf PDA-Pilot
+
+# One generator run produces both .inc files; serialize const-xs.inc
+# behind const-c.inc (order-only) so parallel make cannot run two
+# copies racing on the PDA-Pilot scratch directory. Regenerate only
+# if the file is still missing after const-c.inc was built.
+const-xs.inc: | const-c.inc
+	test -f const-xs.inc || { @PERL@ ./h2xs-pilot-link -n PDA::Pilot $h2xsheaders && cp PDA-Pilot/fallback/*.inc . && rm -rf PDA-Pilot; }
 ";
 }	
 
