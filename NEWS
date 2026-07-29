@@ -1,7 +1,38 @@
 --------------------------------------------------------------------------
+pilot-link 0.15.0, "Back From The Future" release, 07-30-2026
+--------------------------------------------------------------------------
+The first release in nearly two decades. The handhelds outlived their
+vendor; pilot-link now builds and runs cleanly on modern systems.
+Highlights:
+	* Builds warning-free with current GCC and Clang on Linux,
+	  macOS (including Apple Silicon), and FreeBSD
+	* New tool: pilot-contacts, vCard 3.0 import/export for the
+	  Palm OS 5 Contacts database, with iconv charset conversion
+	* Native USB verified against real hardware on modern macOS
+
+Security and crash fixes:
+	* Bounds checking on records read from the device; malformed
+	  data can no longer overflow heap buffers
+	* Fixed stack overflow in debug hex dumps
+	* Fixed crash listing empty VFS directories (#9)
+	* Fixed out-of-bounds reads on USB devices returning bogus
+	  connection info, such as the Handspring Treo 90 (#13)
+	* Many NULL-dereference and format-string fixes throughout
+
+Modernization:
+	* Python bindings ported to Python 3 and SWIG 4; Perl bindings
+	  updated for modern perls
+	* Autotools refresh: pkg-config libpng detection, working iconv
+	  on macOS, portable docbook-xsl detection, make distcheck works
+	* Split Debian/Ubuntu packages: libpisock9, libpisync1,
+	  libpisock-dev, pilot-link
+
+Thanks to Judd Montgomery (J-Pilot) and everyone who filed issues.
+
+--------------------------------------------------------------------------
 pilot-link 0.12.3, "Can-of-Raid" (aka "Bug-Squash" release), 11-12-2007
 --------------------------------------------------------------------------
-Here you go, another pilot-link release. This one fixes quite a few issues: 
+Here you go, another pilot-link release. This one fixes quite a few issues:
 
 Bug Fixes:
 	* Fix for Sony NR70 devices not being detected properly
@@ -39,7 +70,7 @@ Other Features:
           new content and a completely new layout. All source files are now
           version-tracked in the header.
 
-Bug Fixes: 
+Bug Fixes:
         * Python support was broken, fixed now, doh! Palm T|X over libusb
           has been fixed (we hope) with this release. Of course we need
           testers to validate that. All of userland is renamed now to avoid
@@ -47,7 +78,7 @@ Bug Fixes:
           respect to this release, all manpages are in XML source format
           (requires xsltproc to process), and much more.
 
-Check the ChangeLog for the full details if you're interested. 
+Check the ChangeLog for the full details if you're interested.
 
 
 --------------------------------------------------------------------------
@@ -56,7 +87,7 @@ pilot-link 0.12.1, "Fresh Air", 09-04-2006
 3 years since the last release, then 1 week from that release until this
 one.
 
-WHEW! 
+WHEW!
 
 There isn't much "new" in this release, just some rapid-fire bug fixes
 reported from users and a lot of code has been cleaned up in the tree to
@@ -71,7 +102,7 @@ Major Features:
 Other Features:
         * Nothing major in this release
 
-Bug Fixes: 
+Bug Fixes:
         * Fixed the installation faux pas with udev rules, oops!
 
 
@@ -96,7 +127,7 @@ Major Features:
 Other Features:
 	* Too many to mention, its been over 3 years ;)
 
-Bug Fixes: 
+Bug Fixes:
 	* Much of the code in the DLP subsystem has been reworked and many
 	  bugs have been squashed. Check the ChangeLog for details on
 	  those items.
@@ -109,7 +140,7 @@ features, along comes "Anoxia" (no oxygen), the next release of pilot-link.
 
 Major Features:
 	* New DLP 1.2 function, SetDBInfo, which allows you to update or
-	  change the fields in the AppInfo block. 
+	  change the fields in the AppInfo block.
 
 Other Features:
 	* No additional features at this time
@@ -133,7 +164,7 @@ Major Features:
         * pilot-foto conduit to fetch/convert photos taken with a Palm
           Zire71 camera device
 	* Completely new Java bindings, rewritten from the ground-up by John
-	  Mitchell and Stephan Bösebeck.
+	  Mitchell and Stephan Bï¿½sebeck.
 
 Other Features:
         * A few new manpages
@@ -176,7 +207,7 @@ What's Coming Soon:
 	  reasons.
 	* iCal and LDIF support for Calendar and AddressBook input and
 	  output
-	
+
 The goal of the next few releases of pilot-link is to reduce the number of
 lines of actual code used, and compress the redundancy into singular
 entities. This means that similar or like code will be repurposed as much as
@@ -194,12 +225,12 @@ Major Features:
         * None at this time
 
 Other Features:
-        * New manpages and manpage formatting 
+        * New manpages and manpage formatting
 
 Bug Fixes:
         * Fix for failures on libiconv w/Evolution
         * Fix for PI_LOG output
-	* Fix for exit; vs. exit(); 
+	* Fix for exit; vs. exit();
 	* Fix for readline support breaking C++ detection
 
 Known Problems:
@@ -230,7 +261,7 @@ Other Features:
 	  debugging
 	* Added Python test script (Nicholas Piper)
 	* Added support for ElectricFence malloc() debugging library
-	
+
 Bug Fixes:
         * Fix for failures on usb:// notation use
         * Fix for missing pi_close() elements
@@ -247,7 +278,7 @@ Known Problems:
 	* FreeBSD hangs on USB synchronization (this may not be a pilot-link
 	  bug, as serial, IR works using the same code structures)
         * Java bindings missing manifest
-        * snprintf() calls fail on Irix 6.4 systems   
+        * snprintf() calls fail on Irix 6.4 systems
         * Improper getopt_long propagation on Irix 6.4
         * autoconf/automake 2.5x problems on AIX
 	* install-memo doesn't strip ^M from files before syncronization,
@@ -275,7 +306,7 @@ Known Problems:
 	* Java bindings missing manifest
 	* snprintf() calls fail on Irix 6.4 systems
 	* Improper getopt_long propagation on Irix 6.4
-	* autoconf/automake 2.5x problems on AIX	
+	* autoconf/automake 2.5x problems on AIX
 
 --------------------------------------------------------------------------
 pilot-link 0.11.4, "Alzheimer Release", 09-16-2002
@@ -287,7 +318,7 @@ Major Features:
 	* Updated configuration to work with newer autoconf/automake
 	  versions
 
-Other Features: 
+Other Features:
 	* None at this time
 
 Bug Fixes:
@@ -370,7 +401,7 @@ Major Features:
 	* read-notepad also updated to accept the same argument types
 
 Other Features:
-	* Fixed some of the gcc-related warnings (more to come)	
+	* Fixed some of the gcc-related warnings (more to come)
 	* All of the language bindings (Perl, Python, Java, Tcl, Tk, iTcl)
 	  all default to off, unless specified. If you want to enable them,
 	  you must use --with-foo, where 'foo' is the binding of your
@@ -388,7 +419,7 @@ Known Problems:
 --------------------------------------------------------------------------
 pilot-link 0.11, "Ocean's Eleven", 07-12-2002
 --------------------------------------------------------------------------
-This is a development release, primarily to test the new usb device support. 
+This is a development release, primarily to test the new usb device support.
 Most of the USB devices are on /dev/ttyUSB1 (or usb/tts/1), except for the
 Sony PEG-S300 and 760C which are on /dev/ttyUSB0 (or usb/tts/0).  Note that
 you must hit the sync button prior to running the app right now for USB
@@ -397,8 +428,8 @@ that existed in earlier drivers (may get a kernel oops).
 
 Major Features:
 	* DLP argument parsing re-write
-	* Better usb device support e.g. usb:/dev/ttyUSB1 
-	
+	* Better usb device support e.g. usb:/dev/ttyUSB1
+
 Other Features:
 	* Allow sync to proceed even if OS 4.x device has password set
 	* Split out generic conduit library to libpisync
@@ -418,7 +449,7 @@ Known Problems (Please see doc/TODO for more details):
 --------------------------------------------------------------------------
 pilot-link 0.10.99, "Woodstock", 03-20-2002
 --------------------------------------------------------------------------
-This is a development release, primarily to test the new usb device support. 
+This is a development release, primarily to test the new usb device support.
 Most of the USB devices are on /dev/ttyUSB1 (or usb/tts/1), except for the
 Sony PEG-S300 and 760C which are on /dev/ttyUSB0 (or usb/tts/0).  Note that
 you must hit the sync button prior to running the app right now for USB
