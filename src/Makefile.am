@@ -370,7 +370,7 @@ EXTRA_DIST = 				\
 	pilot-getromtoken.c		\
 	pilot-hinotes.c			\
 	pilot-install-datebook.c	\
-	pilot-install-expenses		\
+	pilot-install-expenses.c	\
 	pilot-install-hinote.c		\
 	pilot-install-memo.c		\
 	pilot-install-netsync.c		\
