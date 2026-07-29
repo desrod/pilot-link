@@ -77,7 +77,7 @@ AC_CANONICAL_HOST
 AC_CANONICAL_TARGET
 AC_DEFINE_UNQUOTED(HOST_OS, "$host", [Host type])
 
-AM_INIT_AUTOMAKE([foreign subdir-objects])
+AM_INIT_AUTOMAKE([foreign subdir-objects dist-xz])
 
 
 dnl ******************************
