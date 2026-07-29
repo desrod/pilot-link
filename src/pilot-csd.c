@@ -249,6 +249,7 @@ int main(int argc, const char *argv[])
 	unsigned char mesg[1026];
         unsigned int clilen;
 
+	unsigned short magic;
 
 	poptContext po;
 
@@ -378,7 +379,21 @@ int main(int argc, const char *argv[])
 				inet_ntoa(raddress));
 		}
 
-		if (get_short(mesg) != 0xFADE)
+		/* The announcement magic is 0xFADE, but some Palm OS 5
+		 * devices send it byte-swapped as 0xDEFA. Reported against
+		 * the Tungsten T2, which is ARM (little-endian); the 68k
+		 * devices this code was written for were big-endian, so a
+		 * missing byte-order conversion on the device side shows up
+		 * only on the newer hardware. Only this field is affected --
+		 * the address, netmask and hostname that follow are copied
+		 * byte-wise and parse correctly either way.
+		 *
+		 * Accept both spellings rather than choosing one. The reply
+		 * path below echoes the received buffer back, so whichever
+		 * magic arrived is returned unchanged.
+		 */
+		magic = get_short(mesg);
+		if (magic != 0xFADE && magic != 0xDEFA)
 			goto invalid;
 
 		if ((get_byte(mesg + 2) == 0x01) && (n > 12)) {
