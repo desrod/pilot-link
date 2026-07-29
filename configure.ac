@@ -41,7 +41,7 @@ dnl Please see the following URL for details:
 dnl http://sources.redhat.com/autobook/autobook/autobook_91.html
 dnl ******************************
 PISOCK_CURRENT=10
-PISOCK_REVISION=0
+PISOCK_REVISION=1
 PISOCK_AGE=1
 
 AC_SUBST(PISOCK_CURRENT)
