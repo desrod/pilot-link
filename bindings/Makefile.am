@@ -18,8 +18,18 @@ SUBDIRS = $(JAVA_DIR) $(TCL_DIR)
 python-build: Python/setup.py
 	cd $(srcdir)/Python && $(PYTHON) setup.py build
 
+# Pass --root only when DESTDIR is actually set. An empty "--root="
+# makes distutils join "" with an absolute prefix, which strips the
+# leading slash and turns the install path into a relative one --
+# so an unstaged "make install" tries to create ./usr/... under the
+# build directory and fails.
 python-install: python-build
-	cd $(srcdir)/Python && $(PYTHON) setup.py install --root=$(DESTDIR) --prefix=$(prefix)
+	cd $(srcdir)/Python && \
+	if test -n "$(DESTDIR)"; then \
+		$(PYTHON) setup.py install --root="$(DESTDIR)" --prefix="$(prefix)"; \
+	else \
+		$(PYTHON) setup.py install --prefix="$(prefix)"; \
+	fi
 
 python-clean: Python/setup.py
 	-cd $(srcdir)/Python && $(PYTHON) setup.py clean 
