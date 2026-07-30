@@ -35,6 +35,19 @@ AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_HEADERS([include/pi-md5.h])
 
 dnl ******************************
+dnl pkg.m4 sanity check
+dnl ******************************
+dnl We use PKG_CHECK_MODULES for libpng and BlueZ. pkg.m4 comes from
+dnl pkg-config (or pkgconf), and is NOT vendored in m4/. If aclocal cannot
+dnl find it, autoconf leaves PKG_CHECK_MODULES unexpanded and the generated
+dnl configure dies at run time with a bare shell syntax error, e.g.
+dnl   ./configure: NNN: Syntax error: word unexpected (expecting ")")
+dnl which tells the user nothing. Fail loudly at autoreconf time instead.
+m4_ifndef([PKG_PROG_PKG_CONFIG],
+  [m4_fatal([pkg.m4 not found. Install pkg-config (Debian/Ubuntu: apt install
+pkg-config; Fedora: dnf install pkgconf-pkg-config) and re-run ./autogen.sh.])])
+
+dnl ******************************
 dnl Pilot Link Library Version
 dnl libpisock.so.CURRENT.AGE.REVISION
 dnl Please see the following URL for details:

@@ -17,12 +17,19 @@ DIE=0
 }
 
 (grep "^AM_PROG_LIBTOOL\|^LT_INIT" $srcdir/configure.ac >/dev/null) && {
-  (glibtool --version) < /dev/null > /dev/null 2>&1 || 
-  (libtool --version) < /dev/null > /dev/null 2>&1 || {
+  # Test for libtoolize, not libtool. libtoolize is what we actually run
+  # further down, and Debian ships the two in separate packages: the
+  # "libtool" package provides libtoolize and the m4 macros, while the
+  # libtool wrapper script lives in "libtool-bin", which we never invoke.
+  # Checking for the wrapper made autogen.sh fail on a perfectly good
+  # Debian system that had everything it needed.
+  (glibtoolize --version) < /dev/null > /dev/null 2>&1 ||
+  (libtoolize --version) < /dev/null > /dev/null 2>&1 || {
     echo
-    echo "**Error**: You must have \`libtool' installed to compile $PKG_NAME."
-    echo "Get ftp://ftp.gnu.org/pub/gnu/libtool/libtool-2.4.tar.xz"
-    echo "(or a newer version if it is available)"
+    echo "**Error**: You must have \`libtoolize' installed to compile $PKG_NAME."
+    echo "  Debian/Ubuntu: apt install libtool"
+    echo "  Fedora/RHEL:   dnf install libtool"
+    echo "  macOS:         brew install libtool"
     DIE=1
   }
 }
