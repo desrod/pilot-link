@@ -9,32 +9,6 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "$SCRIPT_DIR" && pwd)"
 cd "$ROOT_DIR"
 
-sanitize_warning_error_flags() {
-	local token
-	local sanitized=()
-	# Localize shell option changes (`local -`, bash 4.4+) and disable globbing
-	# while intentionally word-splitting $1, so a token like -I/opt/*/inc is not
-	# expanded against the filesystem.
-	local -
-	set -f
-
-	for token in $1; do
-		case "$token" in
-			-Werror|-Werror=*)
-				;;
-			*)
-				sanitized+=("$token")
-				;;
-		esac
-	done
-
-	# Guard the expansion so an all-stripped (empty) array does not trip
-	# `set -u` ("unbound variable") on older bash.
-	if ((${#sanitized[@]})); then
-		printf '%s ' "${sanitized[@]}"
-	fi
-}
-
 # Optional: regenerate configure and Makefiles (use when building from git without committed configure)
 RECONFIGURE=false
 if [[ "${1:-}" == "--reconfigure" ]]; then
@@ -66,16 +40,10 @@ echo "Building Debian package..."
 # Clear stale debhelper state so package splits/installs are recalculated cleanly.
 rm -rf debian/.debhelper
 
-# configure.ac strips "-Werror" naively, which corrupts Debian flags like
-# "-Werror=format-security" into "=format-security". Preserve the normal Debian
-# flags but remove the -Werror entries before running the package build.
-# Capture dpkg-buildflags output before sanitizing: a command substitution
-# nested inside the sanitizer would mask its exit status, so a dpkg-buildflags
-# failure would not abort under "set -e" (unlike the CPPFLAGS/LDFLAGS lines).
-RAW_CFLAGS="$(dpkg-buildflags --get CFLAGS)"
-RAW_CXXFLAGS="$(dpkg-buildflags --get CXXFLAGS)"
-BUILD_CFLAGS="$(sanitize_warning_error_flags "$RAW_CFLAGS")"
-BUILD_CXXFLAGS="$(sanitize_warning_error_flags "$RAW_CXXFLAGS")"
+# Pass Debian's flags through unmodified, including hardening options like
+# -Werror=format-security. configure.ac no longer rewrites CFLAGS.
+BUILD_CFLAGS="$(dpkg-buildflags --get CFLAGS)"
+BUILD_CXXFLAGS="$(dpkg-buildflags --get CXXFLAGS)"
 BUILD_CPPFLAGS="$(dpkg-buildflags --get CPPFLAGS)"
 BUILD_LDFLAGS="$(dpkg-buildflags --get LDFLAGS)"
 

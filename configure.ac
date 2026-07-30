@@ -74,16 +74,6 @@ AC_SUBST(PISYNC_CURRENT)
 AC_SUBST(PISYNC_REVISION)
 AC_SUBST(PISYNC_AGE)
 
-dnl Eat -Werror so configure will run properly, if the user provided it
-enable_werror=no
-save_CFLAGS="$CFLAGS"
-CFLAGS=$(echo $save_CFLAGS | sed -e s/-Werror//g)
-CXXFLAGS=$(echo $save_CXXFLAGS | sed -e s/-Werror//g)
-if test "x$CFLAGS" != "x$save_CFLAGS"; then
-	dnl -Werror was set; treat it as implicit --enable-werror below
-	enable_werror="yes"
-fi
-
 
 dnl Check host type
 AC_CANONICAL_HOST
@@ -804,7 +794,7 @@ esac
 dnl *************************************
 dnl Promote warnings to errors
 dnl *************************************
-dnl (already done) enable_werror=no
+enable_werror=no
 
 AC_ARG_ENABLE(compile-werror,
 	      [  --enable-compile-werror
