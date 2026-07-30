@@ -55,6 +55,8 @@ extern "C" {
 		int (*control_request) PI_ARGS((struct pi_usb_data *usb_data,
 			int request_type, int request, int value, int reqindex,
 			void *data, int size, int timeout));
+		int (*interrupt_read) PI_ARGS((struct pi_usb_data *usb_data,
+			int ep, void *data, int size, int timeout));
 	} pi_usb_impl_t;
 
 #define USB_INIT_NONE		(1<<0)
@@ -102,6 +104,14 @@ extern "C" {
 	#define GENERIC_CLOSE_NOTIFICATION              0x02
 	#define VISOR_GET_CONNECTION_INFORMATION        0x03
 	#define PALM_GET_EXT_CONNECTION_INFORMATION     0x04
+
+	/*
+	 * Devices that answer PALM_GET_EXT_CONNECTION_INFORMATION with an
+	 * empty response report their endpoints on this interrupt endpoint
+	 * instead, after a leading vendor identifier we do not decode.
+	 */
+	#define PALM_EXT_CONN_INFO_ENDPOINT             0x82
+	#define PALM_EXT_CONN_INFO_SKIP                 6
 
 	/*
 	 * Reply struct and defines for VISOR_GET_CONNECTION_INFORMATION

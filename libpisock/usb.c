@@ -1034,7 +1034,32 @@ USB_configure_generic (pi_usb_data_t *dev, u_int8_t *input_pipe, u_int8_t *outpu
 	palm_ext_connection_info_t ci;
 	u_int32_t flags = dev->dev.flags;
 
+	memset (&ci, 0, sizeof (ci));
+
 	ret = dev->impl.control_request (dev, 0xc2, PALM_GET_EXT_CONNECTION_INFORMATION, 0, 0, &ci, sizeof (ci), 0);
+
+	if (ret == 0 && dev->impl.interrupt_read != NULL) {
+		/* Some Palm OS 4.1 devices (the Handspring Treo 90 is the known
+		 * case) answer PALM_GET_EXT_CONNECTION_INFORMATION with an empty
+		 * response and report their endpoints over the interrupt pipe
+		 * instead. The first PALM_EXT_CONN_INFO_SKIP bytes look like a
+		 * vendor identifier that we do not use yet.
+		 */
+		unsigned char buf[64];
+
+		ret = dev->impl.interrupt_read (dev, PALM_EXT_CONN_INFO_ENDPOINT,
+			buf, sizeof (buf), 0);
+
+		if (ret >= (int)(PALM_EXT_CONN_INFO_SKIP + sizeof (ci))) {
+			memcpy (&ci, buf + PALM_EXT_CONN_INFO_SKIP, sizeof (ci));
+		} else if (ret >= 0) {
+			LOG((PI_DBG_DEV, PI_DBG_LVL_ERR,
+				"usb: interrupt read returned %d bytes, need at least %d\n",
+				ret, (int)(PALM_EXT_CONN_INFO_SKIP + sizeof (ci))));
+			ret = -1;
+		}
+	}
+
 	if (ret < 0) {
 		LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "usb: PALM_GET_EXT_CONNECTION_INFORMATION failed (err=%08x)\n", ret));
 	} else {
