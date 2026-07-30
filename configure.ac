@@ -209,13 +209,26 @@ AC_CHECK_SOCKLEN_T
 dnl ******************************
 dnl pilot-link conduits
 dnl ******************************
+dnl The conduits are off by default on purpose: plenty of people build
+dnl pilot-link only for libpisock (packaging for J-Pilot, for instance) and
+dnl have no use for two dozen command line tools they will never ship.
+dnl
+dnl Use $enableval rather than hardcoding "yes" in the action-if-given
+dnl clause. That clause runs for every form of the option, so hardcoding
+dnl meant --disable-conduits and --enable-conduits=no both switched the
+dnl conduits ON.
 AC_MSG_CHECKING(whether to enable userland conduits)
-AC_ARG_ENABLE(conduits,
-	[  --enable-conduits       Build the userland conduits],
-		[enable_conduits="yes"], [enable_conduits="no"],
-)
+AC_ARG_ENABLE([conduits],
+	[AS_HELP_STRING([--enable-conduits],
+		[Build the userland conduits (default: no)])],
+	[enable_conduits=$enableval], [enable_conduits=no])
 AM_CONDITIONAL(ENABLE_CONDUITS,[test "x$enable_conduits" != "xno"])
 AC_MSG_RESULT($enable_conduits)
+
+if test "x$enable_conduits" = "xno"; then
+	AC_MSG_NOTICE([userland tools (pilot-xfer, pilot-dlpsh, etc.) will not be built.])
+	AC_MSG_NOTICE([Pass --enable-conduits to build them; only builds libs by default.])
+fi
 
 dnl ******************************
 dnl PNG Support
