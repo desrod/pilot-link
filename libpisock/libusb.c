@@ -27,6 +27,7 @@
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <unistd.h>
 #include <pthread.h>
 #include <signal.h>
 
@@ -137,10 +138,34 @@ USB_poll (pi_usb_data_t *data)
 			LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s: trying to open device %p\n",
 				__FILE__, dev));
 
+			{
+				char devpath[64];
+
+				snprintf(devpath, sizeof(devpath), "/dev/bus/usb/%s/%s",
+					bus->dirname, dev->filename);
+				if (access(devpath, R_OK | W_OK) != 0) {
+					LOG((PI_DBG_DEV, PI_DBG_LVL_ERR,
+						"%s: unable to access %s for device 0x%04x:0x%04x (errno=%d)\n",
+						__FILE__, devpath, dev->descriptor.idVendor,
+						dev->descriptor.idProduct, errno));
+					data->ref = NULL;
+					continue;
+				}
+			}
+
 			USB_handle = usb_open(dev);
 
 			LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s: USB_handle=%p\n", 
 				__FILE__, USB_handle));
+
+			if (!USB_handle) {
+				LOG((PI_DBG_DEV, PI_DBG_LVL_ERR,
+					"%s: unable to open device 0x%04x:0x%04x (errno=%d)\n",
+					__FILE__, dev->descriptor.idVendor,
+					dev->descriptor.idProduct, errno));
+				data->ref = NULL;
+				continue;
+			}
 
 			data->ref = USB_handle;
 
@@ -153,7 +178,10 @@ USB_poll (pi_usb_data_t *data)
 					"%s: USB configure failed for familar device: 0x%04x 0x%04x. (LifeDrive issue?)\n", 
 					__FILE__, dev->descriptor.idVendor, dev->descriptor.idProduct));
 
-				usb_close(USB_handle);
+				if (USB_handle)
+					usb_close(USB_handle);
+				USB_handle = NULL;
+				data->ref = NULL;
 				continue;
 			}
 
@@ -185,6 +213,8 @@ USB_poll (pi_usb_data_t *data)
 
 			if (USB_in_endpoint == 0xFF || USB_out_endpoint == 0xFF) {
 				usb_close (USB_handle);
+				USB_handle = NULL;
+				data->ref = NULL;
 				continue;
 			}
 
