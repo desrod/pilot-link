@@ -1,3 +1,9 @@
+pilot-link (0.15.0-1) unstable; urgency=medium
+
+  * New upstream release 0.15.0, matching the version in configure.ac.
+
+ -- Pilot Link Packagers <pilot-link@packages.debian.org>  Wed, 29 Jul 2026 20:31:36 -0400
+
 pilot-link (0.13.1-2) unstable; urgency=medium
 
   * Split the Debian packaging into runtime, development, and tool
