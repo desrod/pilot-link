@@ -777,7 +777,15 @@ void dlp_htopdate(time_t time_interval,
   }
 
   t = localtime(&time_interval);
-  ASSERT(t != NULL);
+  if (t == NULL) {
+    /* localtime() only fails for a time_t it cannot express as a broken-down
+       date.  A Palm date is always within the normal (32-bit) range, so such
+       a value is not a real Palm date -- typically an uninitialised or bogus
+       time_t from the caller.  Record the Palm "no date" (zeroed) value rather
+       than dereference a NULL tm and crash. */
+    memset(data, 0, 8);
+    return;
+  }
 
   year = t->tm_year + 1900;
 
