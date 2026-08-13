@@ -1,3 +1,9 @@
+pilot-link (0.15.1-1) UNRELEASED; urgency=medium
+
+  * New upstream release 0.15.1.
+
+ -- Pilot Link Packagers <pilot-link@packages.debian.org>  Thu, 13 Aug 2026 21:46:51 +0000
+
 pilot-link (0.15.0-1) unstable; urgency=medium
 
   * New upstream release 0.15.0, matching the version in configure.ac.
