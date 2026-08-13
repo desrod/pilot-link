@@ -4,10 +4,10 @@
 dnl ******************************
 dnl Pilot Link Version
 dnl ******************************
-m4_define([pilot_link_vers], [0])
+m4_define([pilot_link_vers],   [0])
 m4_define([pilot_link_major], [15])
-m4_define([pilot_link_minor], [0])
-m4_define([pilot_link_patch], [])
+m4_define([pilot_link_minor],  [1])
+m4_define([pilot_link_patch],   [])
 
 AC_INIT([pilot-link],[pilot_link_vers.pilot_link_major.pilot_link_minor[]pilot_link_patch],[],[pilot-link],[https://github.com/desrod/pilot-link])
 AC_CONFIG_SRCDIR([include/pi-version.h.in])
