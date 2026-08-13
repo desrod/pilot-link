@@ -1894,12 +1894,19 @@ palm_cardinfo ()
 		dlp_VFSVolumeGetLabel (sd, volumes[i], &len, buf);
 
 		t = malloc (sizeof (cardreport_t));
+		if (t == NULL)
+			goto cleanup;
 		t->size_used = size_used;
 		t->size_total = size_total;
 		t->size_free = size_total - size_used;
 		t->type = mediatype(&info);
 		t->cardnum = info.slotRefNum;
-		t->name = malloc (strlen(buf) + 1);
+		t->name = malloc (strlen(buf) + 2);
+		if (t->name == NULL) {
+			free (t->type);
+			free (t);
+			goto cleanup;
+		}
 		strcpy (&t->name[1], buf);
 		t->name[0] = '/';
 
