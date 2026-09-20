@@ -1,8 +1,8 @@
-pilot-link (0.15.0-2) unstable; urgency=medium
+pilot-link (0.15.1-1) UNRELEASED; urgency=medium
 
-  * Configure with --enable-libusb so the usb: port scheme works.
+  * New upstream release 0.15.1.
 
- -- Judd Montgomery <judd@jpilot.org>  Sun, 09 Aug 2026 23:45:07 -0400
+ -- Pilot Link Packagers <pilot-link@packages.debian.org>  Thu, 13 Aug 2026 21:46:51 +0000
 
 pilot-link (0.15.0-1) unstable; urgency=medium
 
