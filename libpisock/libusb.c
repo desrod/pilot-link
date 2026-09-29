@@ -141,6 +141,7 @@ USB_poll (pi_usb_data_t *data)
 			LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s: trying to open device %p\n",
 				__FILE__, dev));
 
+#ifdef __linux__
 			{
 				char devpath[64];
 
@@ -155,6 +156,7 @@ USB_poll (pi_usb_data_t *data)
 					continue;
 				}
 			}
+#endif
 
 			USB_handle = usb_open(dev);
 
@@ -246,6 +248,8 @@ claim:
 				else
 					LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "Unable to claim device: %d.\n", i));
 				usb_close (USB_handle);
+				USB_handle = NULL;
+				data->ref = NULL;
 
 				errno = -i;
 				LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s: %d.\n", 
