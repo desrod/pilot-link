@@ -291,6 +291,20 @@ USB_close (void)
 
 #define MAX_READ_SIZE	16384
 #define AUTO_READ_SIZE	64
+
+/*
+ * libusb-compat-0.1 holds a libusb-1.0 lock while usb_bulk_read() waits,
+ * so cancelling the reader there leaves it held and usb_close() hangs
+ * (#46).  With compat the reader polls and RD_stop() waits for it to
+ * exit instead; compat returns partial data on a timeout.  The original
+ * libusb-0.1 discards it, so there the reader still blocks.
+ */
+#ifdef HAVE_LIBUSB_COMPAT
+#define RD_TIMEOUT	250
+#else
+#define RD_TIMEOUT	0
+#endif
+
 static char		*RD_buffer = NULL;
 static size_t		RD_buffer_size;
 static size_t		RD_buffer_used;
@@ -317,6 +331,17 @@ RD_do_read (int timeout)
 	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s %d (%s): %d\n", 
 		__FILE__, __LINE__, __FUNCTION__, bytes_read));
 	if (bytes_read < 0) {
+#ifdef HAVE_LIBUSB_COMPAT
+		/* compat reports a vanished device as -ENXIO */
+		if (bytes_read == -ENODEV || bytes_read == -ENXIO) {
+			LOG((PI_DBG_DEV, PI_DBG_LVL_NONE, "Device went byebye!\n"));
+			pthread_mutex_lock (&RD_buffer_mutex);
+			RD_running = 0;
+			pthread_cond_broadcast (&RD_buffer_available_cond);
+			pthread_mutex_unlock (&RD_buffer_mutex);
+			return;
+		}
+#endif
 		if (bytes_read == -ENODEV) {
 			LOG((PI_DBG_DEV, PI_DBG_LVL_NONE, "Device went byebye!\n"));
 			RD_running = 0;
@@ -355,10 +380,12 @@ RD_main (void *foo)
 	RD_buffer = NULL;
 	RD_buffer_size = 0;
 
+#ifndef HAVE_LIBUSB_COMPAT
 	pthread_setcanceltype (PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
+#endif
 
 	while (RD_running == 1) {
-		RD_do_read (0);
+		RD_do_read (RD_TIMEOUT);
 	}
 
 	RD_running = 0;
@@ -385,6 +412,24 @@ RD_stop (void)
 	if (!RD_thread && !RD_running)
 		return 0;
 
+#ifdef HAVE_LIBUSB_COMPAT
+	pthread_mutex_lock (&RD_buffer_mutex);
+	RD_running = 0;
+	pthread_cond_broadcast (&RD_buffer_available_cond);
+	pthread_mutex_unlock (&RD_buffer_mutex);
+
+	if (RD_thread) {
+		pthread_join (RD_thread, NULL);
+		RD_thread = 0;
+	}
+
+	/* don't hand unread data to the next session */
+	pthread_mutex_lock (&RD_buffer_mutex);
+	free (RD_buffer);
+	RD_buffer = NULL;
+	RD_buffer_size = RD_buffer_used = 0;
+	pthread_mutex_unlock (&RD_buffer_mutex);
+#else
 	if (RD_running)
 		RD_running = 0;
 
@@ -392,6 +437,7 @@ RD_stop (void)
 		pthread_cancel(RD_thread);
 		RD_thread = 0;
 	}
+#endif
 
 	if (RD_thread || RD_running)
 		return 0;
@@ -553,6 +599,8 @@ u_read_i(struct pi_socket *ps, pi_buffer_t *buf, size_t len, int flags, int time
 
 		RD_wanted = len;
 		do {
+			if (!RD_running)
+				break;
 			last_used = RD_buffer_used;
 
 			LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "%s %d (%s): %d %d.\n", 

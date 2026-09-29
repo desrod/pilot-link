@@ -325,6 +325,12 @@ if test "$have_libusb" = yes; then
 			fi
 		;;
 	esac
+	dnl libusb-compat-0.1 (libusb-0.1 on libusb-1.0) doesn't export the
+	dnl original's internals such as usb_os_open; FreeBSD's libusb has both APIs
+	AC_CHECK_LIB(usb, usb_os_open, [:],
+		[AC_CHECK_LIB(usb, libusb_init, [:],
+			[AC_DEFINE(HAVE_LIBUSB_COMPAT, 1, [Define if libusb is libusb-compat-0.1])
+			 msg_usb="yes, libusb-compat"])])
 else
 	case "$host" in
 		*linux*)
