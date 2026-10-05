@@ -919,6 +919,11 @@ USB_check_device (pi_usb_data_t *dev, u_int16_t vendor, u_int16_t product)
  * Device configuration, ugh.
  */
 
+/* Milliseconds a device has to answer a configuration request. With 0
+ * libusb waits forever, and a device that does not answer (a LifeDrive
+ * did) blocks pi_accept for good - no other Palm is seen after that. */
+#define USB_CONFIGURE_TIMEOUT	1000
+
 int
 USB_configure_device (pi_usb_data_t *dev, u_int8_t *input_pipe, u_int8_t *output_pipe)
 {
@@ -943,12 +948,12 @@ USB_configure_device (pi_usb_data_t *dev, u_int8_t *input_pipe, u_int8_t *output
 	else if (flags & USB_INIT_SONY_CLIE) {
 		/* according to linux code, PEG S-300 awaits these two requests */
 		/* USB_REQ_GET_CONFIGURATION */
-		ret = dev->impl.control_request (dev, 0x80, 0x08, 0, 0, NULL, 1, 0);
+		ret = dev->impl.control_request (dev, 0x80, 0x08, 0, 0, NULL, 1, USB_CONFIGURE_TIMEOUT);
 		if (ret < 0) {
 			LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "usb: Sony USB_REQ_GET_CONFIGURATION failed (err=%08x)\n", ret));
 		}
 		/* USB_REQ_GET_INTERFACE */
-		ret = dev->impl.control_request (dev, 0x80, 0x0A, 0, 0, NULL, 1, 0);
+		ret = dev->impl.control_request (dev, 0x80, 0x0A, 0, 0, NULL, 1, USB_CONFIGURE_TIMEOUT);
 		if (ret < 0) {
 			LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "usb: Sony USB_REQ_GET_INTERFACE failed (err=%08x)\n", ret));
 		}
@@ -966,7 +971,7 @@ USB_configure_device (pi_usb_data_t *dev, u_int8_t *input_pipe, u_int8_t *output
 	if (!(flags & USB_INIT_TAPWAVE)) {
 		unsigned char ba[2] = { 0 };
 
-		ret = dev->impl.control_request (dev, 0xc2, GENERIC_REQUEST_BYTES_AVAILABLE, 0, 0, &ba[0], 2, 0);
+		ret = dev->impl.control_request (dev, 0xc2, GENERIC_REQUEST_BYTES_AVAILABLE, 0, 0, &ba[0], 2, USB_CONFIGURE_TIMEOUT);
 		if (ret < 0) {
 			LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "usb: GENERIC_REQUEST_BYTES_AVAILABLE failed (err=%08x)\n", ret));
 			/* configuration have to fail to skip this device - or LifeDrive(?) devices will hang */
@@ -984,7 +989,7 @@ USB_configure_visor (pi_usb_data_t *dev, u_int8_t *input_pipe, u_int8_t *output_
 	int i, ret;
 	visor_connection_info_t ci;
 
-	ret = dev->impl.control_request (dev, 0xc2, VISOR_GET_CONNECTION_INFORMATION, 0, 0, &ci, sizeof (ci), 0);
+	ret = dev->impl.control_request (dev, 0xc2, VISOR_GET_CONNECTION_INFORMATION, 0, 0, &ci, sizeof (ci), USB_CONFIGURE_TIMEOUT);
 	if (ret < 0) {
 		LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "usb: VISOR_GET_CONNECTION_INFORMATION failed (err=%08x)\n", ret));
 	} else {
@@ -1036,7 +1041,7 @@ USB_configure_generic (pi_usb_data_t *dev, u_int8_t *input_pipe, u_int8_t *outpu
 
 	memset (&ci, 0, sizeof (ci));
 
-	ret = dev->impl.control_request (dev, 0xc2, PALM_GET_EXT_CONNECTION_INFORMATION, 0, 0, &ci, sizeof (ci), 0);
+	ret = dev->impl.control_request (dev, 0xc2, PALM_GET_EXT_CONNECTION_INFORMATION, 0, 0, &ci, sizeof (ci), USB_CONFIGURE_TIMEOUT);
 
 	if (ret == 0 && dev->impl.interrupt_read != NULL) {
 		/* Some Palm OS 4.1 devices (the Handspring Treo 90 is the known
@@ -1048,7 +1053,7 @@ USB_configure_generic (pi_usb_data_t *dev, u_int8_t *input_pipe, u_int8_t *outpu
 		unsigned char buf[64];
 
 		ret = dev->impl.interrupt_read (dev, PALM_EXT_CONN_INFO_ENDPOINT,
-			buf, sizeof (buf), 0);
+			buf, sizeof (buf), USB_CONFIGURE_TIMEOUT);
 
 		if (ret >= (int)(PALM_EXT_CONN_INFO_SKIP + sizeof (ci))) {
 			memcpy (&ci, buf + PALM_EXT_CONN_INFO_SKIP, sizeof (ci));
@@ -1117,8 +1122,8 @@ USB_configure_generic (pi_usb_data_t *dev, u_int8_t *input_pipe, u_int8_t *outpu
 		 * Tapwave: for Zodiac, the TwUSBD.sys driver on Windows sends
 		 * the ext-connection-info packet two additional times.
 		 */
-		ret = dev->impl.control_request (dev, 0xc2, PALM_GET_EXT_CONNECTION_INFORMATION, 0, 0, &ci, sizeof (ci), 0);
-		ret = dev->impl.control_request (dev, 0xc2, PALM_GET_EXT_CONNECTION_INFORMATION, 0, 0, &ci, sizeof (ci), 0);
+		ret = dev->impl.control_request (dev, 0xc2, PALM_GET_EXT_CONNECTION_INFORMATION, 0, 0, &ci, sizeof (ci), USB_CONFIGURE_TIMEOUT);
+		ret = dev->impl.control_request (dev, 0xc2, PALM_GET_EXT_CONNECTION_INFORMATION, 0, 0, &ci, sizeof (ci), USB_CONFIGURE_TIMEOUT);
 	}
 	return ret;
 }
