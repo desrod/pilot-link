@@ -91,6 +91,7 @@ static usb_dev_handle	*USB_handle;
 static int				USB_interface;
 static int				USB_in_endpoint;
 static int				USB_out_endpoint;
+static int				USB_in_packet_size;
 
 static int
 USB_open (pi_usb_data_t *data)
@@ -176,6 +177,7 @@ USB_poll (pi_usb_data_t *data)
 
 			input_endpoint = output_endpoint = 0xFF;
 			USB_in_endpoint = USB_out_endpoint = 0xFF;
+			USB_in_packet_size = 0;
 
 			ret = USB_configure_device (data, &input_endpoint, &output_endpoint);
 			if (ret < 0) {
@@ -196,7 +198,10 @@ USB_poll (pi_usb_data_t *data)
 
 				endpoint = &dev->config[0].interface[0].altsetting[0].endpoint[i];
 
-				if (endpoint->wMaxPacketSize != 0x40)
+				/* 64 bytes at full speed; high-speed devices such as
+				 * the LifeDrive have 512-byte bulk endpoints */
+				if (endpoint->wMaxPacketSize != 0x40
+						&& endpoint->wMaxPacketSize != 0x200)
 					continue;
 				if ((endpoint->bmAttributes & USB_ENDPOINT_TYPE_MASK) != USB_ENDPOINT_TYPE_BULK)
 					continue;
@@ -207,6 +212,8 @@ USB_poll (pi_usb_data_t *data)
 						USB_in_endpoint = address;
 					else if ((address & USB_ENDPOINT_ADDRESS_MASK) == input_endpoint)
 						USB_in_endpoint = address;
+					if (USB_in_endpoint == address)
+						USB_in_packet_size = endpoint->wMaxPacketSize;
 				} else {
 					LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "Out: 0x%x 0x%x.\n", address, output_endpoint));
 					if (output_endpoint == 0xFF)
@@ -290,7 +297,6 @@ USB_close (void)
  ***********************************************************************/
 
 #define MAX_READ_SIZE	16384
-#define AUTO_READ_SIZE	64
 
 /*
  * libusb-compat-0.1 holds a libusb-1.0 lock while usb_bulk_read() waits,
@@ -320,11 +326,17 @@ RD_do_read (int timeout)
 {
 	int	bytes_read, read_size;
 
+	/* Whole packets only: a bulk read shorter than the packet the device
+	 * sends fails with an overflow. MAX_READ_SIZE is a multiple of both
+	 * packet sizes (64 at full speed, 512 at high speed). */
 	read_size = RD_wanted - RD_buffer_used;
-	if (read_size < AUTO_READ_SIZE)
-		read_size = AUTO_READ_SIZE;
+	if (read_size < USB_in_packet_size)
+		read_size = USB_in_packet_size;
 	else if (read_size > MAX_READ_SIZE)
 		read_size = MAX_READ_SIZE;
+	else
+		read_size = (read_size + USB_in_packet_size - 1)
+			/ USB_in_packet_size * USB_in_packet_size;
 
 	LOG((PI_DBG_DEV, PI_DBG_LVL_DEBUG, "Reading: len: %d, timeout: %d.\n", read_size, timeout));
 	bytes_read = usb_bulk_read (USB_handle, USB_in_endpoint, RD_usb_buffer, read_size, timeout);
