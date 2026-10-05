@@ -1117,13 +1117,17 @@ USB_configure_generic (pi_usb_data_t *dev, u_int8_t *input_pipe, u_int8_t *outpu
 		}
 	}
 
-	if (flags & USB_INIT_TAPWAVE) {
+	if (ret >= 0 && (flags & USB_INIT_TAPWAVE)) {
 		/*
 		 * Tapwave: for Zodiac, the TwUSBD.sys driver on Windows sends
-		 * the ext-connection-info packet two additional times.
+		 * the ext-connection-info packet two additional times. Their
+		 * answers change nothing: a failed first request must still
+		 * fail the configuration, or the device is used with guessed
+		 * pipes (a LifeDrive switching to HotSync mode then breaks the
+		 * connection) instead of being tried again on the next poll.
 		 */
-		ret = dev->impl.control_request (dev, 0xc2, PALM_GET_EXT_CONNECTION_INFORMATION, 0, 0, &ci, sizeof (ci), USB_CONFIGURE_TIMEOUT);
-		ret = dev->impl.control_request (dev, 0xc2, PALM_GET_EXT_CONNECTION_INFORMATION, 0, 0, &ci, sizeof (ci), USB_CONFIGURE_TIMEOUT);
+		dev->impl.control_request (dev, 0xc2, PALM_GET_EXT_CONNECTION_INFORMATION, 0, 0, &ci, sizeof (ci), USB_CONFIGURE_TIMEOUT);
+		dev->impl.control_request (dev, 0xc2, PALM_GET_EXT_CONNECTION_INFORMATION, 0, 0, &ci, sizeof (ci), USB_CONFIGURE_TIMEOUT);
 	}
 	return ret;
 }
