@@ -360,6 +360,10 @@ RD_do_read (int timeout)
 			usb_clear_halt (USB_handle, USB_in_endpoint);
 			return;
 #endif
+		} else if (bytes_read == -EPIPE) {
+			/* libusb-compat reports a stalled pipe as -EPIPE */
+			usb_clear_halt (USB_handle, USB_in_endpoint);
+			return;
 		} else if (bytes_read == -ETIMEDOUT)
 			return;
 
