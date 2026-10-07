@@ -376,8 +376,16 @@ RD_do_read (int timeout)
 	
 	pthread_mutex_lock (&RD_buffer_mutex);
 	if ((RD_buffer_used + bytes_read) > RD_buffer_size) {
-		RD_buffer_size = ((RD_buffer_used + bytes_read + 0xfffe) & ~0xffff) - 1;	/* 64k chunks. */
-		RD_buffer = realloc (RD_buffer, RD_buffer_size);
+		size_t size = (RD_buffer_used + bytes_read + 0xffff) & ~0xffff;	/* 64k chunks. */
+		char *buffer = realloc (RD_buffer, size);
+
+		if (!buffer) {
+			pthread_mutex_unlock (&RD_buffer_mutex);
+			LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "libusb: out of memory, dropping %d bytes\n", bytes_read));
+			return;
+		}
+		RD_buffer = buffer;
+		RD_buffer_size = size;
 	}
 
 	memcpy (RD_buffer + RD_buffer_used, RD_usb_buffer, bytes_read);
@@ -663,9 +671,15 @@ u_read_i(struct pi_socket *ps, pi_buffer_t *buf, size_t len, int flags, int time
 				memmove (RD_buffer, RD_buffer + len, RD_buffer_used);
 
 			if ((RD_buffer_size - RD_buffer_used) > (1024 * 1024)) {
-				/* If we have more then 1M free in the buffer, shrink it. */
-				RD_buffer_size = ((RD_buffer_used + 0xfffe) & ~0xffff) - 1;
-				RD_buffer = realloc (RD_buffer, RD_buffer_size);
+				/* If we have more then 1M free in the buffer, shrink it
+				 * to whole 64k chunks, keeping at least one. */
+				size_t size = (RD_buffer_used + 0x10000) & ~0xffff;
+				char *buffer = realloc (RD_buffer, size);
+
+				if (buffer) {
+					RD_buffer = buffer;
+					RD_buffer_size = size;
+				}
 			}
 		}
 	}
