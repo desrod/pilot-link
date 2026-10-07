@@ -941,14 +941,16 @@ USB_configure_device (pi_usb_data_t *dev, u_int8_t *input_pipe, u_int8_t *output
 	if (flags & USB_INIT_VISOR)
 		ret = USB_configure_visor (dev, input_pipe, output_pipe);
 	else if (flags & USB_INIT_SONY_CLIE) {
+		unsigned char answer;	/* each request returns one byte */
+
 		/* according to linux code, PEG S-300 awaits these two requests */
 		/* USB_REQ_GET_CONFIGURATION */
-		ret = dev->impl.control_request (dev, 0x80, 0x08, 0, 0, NULL, 1, 0);
+		ret = dev->impl.control_request (dev, 0x80, 0x08, 0, 0, &answer, 1, 0);
 		if (ret < 0) {
 			LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "usb: Sony USB_REQ_GET_CONFIGURATION failed (err=%08x)\n", ret));
 		}
 		/* USB_REQ_GET_INTERFACE */
-		ret = dev->impl.control_request (dev, 0x80, 0x0A, 0, 0, NULL, 1, 0);
+		ret = dev->impl.control_request (dev, 0x80, 0x0A, 0, 0, &answer, 1, 0);
 		if (ret < 0) {
 			LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "usb: Sony USB_REQ_GET_INTERFACE failed (err=%08x)\n", ret));
 		}
