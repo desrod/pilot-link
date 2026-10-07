@@ -1069,6 +1069,16 @@ USB_configure_generic (pi_usb_data_t *dev, u_int8_t *input_pipe, u_int8_t *outpu
 		}
 	}
 
+	if (ret == -EPIPE) {
+		/* The device stalls the request: it does not implement it (a
+		 * Sony CLIE N770C, 0x054c:0x0066, does). That is no failure -
+		 * go on without pipe numbers and let the caller take the bulk
+		 * endpoints, as for the CLIE 3.5 and USB_INIT_NONE devices.
+		 * Other errors (a timeout while a device is still switching to
+		 * HotSync) skip the device until it answers. */
+		LOG((PI_DBG_DEV, PI_DBG_LVL_INFO, "usb: PALM_GET_EXT_CONNECTION_INFORMATION not supported, using the bulk endpoints\n"));
+		return 0;
+	}
 	if (ret < 0) {
 		LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "usb: PALM_GET_EXT_CONNECTION_INFORMATION failed (err=%08x)\n", ret));
 	} else {
