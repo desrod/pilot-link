@@ -363,6 +363,16 @@ RD_do_read (int timeout)
 			usb_clear_halt (USB_handle, USB_in_endpoint);
 			return;
 #endif
+		} else if (bytes_read == -EPIPE) {
+			/* The pipe is stalled - on macOS after a single "device
+			 * not responding" from the device. libusb-compat reports
+			 * that as -EPIPE (the -(ELAST + 1) above is the old
+			 * libusb-0.1 code for it). Until the halt is cleared every
+			 * read fails at once, and the reader spins until the
+			 * session times out. */
+			LOG((PI_DBG_DEV, PI_DBG_LVL_INFO, "libusb: input pipe stalled, clearing the halt\n"));
+			usb_clear_halt (USB_handle, USB_in_endpoint);
+			return;
 		} else if (bytes_read == -ETIMEDOUT)
 			return;
 
