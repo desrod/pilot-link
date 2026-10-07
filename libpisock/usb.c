@@ -1065,6 +1065,12 @@ USB_configure_generic (pi_usb_data_t *dev, u_int8_t *input_pipe, u_int8_t *outpu
 		}
 	}
 
+	if (ret == -EPIPE) {
+		/* a stall: the device doesn't implement the request, so use
+		 * its bulk endpoints, as for USB_INIT_NONE devices */
+		LOG((PI_DBG_DEV, PI_DBG_LVL_INFO, "usb: PALM_GET_EXT_CONNECTION_INFORMATION not supported, using the bulk endpoints\n"));
+		return 0;
+	}
 	if (ret < 0) {
 		LOG((PI_DBG_DEV, PI_DBG_LVL_ERR, "usb: PALM_GET_EXT_CONNECTION_INFORMATION failed (err=%08x)\n", ret));
 	} else {
