@@ -56,3 +56,34 @@ ylwrap
 */*.la
 *.xz
 *.gz
+
+# "make dist" staging directory. The dist rule removes it on success, but an
+# interrupted or failed run leaves it behind.
+/pilot-link-*/
+
+# Copied in by libtoolize when autogen.sh runs
+m4/libtool.m4
+m4/ltoptions.m4
+m4/ltsugar.m4
+m4/ltversion.m4
+m4/lt~obsolete.m4
+
+# Debian packaging build output. dh_clean removes most of this at the end of a
+# successful build, but it is all present mid-build and after an interrupted
+# one, and ./build-deb.sh --binary-only builds in the source tree.
+debian/.debhelper/
+debian/autoreconf.before
+debian/autoreconf.after
+debian/debhelper-build-stamp
+debian/debhelper-build-stamp.*
+debian/files
+debian/tmp/
+debian/*.debhelper.log
+debian/*.substvars
+debian/libpisock9/
+debian/libpisock-dev/
+debian/libpisync1/
+debian/pilot-link/
+
+# Editor backups
+*~

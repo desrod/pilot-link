@@ -211,7 +211,12 @@ do
 	$AUTOHEADER || { echo "**Error**: autoheader failed."; exit 1; }
       fi
       echo "Running automake --gnu $am_opt ..."
-      $AUTOMAKE --add-missing --gnu $am_opt ||
+      # --copy: install real files rather than symlinks into
+      # /usr/share/automake-X.YY. Symlinks dangle as soon as automake is
+      # upgraded or the tree moves to a host with a different version, and
+      # configure then fails with "cannot find required auxiliary files".
+      # libtoolize above is already invoked with --copy.
+      $AUTOMAKE --add-missing --copy --gnu $am_opt ||
 	{ echo "**Error**: automake failed."; exit 1; }
       echo "Running autoconf ..."
       $AUTOCONF || { echo "**Error**: autoconf failed."; exit 1; }

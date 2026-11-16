@@ -4,8 +4,6 @@ Priority: optional
 Maintainer: Pilot Link Packagers <pilot-link@packages.debian.org>
 Build-Depends:
  debhelper-compat (= 13),
- dh-autoreconf,
- autotools-dev,
  docbook-xsl,
  libpng-dev,
  libpopt-dev,
