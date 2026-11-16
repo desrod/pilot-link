@@ -86,10 +86,17 @@ fi
 
 # Pass Debian's flags through unmodified, including hardening options like
 # -Werror=format-security. configure.ac no longer rewrites CFLAGS.
-export CFLAGS="$(dpkg-buildflags --get CFLAGS)"
-export CXXFLAGS="$(dpkg-buildflags --get CXXFLAGS)"
-export CPPFLAGS="$(dpkg-buildflags --get CPPFLAGS)"
-export LDFLAGS="$(dpkg-buildflags --get LDFLAGS)"
+#
+# Call this from the directory the package is built in: dpkg-buildflags
+# embeds the current directory in -ffile-prefix-map, and a map for the wrong
+# directory leaves the build path in the debug info instead of /usr/src/....
+export_build_flags() {
+	export CFLAGS="$(dpkg-buildflags --get CFLAGS)"
+	export CXXFLAGS="$(dpkg-buildflags --get CXXFLAGS)"
+	export CPPFLAGS="$(dpkg-buildflags --get CPPFLAGS)"
+	export LDFLAGS="$(dpkg-buildflags --get LDFLAGS)"
+}
+export_build_flags
 
 # --binary-only is the old in-place behaviour: no source package, so dpkg-source
 # never has to reconcile this working tree against an upstream tarball.
@@ -183,7 +190,7 @@ cp -a "$ROOT_DIR/debian" "$STAGE_DIR/debian"
 echo "Building Debian source and binary packages..."
 # -us: do not sign source package; -uc: do not sign .changes. No -b, so this
 # builds the .dsc as well as the binaries.
-( cd "$STAGE_DIR" && dpkg-buildpackage -us -uc "$@" )
+( cd "$STAGE_DIR" && export_build_flags && dpkg-buildpackage -us -uc "$@" )
 
 # Collect the results next to the upstream tarballs and drop the staging tree.
 find "$BUILD_AREA" -maxdepth 1 -type f \
