@@ -52,6 +52,20 @@ if [[ ! -f debian/control ]]; then
 	exit 1
 fi
 
+# src/parsedate.c is generated from parsedate.y and is not in git, so building
+# from this tree needs a yacc: "make dist" generates it to ship it, and
+# --binary-only compiles it. Building from the tarball does not, which is why
+# it is not in Build-Depends. Without this check the failure is a bare
+# "yacc: command not found" from deep inside make dist.
+if { [[ "$BUILD_DIST" == true ]] ||
+     { [[ "$BINARY_ONLY" == true ]] && [[ ! -f src/parsedate.c ]]; }; } &&
+   ! command -v bison >/dev/null && ! command -v byacc >/dev/null &&
+   ! command -v yacc >/dev/null; then
+	echo "Error: building from git needs bison (or byacc) to generate src/parsedate.c." >&2
+	echo "Install it with: sudo apt install bison" >&2
+	exit 1
+fi
+
 # Aux scripts automake installs with --add-missing. configure refuses to run
 # without them ("cannot find required auxiliary files"). They are gitignored,
 # and dh_autoreconf_clean deletes them on every in-tree build, so the presence
