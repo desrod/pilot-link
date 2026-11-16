@@ -461,7 +461,7 @@ AC_CHECK_LIB(
 		AC_CHECK_FUNC(iconv, [
 			AC_CHECK_FUNCS(gnu_get_libc_version)
 			AC_MSG_CHECKING(if system iconv handles CP1252)
-			AC_RUN_IFELSE([AC_LANG_SOURCE([
+			AC_RUN_IFELSE([AC_LANG_SOURCE([[
 #include <iconv.h>
 #include <stdlib.h>
 #include <string.h>
@@ -477,17 +477,22 @@ int main (int argc, char **argv)
 	iconv_t cd;
 	size_t pc_len = strlen (pc), utf8_len = 10;
 	size_t utf8_real_len = strlen (utf8);
+	/* glibc declares inbuf as char **, GNU libiconv as const char **
+	   in some configurations. Cast so this probe compiles on both;
+	   GCC 14+ makes the mismatch an error, not a warning, which
+	   silently turned iconv support off. */
+	char *in = (char *) pc;
 
 	cd = iconv_open ("UTF-8", "CP1252");
 	if (!cd)
 		exit (1);
-	if (iconv (cd, &pc, &pc_len, &trans, &utf8_len) == -1 || pc_len != 0)
+	if (iconv (cd, &in, &pc_len, &trans, &utf8_len) == -1 || pc_len != 0)
 		exit (1);
 	if (memcmp (utf8, transbuf, utf8_real_len) != 0)
 		exit (1);
 
 	exit (0);
-}])], [AC_MSG_RESULT(yes); have_iconv=yes], [AC_MSG_RESULT(no);], [AC_MSG_RESULT(not cross compiling);])])])
+}]])], [AC_MSG_RESULT(yes); have_iconv=yes], [AC_MSG_RESULT(no);], [AC_MSG_RESULT(not cross compiling);])])])
 
 dnl ##  Fixed AC_RUN_IFELSE([AC_LANG_SOURCE([[]])],[],[],[]) warning, missing third argument. -DD 22/01/2002
 dnl
